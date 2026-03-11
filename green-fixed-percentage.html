@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seismic Viewer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c0e;
+    --panel: #10141a;
+    --border: #1e2530;
+    --accent: #00e5a0;
+    --accent2: #0088ff;
+    --warn: #ff6b35;
+    --text: #c8d4e0;
+    --muted: #4a5568;
+    --wave: #00e5a0;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .status-bar {
+    display: flex;
+    gap: 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .status-bar span { color: var(--text); }
+  .status-bar .label { color: var(--muted); margin-right: 5px; }
+
+  /* ── Dataset Selector ── */
+  .dataset-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+
+  .dataset-bar label { color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 11px; margin-right: 4px; }
+
+  .ds-btn {
+    padding: 3px 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    transition: all 0.15s;
+  }
+  .ds-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ds-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.07); }
+
+  /* ── Main Canvas Area ── */
+  .viewer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 16px 20px 0;
+    gap: 8px;
+  }
+
+  .channel-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #080b0f;
+    overflow: hidden;
+    cursor: grab;
+  }
+  .canvas-wrap:active { cursor: grabbing; }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Hover crosshair tooltip */
+  .crosshair-tooltip {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .canvas-wrap:hover .crosshair-tooltip { opacity: 1; }
+
+  /* ── Time Axis ── */
+  .time-axis-wrap {
+    height: 36px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #timeAxis {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* ── Minimap ── */
+  .minimap-wrap {
+    height: 48px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #050709;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+
+  #minimap { width: 100%; height: 100%; display: block; }
+
+  /* viewport indicator on minimap */
+  #viewportIndicator {
+    position: absolute;
+    top: 0; height: 100%;
+    background: rgba(0,229,160,0.08);
+    border-left: 1px solid var(--accent);
+    border-right: 1px solid var(--accent);
+    pointer-events: none;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px 14px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+    background: var(--panel);
+  }
+
+  .tool-group {
+    display: flex;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px;
+  }
+
+  .tool-group + .tool-group { margin-left: 8px; }
+
+  .tbtn {
+    padding: 5px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tbtn:hover { background: rgba(255,255,255,0.05); color: var(--accent); }
+  .tbtn:active { background: rgba(0,229,160,0.12); }
+  .tbtn.primary { color: var(--accent); }
+  .tbtn.warn-btn { color: var(--warn); }
+
+  .zoom-info {
+    margin-left: auto;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .zoom-info span { color: var(--accent2); }
+
+  /* Divider */
+  .vdiv {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+
+  /* scroll hint */
+  .scroll-hint {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    pointer-events: none;
+    opacity: 0.5;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">◈ SEISMON / WAVEFORM VIEWER</div>
+  <div class="status-bar">
+    <div><span class="label">STATION</span><span>NV.BOR.HHZ</span></div>
+    <div><span class="label">SAMPLE RATE</span><span>100 sps</span></div>
+    <div><span class="label">VIEW</span><span id="viewDuration">—</span></div>
+    <div><span class="label">ZOOM</span><span id="zoomLevelDisplay">1×</span></div>
+  </div>
+</header>
+
+<div class="dataset-bar">
+  <label>DATASET LENGTH ▶</label>
+  <button class="ds-btn active" data-days="1">1 DAY</button>
+  <button class="ds-btn" data-days="7">1 WEEK</button>
+  <button class="ds-btn" data-days="30">1 MONTH</button>
+  <button class="ds-btn" data-days="180">6 MONTHS</button>
+  <button class="ds-btn" data-days="365">1 YEAR</button>
+</div>
+
+<div class="viewer">
+  <div class="channel-label">HHZ · VERTICAL CHANNEL</div>
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="waveCanvas"></canvas>
+    <div class="crosshair-tooltip" id="hoverTime">—</div>
+    <div class="scroll-hint">drag to scroll · scroll wheel to zoom</div>
+  </div>
+  <div class="time-axis-wrap">
+    <canvas id="timeAxis"></canvas>
+  </div>
+  <div class="minimap-wrap">
+    <canvas id="minimap"></canvas>
+    <div id="viewportIndicator"></div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="tool-group">
+    <button class="tbtn" id="zoomIn">＋ ZOOM IN</button>
+    <button class="tbtn" id="zoomOut">－ ZOOM OUT</button>
+  </div>
+  <div class="tool-group">
+    <button class="tbtn primary" id="zoomFit">⟺ FIT ALL</button>
+  </div>
+  <div class="tool-group">
+    <button class="tbtn" id="scrollLeft">◀ SCROLL</button>
+    <button class="tbtn" id="scrollRight">SCROLL ▶</button>
+  </div>
+  <div class="vdiv"></div>
+  <div class="zoom-info">
+    ZOOM STEP: <span>50%</span> · consistent across all dataset lengths
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  SEISMIC VIEWER  —  consistent zoom prototype
+// ══════════════════════════════════════════════
+
+const ZOOM_FACTOR = 2.0;          // zoom in = halve the visible window
+const SCROLL_STEP_FRACTION = 0.2; // scroll = 20% of current view width
+const MIN_VIEW_SECONDS = 10;      // never zoom in closer than 10 s
+
+let totalSeconds = 86400;  // default: 1 day
+let data = [];             // Float32Array of seismic samples
+let sampleRate = 100;      // samples/sec (simulated)
+
+// View state: all in seconds
+let viewStart = 0;   // seconds from data start
+let viewEnd   = totalSeconds;
+
+// ── Generate synthetic seismic data ──────────────────────────────────────────
+function generateData(days) {
+  totalSeconds = days * 86400;
+  sampleRate = days <= 7 ? 100 : days <= 30 ? 10 : 1;
+  const n = Math.floor(totalSeconds * sampleRate);
+  data = new Float32Array(n);
+
+  // Layered noise: background + events
+  let bg = 0;
+  for (let i = 0; i < n; i++) {
+    // pink-ish noise via leaky integrator
+    bg = bg * 0.998 + (Math.random() - 0.5) * 0.02;
+    data[i] = bg;
+  }
+
+  // Inject random "earthquakes"
+  const numEvents = Math.max(3, Math.floor(days * 0.8));
+  for (let e = 0; e < numEvents; e++) {
+    const center = Math.floor(Math.random() * n);
+    const mag    = 0.3 + Math.random() * 0.7;
+    const decay  = sampleRate * (5 + Math.random() * 30);
+    for (let j = -decay * 3; j < decay * 5; j++) {
+      const idx = center + j;
+      if (idx < 0 || idx >= n) continue;
+      const env = Math.exp(-Math.abs(j) / decay) * (j > 0 ? 1 : 0.4);
+      data[idx] += mag * env * (Math.random() - 0.5) * 4;
+    }
+  }
+
+  // Normalise to ±1
+  let peak = 0;
+  for (let i = 0; i < n; i++) if (Math.abs(data[i]) > peak) peak = Math.abs(data[i]);
+  if (peak > 0) for (let i = 0; i < n; i++) data[i] /= peak;
+}
+
+// ── Canvas setup ─────────────────────────────────────────────────────────────
+const waveCanvas = document.getElementById('waveCanvas');
+const waveCtx    = waveCanvas.getContext('2d');
+const axisCanvas = document.getElementById('timeAxis');
+const axisCtx    = axisCanvas.getContext('2d');
+const mmCanvas   = document.getElementById('minimap');
+const mmCtx      = mmCanvas.getContext('2d');
+
+function resizeCanvases() {
+  const wrap = document.getElementById('canvasWrap');
+  waveCanvas.width  = wrap.clientWidth  * devicePixelRatio;
+  waveCanvas.height = wrap.clientHeight * devicePixelRatio;
+  waveCanvas.style.width  = wrap.clientWidth  + 'px';
+  waveCanvas.style.height = wrap.clientHeight + 'px';
+
+  axisCanvas.width  = axisCanvas.parentElement.clientWidth  * devicePixelRatio;
+  axisCanvas.height = axisCanvas.parentElement.clientHeight * devicePixelRatio;
+
+  mmCanvas.width  = mmCanvas.parentElement.clientWidth  * devicePixelRatio;
+  mmCanvas.height = mmCanvas.parentElement.clientHeight * devicePixelRatio;
+
+  drawAll();
+}
+
+// ── Draw waveform ─────────────────────────────────────────────────────────────
+function drawWave() {
+  const W = waveCanvas.width, H = waveCanvas.height;
+  waveCtx.clearRect(0, 0, W, H);
+
+  // background grid lines
+  waveCtx.strokeStyle = 'rgba(30,37,48,0.8)';
+  waveCtx.lineWidth = 1;
+  for (let g = 0.25; g < 1; g += 0.25) {
+    waveCtx.beginPath();
+    waveCtx.moveTo(0, H * g);
+    waveCtx.lineTo(W, H * g);
+    waveCtx.stroke();
+  }
+
+  // zero line
+  waveCtx.strokeStyle = 'rgba(0,229,160,0.15)';
+  waveCtx.lineWidth = 1;
+  waveCtx.beginPath();
+  waveCtx.moveTo(0, H / 2);
+  waveCtx.lineTo(W, H / 2);
+  waveCtx.stroke();
+
+  if (!data.length) return;
+
+  const startSample = Math.floor(viewStart * sampleRate);
+  const endSample   = Math.ceil(viewEnd   * sampleRate);
+  const sampleCount = endSample - startSample;
+
+  waveCtx.strokeStyle = '#00e5a0';
+  waveCtx.lineWidth   = sampleCount < W / devicePixelRatio ? 1.5 : 1;
+  waveCtx.shadowBlur  = sampleCount < 5000 ? 4 : 0;
+  waveCtx.shadowColor = '#00e5a0';
+
+  waveCtx.beginPath();
+  const mid = H / 2;
+  const amp = (H / 2) * 0.85;
+
+  // Downsample via min/max envelope for large windows
+  const pixelCount = Math.ceil(W / devicePixelRatio);
+  if (sampleCount > pixelCount * 2) {
+    for (let px = 0; px < pixelCount; px++) {
+      const s0 = startSample + Math.floor((px / pixelCount) * sampleCount);
+      const s1 = startSample + Math.floor(((px + 1) / pixelCount) * sampleCount);
+      let mn = Infinity, mx = -Infinity;
+      for (let s = s0; s < s1 && s < data.length; s++) {
+        if (data[s] < mn) mn = data[s];
+        if (data[s] > mx) mx = data[s];
+      }
+      const x = px * devicePixelRatio;
+      if (px === 0) waveCtx.moveTo(x, mid - mx * amp);
+      waveCtx.lineTo(x, mid - mx * amp);
+      waveCtx.lineTo(x, mid - mn * amp);
+    }
+  } else {
+    for (let s = startSample; s <= endSample && s < data.length; s++) {
+      const px = ((s - startSample) / sampleCount) * W;
+      const py = mid - data[s] * amp;
+      s === startSample ? waveCtx.moveTo(px, py) : waveCtx.lineTo(px, py);
+    }
+  }
+  waveCtx.stroke();
+  waveCtx.shadowBlur = 0;
+}
+
+// ── Draw time axis ────────────────────────────────────────────────────────────
+function formatTime(sec, span) {
+  const d = new Date(Date.UTC(2024, 0, 1) + sec * 1000);
+  if (span > 86400 * 14) return d.toISOString().slice(0,10);
+  if (span > 3600 * 6)   return d.toISOString().slice(5,13).replace('T',' ');
+  return d.toISOString().slice(11,19);
+}
+
+function drawAxis() {
+  const W = axisCanvas.width, H = axisCanvas.height;
+  axisCtx.clearRect(0, 0, W, H);
+  axisCtx.fillStyle = '#10141a';
+  axisCtx.fillRect(0, 0, W, H);
+
+  const span = viewEnd - viewStart;
+  // pick a nice tick interval
+  const targetTicks = Math.round(W / devicePixelRatio / 120);
+  const rawInterval = span / targetTicks;
+  const niceIntervals = [1,2,5,10,30,60,120,300,600,1800,3600,
+                         7200,21600,43200,86400,172800,604800,2592000];
+  let interval = niceIntervals.find(v => v >= rawInterval) || niceIntervals[niceIntervals.length-1];
+
+  axisCtx.fillStyle   = 'rgba(74,85,104,0.7)';
+  axisCtx.strokeStyle = 'rgba(74,85,104,0.5)';
+  axisCtx.font = `${11 * devicePixelRatio}px "Share Tech Mono", monospace`;
+  axisCtx.textAlign = 'center';
+  axisCtx.lineWidth = 1;
+
+  const firstTick = Math.ceil(viewStart / interval) * interval;
+  for (let t = firstTick; t <= viewEnd; t += interval) {
+    const x = ((t - viewStart) / span) * W;
+    axisCtx.beginPath();
+    axisCtx.moveTo(x, 0);
+    axisCtx.lineTo(x, H * 0.45);
+    axisCtx.strokeStyle = 'rgba(74,85,104,0.5)';
+    axisCtx.stroke();
+    axisCtx.fillStyle = 'rgba(200,212,224,0.75)';
+    axisCtx.fillText(formatTime(t, span), x, H * 0.85);
+  }
+}
+
+// ── Draw minimap ──────────────────────────────────────────────────────────────
+let minimapCache = null;
+let minimapDays  = -1;
+
+function drawMinimap() {
+  const W = mmCanvas.width, H = mmCanvas.height;
+  if (minimapDays !== totalSeconds || !minimapCache) {
+    mmCtx.clearRect(0, 0, W, H);
+    mmCtx.fillStyle = '#050709';
+    mmCtx.fillRect(0, 0, W, H);
+
+    if (data.length) {
+      mmCtx.strokeStyle = 'rgba(0,229,160,0.5)';
+      mmCtx.lineWidth = 1;
+      mmCtx.beginPath();
+      const mid = H / 2, amp = (H / 2) * 0.85;
+      const pixW = Math.ceil(W / devicePixelRatio);
+      for (let px = 0; px < pixW; px++) {
+        const s0 = Math.floor((px / pixW) * data.length);
+        const s1 = Math.floor(((px + 1) / pixW) * data.length);
+        let mn = Infinity, mx = -Infinity;
+        for (let s = s0; s < s1 && s < data.length; s++) {
+          if (data[s] < mn) mn = data[s];
+          if (data[s] > mx) mx = data[s];
+        }
+        const x = px * devicePixelRatio;
+        if (px === 0) mmCtx.moveTo(x, mid - mx * amp);
+        mmCtx.lineTo(x, mid - mx * amp);
+        mmCtx.lineTo(x, mid - mn * amp);
+      }
+      mmCtx.stroke();
+    }
+    minimapDays = totalSeconds;
+  }
+
+  // viewport overlay handled by CSS div
+  const pct  = viewStart / totalSeconds;
+  const width = (viewEnd - viewStart) / totalSeconds;
+  const vp = document.getElementById('viewportIndicator');
+  vp.style.left  = (pct * 100) + '%';
+  vp.style.width = (width * 100) + '%';
+}
+
+// ── Status bar update ─────────────────────────────────────────────────────────
+function updateStatus() {
+  const span = viewEnd - viewStart;
+  let label;
+  if (span >= 86400) label = (span/86400).toFixed(1) + ' days';
+  else if (span >= 3600) label = (span/3600).toFixed(1) + ' hrs';
+  else if (span >= 60)   label = (span/60).toFixed(1) + ' min';
+  else label = span.toFixed(0) + ' s';
+
+  document.getElementById('viewDuration').textContent = label;
+  const zoom = (totalSeconds / span);
+  document.getElementById('zoomLevelDisplay').textContent =
+    zoom < 10 ? zoom.toFixed(1)+'×' : Math.round(zoom)+'×';
+}
+
+function drawAll() {
+  drawWave();
+  drawAxis();
+  drawMinimap();
+  updateStatus();
+}
+
+// ── Zoom (consistent fractional zoom) ────────────────────────────────────────
+// KEY INSIGHT: zoom always operates as a fraction of the CURRENT view width,
+// not as a fixed time delta. This makes zoom feel identical whether viewing
+// 1 hour or 1 year.
+function zoom(factor, focusFraction = 0.5) {
+  const viewWidth  = viewEnd - viewStart;
+  const focusPoint = viewStart + viewWidth * focusFraction;
+  const newWidth   = Math.max(MIN_VIEW_SECONDS, Math.min(totalSeconds, viewWidth / factor));
+
+  viewStart = Math.max(0, focusPoint - newWidth * focusFraction);
+  viewEnd   = viewStart + newWidth;
+  if (viewEnd > totalSeconds) { viewEnd = totalSeconds; viewStart = viewEnd - newWidth; }
+  if (viewStart < 0) viewStart = 0;
+  drawAll();
+}
+
+function zoomFit() {
+  viewStart = 0;
+  viewEnd   = totalSeconds;
+  drawAll();
+}
+
+// ── Scroll (consistent fractional scroll) ────────────────────────────────────
+function scroll(dir) {
+  const step = (viewEnd - viewStart) * SCROLL_STEP_FRACTION * dir;
+  viewStart = Math.max(0, Math.min(totalSeconds - (viewEnd - viewStart), viewStart + step));
+  viewEnd   = viewStart + (viewEnd - viewStart);
+  // re-clamp
+  if (viewEnd > totalSeconds) { viewEnd = totalSeconds; viewStart = Math.max(0, viewEnd - (viewEnd - viewStart)); }
+  drawAll();
+}
+
+// ── Mouse wheel zoom ──────────────────────────────────────────────────────────
+document.getElementById('canvasWrap').addEventListener('wheel', e => {
+  e.preventDefault();
+  const wrap = document.getElementById('canvasWrap');
+  const rect  = wrap.getBoundingClientRect();
+  const frac  = (e.clientX - rect.left) / rect.width;
+  const factor = e.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+  zoom(factor, frac);
+}, { passive: false });
+
+// ── Mouse drag scroll ─────────────────────────────────────────────────────────
+let dragStart = null, dragViewStart = null;
+const wrap = document.getElementById('canvasWrap');
+wrap.addEventListener('mousedown', e => {
+  dragStart = e.clientX;
+  dragViewStart = viewStart;
+});
+window.addEventListener('mousemove', e => {
+  if (dragStart === null) return;
+  const rect  = wrap.getBoundingClientRect();
+  const dxPct = (dragStart - e.clientX) / rect.width;
+  const span  = viewEnd - viewStart;
+  viewStart = Math.max(0, Math.min(totalSeconds - span, dragViewStart + dxPct * span));
+  viewEnd   = viewStart + span;
+  drawAll();
+});
+window.addEventListener('mouseup', () => { dragStart = null; });
+
+// Hover time display
+wrap.addEventListener('mousemove', e => {
+  if (dragStart !== null) return;
+  const rect = wrap.getBoundingClientRect();
+  const frac = (e.clientX - rect.left) / rect.width;
+  const t    = viewStart + frac * (viewEnd - viewStart);
+  document.getElementById('hoverTime').textContent = formatTime(t, viewEnd - viewStart);
+});
+
+// ── Toolbar buttons ───────────────────────────────────────────────────────────
+document.getElementById('zoomIn').addEventListener('click',  () => zoom(ZOOM_FACTOR));
+document.getElementById('zoomOut').addEventListener('click', () => zoom(1 / ZOOM_FACTOR));
+document.getElementById('zoomFit').addEventListener('click', zoomFit);
+document.getElementById('scrollLeft').addEventListener('click',  () => scroll(-1));
+document.getElementById('scrollRight').addEventListener('click', () => scroll(1));
+
+// ── Dataset switcher ──────────────────────────────────────────────────────────
+document.querySelectorAll('.ds-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ds-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const days = parseInt(btn.dataset.days);
+    minimapDays = -1;
+    generateData(days);
+    viewStart = 0;
+    viewEnd   = totalSeconds;
+    drawAll();
+  });
+});
+
+// Keyboard shortcuts
+window.addEventListener('keydown', e => {
+  if (e.key === '+' || e.key === '=') zoom(ZOOM_FACTOR);
+  if (e.key === '-')                  zoom(1 / ZOOM_FACTOR);
+  if (e.key === 'f' || e.key === 'F') zoomFit();
+  if (e.key === 'ArrowLeft')  scroll(-1);
+  if (e.key === 'ArrowRight') scroll(1);
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+generateData(1);
+resizeCanvases();
+window.addEventListener('resize', resizeCanvases);
+</script>
+</body>
+</html>

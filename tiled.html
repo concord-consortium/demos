@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seismic Explorer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-family: 'Courier New', monospace;
+    }
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      background: #16213e;
+      border-bottom: 1px solid #0f3460;
+    }
+    #toolbar button {
+      background: #0f3460;
+      color: #e0e0e0;
+      border: 1px solid #533483;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 16px;
+      border-radius: 3px;
+    }
+    #toolbar button:hover { background: #533483; }
+    #time-range { font-size: 13px; color: #a0a0c0; }
+    #zoom-level { font-size: 12px; color: #7070a0; }
+    #chart-container { height: 200px; padding: 8px; }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <button id="zoom-out">&minus;</button>
+    <button id="zoom-in">+</button>
+    <span id="zoom-level"></span>
+    <span id="time-range"></span>
+  </div>
+  <div id="chart-container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.iife.min.js"></script>
+  <script>
+// ============================================================
+// Seeded RNG (FNV-1a hash + mulberry32 PRNG)
+// ============================================================
+function hashString(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+function createRng(seed) {
+  let s = typeof seed === 'string' ? hashString(seed) : seed;
+  return function() {
+    s |= 0; s = s + 0x6D2B79F5 | 0;
+    let t = Math.imul(s ^ s >>> 15, 1 | s);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// ============================================================
+// Time Constants
+// ============================================================
+const YEAR = 2025;
+const YEAR_START = Date.UTC(YEAR, 0, 1) / 1000;
+const YEAR_END = Date.UTC(YEAR + 1, 0, 1) / 1000;
+const YEAR_DURATION = YEAR_END - YEAR_START;
+
+// Zoom limit: 20 pixels per 10ms → minRange = (chartWidthPx / 20) * 0.01 seconds
+const ZOOM_LIMIT_PX_PER_10MS = 20;
+function getMinVisibleRange() {
+  const widthPx = chartContainer ? chartContainer.clientWidth : 800;
+  return (widthPx / ZOOM_LIMIT_PX_PER_10MS) * 0.01;
+}
+
+// ============================================================
+// Seismic Event Schedule
+// ============================================================
+function generateEventSchedule(masterSeed) {
+  const rng = createRng(masterSeed);
+  const numEvents = 50 + Math.floor(rng() * 51);
+  const events = [];
+  for (let i = 0; i < numEvents; i++) {
+    const timestamp = YEAR_START + rng() * YEAR_DURATION;
+    const magnitude = 1 + rng() * 6;
+    const duration = (5 + magnitude * 40) * (0.5 + rng());
+    events.push({ timestamp, magnitude, duration });
+  }
+  events.sort((a, b) => a.timestamp - b.timestamp);
+  return events;
+}
+
+const events = generateEventSchedule('seismic-demo-2025');
+console.log(`Generated ${events.length} seismic events`);
+
+// ============================================================
+// Tile Cache
+// ============================================================
+const tileCache = new Map();
+
+function getTile(key) {
+  return tileCache.get(key);
+}
+
+function setTile(key, data) {
+  tileCache.set(key, data);
+  return data;
+}
+
+// ============================================================
+// L0 Generation — min/max per 10 minutes, 1 tile = 1 day
+// ============================================================
+const L0_WINDOW = 600;
+const L0_TILE_DURATION = 86400;
+const L0_PAIRS_PER_TILE = 144;
+
+function getEnvelopeAtTime(t) {
+  const hourOfDay = ((t - YEAR_START) % 86400) / 3600;
+  const diurnal = 0.3 + 0.7 * Math.max(0, Math.sin((hourOfDay - 6) / 16 * Math.PI));
+  const dayOfYear = (t - YEAR_START) / 86400;
+  const seasonal = 0.8 + 0.2 * Math.sin(dayOfYear / 365 * 2 * Math.PI);
+
+  let baseline = 0.02 * diurnal * seasonal;
+
+  for (const ev of events) {
+    const dt = t - ev.timestamp;
+    if (dt < -10 || dt > ev.duration * 3) continue;
+    if (dt < 0) {
+      baseline += 0.001 * ev.magnitude * Math.exp(dt * 2);
+    } else {
+      const attack = Math.min(1, dt / (ev.duration * 0.05));
+      const decay = Math.exp(-dt / (ev.duration * 0.4));
+      const amp = ev.magnitude * 0.15 * attack * decay;
+      baseline += amp;
+    }
+  }
+
+  return baseline;
+}
+
+function generateL0Tile(tileIndex) {
+  const key = `L0-${tileIndex}`;
+  const cached = getTile(key);
+  if (cached) return cached;
+
+  const rng = createRng(key);
+  const tileStart = YEAR_START + tileIndex * L0_TILE_DURATION;
+  const data = new Float32Array(L0_PAIRS_PER_TILE * 2);
+
+  for (let i = 0; i < L0_PAIRS_PER_TILE; i++) {
+    const windowStart = tileStart + i * L0_WINDOW;
+    const windowMid = windowStart + L0_WINDOW / 2;
+    const envelope = getEnvelopeAtTime(windowMid);
+    const noise = 1 + (rng() - 0.5) * 0.3;
+    const amp = envelope * noise;
+    data[i * 2] = -amp;
+    data[i * 2 + 1] = amp;
+  }
+
+  return setTile(key, data);
+}
+
+const NUM_L0_TILES = Math.ceil(YEAR_DURATION / L0_TILE_DURATION);
+for (let i = 0; i < NUM_L0_TILES; i++) {
+  generateL0Tile(i);
+}
+console.log(`Generated ${NUM_L0_TILES} L0 tiles`);
+
+// ============================================================
+// Data Assembly — L0
+// ============================================================
+function assembleL0Data(startTime, endTime) {
+  const times = [];
+  const mins = [];
+  const maxs = [];
+
+  const firstTile = Math.max(0, Math.floor((startTime - YEAR_START) / L0_TILE_DURATION));
+  const lastTile = Math.min(NUM_L0_TILES - 1, Math.floor((endTime - YEAR_START) / L0_TILE_DURATION));
+
+  for (let ti = firstTile; ti <= lastTile; ti++) {
+    const tile = generateL0Tile(ti);
+    const tileStart = YEAR_START + ti * L0_TILE_DURATION;
+    for (let i = 0; i < L0_PAIRS_PER_TILE; i++) {
+      const t = tileStart + i * L0_WINDOW + L0_WINDOW / 2;
+      if (t < startTime || t > endTime) continue;
+      times.push(t);
+      mins.push(tile[i * 2]);
+      maxs.push(tile[i * 2 + 1]);
+    }
+  }
+
+  return [times, mins, maxs];
+}
+
+// ============================================================
+// Zoom Level Selection and Level Constants
+// ============================================================
+const L1_WINDOW = 10;
+const L1_TILE_DURATION = 3600;
+const L1_PAIRS_PER_TILE = 360;
+
+const L15_WINDOW = 0.1;
+const L15_TILE_DURATION = 60;
+const L15_PAIRS_PER_TILE = 600;
+
+const L2_SAMPLE_RATE = 100;
+const L2_TILE_DURATION = 60;
+const L2_SAMPLES_PER_TILE = 6000;
+
+function selectZoomLevel(visibleDuration) {
+  const chartWidth = chartContainer ? chartContainer.clientWidth : 800;
+  const minDensity = 0.3; // minimum points per pixel for smooth envelope fill
+
+  // Use L0 only when it has enough point density to look like a smooth fill
+  const l0Density = (visibleDuration / L0_WINDOW) / chartWidth;
+  if (l0Density >= minDensity) return 0;
+
+  // Use L1 when it has enough density
+  const l1Density = (visibleDuration / L1_WINDOW) / chartWidth;
+  if (l1Density >= minDensity) return 1;
+
+  // Use L1.5 unless L2 would have a reasonable number of points
+  const l2Points = visibleDuration * L2_SAMPLE_RATE;
+  if (l2Points > 4000) return 1.5;
+
+  return 2;
+}
+
+// ============================================================
+// L1 Generation — min/max per 10 sec, 1 tile = 1 hour
+// ============================================================
+function getL0EnvelopeAt(t) {
+  const tileIndex = Math.floor((t - YEAR_START) / L0_TILE_DURATION);
+  const tile = generateL0Tile(tileIndex);
+  const tileStart = YEAR_START + tileIndex * L0_TILE_DURATION;
+  const exactIndex = (t - tileStart) / L0_WINDOW - 0.5;
+  const i0 = Math.max(0, Math.min(L0_PAIRS_PER_TILE - 1, Math.floor(exactIndex)));
+  const i1 = Math.min(L0_PAIRS_PER_TILE - 1, i0 + 1);
+  const frac = Math.max(0, Math.min(1, exactIndex - i0));
+  const v0 = tile[i0 * 2 + 1];
+  const v1 = tile[i1 * 2 + 1];
+  return v0 + (v1 - v0) * frac;
+}
+
+function generateL1Tile(tileIndex) {
+  const key = `L1-${tileIndex}`;
+  const cached = getTile(key);
+  if (cached) return cached;
+
+  const rng = createRng(key);
+  const tileStart = YEAR_START + tileIndex * L1_TILE_DURATION;
+  const data = new Float32Array(L1_PAIRS_PER_TILE * 2);
+
+  for (let i = 0; i < L1_PAIRS_PER_TILE; i++) {
+    const windowStart = tileStart + i * L1_WINDOW;
+    const windowMid = windowStart + L1_WINDOW / 2;
+    const parentEnv = getL0EnvelopeAt(windowMid);
+    const variation = 0.3 + rng() * 0.7;
+    const amp = parentEnv * variation;
+    data[i * 2] = -amp;
+    data[i * 2 + 1] = amp;
+  }
+
+  return setTile(key, data);
+}
+
+function assembleL1Data(startTime, endTime) {
+  const times = [];
+  const mins = [];
+  const maxs = [];
+
+  const firstTile = Math.max(0, Math.floor((startTime - YEAR_START) / L1_TILE_DURATION));
+  const lastTile = Math.min(
+    Math.ceil(YEAR_DURATION / L1_TILE_DURATION) - 1,
+    Math.floor((endTime - YEAR_START) / L1_TILE_DURATION)
+  );
+
+  for (let ti = firstTile; ti <= lastTile; ti++) {
+    const tile = generateL1Tile(ti);
+    const tileStart = YEAR_START + ti * L1_TILE_DURATION;
+    for (let i = 0; i < L1_PAIRS_PER_TILE; i++) {
+      const t = tileStart + i * L1_WINDOW + L1_WINDOW / 2;
+      if (t < startTime || t > endTime) continue;
+      times.push(t);
+      mins.push(tile[i * 2]);
+      maxs.push(tile[i * 2 + 1]);
+    }
+  }
+
+  return [times, mins, maxs];
+}
+
+// ============================================================
+// L1.5 Generation — min/max per 0.1 sec, 1 tile = 1 minute
+// ============================================================
+function getL1EnvelopeAt(t) {
+  const tileIndex = Math.floor((t - YEAR_START) / L1_TILE_DURATION);
+  const tile = generateL1Tile(tileIndex);
+  const tileStart = YEAR_START + tileIndex * L1_TILE_DURATION;
+  const exactIndex = (t - tileStart) / L1_WINDOW - 0.5;
+  const i0 = Math.max(0, Math.min(L1_PAIRS_PER_TILE - 1, Math.floor(exactIndex)));
+  const i1 = Math.min(L1_PAIRS_PER_TILE - 1, i0 + 1);
+  const frac = Math.max(0, Math.min(1, exactIndex - i0));
+  const v0 = tile[i0 * 2 + 1];
+  const v1 = tile[i1 * 2 + 1];
+  return v0 + (v1 - v0) * frac;
+}
+
+function generateL15Tile(tileIndex) {
+  const key = `L15-${tileIndex}`;
+  const cached = getTile(key);
+  if (cached) return cached;
+
+  const rng = createRng(key);
+  const tileStart = YEAR_START + tileIndex * L15_TILE_DURATION;
+  const data = new Float32Array(L15_PAIRS_PER_TILE * 2);
+
+  for (let i = 0; i < L15_PAIRS_PER_TILE; i++) {
+    const windowStart = tileStart + i * L15_WINDOW;
+    const windowMid = windowStart + L15_WINDOW / 2;
+    const parentEnv = getL1EnvelopeAt(windowMid);
+    const variation = 0.3 + rng() * 0.7;
+    const amp = parentEnv * variation;
+    data[i * 2] = -amp;
+    data[i * 2 + 1] = amp;
+  }
+
+  return setTile(key, data);
+}
+
+function assembleL15Data(startTime, endTime) {
+  const times = [];
+  const mins = [];
+  const maxs = [];
+
+  const firstTile = Math.max(0, Math.floor((startTime - YEAR_START) / L15_TILE_DURATION));
+  const lastTile = Math.min(
+    Math.ceil(YEAR_DURATION / L15_TILE_DURATION) - 1,
+    Math.floor((endTime - YEAR_START) / L15_TILE_DURATION)
+  );
+
+  for (let ti = firstTile; ti <= lastTile; ti++) {
+    const tile = generateL15Tile(ti);
+    const tileStart = YEAR_START + ti * L15_TILE_DURATION;
+    for (let i = 0; i < L15_PAIRS_PER_TILE; i++) {
+      const t = tileStart + i * L15_WINDOW + L15_WINDOW / 2;
+      if (t < startTime || t > endTime) continue;
+      times.push(t);
+      mins.push(tile[i * 2]);
+      maxs.push(tile[i * 2 + 1]);
+    }
+  }
+
+  return [times, mins, maxs];
+}
+
+// ============================================================
+// L2 Generation — raw 100Hz samples, 1 tile = 1 minute
+// ============================================================
+function getL15EnvelopeAt(t) {
+  const tileIndex = Math.floor((t - YEAR_START) / L15_TILE_DURATION);
+  const tile = generateL15Tile(tileIndex);
+  const tileStart = YEAR_START + tileIndex * L15_TILE_DURATION;
+  const exactIndex = (t - tileStart) / L15_WINDOW - 0.5;
+  const i0 = Math.max(0, Math.min(L15_PAIRS_PER_TILE - 1, Math.floor(exactIndex)));
+  const i1 = Math.min(L15_PAIRS_PER_TILE - 1, i0 + 1);
+  const frac = Math.max(0, Math.min(1, exactIndex - i0));
+  const v0 = tile[i0 * 2 + 1];
+  const v1 = tile[i1 * 2 + 1];
+  return v0 + (v1 - v0) * frac;
+}
+
+function generateL2Tile(tileIndex) {
+  const key = `L2-${tileIndex}`;
+  const cached = getTile(key);
+  if (cached) return cached;
+
+  const rng = createRng(key);
+  const tileStart = YEAR_START + tileIndex * L2_TILE_DURATION;
+  const data = new Float32Array(L2_SAMPLES_PER_TILE);
+
+  const numFreqs = 8;
+  const freqs = [];
+  const phases = [];
+  const amps = [];
+  for (let f = 0; f < numFreqs; f++) {
+    freqs.push(1 + rng() * 9);
+    phases.push(rng() * Math.PI * 2);
+    amps.push(0.5 + rng() * 0.5);
+  }
+
+  // First pass: generate raw sinusoid sum (unscaled)
+  for (let i = 0; i < L2_SAMPLES_PER_TILE; i++) {
+    let sample = 0;
+    for (let f = 0; f < numFreqs; f++) {
+      sample += amps[f] * Math.sin(2 * Math.PI * freqs[f] * (i / L2_SAMPLE_RATE) + phases[f]);
+    }
+    data[i] = sample;
+  }
+
+  // Per-window normalization: each L1.5 window (0.1 sec = 10 samples)
+  // gets normalized so its peak matches the parent envelope exactly
+  const samplesPerWindow = Math.round(L15_WINDOW * L2_SAMPLE_RATE); // 10
+  const numWindows = L2_SAMPLES_PER_TILE / samplesPerWindow;
+
+  for (let w = 0; w < numWindows; w++) {
+    const wStart = w * samplesPerWindow;
+    const wEnd = wStart + samplesPerWindow;
+
+    // Find local peak within this window
+    let localMax = 0;
+    for (let i = wStart; i < wEnd; i++) {
+      const a = Math.abs(data[i]);
+      if (a > localMax) localMax = a;
+    }
+    if (localMax === 0) localMax = 1;
+
+    // Get the parent envelope for this window
+    const windowMidTime = tileStart + (w + 0.5) * L15_WINDOW;
+    const envelope = getL15EnvelopeAt(windowMidTime);
+
+    // Scale so local peak reaches envelope bounds
+    for (let i = wStart; i < wEnd; i++) {
+      data[i] = (data[i] / localMax) * envelope;
+      data[i] += (rng() - 0.5) * envelope * 0.1;
+    }
+  }
+
+  return setTile(key, data);
+}
+
+function assembleL2Data(startTime, endTime) {
+  const times = [];
+  const values = [];
+
+  const firstTile = Math.max(0, Math.floor((startTime - YEAR_START) / L2_TILE_DURATION));
+  const lastTile = Math.min(
+    Math.ceil(YEAR_DURATION / L2_TILE_DURATION) - 1,
+    Math.floor((endTime - YEAR_START) / L2_TILE_DURATION)
+  );
+
+  for (let ti = firstTile; ti <= lastTile; ti++) {
+    const tile = generateL2Tile(ti);
+    const tileStart = YEAR_START + ti * L2_TILE_DURATION;
+    for (let i = 0; i < L2_SAMPLES_PER_TILE; i++) {
+      const t = tileStart + i / L2_SAMPLE_RATE;
+      if (t < startTime || t > endTime) continue;
+      times.push(t);
+      values.push(tile[i]);
+    }
+  }
+
+  return [times, values];
+}
+
+// ============================================================
+// Interaction — Wheel Zoom and Drag-to-Pan
+// ============================================================
+function attachInteractionHandlers(u) {
+  const over = u.over;
+
+  over.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const xScale = u.scales.x;
+    const range = xScale.max - xScale.min;
+    const rect = over.getBoundingClientRect();
+    const cursorLeft = e.clientX - rect.left;
+    const cursor = u.posToVal(cursorLeft, 'x');
+    const factor = e.deltaY > 0 ? 1.02 : 0.98;
+    const newRange = Math.max(getMinVisibleRange(), Math.min(YEAR_DURATION, range * factor));
+    const cursorFrac = (cursor - xScale.min) / range;
+    const newMin = Math.max(YEAR_START, cursor - cursorFrac * newRange);
+    const newMax = Math.min(YEAR_END, newMin + newRange);
+    u.setScale('x', { min: newMin, max: newMax });
+  }, { passive: false });
+
+  let dragStart = null;
+  let dragStartMin = null;
+  let dragStartMax = null;
+
+  over.addEventListener('mousedown', (e) => {
+    dragStart = e.clientX;
+    dragStartMin = u.scales.x.min;
+    dragStartMax = u.scales.x.max;
+    over.style.cursor = 'grabbing';
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (dragStart === null) return;
+    const dx = e.clientX - dragStart;
+    const pxRange = u.bbox.width / devicePixelRatio;
+    const timeRange = dragStartMax - dragStartMin;
+    const dt = -(dx / pxRange) * timeRange;
+    let newMin = dragStartMin + dt;
+    let newMax = dragStartMax + dt;
+    if (newMin < YEAR_START) { newMax += YEAR_START - newMin; newMin = YEAR_START; }
+    if (newMax > YEAR_END) { newMin -= newMax - YEAR_END; newMax = YEAR_END; }
+    u.setScale('x', { min: newMin, max: newMax });
+  });
+
+  window.addEventListener('mouseup', () => {
+    dragStart = null;
+    over.style.cursor = 'crosshair';
+  });
+
+  over.style.cursor = 'crosshair';
+}
+
+// ============================================================
+// uPlot Chart Factory — supports band (L0/L1) and line (L2) modes
+// ============================================================
+const chartContainer = document.getElementById('chart-container');
+
+function getChartSize() {
+  return {
+    width: chartContainer.clientWidth,
+    height: chartContainer.clientHeight || 200,
+  };
+}
+
+let uplot = null;
+let currentMode = 'band';
+let currentLevel = 0;
+
+function buildSeriesConfig(mode) {
+  if (mode === 'band') {
+    return [
+      {},
+      {
+        label: 'Min',
+        stroke: 'rgba(0,255,136,0.6)',
+        fill: 'rgba(0,255,136,0.15)',
+        width: 1,
+        band: true,
+      },
+      {
+        label: 'Max',
+        stroke: 'rgba(0,255,136,0.6)',
+        fill: 'rgba(0,255,136,0.15)',
+        width: 1,
+      },
+    ];
+  } else {
+    return [
+      {},
+      {
+        label: 'Amplitude',
+        stroke: 'rgba(0,255,136,0.9)',
+        width: 1,
+      },
+    ];
+  }
+}
+
+function createChart(data, mode, scaleMin, scaleMax) {
+  if (uplot) {
+    uplot.destroy();
+  }
+
+  const opts = {
+    ...getChartSize(),
+    cursor: {
+      drag: { x: false, y: false },
+    },
+    scales: {
+      x: { time: true, min: scaleMin, max: scaleMax },
+      y: { auto: false, range: [-0.5, 0.5] },
+    },
+    axes: [
+      {
+        stroke: '#a0a0c0',
+        grid: { stroke: 'rgba(160,160,192,0.1)' },
+        ticks: { stroke: 'rgba(160,160,192,0.2)' },
+      },
+      {
+        stroke: '#a0a0c0',
+        grid: { stroke: 'rgba(160,160,192,0.1)' },
+        ticks: { stroke: 'rgba(160,160,192,0.2)' },
+      },
+    ],
+    series: buildSeriesConfig(mode),
+    hooks: {
+      setScale: [
+        (u, key) => {
+          if (key === 'x') updateData();
+        },
+      ],
+      init: [
+        (u) => { attachInteractionHandlers(u); },
+      ],
+    },
+  };
+
+  currentMode = mode;
+  uplot = new uPlot(opts, data, chartContainer);
+}
+
+// ============================================================
+// Data Update on Viewport Change
+// ============================================================
+let updatePending = false;
+
+function updateData() {
+  if (updatePending) return;
+  updatePending = true;
+  requestAnimationFrame(() => {
+    updatePending = false;
+    _doUpdateData();
+  });
+}
+
+const levelNames = {
+  0: 'L0 — Year Overview (10-min envelope)',
+  1: 'L1 — Detail (10-sec envelope)',
+  1.5: 'L1.5 — Fine Detail (0.1-sec envelope)',
+  2: 'L2 — Raw Waveform (100Hz)',
+};
+const zoomLevelLabel = document.getElementById('zoom-level');
+
+function _doUpdateData() {
+  const xScale = uplot.scales.x;
+  const startTime = xScale.min;
+  const endTime = xScale.max;
+  const duration = endTime - startTime;
+  const level = selectZoomLevel(duration);
+  const needMode = (level === 2) ? 'line' : 'band';
+
+  let data;
+  if (level === 0) {
+    data = assembleL0Data(startTime, endTime);
+  } else if (level === 1) {
+    data = assembleL1Data(startTime, endTime);
+  } else if (level === 1.5) {
+    data = assembleL15Data(startTime, endTime);
+  } else {
+    data = assembleL2Data(startTime, endTime);
+  }
+
+  currentLevel = level;
+  zoomLevelLabel.textContent = levelNames[level];
+
+  if (needMode !== currentMode) {
+    createChart(data, needMode, startTime, endTime);
+  } else {
+    uplot.setData(data, false);
+  }
+
+  updateTimeRangeLabel();
+}
+
+// ============================================================
+// Toolbar — Zoom Buttons and Time Range
+// ============================================================
+const timeRangeLabel = document.getElementById('time-range');
+
+function formatTimeRange(minTime, maxTime) {
+  const fmt = (t) => {
+    const d = new Date(t * 1000);
+    const fmtOpts = { year: 'numeric', month: 'short', day: 'numeric',
+                   hour: '2-digit', minute: '2-digit', second: '2-digit',
+                   timeZone: 'UTC' };
+    return d.toLocaleString('en-US', fmtOpts);
+  };
+  const duration = maxTime - minTime;
+  let durStr;
+  if (duration >= 86400) durStr = `${(duration / 86400).toFixed(1)} days`;
+  else if (duration >= 3600) durStr = `${(duration / 3600).toFixed(1)} hours`;
+  else if (duration >= 60) durStr = `${(duration / 60).toFixed(1)} min`;
+  else durStr = `${duration.toFixed(1)} sec`;
+
+  return `${fmt(minTime)}  \u2014  ${fmt(maxTime)}  (${durStr})`;
+}
+
+function updateTimeRangeLabel() {
+  const xScale = uplot.scales.x;
+  timeRangeLabel.textContent = formatTimeRange(xScale.min, xScale.max);
+}
+
+document.getElementById('zoom-in').addEventListener('click', () => {
+  const xScale = uplot.scales.x;
+  const mid = (xScale.min + xScale.max) / 2;
+  const newRange = Math.max(getMinVisibleRange(), (xScale.max - xScale.min) / 2);
+  const newMin = Math.max(YEAR_START, mid - newRange / 2);
+  const newMax = Math.min(YEAR_END, mid + newRange / 2);
+  uplot.setScale('x', { min: newMin, max: newMax });
+});
+
+document.getElementById('zoom-out').addEventListener('click', () => {
+  const xScale = uplot.scales.x;
+  const mid = (xScale.min + xScale.max) / 2;
+  const halfRange = (xScale.max - xScale.min);
+  const newMin = Math.max(YEAR_START, mid - halfRange);
+  const newMax = Math.min(YEAR_END, mid + halfRange);
+  uplot.setScale('x', { min: newMin, max: newMax });
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === '+' || e.key === '=') document.getElementById('zoom-in').click();
+  if (e.key === '-') document.getElementById('zoom-out').click();
+});
+
+// ============================================================
+// Initialize
+// ============================================================
+const initialData = assembleL0Data(YEAR_START, YEAR_END);
+createChart(initialData, 'band', YEAR_START, YEAR_END);
+updateTimeRangeLabel();
+zoomLevelLabel.textContent = levelNames[0];
+
+window.addEventListener('resize', () => {
+  uplot.setSize(getChartSize());
+});
+  </script>
+</body>
+</html>
