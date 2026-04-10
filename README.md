@@ -18,6 +18,20 @@ https://models-resources.concord.org/demos/branch/<your-branch-name>/
 
 The entry point is `index.html` at the root of your branch.
 
+## Instructions for using this repo with Claude
+- Make a new directory and run Claude in this directory
+- Tell Claude: "Clone https://github.com/concord-consortium/demos into the current directory"
+- Tell Claude: "Make a something-cool branch" (This will be the path where the demo is available when it is deployed)
+- copy your html, css, and js files into this directory if you've already got them. Or work with Claude to make your demo.
+- Tell Claude: "Commit and push these changes, setting upstream if needed"
+
+Your demo will be automatically deployed to:
+```
+https://models-resources.concord.org/demos/branch/<your-branch-name>/
+```
+
+If your have an index.html file that will be loaded from the link. If you name your file something else you need to add it to the end of the URL above.
+
 ## Deploying a Subfolder Instead of the Whole Repo
 
 If your demo has a build step or you only want to deploy a specific folder, you can
