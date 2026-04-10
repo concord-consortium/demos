@@ -30,7 +30,7 @@ Your demo will be automatically deployed to:
 https://models-resources.concord.org/demos/branch/<your-branch-name>/
 ```
 
-If your have an index.html file that will be loaded from the link. If you name your file something else you need to add it to the end of the URL above.
+If you have an `index.html` file, it will be loaded from the link above. If you name your file something else, you need to add it to the end of the URL above.
 
 ## Deploying a Subfolder Instead of the Whole Repo
 
