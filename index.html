@@ -351,7 +351,7 @@
   }
 
   .brand-logo-img {
-    width: 44px;
+    width: 48px;
     height: 40px;
     object-fit: contain;
     display: block;
@@ -1924,6 +1924,16 @@
     font-weight: 700;
   }
 
+  /* Chart card — groups dropdown + chart + time range */
+  .dash-chart-card {
+    background: #141A22;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .dash-chart-card .chart-area {
+    border-color: #567092;
+  }
+
   /* Time range + metric dropdown row */
   .dash-chart-controls {
     margin-bottom: 12px;
@@ -1980,9 +1990,23 @@
     border-radius: 0;
     padding: 0;
   }
+  .section-cal .heatmap-year-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 34px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--subtext);
+    letter-spacing: 0.08em;
+    text-align: right;
+    line-height: 1;
+  }
   .section-cal .heatmap-day-labels {
-    padding-left: 40px; /* 34px month label + 6px gap */
-    padding-right: 54px; /* 44px nav buttons + 10px gap */
+    position: relative;
+    padding-left: 47px; /* 7px grid border+pad + 34px month label + 6px gap */
+    padding-right: 61px; /* 7px grid border+pad + 44px nav buttons + 10px gap */
     margin-bottom: 1px;
   }
   .section-cal-today {
@@ -1995,21 +2019,51 @@
   }
   .section-cal-weeks {
     display: flex;
+    flex: 1;
+    min-width: 0;
+    gap: 6px;
+  }
+  .section-cal-month-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    width: 34px;
+    padding: 6px 0; /* match cells container vertical padding */
+  }
+  .section-cal-month-label {
+    font-size: 16px;
+    color: var(--subtext);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-align: right;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 1;
+  }
+  .section-cal-cells-box {
+    display: flex;
     flex-direction: column;
     gap: 6px;
     flex: 1;
     min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px;
   }
   .section-cal-scroll-wrap {
     border-radius: 6px;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 10px;
   }
   .section-cal-nav {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    justify-content: space-between;
     flex-shrink: 0;
     width: 44px;
   }
@@ -2032,8 +2086,6 @@
   .section-cal-nav-btn:disabled { opacity: 0.3; cursor: default; }
   .section-cal-nav-btn:disabled:hover { color: var(--subtext); border-color: var(--border); background: var(--surface2); }
   .section-cal-nav-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
-  .section-cal .heatmap-row { gap: 6px; }
-  .section-cal .heatmap-label { min-width: 34px; font-weight: 500; }
   .section-cal .heatmap-cells { gap: 6px; }
   .section-cal .heatmap-cell {
     aspect-ratio: 1;
@@ -2066,6 +2118,7 @@
   .section-cal.cal-performance .heatmap-cell.all     { background: #FF6B6B; border-color: #FF6B6B; color: #080A0E; }
   .section-cal.cal-performance .heatmap-cell.none    { background: var(--surface2); }
   .section-cal.cal-performance .heatmap-cell.inactive { background: var(--surface); border-color: var(--border); color: var(--subtext); opacity: 0.45; }
+  .section-cal .heatmap-cell.blank { visibility: hidden; }
   .section-cal .heatmap-cell.today {
     border-radius: 50%;
   }
@@ -2256,6 +2309,23 @@
     letter-spacing: 0.04em;
     text-align: center;
     line-height: 1;
+    min-width: 0;
+  }
+  .chart-x-labels .chart-last-date {
+    position: absolute;
+    right: calc(6px + (100% - 30px) / 14);
+    bottom: 0;
+    transform: translateX(50%);
+    flex: none;
+    white-space: nowrap;
+  }
+  .chart-x-labels .chart-mid-date {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    flex: none;
+    white-space: nowrap;
   }
   .chart-bar-group.dual {
     display: flex;
@@ -2436,10 +2506,18 @@
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
+    display: inline;
+    position: relative;
+    padding: 0 0 5px;
     transition: filter 0.15s;
+  }
+  .performance-log-table .metric-link::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    min-height: 44px;
   }
   .performance-log-table .metric-link:hover { filter: brightness(1.2); }
   .performance-log-table .value-input {
@@ -2538,27 +2616,55 @@
     color: var(--subtext);
   }
   .metric-learn-more {
-    display: inline-block;
+    display: inline;
+    position: relative;
     margin-top: 12px;
     font-size: 16px;
+    line-height: 24px;
+    padding: 0 0 5px;
     color: var(--accent);
     text-decoration: none;
     cursor: pointer;
     transition: filter 0.15s;
+  }
+  .metric-learn-more::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    min-height: 44px;
   }
   .metric-learn-more:hover { filter: brightness(1.2); }
   .metric-learn-more .link-text {
     text-decoration: underline;
     text-underline-offset: 2px;
   }
-  .metric-learn-more.reference-link {
-    display: block;
-    min-height: 44px;
-    padding: 10px 0;
-    line-height: 24px;
-    box-sizing: border-box;
+  .metric-learn-more svg {
+    flex-shrink: 0;
   }
-  .metric-learn-more.reference-link:first-child { padding-top: 0; min-height: 34px; }
+  .link-icon-wrap {
+    display: inline-block;
+    position: relative;
+    width: 24px;
+    height: 1em;
+    vertical-align: middle;
+    margin-left: 2px;
+  }
+  .link-icon-wrap .link-icon {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .reference-link-wrap {
+    margin-top: 10px;
+  }
+  .reference-link-wrap:first-child { margin-top: 0; }
+  .metric-learn-more.reference-link {
+    display: inline;
+    margin-top: 0;
+  }
   .metric-chart-section {
     padding: 0;
     text-align: center;
@@ -2774,10 +2880,18 @@
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
+    display: inline;
+    position: relative;
+    padding: 0 0 5px;
     transition: filter 0.15s;
+  }
+  .body-table .metric-link::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    min-height: 44px;
   }
   .body-table .metric-link:hover { filter: brightness(1.2); }
   .sparkline {
@@ -2870,6 +2984,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    max-width: 194px;
   }
   .avail-divider {
     border: none;
@@ -3314,7 +3429,7 @@
 
 </nav>
 
-<div class="phone ios-chrome has-dynamic-island" role="main">
+<div class="phone ios-chrome has-dynamic-island">
   <div class="dynamic-island" aria-hidden="true"></div>
   <!-- Variable-thickness diagonal speed lines -->
   <svg class="speed-lines" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 400" aria-hidden="true">
@@ -3409,7 +3524,7 @@
 
             <!-- Left: logo PNG only -->
       <div class="brand-row" aria-label="DataGOAT">
-        <img class="brand-logo-img" src="data:image/png;base64,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" alt="DataGOAT logo" />
+        <img class="brand-logo-img" src="icons/datagoat-logo-login.svg" alt="DataGOAT logo" />
       </div>
 
       <!-- Right: Concord SVG, no label, no box, not clickable -->
@@ -3512,9 +3627,11 @@
   <!-- Sign Up — email verification confirmation -->
   <div class="form-area" id="signup-confirm-panel" hidden>
     <div class="confirm-icon" aria-hidden="true">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
-        <rect x="2" y="4" width="20" height="16" rx="2"/>
-        <polyline points="22,4 12,13 2,4"/>
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <path d="M5,6.67 L35,6.67 C36.1,6.67 37,7.56 37,8.67 L37,27.75 L31.25,33.33 L5,33.33 C3.9,33.33 3,32.44 3,31.33 L3,8.67 C3,7.56 3.9,6.67 5,6.67 Z" fill="rgba(0,179,192,0.35)"/>
+        <path d="M18.5,33.33 L5,33.33 C3.9,33.33 3,32.44 3,31.33 L3,8.67 C3,7.56 3.9,6.67 5,6.67 L35,6.67 C36.1,6.67 37,7.56 37,8.67 L37,21" stroke="var(--subtext)" stroke-width="2.5"/>
+        <polyline points="37,8.5 20,20.5 3,8.5" stroke="var(--subtext)" stroke-width="2.5"/>
+        <polyline points="38.79,25.85 29.21,35.44 23.5,29.73" stroke="var(--subtext)" stroke-width="2.75"/>
       </svg>
     </div>
     <p class="auth-subtext">We sent a verification link to <strong id="signup-confirm-email" style="color: var(--accent);"></strong>. Click the link in the email to activate your account, then come back here and log in.</p>
@@ -3550,9 +3667,9 @@
   <!-- Forgot Password — confirmation -->
   <div class="form-area" id="forgot-confirm-panel" hidden>
     <div class="confirm-icon" aria-hidden="true">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5">
-        <rect x="2" y="4" width="20" height="16" rx="2"/>
-        <polyline points="22,4 12,13 2,4"/>
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="var(--subtext)" stroke-width="2.5">
+        <rect x="3" y="6.67" width="34" height="26.67" rx="2" fill="rgba(0,179,192,0.35)"/>
+        <polyline points="37,8.5 20,20.5 3,8.5"/>
       </svg>
     </div>
     <p class="auth-subtext">Check your email for a link to reset your password. If it doesn&#x2019;t appear within a few minutes, check your spam folder.</p>
@@ -3567,7 +3684,7 @@
   </div><!-- /content-block -->
 
   <!-- Profile Screen -->
-  <div class="screen" id="profile-screen">
+  <div class="screen" id="profile-screen" role="main" aria-label="Profile">
     <div class="screen-header" id="profile-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -3613,7 +3730,7 @@
         <label class="field-label" for="profile-height-ft" style="margin-bottom:0; min-width:70px;">Height<span class="required-mark" aria-hidden="true">*</span></label>
         <input id="profile-height-ft" type="text" inputmode="numeric" pattern="[0-9]*" class="field-input short" placeholder="" maxlength="1" style="max-width: 56px;"/>
         <span class="field-unit">Ft</span>
-        <input id="profile-height-in" type="text" inputmode="numeric" pattern="[0-9]*" class="field-input short" placeholder="" maxlength="2" style="max-width: 56px;"/>
+        <input id="profile-height-in" type="text" inputmode="numeric" pattern="[0-9]*" class="field-input short" placeholder="" maxlength="2" style="max-width: 56px;" aria-label="Height inches"/>
         <span class="field-unit">In</span>
         <p class="field-error-msg" id="profile-height-error" aria-live="polite"></p>
       </div>
@@ -3684,7 +3801,7 @@
   </div><!-- /profile-screen -->
 
   <!-- About Screen -->
-  <div class="screen" id="about-screen">
+  <div class="screen" id="about-screen" role="main" aria-label="About">
     <div class="screen-header" id="about-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -3712,7 +3829,7 @@
   </div><!-- /about-screen -->
 
   <!-- Tracked Data Setup Screen -->
-  <div class="screen" id="tracked-data-screen">
+  <div class="screen" id="tracked-data-screen" role="main" aria-label="Tracked Data Setup">
     <div class="screen-header" id="tracked-data-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -3738,42 +3855,42 @@
           <tbody id="wellness-metrics">
             <tr data-metric-id="hydration" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Hydration"></td>
               <td class="metric-name">Hydration</td>
               <td><button class="metric-info-btn" type="button" data-metric="Hydration" aria-label="Hydration info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C12 2 5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13z" fill="rgba(0,179,192,0.35)"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="total-sleep-time" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Total Sleep Time"></td>
               <td class="metric-name">Total Sleep Time</td>
               <td><button class="metric-info-btn" type="button" data-metric="Sleep Time" aria-label="Sleep Time info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><defs><mask id="moon-cutout-a"><rect width="24" height="24" fill="white"/><circle cx="17" cy="17" r="7" fill="black"/></mask><mask id="clock-hands-a"><rect width="24" height="24" fill="white"/><polyline points="17 12 17 17 20.5 19.75" stroke="black" stroke-width="2" stroke-linecap="butt" stroke-linejoin="miter" fill="none"/></mask></defs><path d="M10.766,1.032C15.378,1.421 19,5.288 19,10C19,14.971 14.971,19 10,19C5.288,19 1.421,15.378 1.032,10.766C2.16,11.545 3.527,12 5,12C8.866,12 12,8.866 12,5C12,3.55 11.559,2.203 10.805,1.086L10.766,1.032Z" stroke="currentColor" stroke-width="2" fill="rgba(0,179,192,0.35)" mask="url(#moon-cutout-a)"/><circle cx="17" cy="17" r="6" stroke="currentColor" stroke-width="2" fill="currentColor" mask="url(#clock-hands-a)"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="sleep-efficiency" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Sleep Efficiency"></td>
               <td class="metric-name">Sleep Efficiency</td>
               <td><button class="metric-info-btn" type="button" data-metric="Sleep Efficiency" aria-label="Sleep Efficiency info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.79,1C15.5258,1.4376 19.1036,5.4845 18.9576,10.2382C18.9466,10.5962 18.9147,10.949 18.8632,11.2952C18.2763,11.1034 17.6503,11 17,11C13.6863,11 11,13.6863 11,17L11.0005,18.9021C10.7494,18.931 10.4952,18.9497 10.2382,18.9576C5.4845,19.1036 1.4376,15.5258 1,10.79C3.7865,12.8496 7.6605,12.5607 10.1106,10.1106C12.5607,7.6605 12.8496,3.7865 10.79,1Z" stroke-width="2" fill="rgba(0,179,192,0.35)" stroke-linecap="round"/><path d="M23,21C23,19.6667 23,18.3333 23,17C23,13.6863 20.3137,11 17,11C13.6863,11 11,13.6863 11,17C11,18.3333 11,19.6667 11,21C11,22.1046 11.8954,23 13,23L21,23C22.1046,23 23,22.1046 23,21Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/><circle cx="17" cy="17.5" r="1.5" fill="currentColor" stroke="none"/><line x1="22.5" y1="14.5" x2="17" y2="17.5" stroke-width="1.5"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="protein-intake" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Protein Intake"></td>
               <td class="metric-name">Protein Intake</td>
               <td><button class="metric-info-btn" type="button" data-metric="Protein" aria-label="Protein info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(1.989, 1.5)" fill="rgba(0,179,192,0.35)" stroke="currentColor"><path d="M5.26210412,18.3724483 C5.55373028,19.2473268 5.19211384,19.9472296 4.64385665,20.4838217 C3.96728396,21.1720594 2.85910454,21.1720594 2.17086679,20.4838217 C1.85591054,20.1688654 1.69259989,19.7605888 1.66926979,19.3406471 C1.24932812,19.317317 0.841051489,19.1540064 0.526095233,18.8390501 C-0.162142512,18.1508124 -0.188464192,17.0114688 0.526095233,16.3660603 C0.887711675,16.039439 1.76259016,15.4561866 2.63746865,15.7478128 C4.06331786,14.4170202 5.13270476,13.4189258 5.84562936,12.7535295 C6.13698261,13.1231773 7.59511342,14.5813082 8.31375482,15.1028225 C7.63561022,15.829406 6.61839332,16.9192813 5.26210412,18.3724483 Z" stroke-width="2"/><path d="M21.005699,5.5467728 C21.163641,7.39900171 20.5116132,9.21700865 19.2041695,10.5244096 C18.1891437,11.5249351 16.901277,12.1465355 15.5088474,12.288616 C13.5254471,12.4963019 11.8245225,13.2763272 10.545968,14.57447 C10.1027623,14.9965707 9.58587055,15.1645605 9.07657433,15.1645605 C8.57736943,15.1645605 8.05947066,14.9941128 7.59848838,14.5546031 L6.44364877,13.3997635 C6.02709829,12.983213 5.84535645,12.4659478 5.84535645,11.9566727 C5.84535645,11.3368328 6.10453107,10.7943743 6.55691183,10.3420075 C7.77989823,9.10891382 8.52485151,7.46845922 8.7088256,5.5673992 C8.89530515,3.65956993 9.91935964,2.01201364 11.5660347,0.947361521 C12.5237246,0.323412049 13.6538081,0 14.8391073,0 C15.9316502,0 16.97403,0.269241407 17.8807443,0.794743149 L18.1470937,0.958986543 C19.7579348,2.00585642 20.7717941,3.62528324 21.005699,5.5467728 Z" stroke-width="2"/></g></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="lean-mass" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Lean Mass"></td>
               <td class="metric-name">Lean Mass</td>
               <td><button class="metric-info-btn" type="button" data-metric="Lean Mass" aria-label="Lean Mass info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(1, 4)" fill="rgba(0,179,192,0.35)" stroke="currentColor" stroke-width="2"><path d="M18.75,6 L21.9,6 C21.9552285,6 22,6.04477153 22,6.1 L22,9.9 C22,9.95522847 21.9552285,10 21.9,10 L18.75,10 L18.75,6 Z"/><rect x="7.5" y="6" width="7" height="4"/><path d="M0.1,6 L3.25,6 L3.25,10 L0.1,10 C0.044771525,10 0,9.95522847 0,9.9 L0,6.1 C0,6.04477153 0.044771525,6 0.1,6 Z"/><rect x="3.25" y="0.5" width="4.25" height="15" rx="1.25"/><rect x="14.5" y="0.5" width="4.25" height="15" rx="1.25"/></g></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="availability" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Availability"></td>
               <td class="metric-name">Availability</td>
               <td><button class="metric-info-btn" type="button" data-metric="Availability" aria-label="Availability info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="rgba(0,179,192,0.35)"/><path d="M22,11.08L22,12C21.997,16.429 19.082,20.328 14.835,21.584C10.588,22.84 6.021,21.152 3.611,17.437C1.201,13.722 1.521,8.864 4.398,5.497C7.276,2.131 12.025,1.058 16.07,2.86" stroke="currentColor" stroke-width="2"/><polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" stroke-width="2"/></svg></button></td>
               <td class="col-del"></td>
@@ -3802,35 +3919,35 @@
           <tbody id="performance-metrics">
             <tr data-metric-id="wins-losses" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Wins/Losses"></td>
               <td class="metric-name">Wins/Losses</td>
               <td><button class="metric-info-btn" type="button" data-metric="Wins/Losses" aria-label="Wins/Losses info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6,9L4.5,9C3.119,9 2,7.881 2,6.5C2,5.119 3.119,4 4.5,4L6,4" stroke-width="2"/><path d="M18,9L19.5,9C20.881,9 22,7.881 22,6.5C22,5.119 20.881,4 19.5,4L18,4" stroke-width="2"/><line x1="4" y1="22" x2="20" y2="22" stroke-width="2"/><path d="M14,14.66L14,17C14,17.55 14.47,17.98 14.97,18.21C16.15,18.75 17,20.24 17,22L7,22C7,20.24 7.85,18.75 9.03,18.21C9.53,17.98 10,17.55 10,17L10,14.66C10.631,14.881 11.301,15 12,15C12.699,15 13.369,14.881 13.993,14.661Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/><path d="M18,2L6,2L6,9C6,12.314 8.686,15 12,15C15.314,15 18,12.314 18,9L18,2Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="goals" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Goals"></td>
               <td class="metric-name">Goals</td>
               <td><button class="metric-info-btn" type="button" data-metric="Goals" aria-label="Goals info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="assists" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Assists"></td>
               <td class="metric-name">Assists</td>
               <td><button class="metric-info-btn" type="button" data-metric="Assists" aria-label="Assists info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><g transform="translate(2.5, 1.5)"><circle cx="3" cy="17" r="3.5" fill="rgba(0,179,192,0.35)"/><path d="M3.06389255,13.498004 C3.2713296,11.1858619 3.98090915,9.20643206 5.14925207,7.62478319 C7.18259071,4.87214294 10.605458,3.32432432 15.1891892,3.32432432"/><polyline points="11.6351351 0 14.9594595 3.32432432 11.6351351 6.64864865"/><circle cx="16" cy="17" r="3.5" fill="rgba(0,179,192,0.35)"/></g></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="yards" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Yards"></td>
               <td class="metric-name">Yards</td>
               <td><button class="metric-info-btn" type="button" data-metric="Yards" aria-label="Yards info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><path d="M3 8h3M3 12h3M3 16h3M8 3v3M12 3v3M16 3v3"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="tackles" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Tackles"></td>
               <td class="metric-name">Tackles</td>
               <td><button class="metric-info-btn" type="button" data-metric="Tackles" aria-label="Tackles info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><g transform="translate(3.4, 1.25)"><path d="M8.6,21.5 C8.6,21.5 17.2,17.2 17.2,10.75 L17.2,3.225 L8.6,0 L0,3.225 L0,10.75 C0,17.2 8.6,21.5 8.6,21.5 Z" fill="rgba(0,179,192,0.35)"/><line x1="5.375" y1="7.525" x2="11.825" y2="13.975"/><line x1="11.825" y1="7.525" x2="5.375" y2="13.975"/></g></svg></button></td>
               <td class="col-del"></td>
@@ -3855,7 +3972,7 @@
   </div><!-- /tracked-data-screen -->
 
   <!-- Metrics Screen -->
-  <div class="screen" id="dashboard-screen">
+  <div class="screen" id="dashboard-screen" role="main" aria-label="Dashboard">
     <div class="screen-header" id="dashboard-header">
       <div class="header-slide-wrap">
         <div class="header-slide-item header-content-default active">
@@ -3880,7 +3997,7 @@
         <div class="dash-log-section" id="dash-wellness-section">
           <div class="section-cal cal-wellness" id="cal-wellness">
             <div class="heatmap-day-labels">
-              <span class="heatmap-day-label">S</span><span class="heatmap-day-label">M</span><span class="heatmap-day-label">T</span><span class="heatmap-day-label">W</span><span class="heatmap-day-label">T</span><span class="heatmap-day-label">F</span><span class="heatmap-day-label">S</span>
+              <span class="heatmap-year-label" id="cal-wellness-year"></span><span class="heatmap-day-label" aria-label="Sunday">S</span><span class="heatmap-day-label" aria-label="Monday">M</span><span class="heatmap-day-label" aria-label="Tuesday">T</span><span class="heatmap-day-label" aria-label="Wednesday">W</span><span class="heatmap-day-label" aria-label="Thursday">T</span><span class="heatmap-day-label" aria-label="Friday">F</span><span class="heatmap-day-label" aria-label="Saturday">S</span>
             </div>
             <div class="section-cal-scroll-wrap">
               <div class="section-cal-weeks" id="cal-wellness-weeks" role="region" aria-label="Wellness Log calendar"></div>
@@ -3906,8 +4023,9 @@
             </div>
             <p class="dash-log-status" id="dash-wellness-status">Log your&nbsp;<span class="status-highlight">5 metrics</span>&nbsp;for today.</p>
           </div>
+          <div class="dash-chart-card">
           <div class="dash-chart-controls">
-            <select class="field-select" id="metrics-body-select" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
+            <select class="field-select" id="metrics-body-select" aria-label="Wellness metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
               <option value="Hydration" selected>Hydration</option>
               <option value="Sleep Time">Total Sleep Time</option>
               <option value="Sleep Efficiency">Sleep Efficiency</option>
@@ -3916,7 +4034,7 @@
               <option value="Availability">Availability</option>
             </select>
           </div>
-          <div class="chart-wrapper" id="body-chart-area"></div>
+          <div class="chart-wrapper" id="body-chart-area" role="img" aria-label="Wellness metric chart"></div>
           <div class="time-range-picker" id="wellness-range-picker">
             <button class="time-range-btn active" type="button" data-range="7">7d</button>
             <button class="time-range-btn" type="button" data-range="14">2w</button>
@@ -3925,6 +4043,7 @@
             <button class="time-range-btn" type="button" data-range="180">6mo</button>
             <button class="time-range-btn" type="button" data-range="365">All</button>
           </div>
+          </div><!-- /dash-chart-card -->
         </div>
 
         <hr class="section-rule" aria-hidden="true">
@@ -3940,8 +4059,9 @@
             </div>
             <p class="dash-log-status" id="dash-performance-status">No perf. data logged today.</p>
           </div>
+          <div class="dash-chart-card">
           <div class="dash-chart-controls">
-            <select class="field-select" id="metrics-performance-select" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
+            <select class="field-select" id="metrics-performance-select" aria-label="Performance metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
               <option selected>Wins/Losses</option>
               <option>Goals</option>
               <option>Assists</option>
@@ -3949,7 +4069,7 @@
               <option>Tackles</option>
             </select>
           </div>
-          <div class="chart-wrapper" id="performance-chart-area"></div>
+          <div class="chart-wrapper" id="performance-chart-area" role="img" aria-label="Performance metric chart"></div>
           <div class="time-range-picker" id="performance-range-picker">
             <button class="time-range-btn active" type="button" data-range="7">7d</button>
             <button class="time-range-btn" type="button" data-range="14">2w</button>
@@ -3958,6 +4078,7 @@
             <button class="time-range-btn" type="button" data-range="180">6mo</button>
             <button class="time-range-btn" type="button" data-range="365">All</button>
           </div>
+          </div><!-- /dash-chart-card -->
         </div>
 
         <hr class="section-rule" aria-hidden="true">
@@ -3970,7 +4091,7 @@
   </div><!-- /dashboard-screen -->
 
   <!-- Wellness Log Screen -->
-  <div class="screen" id="wellness-log-screen">
+  <div class="screen" id="wellness-log-screen" role="main" aria-label="Wellness Log">
     <div class="screen-header" id="wellness-log-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -4008,36 +4129,36 @@
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Hydration</span></td>
               <td>
                 <div class="color-scale" role="radiogroup" aria-label="Hydration level">
-                  <div class="color-swatch swatch-dark" style="background:#F9F7DA;" data-val="1" tabindex="0" role="radio" aria-checked="false" aria-label="Level 1">1</div>
-                  <div class="color-swatch swatch-dark" style="background:#FFFAC7;" data-val="2" tabindex="0" role="radio" aria-checked="false" aria-label="Level 2">2</div>
-                  <div class="color-swatch swatch-dark" style="background:#FFF585;" data-val="3" tabindex="0" role="radio" aria-checked="false" aria-label="Level 3">3</div>
+                  <div class="color-swatch swatch-dark" style="background:#F9F7DA;" data-val="1" tabindex="-1" role="radio" aria-checked="false" aria-label="Level 1">1</div>
+                  <div class="color-swatch swatch-dark" style="background:#FFFAC7;" data-val="2" tabindex="-1" role="radio" aria-checked="false" aria-label="Level 2">2</div>
+                  <div class="color-swatch swatch-dark" style="background:#FFF585;" data-val="3" tabindex="-1" role="radio" aria-checked="false" aria-label="Level 3">3</div>
                   <div class="color-swatch selected swatch-dark" style="background:#FFF234;" data-val="4" tabindex="0" role="radio" aria-checked="true" aria-label="Level 4">4</div>
-                  <div class="color-swatch swatch-dark" style="background:#FFEE70;" data-val="5" tabindex="0" role="radio" aria-checked="false" aria-label="Level 5">5</div>
-                  <div class="color-swatch swatch-dark" style="background:#FFEA41;" data-val="6" tabindex="0" role="radio" aria-checked="false" aria-label="Level 6">6</div>
-                  <div class="color-swatch swatch-dark" style="background:#DBC37A;" data-val="7" tabindex="0" role="radio" aria-checked="false" aria-label="Level 7">7</div>
-                  <div class="color-swatch swatch-dark" style="background:#A7944B;" data-val="8" tabindex="0" role="radio" aria-checked="false" aria-label="Level 8">8</div>
+                  <div class="color-swatch swatch-dark" style="background:#FFEE70;" data-val="5" tabindex="-1" role="radio" aria-checked="false" aria-label="Level 5">5</div>
+                  <div class="color-swatch swatch-dark" style="background:#FFEA41;" data-val="6" tabindex="-1" role="radio" aria-checked="false" aria-label="Level 6">6</div>
+                  <div class="color-swatch swatch-dark" style="background:#DBC37A;" data-val="7" tabindex="-1" role="radio" aria-checked="false" aria-label="Level 7">7</div>
+                  <div class="color-swatch swatch-dark" style="background:#A7944B;" data-val="8" tabindex="-1" role="radio" aria-checked="false" aria-label="Level 8">8</div>
                 </div>
               </td>
             </tr>
             <tr>
               <td><div class="track-cell" id="avg-sleepTime">7.2h</div></td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button" data-metric="Sleep Time">Total Sleep Time</span></td>
-              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" value="8.5" placeholder="hr"><span class="field-unit">hr</span></div></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" value="8.5" placeholder="hr" aria-label="Total Sleep Time"><span class="field-unit">hr</span></div></td>
             </tr>
             <tr>
               <td><div class="track-cell" id="avg-sleepEff">82%</div></td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Sleep Efficiency</span></td>
-              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" value="89" placeholder="%"><span class="field-unit">%</span></div></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" value="89" placeholder="%" aria-label="Sleep Efficiency"><span class="field-unit">%</span></div></td>
             </tr>
             <tr>
               <td><div class="track-cell" id="avg-protein">1.5g</div></td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button" data-metric="Protein">Protein Intake</span></td>
-              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" value="1.78" placeholder="g"><span class="field-unit">g</span></div></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" value="1.78" placeholder="g" aria-label="Protein Intake"><span class="field-unit">g</span></div></td>
             </tr>
             <tr>
               <td><div class="track-cell" id="avg-leanMass">165</div></td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Lean Mass</span></td>
-              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" placeholder="kg"><span class="field-unit">kg</span></div>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" placeholder="kg" aria-label="Lean Mass"><span class="field-unit">kg</span></div>
                 <div class="field-hint">Entered 2–3×/yr</div>
               </td>
             </tr>
@@ -4083,7 +4204,7 @@
   </div><!-- /wellness-log-screen -->
 
   <!-- Metric Detail Screen -->
-  <div class="screen" id="metric-detail-screen">
+  <div class="screen" id="metric-detail-screen" role="main" aria-label="Metric Detail">
     <div class="screen-header" id="metric-detail-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -4099,7 +4220,7 @@
   </div><!-- /metric-detail-screen -->
 
   <!-- Athlete Type Info Screen -->
-  <div class="screen" id="athlete-type-info-screen">
+  <div class="screen" id="athlete-type-info-screen" role="main" aria-label="Athlete Type Info">
     <div class="screen-header" id="athlete-type-info-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -4123,7 +4244,7 @@
   </div><!-- /athlete-type-info-screen -->
 
   <!-- Gender Info Screen -->
-  <div class="screen" id="gender-info-screen">
+  <div class="screen" id="gender-info-screen" role="main" aria-label="Gender Info">
     <div class="screen-header" id="gender-info-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -4139,7 +4260,7 @@
   </div><!-- /gender-info-screen -->
 
   <!-- Competition Term Info Screen -->
-  <div class="screen" id="comp-term-info-screen">
+  <div class="screen" id="comp-term-info-screen" role="main" aria-label="Competition Term Info">
     <div class="screen-header" id="comp-term-info-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -4176,7 +4297,7 @@
   </div><!-- /comp-term-info-screen -->
 
   <!-- Performance Log Screen -->
-  <div class="screen" id="performance-log-screen">
+  <div class="screen" id="performance-log-screen" role="main" aria-label="Performance Log">
     <div class="screen-header" id="performance-log-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -4217,22 +4338,22 @@
             <tr>
               <td class="total-val">34</td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Goals</span></td>
-              <td><input type="text" class="value-input" inputmode="numeric" value="3"></td>
+              <td><input type="text" class="value-input" inputmode="numeric" value="3" aria-label="Goals"></td>
             </tr>
             <tr>
               <td class="total-val">25</td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Assists</span></td>
-              <td><input type="text" class="value-input" inputmode="numeric"></td>
+              <td><input type="text" class="value-input" inputmode="numeric" aria-label="Assists"></td>
             </tr>
             <tr>
               <td class="total-val"></td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Yards</span></td>
-              <td><input type="text" class="value-input" inputmode="numeric"></td>
+              <td><input type="text" class="value-input" inputmode="numeric" aria-label="Yards"></td>
             </tr>
             <tr>
               <td class="total-val">56</td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Tackles</span></td>
-              <td><input type="text" class="value-input" inputmode="numeric"></td>
+              <td><input type="text" class="value-input" inputmode="numeric" aria-label="Tackles"></td>
             </tr>
           </tbody>
         </table>
@@ -4244,7 +4365,7 @@
   </div><!-- /performance-log-screen -->
 
   <!-- Add Metric screen -->
-  <div class="screen" id="add-metric-screen">
+  <div class="screen" id="add-metric-screen" role="main" aria-label="Add Metric">
     <div class="screen-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
@@ -4315,7 +4436,7 @@
 </div><!-- /phone -->
 
   <nav class="device-switcher" aria-label="Device preview size">
-    <div class="device-switcher-label">Preview <span class="version-tag">v1.3</span></div>
+    <div class="device-switcher-label">Preview <span class="version-tag">v1.5</span></div>
 
     <button class="device-btn active" type="button" data-w="360" data-h="740" data-r="44" data-os="ios" data-cutout="dynamic-island">
       <span class="db-name">Generic Phone</span>
@@ -4367,21 +4488,17 @@
 
 <script>
 (function () {
-  // ── Favicon from logo ─────────────────────────────────────────
-  var logo = document.querySelector('.brand-logo-img');
-  if (logo) {
-    var setFavicon = function () {
-      var c = document.createElement('canvas');
-      c.width = 64; c.height = 64;
-      var ctx = c.getContext('2d');
-      var s = Math.min(64 / logo.naturalWidth, 64 / logo.naturalHeight);
-      var w = logo.naturalWidth * s, h = logo.naturalHeight * s;
-      ctx.drawImage(logo, (64 - w) / 2, (64 - h) / 2, w, h);
-      var link = document.getElementById('dynamic-favicon');
-      if (link) link.href = c.toDataURL('image/png');
-    };
-    if (logo.complete) setFavicon(); else logo.onload = setFavicon;
-  }
+  // ── Favicon from dedicated favicon SVG ───────────────────────
+  var faviconImg = new Image();
+  faviconImg.onload = function () {
+    var c = document.createElement('canvas');
+    c.width = 64; c.height = 64;
+    var ctx = c.getContext('2d');
+    ctx.drawImage(faviconImg, 0, 0, 64, 64);
+    var link = document.getElementById('dynamic-favicon');
+    if (link) link.href = c.toDataURL('image/png');
+  };
+  faviconImg.src = 'icons/datagoat-logo-favicon.svg';
 
   // ── Real-time clock ──────────────────────────────────────────
   var clockEl = document.getElementById('status-clock');
@@ -4743,16 +4860,15 @@
 
   var profileScreen = document.getElementById('profile-screen');
 
-  // Clone the logo into all screen headers
-  var brandLogo = document.querySelector('.brand-logo-img');
+  // Insert dashboard logo into all screen headers
   var screenHeaders = document.querySelectorAll('.screen-header');
   screenHeaders.forEach(function (header) {
-    if (brandLogo) {
-      var logoClone = brandLogo.cloneNode(true);
-      logoClone.style.width = '40px';
-      logoClone.style.height = 'auto';
-      header.insertBefore(logoClone, header.firstChild);
-    }
+    var dashLogo = document.createElement('img');
+    dashLogo.className = 'brand-logo-img';
+    dashLogo.src = 'icons/datagoat-logo-dashboard.svg';
+    dashLogo.style.width = '43px';
+    dashLogo.style.height = '36px';
+    header.insertBefore(dashLogo, header.firstChild);
   });
 
   var allScreens = document.querySelectorAll('.screen');
@@ -4772,6 +4888,10 @@
   };
 
   function showScreen(screenId) {
+    // Mark onboarding complete once a new user reaches the Dashboard
+    if (window.isNewUser && screenId === 'dashboard-screen') {
+      window._onboardingComplete = true;
+    }
     // New-user onboarding: show welcome prompts and lock hamburger menu
     // on Profile + Tracked Data Setup screens until onboarding completes
     var welcomeIds = {
@@ -4797,7 +4917,7 @@
     document.querySelectorAll('.nav-menu-btn').forEach(function (mbtn) {
       var parentScreen = mbtn.closest('.screen');
       if (!parentScreen) return;
-      var lock = window.isNewUser && onboardingScreens.indexOf(parentScreen.id) !== -1;
+      var lock = window.isNewUser && !window._onboardingComplete && onboardingScreens.indexOf(parentScreen.id) !== -1;
       mbtn.disabled = lock;
       mbtn.style.opacity = lock ? '0.3' : '';
       mbtn.style.pointerEvents = lock ? 'none' : '';
@@ -4805,26 +4925,27 @@
     document.querySelectorAll('.nav-home-btn').forEach(function (hbtn) {
       var parentScreen = hbtn.closest('.screen');
       if (!parentScreen) return;
-      var hide = window.isNewUser && onboardingScreens.indexOf(parentScreen.id) !== -1;
+      var hide = window.isNewUser && !window._onboardingComplete && onboardingScreens.indexOf(parentScreen.id) !== -1;
       hbtn.style.display = hide ? 'none' : '';
     });
     // New-user back buttons
+    var stillOnboarding = window.isNewUser && !window._onboardingComplete;
     var trackedBackBtn = document.getElementById('tracked-back-btn');
     if (trackedBackBtn) {
-      trackedBackBtn.style.display = window.isNewUser ? '' : 'none';
+      trackedBackBtn.style.display = stillOnboarding ? '' : 'none';
     }
     var profileBackBtn = document.getElementById('profile-back-btn');
     if (profileBackBtn) {
-      profileBackBtn.style.display = window.isNewUser ? '' : 'none';
+      profileBackBtn.style.display = stillOnboarding ? '' : 'none';
     }
     // Toggle button labels/visibility based on new vs returning user
     var profileToTrackedBtn = document.getElementById('profile-to-tracked-btn');
     if (profileToTrackedBtn) {
-      profileToTrackedBtn.textContent = window.isNewUser ? 'Set Up Your Tracked Data' : 'Edit Tracked Data';
+      profileToTrackedBtn.textContent = stillOnboarding ? 'Set Up Your Tracked Data' : 'Edit Tracked Data';
     }
     var trackedToDashWrap = document.getElementById('tracked-to-dashboard-wrap');
     if (trackedToDashWrap) {
-      trackedToDashWrap.style.display = window.isNewUser ? '' : 'none';
+      trackedToDashWrap.style.display = stillOnboarding ? '' : 'none';
     }
     // Update browser tab title
     var pageName = screenTitles[screenId] || 'Home';
@@ -4879,6 +5000,7 @@
       } catch (e) { /* charts not yet initialized */ }
       if (window._rebuildCalendars) window._rebuildCalendars();
       if (window._updateDashStatus) window._updateDashStatus();
+      if (window._syncDashboardDropdowns) window._syncDashboardDropdowns();
     }
     // Dashboard header slide animation — cycle between wordmark and streak
     dashboardHeaderCycle(screenId === 'dashboard-screen');
@@ -5108,13 +5230,13 @@
         if (idx > 0) items[idx - 1].focus();
         else items[items.length - 1].focus(); // wrap
       } else if (e.key === 'Tab') {
-        // Trap focus within the menu
+        // Tab/Shift+Tab at edges closes menu and returns focus to trigger
         if (items.length === 0) return;
         if (e.shiftKey) {
-          if (idx <= 0) { e.preventDefault(); items[items.length - 1].focus(); }
+          if (idx <= 0) { e.preventDefault(); closeNavMenu(overlay); }
           else { e.preventDefault(); items[idx - 1].focus(); }
         } else {
-          if (idx >= items.length - 1) { e.preventDefault(); items[0].focus(); }
+          if (idx >= items.length - 1) { e.preventDefault(); closeNavMenu(overlay); }
           else { e.preventDefault(); items[idx + 1].focus(); }
         }
       } else if (e.key === 'Escape') {
@@ -5175,6 +5297,7 @@
       if (window._signupEmail) {
         // ── New User (both autofilled and not) ──
         window.isNewUser = true;
+        window._onboardingComplete = false;
         window._hasData = false; // Day 1 — no historical data
         var emailVal = window._signupEmail;
         var passVal  = window._signupPass || '';
@@ -6242,11 +6365,11 @@
     } else {
       var chartType = data.type || 'line';
       var linkUrl = data.link || 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9960533/';
-      var linkIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" style="vertical-align:middle;margin-left:2px;"><g transform="translate(3, 3)"><rect fill="rgba(0,179,192,0.35)" x="0" y="1" width="17" height="17"/><path d="M18,9 L18,16 C18,17.1045695 17.1045695,18 16,18 L2,18 C0.8954305,18 0,17.1045695 0,16 L0,2 C0,0.8954305 0.8954305,0 2,0 L9,0" stroke="currentColor"/><polyline points="12 0 18 0 18 6" stroke="currentColor"/><line x1="7" y1="11" x2="18" y2="0" stroke="currentColor"/></g></svg>';
+      var linkIcon = '<span class="link-icon-wrap"><svg class="link-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2"><g transform="translate(3, 3)"><rect fill="rgba(0,179,192,0.35)" x="0" y="1" width="17" height="17"/><path d="M18,9 L18,16 C18,17.1045695 17.1045695,18 16,18 L2,18 C0.8954305,18 0,17.1045695 0,16 L0,2 C0,0.8954305 0.8954305,0 2,0 L9,0" stroke="currentColor"/><polyline points="12 0 18 0 18 6" stroke="currentColor"/><line x1="7" y1="11" x2="18" y2="0" stroke="currentColor"/></g></svg></span>';
 
       var metricLabel = (data && data.displayName) || name;
       var learnMoreHtml = '<br><a class="metric-learn-more" href="' + linkUrl + '" target="_blank" rel="noopener noreferrer">' +
-        '<span class="link-text">Learn more about ' + metricLabel + '</span> ' + linkIcon + '</a>';
+        '<span class="link-text">Learn more about ' + metricLabel + ' ' + linkIcon + '</span></a>';
       var placeholderHtml = '<em style="opacity:0.55;">Coming soon</em>';
 
       function renderSection(heading, body, extra) {
@@ -6327,8 +6450,9 @@
       if (data.references && data.references.length) {
         var refHeading = data.references.length > 1 ? 'References' : 'Reference';
         var refList = data.references.map(function (ref) {
-          return '<a class="metric-learn-more reference-link" style="margin-top:0;" href="' + ref.url + '" target="_blank" rel="noopener noreferrer">' +
-            '<span class="link-text">' + ref.title + '</span> ' + linkIcon + '</a>';
+          return '<div class="reference-link-wrap">' +
+            '<a class="metric-learn-more reference-link" href="' + ref.url + '" target="_blank" rel="noopener noreferrer">' +
+            '<span class="link-text">' + ref.title + ' ' + linkIcon + '</span></a></div>';
         }).join('');
         referencesHtml = renderSection(refHeading, refList);
       }
@@ -6369,7 +6493,7 @@
           '<div class="metric-chart-section">' +
             '<div class="metric-chart-title">' + data.chartTitle + '</div>' +
             '<div class="metric-chart-date" id="detail-chart-date">' + detailDateRange(defaultRange) + '</div>' +
-            '<div class="chart-wrapper" id="detail-chart-area"></div>' +
+            '<div class="chart-wrapper" id="detail-chart-area" role="img" aria-label="Metric detail chart"></div>' +
             '<div class="time-range-picker" id="detail-range-picker">' +
               '<button class="time-range-btn active" type="button" data-range="7">7d</button>' +
               '<button class="time-range-btn" type="button" data-range="14">2w</button>' +
@@ -6664,7 +6788,7 @@
 
   // ── Section calendars (Wellness Log + Performance Log, single-color) ──
   (function () {
-    var A = 'all', P = 'partial', N = 'none', I = 'inactive';
+    var A = 'all', P = 'partial', N = 'none', I = 'inactive', B = 'blank';
 
     // Derive calendar week arrays from fake log data
     // Daily wellness metrics: hydration, sleepTime, sleepEff, protein, availability (5 total)
@@ -6738,14 +6862,24 @@
       if (!container) return;
       container.innerHTML = '';
 
-      for (var w = startIdx; w < endIdx; w++) {
-        var row = document.createElement('div');
-        row.className = 'heatmap-row';
-        var label = document.createElement('span');
-        label.className = 'heatmap-label';
-        label.textContent = months[weekStarts[w].getMonth()];
-        row.appendChild(label);
+      // Create two-column layout: month labels (outside border) + cells box (bordered)
+      var monthCol = document.createElement('div');
+      monthCol.className = 'section-cal-month-labels';
+      var cellsBox = document.createElement('div');
+      cellsBox.className = 'section-cal-cells-box';
 
+      var prevMonth = -1;
+      for (var w = startIdx; w < endIdx; w++) {
+        var rowMonth = state.splitMonths ? state.splitMonths[w] : weekStarts[w].getMonth();
+
+        // Month label (outside the border)
+        var label = document.createElement('span');
+        label.className = 'section-cal-month-label';
+        label.textContent = (rowMonth !== prevMonth) ? months[rowMonth] : '';
+        prevMonth = rowMonth;
+        monthCol.appendChild(label);
+
+        // Cells row (inside the border)
         var cells = document.createElement('div');
         cells.className = 'heatmap-cells';
         for (var d = 0; d < 7; d++) {
@@ -6756,12 +6890,36 @@
           var cell = document.createElement('div');
           var isToday = (w === starWeek && d === starDay);
           cell.className = 'heatmap-cell ' + cellState + (isToday ? ' today' : '');
-          cell.textContent = dayNum;
+          if (cellState !== B) {
+            cell.textContent = dayNum;
+            // Accessible label: date + status
+            var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            var statusText = cellState === A ? 'all data entered' : cellState === P ? 'some data entered' : cellState === N ? 'no data' : cellState === I ? 'inactive' : '';
+            cell.setAttribute('aria-label', dayNames[d] + ', ' + months[cellDate.getMonth()] + ' ' + dayNum + (isToday ? ' (today)' : '') + (statusText ? ', ' + statusText : ''));
+          }
           cells.appendChild(cell);
         }
-        row.appendChild(cells);
-        container.appendChild(row);
+        cellsBox.appendChild(cells);
       }
+
+      // Pad to VISIBLE_WEEKS rows so height is always consistent
+      var rowCount = endIdx - startIdx;
+      for (var p = rowCount; p < VISIBLE_WEEKS; p++) {
+        var emptyLabel = document.createElement('span');
+        emptyLabel.className = 'section-cal-month-label';
+        monthCol.appendChild(emptyLabel);
+        var emptyRow = document.createElement('div');
+        emptyRow.className = 'heatmap-cells';
+        for (var d = 0; d < 7; d++) {
+          var emptyCell = document.createElement('div');
+          emptyCell.className = 'heatmap-cell blank';
+          emptyRow.appendChild(emptyCell);
+        }
+        cellsBox.appendChild(emptyRow);
+      }
+
+      container.appendChild(monthCol);
+      container.appendChild(cellsBox);
 
       // Update nav button states
       var wrap = container.closest('.section-cal-scroll-wrap');
@@ -6785,7 +6943,7 @@
         for (var dd = 0; dd < dayOfWeek; dd++) { weekData[starWeek][dd] = I; }
       }
 
-      // Week start dates
+      // Week start dates (each entry = the Sunday of that week)
       var weekStarts = [];
       for (var i = weekData.length - 1; i >= 0; i--) {
         var d = new Date(thisSunday);
@@ -6793,13 +6951,67 @@
         weekStarts[i] = d;
       }
 
-      // Today label now set statically in HTML ("Wellness Data" / "Performance Data")
+      // Split weeks at month boundaries so each row belongs to one month
+      var splitData = [];
+      var splitStarts = [];
+      var splitMonths = []; // month index for label
 
-      // Start showing the last 2 weeks (most recent at bottom)
+      for (var w = 0; w < weekData.length; w++) {
+        var sun = weekStarts[w];
+        var sat = new Date(sun);
+        sat.setDate(sun.getDate() + 6);
+
+        if (sun.getMonth() === sat.getMonth()) {
+          // Whole week in one month — no split
+          splitData.push(weekData[w]);
+          splitStarts.push(weekStarts[w]);
+          splitMonths.push(sun.getMonth());
+        } else {
+          // Week spans two months — split into two rows
+          var row1 = [], row2 = [];
+          var m1 = sun.getMonth();
+          for (var d = 0; d < 7; d++) {
+            var cd = new Date(sun);
+            cd.setDate(sun.getDate() + d);
+            if (cd.getMonth() === m1) {
+              row1.push(weekData[w][d]);
+              row2.push(B);
+            } else {
+              row1.push(B);
+              row2.push(weekData[w][d]);
+            }
+          }
+          splitData.push(row1);
+          splitStarts.push(weekStarts[w]);
+          splitMonths.push(m1);
+          splitData.push(row2);
+          splitStarts.push(weekStarts[w]);
+          splitMonths.push(sat.getMonth());
+        }
+      }
+
+      weekData = splitData;
+      weekStarts = splitStarts;
+
+      // Recompute starWeek (today's row) after split
+      starWeek = weekData.length - 1;
+      for (var w = weekData.length - 1; w >= 0; w--) {
+        if (weekData[w][starDay] !== B) {
+          starWeek = w;
+          break;
+        }
+      }
+
+      // Set year label
+      var yearEl = document.getElementById(containerId.replace('-weeks', '-year'));
+      if (yearEl) yearEl.textContent = today.getFullYear();
+
+      // Start showing the last VISIBLE_WEEKS rows (most recent at bottom)
       var initialOffset = Math.max(0, weekData.length - VISIBLE_WEEKS);
       calStates[containerId] = {
         weekData: weekData,
         weekStarts: weekStarts,
+        splitMonths: splitMonths,
         starWeek: starWeek,
         starDay: starDay,
         offset: initialOffset
@@ -6914,13 +7126,40 @@
     }
     var today = new Date();
     var xLabels = '';
-    var step = range <= 7 ? 1 : range <= 14 ? 2 : range <= 30 ? 5 : 15;
+    var step = range <= 7 ? 1 : range <= 14 ? 3 : range <= 30 ? 7 : 15;
+    var lastIdx = bars.length - 1;
     bars.forEach(function (val, i) {
       var d = new Date(today);
-      d.setDate(today.getDate() - (bars.length - 1 - i));
-      var showLabel = (i % step === 0) || (i === bars.length - 1);
-      xLabels += '<span>' + (showLabel ? (d.getMonth() + 1) + '/' + d.getDate() : '') + '</span>';
-      var isToday = (i === bars.length - 1);
+      d.setDate(today.getDate() - (lastIdx - i));
+      var showLabel;
+      if (step === 1) {
+        showLabel = true;
+      } else {
+        var isFirst = (i === 0);
+        var isLast = (i === lastIdx);
+        var onStep = (i % step === 0) && !isFirst && !isLast;
+        var nearFirst = onStep && i <= 2;
+        var nearLast = onStep && (lastIdx - i) <= 2;
+        showLabel = isFirst || isLast || (onStep && !nearFirst && !nearLast);
+      }
+      var labelText = showLabel ? (d.getMonth() + 1) + '/' + d.getDate() : '';
+      if (i === lastIdx && step !== 1) {
+        // Leave last flex span empty; we'll absolutely position the last date
+        xLabels += '<span></span>';
+      } else if (i === 0 && step !== 1) {
+        xLabels += '<span style="margin-left:-4px">' + labelText + '</span>';
+      } else if (step >= 15 && i !== 0 && i !== lastIdx) {
+        // 3mo/6mo/All: only show the midpoint label, absolutely centered
+        var midIdx = Math.round(lastIdx / 2);
+        if (i === midIdx) {
+          xLabels += '<span class="chart-mid-date">' + labelText + '</span>';
+        } else {
+          xLabels += '<span></span>';
+        }
+      } else {
+        xLabels += '<span>' + labelText + '</span>';
+      }
+      var isToday = (i === lastIdx);
       chart += '<div class="chart-bar-group">';
       var barH = (val !== null && val >= 0 && val === 0) ? 2 : val;
       if (val === -1) {
@@ -6938,10 +7177,22 @@
       }
       chart += '</div>';
     });
-    chart += '<div class="chart-x-labels">' + xLabels + '</div>';
+    var lastDateLabel = '';
+    if (step !== 1) {
+      var ld = new Date(today);
+      lastDateLabel = '<span class="chart-last-date" style="right:calc((100% - 30px) / 14)">' + (ld.getMonth() + 1) + '/' + ld.getDate() + '</span>';
+    }
+    chart += '<div class="chart-x-labels">' + xLabels + lastDateLabel + '</div>';
     chart += '</div>';
 
     wrapper.innerHTML = left + chart;
+    // Accessible description
+    var desc = metric + ' chart, ' + range + ' days';
+    if (filled && filled.length) {
+      var avgDesc = data.avgLabel ? data.avgLabel(avg) : (avg + '%');
+      desc += ', average ' + avgDesc;
+    }
+    wrapper.setAttribute('aria-label', desc);
   }
 
   // Initial render
@@ -7006,13 +7257,38 @@
     }
     var today = new Date();
     var xLabels = '';
-    var step = range <= 7 ? 1 : range <= 14 ? 2 : range <= 30 ? 5 : 15;
+    var step = range <= 7 ? 1 : range <= 14 ? 3 : range <= 30 ? 7 : 15;
+    var lastIdx = bars.length - 1;
     bars.forEach(function (val, i) {
       var d = new Date(today);
-      d.setDate(today.getDate() - (bars.length - 1 - i));
-      var showLabel = (i % step === 0) || (i === bars.length - 1);
-      xLabels += '<span>' + (showLabel ? (d.getMonth() + 1) + '/' + d.getDate() : '') + '</span>';
-      var isToday = (i === bars.length - 1);
+      d.setDate(today.getDate() - (lastIdx - i));
+      var showLabel;
+      if (step === 1) {
+        showLabel = true;
+      } else {
+        var isFirst = (i === 0);
+        var isLast = (i === lastIdx);
+        var onStep = (i % step === 0) && !isFirst && !isLast;
+        var nearFirst = onStep && i <= 2;
+        var nearLast = onStep && (lastIdx - i) <= 2;
+        showLabel = isFirst || isLast || (onStep && !nearFirst && !nearLast);
+      }
+      var labelText = showLabel ? (d.getMonth() + 1) + '/' + d.getDate() : '';
+      if (i === lastIdx && step !== 1) {
+        xLabels += '<span></span>';
+      } else if (i === 0 && step !== 1) {
+        xLabels += '<span style="margin-left:-4px">' + labelText + '</span>';
+      } else if (step >= 15 && i !== 0 && i !== lastIdx) {
+        var midIdx = Math.round(lastIdx / 2);
+        if (i === midIdx) {
+          xLabels += '<span class="chart-mid-date">' + labelText + '</span>';
+        } else {
+          xLabels += '<span></span>';
+        }
+      } else {
+        xLabels += '<span>' + labelText + '</span>';
+      }
+      var isToday = (i === lastIdx);
       chart += '<div class="chart-bar-group">';
       var barH = (val !== null && val === 0) ? 2 : val;
       if (val === null && isToday) {
@@ -7028,10 +7304,22 @@
       }
       chart += '</div>';
     });
-    chart += '<div class="chart-x-labels">' + xLabels + '</div>';
+    var lastDateLabel = '';
+    if (step !== 1) {
+      var ld = new Date(today);
+      lastDateLabel = '<span class="chart-last-date" style="right:calc((100% - 30px) / 14)">' + (ld.getMonth() + 1) + '/' + ld.getDate() + '</span>';
+    }
+    chart += '<div class="chart-x-labels">' + xLabels + lastDateLabel + '</div>';
     chart += '</div>';
 
     wrapper.innerHTML = left + chart;
+    // Accessible description
+    var desc = metric + ' chart, ' + range + ' days';
+    if (filled && filled.length) {
+      var avgDesc = data.avgLabel ? data.avgLabel(avg) : (avg + '%');
+      desc += ', average ' + avgDesc;
+    }
+    wrapper.setAttribute('aria-label', desc);
   }
 
   renderPerformanceChart('Wins/Losses');
@@ -7082,6 +7370,121 @@
   };
   window._updateDashStatus();
 
+  // ── Sync Dashboard dropdowns with Tracked Data Setup ──
+  // Maps data-metric key → dropdown display name (only where they differ)
+  var _wellnessDisplayNames = {
+    'Hydration': 'Hydration',
+    'Sleep Time': 'Total Sleep Time',
+    'Sleep Efficiency': 'Sleep Efficiency',
+    'Protein': 'Protein Intake',
+    'Lean Mass': 'Lean Mass',
+    'Availability': 'Availability'
+  };
+
+  // Rebuild both native <select> options and the custom-select UI for a given select element
+  function rebuildCustomSelect(sel, items, currentValue) {
+    // 1. Rebuild native <select>
+    sel.innerHTML = '';
+    items.forEach(function (item) {
+      var opt = document.createElement('option');
+      opt.value = item.key;
+      opt.textContent = item.display;
+      sel.appendChild(opt);
+    });
+    // Restore selection if still present, otherwise pick first
+    if (items.some(function (item) { return item.key === currentValue; })) {
+      sel.value = currentValue;
+    } else if (items.length) {
+      sel.value = items[0].key;
+    }
+
+    // 2. Rebuild custom-select UI
+    // The custom-select wrapper is the previous sibling of the native select
+    var wrap = sel.previousElementSibling;
+    if (!wrap || !wrap.classList.contains('custom-select')) return;
+    var trigger = wrap.querySelector('.custom-select-trigger');
+    var optionsWrap = wrap.querySelector('.custom-select-options');
+    if (!trigger || !optionsWrap) return;
+
+    optionsWrap.innerHTML = '';
+    var selectedItem = items.find(function (item) { return item.key === sel.value; }) || items[0];
+
+    items.forEach(function (item) {
+      var div = document.createElement('div');
+      div.className = 'custom-select-option';
+      div.setAttribute('role', 'option');
+      div.setAttribute('tabindex', '-1');
+      div.dataset.value = item.key;
+      div.dataset.label = item.display;
+      var optIcon = item.icon || '';
+      if (optIcon) {
+        div.innerHTML = '<span class="option-icon">' + optIcon + '</span>' + item.display;
+      } else {
+        div.textContent = item.display;
+      }
+      if (selectedItem && item.key === selectedItem.key) {
+        div.classList.add('selected');
+        trigger.innerHTML = optIcon ? '<span class="option-icon">' + optIcon + '</span>' + item.display : item.display;
+        trigger.classList.remove('placeholder');
+        trigger.classList.add('has-value');
+      }
+      div.addEventListener('click', function () {
+        optionsWrap.querySelectorAll('.custom-select-option').forEach(function (o) { o.classList.remove('selected'); });
+        div.classList.add('selected');
+        var clickIcon = item.icon ? '<span class="option-icon">' + item.icon + '</span>' : '';
+        trigger.innerHTML = clickIcon + div.dataset.label;
+        trigger.classList.remove('placeholder');
+        trigger.classList.remove('field-error');
+        trigger.classList.add('has-value');
+        sel.value = div.dataset.value;
+        sel.dispatchEvent(new Event('change'));
+        wrap.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+      });
+      optionsWrap.appendChild(div);
+    });
+  }
+
+  window._syncDashboardDropdowns = function () {
+    var bodySelect = document.getElementById('metrics-body-select');
+    var perfSelect = document.getElementById('metrics-performance-select');
+    if (!bodySelect || !perfSelect) return;
+
+    // Read wellness metrics from Tracked Data Setup (DOM order, checked only)
+    var wellnessRows = document.querySelectorAll('#wellness-metrics tr');
+    var wellnessItems = [];
+    wellnessRows.forEach(function (tr) {
+      var cb = tr.querySelector('.track-check');
+      if (!cb || !cb.checked) return;
+      var infoBtn = tr.querySelector('.metric-info-btn');
+      if (!infoBtn) return;
+      var key = infoBtn.getAttribute('data-metric');
+      if (!key) return;
+      var display = _wellnessDisplayNames[key] || key;
+      // Grab icon from metricIcons if available, otherwise from the info button SVG
+      var icon = (metricIcons[key]) ? getIcon(key) : (infoBtn.querySelector('svg') ? infoBtn.querySelector('svg').outerHTML : '');
+      wellnessItems.push({ key: key, display: display, icon: icon });
+    });
+
+    // Read performance metrics from Tracked Data Setup (DOM order, checked only)
+    var perfRows = document.querySelectorAll('#performance-metrics tr');
+    var perfItems = [];
+    perfRows.forEach(function (tr) {
+      var cb = tr.querySelector('.track-check');
+      if (!cb || !cb.checked) return;
+      var infoBtn = tr.querySelector('.metric-info-btn');
+      if (!infoBtn) return;
+      var key = infoBtn.getAttribute('data-metric');
+      if (!key) return;
+      var icon = (metricIcons[key]) ? getIcon(key) : (infoBtn.querySelector('svg') ? infoBtn.querySelector('svg').outerHTML : '');
+      perfItems.push({ key: key, display: key, icon: icon });
+    });
+
+    rebuildCustomSelect(bodySelect, wellnessItems, bodySelect.value);
+    rebuildCustomSelect(perfSelect, perfItems, perfSelect.value);
+  };
+
   // ── Dashboard tab switching (removed — sections now combined on one screen) ──
 
   // ── Dashboard nav-btn navigation (whole header is clickable) ──
@@ -7119,9 +7522,11 @@
     swatch.parentElement.querySelectorAll('.color-swatch').forEach(function (s) {
       s.classList.remove('selected');
       s.setAttribute('aria-checked', 'false');
+      s.setAttribute('tabindex', '-1');
     });
     swatch.classList.add('selected');
     swatch.setAttribute('aria-checked', 'true');
+    swatch.setAttribute('tabindex', '0');
     swatch.focus();
     // Write back to wellness data
     var wd = window._wellnessData;
@@ -7191,7 +7596,8 @@
       }
       window._swapWellnessData(profileKey);
       rebuildMetricDetailCharts();
-      bodyChartData = buildBodyChartData();
+      var newChartData = buildBodyChartData();
+      for (var k in newChartData) { bodyChartData[k] = newChartData[k]; }
       var bodySelect = document.getElementById('metrics-body-select');
       if (bodySelect) renderBodyChart(bodySelect.value);
     }
@@ -7806,6 +8212,7 @@
     checkbox.type = 'checkbox';
     checkbox.className = 'track-check';
     checkbox.checked = true;
+    checkbox.setAttribute('aria-label', 'Track ' + metricName);
     tdCheck.appendChild(checkbox);
     tr.appendChild(tdCheck);
 
@@ -8023,6 +8430,7 @@
     input.className = 'record-input';
     input.inputMode = 'decimal';
     input.placeholder = 'value';
+    input.setAttribute('aria-label', metricName);
     cellWrap.appendChild(input);
     tdRecord.appendChild(cellWrap);
     tr.appendChild(tdRecord);
@@ -8062,6 +8470,7 @@
     input.type = 'text';
     input.className = 'value-input';
     input.inputMode = 'numeric';
+    input.setAttribute('aria-label', metricName);
     tdVal.appendChild(input);
     tr.appendChild(tdVal);
     return tr;
