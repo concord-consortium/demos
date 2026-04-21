@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>sleep-efficiency</title>
+    <g id="sleep-efficiency" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Group" transform="translate(11, 11)" stroke="#000000">
+            <path d="M-0.21,-10 C4.5258084,-9.56235078 8.10363506,-5.51552052 7.95756829,-0.761776464 C7.94656749,-0.403755349 7.91473033,-0.0510331896 7.86322698,0.295219838 C7.27634241,0.103439544 6.650251,0 6,0 C2.6862915,0 0,2.6862915 0,6 L0.000479480123,7.90211456 C-0.250587801,7.931044 -0.504817326,7.94967279 -0.761776464,7.95756829 C-5.51552052,8.10363506 -9.56235078,4.5258084 -10,-0.21 C-7.21354829,1.84963807 -3.33954681,1.56074341 -0.889401699,-0.889401699 C1.56074341,-3.33954681 1.84963807,-7.21354829 -0.21,-10 Z" id="Path" stroke-width="2" fill-opacity="0.349999994" fill="#00B3C0" stroke-linecap="round"></path>
+            <path d="M12,10 C12,8.66666667 12,7.33333333 12,6 C12,2.6862915 9.3137085,0 6,0 C2.6862915,0 0,2.6862915 0,6 C0,7.33333333 0,8.66666667 0,10 C1.3527075e-16,11.1045695 0.8954305,12 2,12 L10,12 C11.1045695,12 12,11.1045695 12,10 Z" id="Oval" stroke-width="2" fill-opacity="0.349999994" fill="#00B3C0" fill-rule="nonzero"></path>
+            <circle id="Oval" stroke-width="2" fill="#000000" fill-rule="nonzero" cx="6" cy="6.5" r="1"></circle>
+            <line x1="11.5" y1="3.5" x2="6" y2="6.5" id="Line" stroke-width="1.5" fill-rule="nonzero"></line>
+        </g>
+    </g>
+</svg>

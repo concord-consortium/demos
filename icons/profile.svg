@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>profile</title>
+    <g id="profile" stroke="none" fill="none" fill-opacity="0.349999994" fill-rule="evenodd" stroke-width="1">
+        <g id="Group" fill="#00B3C0" stroke="#000000">
+            <path d="M3,22 L3,20 C3,17.5147186 5.01471863,15.5 7.5,15.5 L16.5,15.5 C18.9852814,15.5 21,17.5147186 21,20 L21,22 L21,22" id="Path" stroke-width="2" fill-rule="nonzero"></path>
+            <circle id="Oval" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" cx="12" cy="6.75" r="4.75"></circle>
+        </g>
+    </g>
+</svg>

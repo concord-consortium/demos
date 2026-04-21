@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="40px" height="40px" viewBox="0 0 40 40" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>check-email</title>
+    <g id="check-email" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Group" transform="translate(3, 6.6667)" stroke="#000000">
+            <rect id="Rectangle" stroke-width="2.5" fill-opacity="0.349999994" fill="#00B3C0" stroke-linecap="round" stroke-linejoin="round" x="0" y="0" width="34" height="26.6666667" rx="2"></rect>
+            <polyline id="Path" stroke-width="2.5" points="34 1.83333333 17 13.8333333 -5.69981947e-14 1.83333333"></polyline>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>about</title>
+    <g id="about" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Group" stroke="#000000">
+            <circle id="Oval" stroke-width="2" fill-opacity="0.349999994" fill="#00B3C0" cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="17.5" x2="12" y2="11" id="Path" stroke-width="2" transform="translate(12, 14.25) rotate(180) translate(-12, -14.25)"></line>
+            <line x1="10.875" y1="7.625" x2="13.125" y2="7.625" id="Path" stroke-width="2" transform="translate(12, 7.625) rotate(90) translate(-12, -7.625)"></line>
+        </g>
+    </g>
+</svg>

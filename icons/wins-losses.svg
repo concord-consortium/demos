@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>wins-losses</title>
+    <g id="wins-losses" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Group" stroke="#000000">
+            <path d="M6,9 L4.5,9 C3.11928813,9 2,7.88071187 2,6.5 C2,5.11928813 3.11928813,4 4.5,4 L6,4" id="Path" stroke-width="2"></path>
+            <path d="M18,9 L19.5,9 C20.8807119,9 22,7.88071187 22,6.5 C22,5.11928813 20.8807119,4 19.5,4 L18,4" id="Path" stroke-width="2"></path>
+            <line x1="4" y1="22" x2="20" y2="22" id="Path" stroke-width="2"></line>
+            <path d="M14,14.66 L14,17 C14,17.55 14.47,17.98 14.97,18.21 C16.15,18.75 17,20.24 17,22 L7,22 C7,20.24 7.85,18.75 9.03,18.21 C9.53,17.98 10,17.55 10,17 L10,14.66 C10.6308497,14.8806354 11.3014853,15 12,15 C12.6985147,15 13.3691503,14.8806354 13.992622,14.6611909 Z" id="Combined-Shape" stroke-width="2" fill-opacity="0.349999994" fill="#00B3C0"></path>
+            <path d="M18,2 L6,2 L6,9 C6,12.3137085 8.6862915,15 12,15 C15.3137085,15 18,12.3137085 18,9 L18,2 Z" id="Path" stroke-width="2" fill-opacity="0.349999994" fill="#00B3C0"></path>
+        </g>
+    </g>
+</svg>

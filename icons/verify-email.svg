@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="40px" height="40px" viewBox="0 0 40 40" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>verify-email</title>
+    <g id="verify-email" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Group" transform="translate(3, 6.6667)">
+            <path d="M2,2.13162821e-14 L32,2.13162821e-14 C33.1045695,2.11133759e-14 34,0.8954305 34,2 L34,21.0833333 L34,21.0833333 L28.25,26.6666667 L2,26.6666667 C0.8954305,26.6666667 6.76353751e-17,25.7712362 0,24.6666667 L0,2 C-1.3527075e-16,0.8954305 0.8954305,2.14515528e-14 2,2.13162821e-14 Z" id="Path" fill-opacity="0.349999994" fill="#00B3C0"></path>
+            <path d="M15.5,26.6666667 L2,26.6666667 C0.8954305,26.6666667 6.76353751e-17,25.7712362 0,24.6666667 L0,2 C-1.3527075e-16,0.8954305 0.8954305,1.3527075e-16 2,0 L32,0 C33.1045695,-2.02906125e-16 34,0.8954305 34,2 L34,14.3333333 L34,14.3333333" id="Path" stroke="#000000" stroke-width="2.5"></path>
+            <polyline id="Path" stroke="#000000" stroke-width="2.5" points="34 1.83333333 17 13.8333333 -5.69981947e-14 1.83333333"></polyline>
+            <polyline id="Path" stroke="#000000" stroke-width="2.75" points="35.7928932 19.1833333 26.2071068 28.7691198 20.5 23.062013"></polyline>
+        </g>
+    </g>
+</svg>

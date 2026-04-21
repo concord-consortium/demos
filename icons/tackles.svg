@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>tackles</title>
+    <g id="tackles" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g transform="translate(3.4, 1.25)" id="Path" stroke="#000000">
+            <path d="M8.6,21.5 C8.6,21.5 17.2,17.2 17.2,10.75 L17.2,3.225 L8.6,0 L0,3.225 L0,10.75 C0,17.2 8.6,21.5 8.6,21.5 Z" stroke-width="2" fill-opacity="0.349999994" fill="#00B3C0"></path>
+            <line x1="5.375" y1="7.525" x2="11.825" y2="13.975" stroke-width="2"></line>
+            <line x1="11.825" y1="7.525" x2="5.375" y2="13.975" stroke-width="2"></line>
+        </g>
+    </g>
+</svg>
