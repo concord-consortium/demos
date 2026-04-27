@@ -281,6 +281,7 @@
     font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
     position: relative;
     z-index: 2;
+    flex-shrink: 0;
   }
   /* Middle column reserves space for dynamic island */
   .status-island-spacer { width: 130px; }
@@ -325,6 +326,7 @@
     padding: 18px 24px 24px;
     position: relative;
     z-index: 2;
+    flex-shrink: 0;
   }
   .header-zone::before {
     content: '';
@@ -469,7 +471,7 @@
     text-transform: uppercase;
     text-align: center;
     color: var(--text);
-    margin: 22px 24px 0;
+    margin: 8px 24px 0;
   }
   .auth-alt-link {
     text-align: center;
@@ -516,6 +518,53 @@
     margin-bottom: 16px;
   }
 
+  /* Social / OAuth sign-in buttons */
+  .social-btn {
+    width: 100%;
+    min-height: 52px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1.5px solid #546888;
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+  }
+  .social-btn:hover { border-color: var(--accent); }
+  .social-btn:active { transform: scale(0.98); }
+  .social-btn:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,179,192,0.18); }
+  .social-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .social-btn img {
+    width: 24px; height: 24px;
+    object-fit: contain; flex-shrink: 0;
+  }
+  .social-buttons { display: flex; flex-direction: column; gap: 16px; }
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 12px 0;
+    color: var(--subtext);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: lowercase;
+  }
+  .auth-divider::before,
+  .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
   /* Secondary CTA (outline style) */
   .cta-btn-secondary {
     background: transparent;
@@ -535,23 +584,31 @@
   /* ── Form ── */
   .content-block {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 12px;
     min-height: 0;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    position: relative;
+  }
+  .content-block::-webkit-scrollbar { display: none; }
+  .content-block::before {
+    content: '';
+    position: sticky;
+    top: 0;
+    display: block;
+    height: 16px;
+    background: linear-gradient(to bottom, var(--bg), transparent);
+    pointer-events: none;
+    z-index: 3;
   }
 
   .form-area {
-    padding: 20px 24px 16px;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    padding: 16px 24px 100px;
   }
-  .form-area::-webkit-scrollbar { display: none; }
-  #login-panel { overflow: hidden; }
+  .phone.android-chrome .form-area,
+  .phone.samsung-internet .form-area { padding-bottom: 20px; }
+  .phone.desktop-mode .form-area { padding-bottom: 30px; }
+  .form-area[hidden] { display: none; }
 
   .label-row {
     display: flex;
@@ -1004,7 +1061,17 @@
   .section-heading:has(~ .date-nav)::after {
     opacity: 0;
   }
-  .date-nav::after {
+  .date-nav:not(.date-nav--with-legend)::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: calc(100% + 1px);
+    height: 16px;
+    background: linear-gradient(to bottom, var(--bg), transparent);
+    pointer-events: none;
+    z-index: 3;
+  }
+  .date-nav--with-legend::after {
     content: '';
     position: absolute;
     left: 0; right: 0;
@@ -1329,7 +1396,7 @@
   .setup-btn:active { transform: scale(0.98); }
   .setup-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
-  /* ── Data table (Tracked Data Setup – Wellness Log + Performance Log) ── */
+  /* ── Data table (Tracked Data Setup – Health & Wellness Log + Performance Log) ── */
   .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -1694,7 +1761,7 @@
     overflow: hidden;
     background: var(--surface2);
   }
-  /* Diagonal split: top-left = Wellness Log, bottom-right = Performance Log */
+  /* Diagonal split: top-left = Health & Wellness Log, bottom-right = Performance Log */
   .heatmap-cell::before,
   .heatmap-cell::after {
     content: '';
@@ -1703,7 +1770,7 @@
     width: 100%; height: 100%;
   }
   .heatmap-cell::before {
-    /* Wellness Log triangle (top-left) */
+    /* Health & Wellness Log triangle (top-left) */
     clip-path: polygon(0 0, 100% 0, 0 100%);
     background: var(--surface2);
   }
@@ -1712,7 +1779,7 @@
     clip-path: polygon(100% 0, 100% 100%, 0 100%);
     background: var(--surface2);
   }
-  /* Wellness Log colors (teal) — applied via .dl-* on ::before */
+  /* Health & Wellness Log colors (teal) — applied via .dl-* on ::before */
   .heatmap-cell.dl-inactive::before { background: var(--surface); }
   .heatmap-cell.dl-none::before     { background: var(--surface2); }
   .heatmap-cell.dl-logged::before   { background: var(--accent); }
@@ -2005,8 +2072,9 @@
   }
   .section-cal .heatmap-day-labels {
     position: relative;
-    padding-left: 47px; /* 7px grid border+pad + 34px month label + 6px gap */
-    padding-right: 61px; /* 7px grid border+pad + 44px nav buttons + 10px gap */
+    padding-left: 40px;
+    padding-right: calc((100% - 42px) / 8 + 6px);
+    gap: 6px;
     margin-bottom: 1px;
   }
   .section-cal-today {
@@ -2029,7 +2097,7 @@
     gap: 6px;
     flex-shrink: 0;
     width: 34px;
-    padding: 6px 0; /* match cells container vertical padding */
+    padding: 0;
   }
   .section-cal-month-label {
     font-size: 16px;
@@ -2050,26 +2118,28 @@
     gap: 6px;
     flex: 1;
     min-width: 0;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 6px;
+    border: none;
+    border-radius: 0;
+    padding: 0;
   }
   .section-cal-scroll-wrap {
     border-radius: 6px;
     display: flex;
     align-items: stretch;
-    gap: 10px;
+    gap: 6px;
   }
   .section-cal-nav {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 6px;
     flex-shrink: 0;
-    width: 44px;
+    /* Match day cell width: 1/8 of (total - 7 gaps) */
+    width: calc((100% - 7 * 6px) / 8);
   }
   .section-cal-nav-btn {
-    width: 44px;
-    min-height: 44px;
+    position: relative;
+    width: 100%;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2080,6 +2150,15 @@
     cursor: pointer;
     padding: 0;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .section-cal-nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -6px;
+    right: -8px;
+    min-width: 44px;
+    height: 100%;
   }
   .section-cal-nav-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(0,179,192,0.12); }
   .section-cal-nav-btn:active { transform: scale(0.96); }
@@ -2103,13 +2182,42 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  }
+  .section-cal .heatmap-cell.partial:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 0 2px var(--border);
+  }
+  .section-cal .heatmap-cell.all:hover {
+    box-shadow: 0 0 0 1px #E8EDF5, 0 0 0 2px var(--border);
+  }
+  .section-cal .heatmap-cell.none:hover {
+    border-color: var(--surface2);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 0 2px var(--border);
+  }
+  .section-cal .heatmap-cell:not(.blank):not(.inactive):active {
+    transform: scale(0.94);
+  }
+  .section-cal .heatmap-cell:not(.blank):not(.inactive):focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
   }
   /* Override the split-diagonal pseudo-elements for section calendars */
-  .section-cal .heatmap-cell::before,
   .section-cal .heatmap-cell::after { display: none; }
+  .section-cal .heatmap-cell::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    clip-path: none;
+    background: none;
+  }
   .section-cal .heatmap-star::before,
   .section-cal .heatmap-star::after { display: none; }
-  /* Wellness Log calendar: teal */
+  /* Health & Wellness Log calendar: teal */
   .section-cal.cal-wellness .heatmap-cell.all     { background: var(--accent); border-color: var(--accent); color: #080A0E; }
   .section-cal.cal-wellness .heatmap-cell.partial { background: #007A84; border-color: #007A84; color: #E8EDF5; }
   .section-cal.cal-wellness .heatmap-cell.none    { background: var(--surface2); }
@@ -2126,6 +2234,10 @@
     background: var(--surface2);
     border-color: var(--border);
     color: var(--text);
+  }
+  .section-cal.cal-wellness .heatmap-cell.today.none:hover {
+    border-color: var(--surface2);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 0 2px var(--border);
   }
   .section-cal.cal-wellness .heatmap-cell.today.all {
     background: var(--accent);
@@ -2441,6 +2553,28 @@
     background-image: linear-gradient(rgba(0, 90, 115, 0.25), rgba(0, 90, 115, 0.25));
     border-bottom: 1px solid var(--border);
   }
+  .date-nav--with-legend {
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .date-nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 4px 24px 0;
+    width: 100%;
+  }
+  .date-nav-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 200px;
+  }
   .date-nav-btn {
     background: none;
     border: none;
@@ -2463,9 +2597,33 @@
     font-size: 18px;
     font-weight: 700;
     color: var(--text);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
     text-align: center;
-    min-width: 18ch;
+  }
+  .date-nav-chip {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .date-nav-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 24px 6px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    color: var(--subtext);
+  }
+  .date-nav-legend-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   /* ── Performance Log table ── */
@@ -3554,7 +3712,7 @@
 
   <div class="accent-line" aria-hidden="true"></div>
 
-  <div class="content-block" id="main-content">
+  <div class="content-block" id="main-content" role="main">
 
   <!-- Auth mode heading -->
   <h2 class="auth-heading" id="auth-heading">Welcome back</h2>
@@ -3562,13 +3720,19 @@
   <!-- Login form -->
   <div class="form-area" id="login-panel">
 
+    <div class="social-buttons">
+      <button class="social-btn" type="button" id="login-google"><img src="icons/google-logo.svg" alt="Google">Continue with Google</button>
+      <button class="social-btn" type="button" id="login-facebook"><img src="icons/facebook-logo.svg" alt="Facebook">Continue with Facebook</button>
+    </div>
+    <div class="auth-divider" aria-hidden="true">or</div>
+
     <form id="login-form" novalidate>
     <div class="field-wrap">
       <label class="field-label" for="login-email">Email<span class="required-mark" aria-hidden="true">*</span></label>
       <input id="login-email" type="email" class="field-input"
              value="elijah.johnson@university.edu"
              placeholder="you@school.edu"
-             autocomplete="email" aria-required="true"/>
+             autocomplete="email" aria-required="true" aria-describedby="login-email-error"/>
       <p class="field-error-msg" id="login-email-error" aria-live="polite"></p>
     </div>
 
@@ -3581,7 +3745,7 @@
         <input id="password" type="password" class="field-input"
                value="12345678"
                placeholder="Enter your password"
-               autocomplete="current-password" aria-required="true"/>
+               autocomplete="current-password" aria-required="true" aria-describedby="password-error"/>
         <button class="eye-btn" type="button" aria-label="Show password" aria-pressed="false" data-target="password"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="rgba(0,179,192,0.35)"/><circle cx="12" cy="12" r="3"/></svg></button>
       </div>
       <p class="field-error-msg" id="password-error" aria-live="polite"></p>
@@ -3597,12 +3761,19 @@
   </div><!-- /form-area -->
   <!-- Sign Up form -->
   <div class="form-area" id="signup-panel" hidden>
+
+    <div class="social-buttons">
+      <button class="social-btn" type="button" id="signup-google"><img src="icons/google-logo.svg" alt="Google">Continue with Google</button>
+      <button class="social-btn" type="button" id="signup-facebook"><img src="icons/facebook-logo.svg" alt="Facebook">Continue with Facebook</button>
+    </div>
+    <div class="auth-divider" aria-hidden="true">or sign up with email</div>
+
     <form id="signup-form" novalidate>
     <div class="field-wrap">
       <label class="field-label" for="signup-email">Email<span class="required-mark" aria-hidden="true">*</span></label>
       <input id="signup-email" type="email" class="field-input"
              placeholder="you@school.edu"
-             autocomplete="email" aria-required="true"/>
+             autocomplete="email" aria-required="true" aria-describedby="signup-email-error"/>
       <p class="field-error-msg" id="signup-email-error" aria-live="polite"></p>
     </div>
     <div class="field-wrap">
@@ -3610,7 +3781,7 @@
       <div class="input-with-eye">
         <input id="signup-password" type="password" class="field-input"
                placeholder="Create a password"
-               autocomplete="new-password" aria-required="true"/>
+               autocomplete="new-password" aria-required="true" aria-describedby="signup-password-error"/>
         <button class="eye-btn" type="button" aria-label="Show password" aria-pressed="false" data-target="signup-password"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="rgba(0,179,192,0.35)"/><circle cx="12" cy="12" r="3"/></svg></button>
       </div>
       <p class="field-error-msg" id="signup-password-error" aria-live="polite"></p>
@@ -3641,7 +3812,7 @@
       Continue to log in
     </button>
 
-    <p class="auth-alt-link"><button class="auth-switch-btn" type="button" id="resend-verify-btn">Resend Link</button></p>
+    <p class="auth-alt-link"><button class="auth-switch-btn" type="button" id="resend-verify-btn" aria-label="Resend verification email">Resend Link</button></p>
   </div><!-- /signup-confirm-panel -->
 
   <!-- Forgot Password — request reset -->
@@ -3653,7 +3824,7 @@
       <label class="field-label" for="forgot-email">Email<span class="required-mark" aria-hidden="true">*</span></label>
       <input id="forgot-email" type="email" class="field-input"
              placeholder="you@school.edu"
-             autocomplete="email" aria-required="true"/>
+             autocomplete="email" aria-required="true" aria-describedby="forgot-email-error"/>
       <p class="field-error-msg" id="forgot-email-error" aria-live="polite"></p>
     </div>
     </form>
@@ -3674,7 +3845,7 @@
     </div>
     <p class="auth-subtext">Check your email for a link to reset your password. If it doesn&#x2019;t appear within a few minutes, check your spam folder.</p>
 
-    <button class="cta-btn cta-btn-secondary" type="button" id="resend-btn">
+    <button class="cta-btn cta-btn-secondary" type="button" id="resend-btn" aria-label="Resend password reset email">
       Resend Link
     </button>
 
@@ -3841,7 +4012,7 @@
       <div class="screen-content">
         <p class="profile-welcome" id="tracked-welcome"><strong class="profile-welcome-title">Choose what to track</strong>Select the training and performance data you want DataGOAT to collect. You can update these choices anytime.</p>
 
-        <h3 class="info-section-heading">Wellness Log<button class="edit-toggle-btn" id="wellness-edit-toggle" type="button" aria-label="Edit metrics"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4,5L16.176,5L19,7.824L19,20C19,20.552 18.552,21 18,21L4,21C3.448,21 3,20.552 3,20L3,6C3,5.448 3.448,5 4,5Z" fill="rgba(0,179,192,0.35)"/><path d="M20,13L20,20C20,21.105 19.105,22 18,22L4,22C2.895,22 2,21.105 2,20L2,6C2,4.895 2.895,4 4,4L11,4" stroke="currentColor" stroke-width="2"/><polygon points="16.253 4.916 7 14.169 7 16.997 9.828 16.997 19.081 7.744" stroke="currentColor" stroke-width="2"/><path d="M19.431,1.738L18.728,2.441L21.556,5.269L22.263,4.563C22.458,4.367 22.458,4.051 22.263,3.855L20.138,1.737C19.942,1.542 19.626,1.543 19.431,1.738Z" stroke="currentColor" stroke-width="2"/></svg></button></h3>
+        <h3 class="info-section-heading">Health &amp; Wellness Log<button class="edit-toggle-btn" id="wellness-edit-toggle" type="button" aria-label="Edit metrics"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4,5L16.176,5L19,7.824L19,20C19,20.552 18.552,21 18,21L4,21C3.448,21 3,20.552 3,20L3,6C3,5.448 3.448,5 4,5Z" fill="rgba(0,179,192,0.35)"/><path d="M20,13L20,20C20,21.105 19.105,22 18,22L4,22C2.895,22 2,21.105 2,20L2,6C2,4.895 2.895,4 4,4L11,4" stroke="currentColor" stroke-width="2"/><polygon points="16.253 4.916 7 14.169 7 16.997 9.828 16.997 19.081 7.744" stroke="currentColor" stroke-width="2"/><path d="M19.431,1.738L18.728,2.441L21.556,5.269L22.263,4.563C22.458,4.367 22.458,4.051 22.263,3.855L20.138,1.737C19.942,1.542 19.626,1.543 19.431,1.738Z" stroke="currentColor" stroke-width="2"/></svg></button></h3>
         <table class="data-table" id="wellness-table">
           <thead>
             <tr>
@@ -3900,7 +4071,7 @@
 
         <button class="add-measurement-btn" id="add-wellness-metric-btn" type="button">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Add Wellness Metric
+          Add Health &amp; Wellness Metric
         </button>
 
         <div class="chart-divider"></div>
@@ -3993,14 +4164,14 @@
       <div class="screen-content">
         <p class="profile-welcome" id="dashboard-welcome"><strong class="profile-welcome-title">Your Dashboard</strong>This is your home base. Here you&#x2019;ll see a snapshot of your recent activity, trends, and overall progress. Check back daily to stay on top of your goals.</p>
 
-        <!-- Wellness Log Section -->
+        <!-- Health & Wellness Log Section -->
         <div class="dash-log-section" id="dash-wellness-section">
           <div class="section-cal cal-wellness" id="cal-wellness">
             <div class="heatmap-day-labels">
               <span class="heatmap-year-label" id="cal-wellness-year"></span><span class="heatmap-day-label" aria-label="Sunday">S</span><span class="heatmap-day-label" aria-label="Monday">M</span><span class="heatmap-day-label" aria-label="Tuesday">T</span><span class="heatmap-day-label" aria-label="Wednesday">W</span><span class="heatmap-day-label" aria-label="Thursday">T</span><span class="heatmap-day-label" aria-label="Friday">F</span><span class="heatmap-day-label" aria-label="Saturday">S</span>
             </div>
             <div class="section-cal-scroll-wrap">
-              <div class="section-cal-weeks" id="cal-wellness-weeks" role="region" aria-label="Wellness Log calendar"></div>
+              <div class="section-cal-weeks" id="cal-wellness-weeks" role="region" aria-label="Health &amp; Wellness Log calendar"></div>
               <div class="section-cal-nav">
                 <button class="section-cal-nav-btn" type="button" data-cal="cal-wellness-weeks" data-dir="up" aria-label="Show earlier weeks"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 14.5 12 9.5 7 14.5"/></svg></button>
                 <button class="section-cal-nav-btn" type="button" data-cal="cal-wellness-weeks" data-dir="down" aria-label="Show later weeks"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 9.5 12 14.5 17 9.5"/></svg></button>
@@ -4015,9 +4186,9 @@
           </div>
           <hr class="section-rule" aria-hidden="true">
           <div class="dash-log-label-row">
-            <span class="section-cal-today" id="cal-wellness-today">Wellness Data</span>
+            <span class="section-cal-today" id="cal-wellness-today">Health &amp; Wellness Data</span>
           </div>
-          <div class="dash-log-header" data-nav="wellness-log-screen" role="button" tabindex="0" aria-label="Go to Wellness Log">
+          <div class="dash-log-header" data-nav="wellness-log-screen" role="button" tabindex="0" aria-label="Go to Health &amp; Wellness Log">
             <div class="dash-log-nav-btn" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
@@ -4025,7 +4196,7 @@
           </div>
           <div class="dash-chart-card">
           <div class="dash-chart-controls">
-            <select class="field-select" id="metrics-body-select" aria-label="Wellness metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
+            <select class="field-select" id="metrics-body-select" aria-label="Health &amp; Wellness metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
               <option value="Hydration" selected>Hydration</option>
               <option value="Sleep Time">Total Sleep Time</option>
               <option value="Sleep Efficiency">Sleep Efficiency</option>
@@ -4034,7 +4205,7 @@
               <option value="Availability">Availability</option>
             </select>
           </div>
-          <div class="chart-wrapper" id="body-chart-area" role="img" aria-label="Wellness metric chart"></div>
+          <div class="chart-wrapper" id="body-chart-area" role="img" aria-label="Health &amp; Wellness metric chart"></div>
           <div class="time-range-picker" id="wellness-range-picker">
             <button class="time-range-btn active" type="button" data-range="7">7d</button>
             <button class="time-range-btn" type="button" data-range="14">2w</button>
@@ -4090,29 +4261,37 @@
     </div>
   </div><!-- /dashboard-screen -->
 
-  <!-- Wellness Log Screen -->
-  <div class="screen" id="wellness-log-screen" role="main" aria-label="Wellness Log">
+  <!-- Health & Wellness Log Screen -->
+  <div class="screen" id="wellness-log-screen" role="main" aria-label="Health &amp; Wellness Log">
     <div class="screen-header" id="wellness-log-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
     </div>
     <div class="accent-line" aria-hidden="true"></div>
     <div class="screen-body">
-      <h2 class="section-heading"><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Wellness Log</h2>
+      <h2 class="section-heading"><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Health &amp; Wellness Log</h2>
 
       <!-- Date Navigator -->
-      <div class="date-nav">
-        <button class="date-nav-btn" id="wellness-prev" type="button" aria-label="Previous date">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <span class="date-nav-label" id="wellness-log-date"></span>
-        <button class="date-nav-btn" id="wellness-next" type="button" aria-label="Next date" disabled>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
+      <div class="date-nav date-nav--with-legend">
+        <div class="date-nav-row">
+          <button class="date-nav-btn" id="wellness-prev" type="button" aria-label="Previous date">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="date-nav-center"><span class="date-nav-chip" id="wellness-date-chip" aria-hidden="true" style="background:var(--surface2); border: 1.5px solid var(--border);"></span><span class="date-nav-label" id="wellness-log-date"></span></span>
+          <button class="date-nav-btn" id="wellness-next" type="button" aria-label="Next date" disabled>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="date-nav-legend" aria-label="Calendar legend">
+          <span class="date-nav-legend-label">Data entered:</span>
+          <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--accent);"></span> All</span>
+          <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:#007A84;"></span> Some</span>
+          <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--surface2); border: 1.5px solid var(--border);"></span> None</span>
+        </div>
       </div>
 
       <div class="screen-content">
-        <p class="profile-welcome" id="wellness-log-welcome"><strong class="profile-welcome-title">Your Wellness Log</strong>Record your wellness metrics here. Logging consistently &#x2014; even on rest days &#x2014; helps you and your team spot patterns over time.</p>
+        <p class="profile-welcome" id="wellness-log-welcome"><strong class="profile-welcome-title">Your Health &amp; Wellness Log</strong>Record your health &amp; wellness metrics here. Logging consistently &#x2014; even on rest days &#x2014; helps you and your team spot patterns over time.</p>
 
         <!-- Body Tracking Table -->
         <table class="body-table">
@@ -4211,7 +4390,7 @@
     </div>
     <div class="accent-line" aria-hidden="true"></div>
     <div class="screen-body">
-      <h2 class="section-heading detail-heading"><button class="back-nav-btn" type="button" aria-label="Back to Wellness Log"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><span id="detail-heading-icon"></span><span id="detail-heading-name">Sleep Efficiency</span><button class="nav-menu-btn detail-menu-btn" type="button" aria-label="Menu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></h2>
+      <h2 class="section-heading detail-heading"><button class="back-nav-btn" type="button" aria-label="Back to Health &amp; Wellness Log"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><span id="detail-heading-icon"></span><span id="detail-heading-name">Sleep Efficiency</span><button class="nav-menu-btn detail-menu-btn" type="button" aria-label="Menu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></h2>
 
       <div class="screen-content" id="detail-content">
         <!-- Content injected by JS per metric -->
@@ -4311,7 +4490,7 @@
         <button class="date-nav-btn" id="performance-prev" type="button" aria-label="Previous date">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <span class="date-nav-label" id="performance-log-date"></span>
+        <span class="date-nav-center"><span class="date-nav-label" id="performance-log-date"></span></span>
         <button class="date-nav-btn" id="performance-next" type="button" aria-label="Next date" disabled>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
@@ -4372,7 +4551,7 @@
     </div>
     <div class="accent-line" aria-hidden="true"></div>
     <div class="screen-body">
-      <h2 class="section-heading"><button class="back-nav-btn" id="add-metric-back" type="button" aria-label="Back to Tracked Data Setup"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><span id="add-metric-title">Add Wellness Metric</span></h2>
+      <h2 class="section-heading"><button class="back-nav-btn" id="add-metric-back" type="button" aria-label="Back to Tracked Data Setup"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><span id="add-metric-title">Add Health &amp; Wellness Metric</span></h2>
       <div class="screen-content">
         <div class="add-metric-col-headers">
           <span class="col-h-metric">Metric</span>
@@ -4436,7 +4615,7 @@
 </div><!-- /phone -->
 
   <nav class="device-switcher" aria-label="Device preview size">
-    <div class="device-switcher-label">Preview <span class="version-tag">v1.5</span></div>
+    <div class="device-switcher-label">Preview <span class="version-tag">v1.6</span></div>
 
     <button class="device-btn active" type="button" data-w="360" data-h="740" data-r="44" data-os="ios" data-cutout="dynamic-island">
       <span class="db-name">Generic Phone</span>
@@ -4878,7 +5057,7 @@
     'about-screen': 'About',
     'tracked-data-screen': 'Tracked Data Setup',
     'dashboard-screen': 'Dashboard',
-    'wellness-log-screen': 'Wellness Log',
+    'wellness-log-screen': 'Health & Wellness Log',
     'metric-detail-screen': 'Metric Detail',
     'performance-log-screen': 'Performance Log',
     'athlete-type-info-screen': 'Athlete Type',
@@ -4946,6 +5125,14 @@
     var trackedToDashWrap = document.getElementById('tracked-to-dashboard-wrap');
     if (trackedToDashWrap) {
       trackedToDashWrap.style.display = stillOnboarding ? '' : 'none';
+    }
+    // Reset Health & Wellness Log to today unless coming from a calendar day tap
+    if (screenId === 'wellness-log-screen') {
+      if (window._calNavOverride) {
+        window._calNavOverride = false;
+      } else if (window._setDlOffset) {
+        window._setDlOffset(29); // HISTORY = 29 = today
+      }
     }
     // Update browser tab title
     var pageName = screenTitles[screenId] || 'Home';
@@ -5115,7 +5302,7 @@
   // ── Nav menu ──
   var navItems = [
     { id: 'dashboard-screen', label: 'Dashboard', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg>' },
-    { id: 'wellness-log-screen', label: 'Wellness Log', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' },
+    { id: 'wellness-log-screen', label: 'Health & Wellness Log', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' },
     { id: 'performance-log-screen', label: 'Performance Log', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(3.5, 1.5)" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="12" r="8.5" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><line x1="8.5" y1="7" x2="8.5" y2="13"/><line x1="16.6213203" y1="3.87867966" x2="14.5" y2="6"/><line x1="5.5" y1="0.5" x2="11.5" y2="0.5"/></g></svg>' },
     { id: 'profile-screen', label: 'Profile', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3,22 L3,20 C3,17.5147186 5.01471863,15.5 7.5,15.5 L16.5,15.5 C18.9852814,15.5 21,17.5147186 21,20 L21,22" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><circle cx="12" cy="6.75" r="4.75" fill="rgba(0,179,192,0.35)"/></svg>' },
     { id: 'tracked-data-screen', label: 'Tracked Data Setup', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(2.4178, 2)" stroke="currentColor" stroke-width="2"><path d="M11.2681634,0 L11.7076987,3.11005391 C12.7150062,3.42727603 13.627057,3.95929699 14.3901408,4.65240647 L17.3153681,3.4767355 L19.0555098,6.48469472 L16.5887706,8.438424 C16.6996076,8.94128951 16.758036,9.46382141 16.758036,10 C16.758036,10.5369741 16.6994341,11.060261 16.5882769,11.5638141 L19.0716275,13.4955398 L17.3264792,16.5121534 L14.4012172,15.337512 C13.6420227,16.0299503 12.7345578,16.5625913 11.732017,16.8822401 L11.2722207,20 L7.79235302,20 L7.35508151,16.8871536 C6.34933043,16.5689896 5.43880423,16.0366093 4.67705366,15.3435636 L1.74514835,16.5232645 L0,13.5066509 L2.4845879,11.5694084 C2.37262832,11.064137 2.31359154,10.5389629 2.31359154,10 C2.31359154,9.46421917 2.37193327,8.94206478 2.48261039,8.43954317 L0,6.50446019 L1.74514835,3.48784661 L4.67151706,4.6614788 C5.43076552,3.96927789 6.33822344,3.43686231 7.34071506,3.1174078 L7.79940684,0 L11.2681634,0 Z M9.58223239,7 C7.92537814,7 6.58223239,8.34314575 6.58223239,10 C6.58223239,11.6568542 7.92537814,13 9.58223239,13 C11.2390866,13 12.5822324,11.6568542 12.5822324,10 C12.5822324,8.34314575 11.2390866,7 9.58223239,7 Z" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><circle cx="9.58223239" cy="10" r="3" fill-rule="nonzero"/></g></svg>' },
@@ -5383,6 +5570,77 @@
     });
   }
 
+  // ── Social / OAuth sign-in buttons ──
+  // Login with Google/Facebook → Return User flow (same as email login)
+  ['login-google', 'login-facebook'].forEach(function (id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', function () {
+      window.isNewUser = false;
+      window._hasData = true;
+      document.getElementById('profile-fullname').value = 'Elijah Johnson';
+      document.getElementById('profile-email').value = 'elijah.johnson@university.edu';
+      document.getElementById('profile-password').value = '';
+      document.getElementById('profile-nickname').value = 'Eli';
+      document.getElementById('profile-age').value = '20';
+      document.getElementById('profile-height-ft').value = '6';
+      document.getElementById('profile-height-in').value = '1';
+      document.getElementById('profile-weight').value = '205';
+      if (window.setCustomSelect) {
+        window.setCustomSelect('profile-gender', 'Male');
+        window.setCustomSelect('profile-sport', 'Strength and Power');
+        window.setCustomSelect('profile-competition-term', 'Game');
+      }
+      if (window._syncAllHasValue) window._syncAllHasValue();
+      if (window.initializeUserData) window.initializeUserData();
+      showScreen('dashboard-screen');
+    });
+  });
+
+  // Sign up with Google/Facebook → New User flow (autofill depends on scenario checkbox)
+  ['signup-google', 'signup-facebook'].forEach(function (id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', function () {
+      window.isNewUser = true;
+      window._onboardingComplete = false;
+      window._hasData = false;
+      var autofillCb = document.querySelector('[data-autofill="signup"]');
+      var autofilled = autofillCb && autofillCb.checked;
+
+      if (autofilled) {
+        document.getElementById('profile-fullname').value = 'Elijah Johnson';
+        document.getElementById('profile-email').value = 'elijah.johnson@university.edu';
+        document.getElementById('profile-password').value = '';
+        document.getElementById('profile-nickname').value = 'Eli';
+        document.getElementById('profile-age').value = '20';
+        document.getElementById('profile-height-ft').value = '6';
+        document.getElementById('profile-height-in').value = '1';
+        document.getElementById('profile-weight').value = '205';
+        if (window.setCustomSelect) {
+          window.setCustomSelect('profile-gender', 'Male');
+          window.setCustomSelect('profile-sport', 'Strength and Power');
+          window.setCustomSelect('profile-competition-term', 'Game');
+        }
+      } else {
+        document.getElementById('profile-fullname').value = '';
+        document.getElementById('profile-email').value = '';
+        document.getElementById('profile-password').value = '';
+        document.getElementById('profile-nickname').value = '';
+        document.getElementById('profile-age').value = '';
+        document.getElementById('profile-height-ft').value = '';
+        document.getElementById('profile-height-in').value = '';
+        document.getElementById('profile-weight').value = '';
+        if (window.setCustomSelect) {
+          window.setCustomSelect('profile-gender', '');
+          window.setCustomSelect('profile-sport', '');
+          window.setCustomSelect('profile-competition-term', '');
+        }
+      }
+      if (window._syncAllHasValue) window._syncAllHasValue();
+      if (window.initializeUserData) window.initializeUserData();
+      showScreen('profile-screen');
+    });
+  });
+
   // Send Reset Link → confirmation screen
   if (forgotCta) {
     forgotCta.addEventListener('click', function (e) {
@@ -5544,7 +5802,7 @@
     });
   });
 
-  // ── Date navigation for Wellness Log & Performance Log ──
+  // ── Date navigation for Health & Wellness Log & Performance Log ──
   (function () {
     var today = new Date();
     today.setHours(0,0,0,0);
@@ -5655,23 +5913,25 @@
     window._defaultProfile = defaultProfile;
     window._currentProfileKey = currentProfileKey;
 
+    var blankDays = [2, 5, 12, 17]; // Days with no data entered at all
     function buildWellnessData(profileKey) {
       var v = profileVariants[profileKey] || profileVariants[defaultProfile];
       var data = [];
       for (var i = 0; i <= HISTORY; i++) {
         var isToday = (i === HISTORY);
+        var isBlank = blankDays.indexOf(i) !== -1;
         data.push({
-          hydration:      isToday ? 0 : sharedHydration[i],
-          sleepTime:      isToday ? '' : sharedSleepTime[i],
-          sleepEff:       isToday ? '' : v.sleepEff[i],
-          protein:        isToday ? '' : v.protein[i],
-          leanMass:       isToday ? '' : v.leanMass[i],
-          practiceYN:     isToday ? '' : (sharedPractice[i] ? 'yes' : 'no'),
-          practice:       isToday ? false : sharedPractice[i],
-          practiceStatus: isToday ? '' : sharedPracticeStatus[i],
-          gameYN:         isToday ? '' : (sharedGame[i] ? 'yes' : 'no'),
-          game:           isToday ? false : sharedGame[i],
-          gameStatus:     isToday ? '' : sharedGameStatus[i]
+          hydration:      (isToday || isBlank) ? 0 : sharedHydration[i],
+          sleepTime:      (isToday || isBlank) ? '' : sharedSleepTime[i],
+          sleepEff:       (isToday || isBlank) ? '' : v.sleepEff[i],
+          protein:        (isToday || isBlank) ? '' : v.protein[i],
+          leanMass:       (isToday || isBlank) ? '' : v.leanMass[i],
+          practiceYN:     (isToday || isBlank) ? '' : (sharedPractice[i] ? 'yes' : 'no'),
+          practice:       (isToday || isBlank) ? false : sharedPractice[i],
+          practiceStatus: (isToday || isBlank) ? '' : sharedPracticeStatus[i],
+          gameYN:         (isToday || isBlank) ? '' : (sharedGame[i] ? 'yes' : 'no'),
+          game:           (isToday || isBlank) ? false : sharedGame[i],
+          gameStatus:     (isToday || isBlank) ? '' : sharedGameStatus[i]
         });
       }
       return data;
@@ -5717,11 +5977,35 @@
       });
     }
 
-    // ── Wellness Log navigator ──
+    // ── Health & Wellness Log navigator ──
     var dlOffset = HISTORY; // start at today
     var dlLabel = document.getElementById('wellness-log-date');
     var dlPrev  = document.getElementById('wellness-prev');
     var dlNext  = document.getElementById('wellness-next');
+
+    var dlChip = document.getElementById('wellness-date-chip');
+
+    function updateWellnessChip() {
+      var row = wellnessData[dlOffset];
+      if (!dlChip || !row) return;
+      var filled = 0;
+      if (row.hydration) filled++;
+      if (row.sleepTime !== '') filled++;
+      if (row.sleepEff !== '') filled++;
+      if (row.protein !== '') filled++;
+      if (row.practiceYN !== '' && row.gameYN !== '') filled++;
+      if (filled === 5) {
+        dlChip.style.background = 'var(--accent)';
+        dlChip.style.border = 'none';
+      } else if (filled > 0) {
+        dlChip.style.background = '#007A84';
+        dlChip.style.border = 'none';
+      } else {
+        dlChip.style.background = 'var(--surface2)';
+        dlChip.style.border = '1.5px solid var(--border)';
+      }
+    }
+    window._updateWellnessChip = updateWellnessChip;
 
     function renderDailyDate() {
       window._dlOffset = dlOffset;
@@ -5729,6 +6013,8 @@
       if (dlLabel) dlLabel.textContent = fmtDate(d);
       dlNext.disabled = (dlOffset >= HISTORY);
       dlPrev.disabled = (dlOffset <= 0);
+
+      updateWellnessChip();
 
       // Populate table values
       var row = wellnessData[dlOffset];
@@ -5852,6 +6138,7 @@
           var wd = window._wellnessData;
           if (wd && window._dlOffset !== undefined) {
             wd[window._dlOffset].sleepTime = sleepInput.value;
+            updateWellnessChip();
           }
         });
       }
@@ -5863,6 +6150,7 @@
           var wd = window._wellnessData;
           if (wd && window._dlOffset !== undefined) {
             wd[window._dlOffset].sleepEff = effInput.value;
+            updateWellnessChip();
           }
         });
       }
@@ -5874,6 +6162,7 @@
           var wd = window._wellnessData;
           if (wd && window._dlOffset !== undefined) {
             wd[window._dlOffset].protein = protInput.value;
+            updateWellnessChip();
           }
         });
       }
@@ -5899,6 +6188,7 @@
               wd[window._dlOffset].practiceYN = r.value;
               wd[window._dlOffset].practice = (r.value === 'yes');
               if (r.value === 'no') wd[window._dlOffset].practiceStatus = '';
+              updateWellnessChip();
             }
           });
         });
@@ -5909,6 +6199,7 @@
               wd[window._dlOffset].gameYN = r.value;
               wd[window._dlOffset].game = (r.value === 'yes');
               if (r.value === 'no') wd[window._dlOffset].gameStatus = '';
+              updateWellnessChip();
             }
           });
         });
@@ -5961,6 +6252,7 @@
     window._performanceData = performanceData;
     window._buildWellnessData = buildWellnessData;
     window._renderDailyDate = renderDailyDate;
+    window._setDlOffset = function (o) { dlOffset = o; renderDailyDate(); };
     window._renderPerformanceDate = renderPerformanceDate;
     window._swapWellnessData = function (profileKey) {
       var newData = window._hasData ? buildWellnessData(profileKey) : buildEmptyWellnessData();
@@ -6073,7 +6365,7 @@
     });
   }
 
-  // Enter Wellness Log / Enter Performance Log buttons handled by data-nav delegation below
+  // Enter Health & Wellness Log / Enter Performance Log buttons handled by data-nav delegation below
 
   // ── Metric heading icons per metric ──
   window._svgUid = 0;
@@ -6183,8 +6475,8 @@
     'Lean Mass': {
       type: 'line',
       desc: 'Total mass of body excluding fat mass. This includes muscle, bone, organs, connective tissue, and body water.',
-      whoCollects: 'SC, ATC, Nutrition',
-      howCollected: 'Skinfolds, BIA, BIS, DXA',
+      whoCollects: 'SC (Strength and Conditioning Coach), AT (Athletic Trainer), Nutrition',
+      howCollected: 'Skinfolds, BIA (Bioelectrical Impedance Analysis), BIS (Bioimpedance Spectroscopy), DXA (Dual-Energy X-ray Absorptiometry)',
       estimatedRange: '30\u2013130 kg (66\u2013287 lbs)',
       whenCollected: '2\u20133\u00d7/year',
       link: 'https://acsm.org/education-resources/books/fitness-assessment-manual/',
@@ -6199,7 +6491,7 @@
     'Availability': {
       type: 'scatter',
       desc: 'Percentage of time an athlete is fit for full training or competition without restrictions.',
-      whoCollects: 'AT, Self',
+      whoCollects: 'AT (Athletic Trainer), Self',
       howCollected: 'Each day, you\u2019ll log whether you had a practice and/or a game and whether you participated. Your availability percentage \u2014 your unrestricted ability to participate in training and/or competition \u2014 will be calculated for the week.',
       estimatedRange: '0\u2013100%',
       whenCollected: 'Daily',
@@ -6350,7 +6642,7 @@
     if (detailBackBtn) {
       var backLabel = 'Back to Dashboard';
       if (window.metricDetailOrigin === 'tracked-data-screen') backLabel = 'Back to Tracked Data Setup';
-      else if (window.metricDetailOrigin === 'wellness-log-screen') backLabel = 'Back to Wellness Log';
+      else if (window.metricDetailOrigin === 'wellness-log-screen') backLabel = 'Back to Health & Wellness Log';
       else if (window.metricDetailOrigin === 'performance-log-screen') backLabel = 'Back to Performance Log';
       else if (window.metricDetailOrigin === 'add-metric-screen') backLabel = 'Back to Add Metric';
       detailBackBtn.setAttribute('aria-label', backLabel);
@@ -6577,7 +6869,7 @@
 
   // Back button on metric detail → origin-aware routing
   // From Tracked Data Setup → back to Tracked Data Setup
-  // From Wellness Log → back to Wellness Log
+  // From Health & Wellness Log → back to Health & Wellness Log
   // Otherwise → Dashboard
   var backNavBtn = document.querySelector('#metric-detail-screen .back-nav-btn');
   if (backNavBtn) {
@@ -6655,7 +6947,7 @@
     });
   }
 
-  // ── Activity Calendar (split diagonal: Wellness Log + Performance Log) ──
+  // ── Activity Calendar (split diagonal: Health & Wellness Log + Performance Log) ──
   (function () {
     var weeksContainer = document.getElementById('heatmap-weeks');
     var rangeLabel = document.getElementById('heatmap-range');
@@ -6786,7 +7078,7 @@
     render();
   })();
 
-  // ── Section calendars (Wellness Log + Performance Log, single-color) ──
+  // ── Section calendars (Health & Wellness Log + Performance Log, single-color) ──
   (function () {
     var A = 'all', P = 'partial', N = 'none', I = 'inactive', B = 'blank';
 
@@ -6896,6 +7188,13 @@
             var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
             var statusText = cellState === A ? 'all data entered' : cellState === P ? 'some data entered' : cellState === N ? 'no data' : cellState === I ? 'inactive' : '';
             cell.setAttribute('aria-label', dayNames[d] + ', ' + months[cellDate.getMonth()] + ' ' + dayNum + (isToday ? ' (today)' : '') + (statusText ? ', ' + statusText : ''));
+            // Make tappable cells navigate to the log for that date
+            if (cellState !== I) {
+              cell.setAttribute('tabindex', '0');
+              cell.setAttribute('role', 'button');
+              cell.dataset.date = cellDate.toISOString().slice(0, 10);
+              cell.dataset.cal = containerId;
+            }
           }
           cells.appendChild(cell);
         }
@@ -7065,6 +7364,34 @@
     };
   })();
 
+  // ── Calendar day tap → navigate to log for that date ──
+  document.addEventListener('click', function (e) {
+    var cell = e.target.closest('.section-cal .heatmap-cell[data-date]');
+    if (!cell) return;
+    var dateStr = cell.dataset.date;
+    var calId = cell.dataset.cal;
+    // Calculate offset from today
+    var cellDate = new Date(dateStr + 'T12:00:00');
+    var todayMidnight = new Date();
+    todayMidnight.setHours(12, 0, 0, 0);
+    var diffDays = Math.round((todayMidnight - cellDate) / (1000 * 60 * 60 * 24));
+    var HISTORY = 29;
+    var offset = HISTORY - diffDays;
+    if (offset < 0 || offset > HISTORY) return;
+    if (calId === 'cal-wellness-weeks') {
+      if (window._setDlOffset) window._setDlOffset(offset);
+      window._calNavOverride = true;
+      showScreen('wellness-log-screen');
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var cell = e.target.closest('.section-cal .heatmap-cell[data-date]');
+    if (!cell) return;
+    e.preventDefault();
+    cell.click();
+  });
+
   // ── Body chart data derived from wellnessData ──
   function buildBodyChartData() {
     var wd = window._wellnessData;
@@ -7198,7 +7525,7 @@
   // Initial render
   renderBodyChart('Hydration');
 
-  // Listen to Wellness Log dropdown changes
+  // Listen to Health & Wellness Log dropdown changes
   var bodySelect = document.getElementById('metrics-body-select');
   if (bodySelect) {
     bodySelect.addEventListener('change', function () {
@@ -7348,7 +7675,7 @@
       if (today.practiceYN !== '' && today.gameYN !== '') filled++;
       var missing = total - filled;
       if (missing === 0) {
-        wellnessStatus.innerHTML = 'Great! You\u2019ve logged all your wellness data!';
+        wellnessStatus.innerHTML = 'Great! You\u2019ve logged all your health & wellness data!';
       } else if (filled === 0) {
         wellnessStatus.innerHTML = 'Log your\u00a0<span class="status-highlight">' + total + ' metrics</span>\u00a0for today.';
       } else {
@@ -7497,7 +7824,7 @@
     });
   });
 
-  // ── Time range picker (Wellness Log + Performance Log charts) ──
+  // ── Time range picker (Health & Wellness Log + Performance Log charts) ──
   document.querySelectorAll('.time-range-picker').forEach(function (picker) {
     picker.addEventListener('click', function (e) {
       var btn = e.target.closest('.time-range-btn');
@@ -7532,6 +7859,7 @@
     var wd = window._wellnessData;
     if (wd && window._dlOffset !== undefined) {
       wd[window._dlOffset].hydration = parseInt(swatch.getAttribute('data-val')) || 0;
+      if (window._updateWellnessChip) window._updateWellnessChip();
     }
   }
   document.querySelectorAll('.color-swatch').forEach(function (swatch) {
@@ -8264,7 +8592,7 @@
     var metrics = (type === 'wellness') ? addableWellnessMetrics : addablePerformanceMetrics;
     var tbodyId = (type === 'wellness') ? 'wellness-metrics' : 'performance-metrics';
     var tbody = document.getElementById(tbodyId);
-    addMetricTitle.textContent = (type === 'wellness') ? 'Add Wellness Metric' : 'Add Performance Metric';
+    addMetricTitle.textContent = (type === 'wellness') ? 'Add Health & Wellness Metric' : 'Add Performance Metric';
 
     var existing = [];
     tbody.querySelectorAll('tr').forEach(function (r) {
@@ -8368,7 +8696,7 @@
     _addMetricTarget = null;
   });
 
-  // ── Sync tracked data to Wellness Log and Performance Log screens ──
+  // ── Sync tracked data to Health & Wellness Log and Performance Log screens ──
 
   var dailyMetricRowMap = {
     'hydration': 'Hydration',
