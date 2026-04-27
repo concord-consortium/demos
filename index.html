@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bananas Simulation — Interactive Wireframe v0.6</title>
+<style>
+  :root {
+    --healthy: #4CAF50;
+    --infected: #9C6B3A;
+    --border: #d0d4da;
+    --ink: #1f2a37;
+    --ink-soft: #525d6c;
+    --sky: #E8F4FA;
+    --card: #ffffff;
+    --accent: #1565C0;
+    --danger: #c62828;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    padding: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #f7f8fa;
+  }
+  .header {
+    max-width: 1060px; margin: 0 auto 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .header h1 { font-size: 14px; font-weight: 600; }
+  .header .meta { font-size: 10px; color: var(--ink-soft); display: flex; align-items: center; gap: 4px; }
+  .header .meta .cc-logo { height: 18px; width: auto; vertical-align: middle; position: relative; top: -1px; }
+
+  .app {
+    max-width: 1060px; max-height: 600px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column;
+  }
+
+  /* ===== TABS ===== */
+  .tabs { display: flex; gap: 4px; padding: 6px 8px 0; background: #fafbfc; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .tab {
+    width: 130px; height: 54px;
+    background: var(--card); border: 1px solid var(--border); border-bottom: none;
+    border-radius: 7px 7px 0 0; padding: 3px 6px;
+    position: relative; cursor: pointer; user-select: none;
+    display: flex; flex-direction: column; justify-content: center; gap: 1px;
+    transition: background 0.15s;
+  }
+  .tab:hover { background: #f4f6f9; }
+  .tab.active { background: #eef3f9; outline: 2px solid var(--accent); outline-offset: -2px; }
+  .tab-letter {
+    position: absolute; top: 3px; left: 3px;
+    background: var(--ink); color: #fff;
+    width: 16px; height: 16px; border-radius: 4px;
+    font-weight: 700; font-size: 9px;
+    display: grid; place-items: center;
+  }
+  .tab-info { text-align: center; margin-top: 10px; font-size: 10px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tab-stats { display: flex; justify-content: center; gap: 8px; font-size: 9px; color: var(--ink-soft); }
+  .tab-stats .sw { display: inline-block; width: 7px; height: 7px; border-radius: 2px; vertical-align: middle; margin-right: 1px; }
+  .tab.empty .tab-info { color: var(--ink-soft); }
+
+  /* ===== MAIN — narrower left, wider right ===== */
+  .main { display: grid; grid-template-columns: 580px 1fr; flex: 1; min-height: 0; background: #f7f8fa; }
+
+  .sky {
+    background: var(--sky); padding: 8px 10px; border-radius: 8px; margin: 6px 0 6px 6px;
+    display: flex; flex-direction: column; min-height: 0; position: relative;
+  }
+  .badge {
+    position: absolute; top: 5px; left: 5px;
+    background: var(--card); border: 1px solid var(--border);
+    width: 20px; height: 20px; border-radius: 5px;
+    display: grid; place-items: center; font-weight: 700; font-size: 10px;
+  }
+  .gen-pill {
+    background: #fff; border: 1px solid var(--border);
+    padding: 3px 12px; border-radius: 12px;
+    width: fit-content; margin: 0 auto 4px;
+    font-weight: 600; font-size: 11px;
+  }
+
+  .parents { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 6px; }
+  .parent-tag { background: #fff; border: 1px solid var(--border); padding: 2px 8px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 10px; line-height: 1.3; }
+  .parent-tag small { font-weight: 400; color: var(--ink-soft); font-size: 9px; display: block; }
+  .parent-img {
+    background: #fff; border: 1px solid var(--border);
+    width: 58px; height: 58px; border-radius: 50%;
+    display: grid; place-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04); overflow: hidden;
+  }
+  .parent-img svg { width: 38px; height: 38px; }
+  .parent-name { font-size: 9px; text-align: center; color: var(--ink-soft); margin-top: 1px; }
+  .parent-col { display: flex; flex-direction: column; align-items: center; }
+  .cross-sym { font-size: 16px; color: var(--ink-soft); font-weight: 300; }
+
+  /* ===== OFFSPRING GRID — generation rows ===== */
+  .offspring-grid {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 4px; overflow-y: auto; flex: 1; min-height: 0;
+  }
+  .gen-row {
+    display: flex; align-items: flex-start; gap: 0;
+    margin-bottom: 3px; position: relative;
+  }
+  .gen-row:last-child { margin-bottom: 0; }
+  .gen-label {
+    width: 28px; min-width: 28px; padding-top: 8px;
+    font-size: 10px; font-weight: 700; color: var(--ink-soft);
+    text-align: center; flex-shrink: 0;
+  }
+  .gen-plants {
+    flex: 1; display: flex; flex-wrap: wrap; gap: 1px;
+    border: 1px solid #d8dce3; border-radius: 6px;
+    padding: 3px; align-content: flex-start; background: #fcfcfd;
+  }
+  .plant {
+    width: 42px; height: 42px; display: grid; place-items: center;
+    position: relative; flex-shrink: 0;
+  }
+  .plant svg { width: 30px; height: 30px; transition: all 0.3s; }
+  .plant svg.healthy-look { color: var(--healthy); }
+  .plant svg.infected-look { color: var(--infected); opacity: 0.65; transform: scaleX(0.85) scaleY(0.78) rotate(12deg); transform-origin: bottom center; }
+  .plant.show-border::after {
+    content: ""; position: absolute; inset: 1px;
+    border: 2px dashed var(--infected); border-radius: 4px; opacity: 0.55;
+  }
+  .empty-state {
+    display: flex; align-items: center; justify-content: center;
+    flex: 1; color: var(--ink-soft); font-size: 13px; font-style: italic;
+    min-height: 60px;
+  }
+
+  /* Fungus divider line in grid */
+  .fungus-divider {
+    display: flex; align-items: center; gap: 6px;
+    margin: 4px 0 4px 28px; /* indent to match gen-plants */
+    position: relative;
+  }
+  .fungus-divider::before {
+    content: ""; flex: 1; height: 0;
+    border-top: 2px dashed var(--accent);
+  }
+  .fungus-divider-label {
+    font-size: 9px; font-weight: 600; color: var(--accent);
+    white-space: nowrap; padding: 1px 6px;
+    background: #e3eef8; border-radius: 8px;
+  }
+  .fungus-divider::after {
+    content: ""; flex: 1; height: 0;
+    border-top: 2px dashed var(--accent);
+  }
+
+  /* ===== RIGHT COL — expanded ===== */
+  .right-col { padding: 6px 6px 6px 6px; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+  .card { background: #f1f3f6; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  .card h3 { margin: 0 0 6px; font-size: 13px; font-weight: 600; text-align: center; }
+  .pie-wrap { display: flex; justify-content: center; }
+  .legend { display: flex; justify-content: space-around; font-size: 11px; margin-top: 4px; }
+  .legend .key { text-align: center; }
+  .legend .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin: 0 auto 1px; }
+  .legend .nm { display: block; font-weight: 500; }
+  .legend .pc { display: block; color: var(--ink-soft); }
+  .line-card { flex: 1; display: flex; flex-direction: column; }
+  .line-wrap { flex: 1; }
+  .line-wrap svg { width: 100%; height: 100%; display: block; }
+
+  /* ===== CONTROLS ===== */
+  .controls {
+    display: grid; grid-template-columns: 1fr 1fr 1.4fr 0.9fr auto;
+    gap: 8px; padding: 8px 10px; border-top: 1px solid var(--border);
+    background: #fafbfc; align-items: end; flex-shrink: 0;
+  }
+  .control label { display: block; font-size: 10px; font-weight: 600; margin-bottom: 3px; }
+  select.dd {
+    width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 7px;
+    padding: 6px 8px; font-size: 11px; color: var(--ink); cursor: pointer;
+    appearance: auto;
+  }
+  .breed-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 7px;
+    padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+    width: 100%; transition: background 0.15s;
+  }
+  .breed-btn:hover { background: #0d47a1; }
+  .breed-btn:active { transform: scale(0.98); }
+  .breed-btn .sub { font-size: 9px; font-weight: 400; opacity: 0.8; }
+
+  /* Fungus button states */
+  .fungus-btn {
+    border: none; border-radius: 7px;
+    padding: 7px 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+    width: 100%; transition: all 0.2s; display: flex; align-items: center;
+    justify-content: center; gap: 5px;
+  }
+  .fungus-btn.ready {
+    background: #fff; border: 2px solid var(--danger); color: var(--danger);
+  }
+  .fungus-btn.ready:hover { background: #fef2f2; }
+  .fungus-btn.locked {
+    background: #e8e8e8; color: #999; cursor: not-allowed; border: 2px solid #ddd;
+  }
+  .fungus-btn .lock-icon { font-size: 12px; }
+  .fungus-btn.needs-cross {
+    background: #f5f5f5; color: #bbb; cursor: not-allowed; border: 2px solid #e8e8e8;
+  }
+
+  .reset-btn {
+    background: #fff; border: 1px solid var(--border); border-radius: 7px;
+    padding: 7px 12px; font-size: 11px; font-weight: 500; color: var(--ink-soft);
+    cursor: pointer; white-space: nowrap; transition: background 0.15s;
+  }
+  .reset-btn:hover { background: #f0f2f5; }
+
+  /* ===== ANNOTATIONS ===== */
+  .annotations {
+    max-width: 1060px; margin: 10px auto 0;
+    background: #fff8e1; border: 1px dashed #e8c97a; border-radius: 8px;
+    padding: 10px 14px; font-size: 11px; color: #6a5a20;
+  }
+  .annotations h2 { margin: 0 0 4px; font-size: 12px; color: #5a4c1b; }
+  .annotations ul { margin: 3px 0 0; padding-left: 14px; }
+  .annotations li { margin-bottom: 2px; }
+  .annotations li b { color: #3f3510; }
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+  <defs>
+    <symbol id="bt" viewBox="0 0 983.538 1420.338">
+      <path fill="currentColor" d="M802.422,612.904c-62.295,6.717-123.977,25.754-176.656,60.205-39.523,26.312-75.841,58.894-101.4,99.226,1.979-23.719,8.863-46.658,13.992-69.821,5.686-21.517,12.738-42.812,22.911-62.684,1.087-4.321,6.216-3.122,9.476-4.209,38.018-5.769,75.535-18.535,107.253-40.638,5.017-4.265,14.271-9.923,9.532-17.532-6.718-12.236-16.473-22.577-26.395-32.221,15.608,2.063,31.022,5.463,46.574,8.028,6.216,1.115,13.881.557,17.643-5.324,4.07-5.964-1.31-12.543-5.24-16.835-12.375-12.905-26.813-23.58-39.328-36.346,22.298,4.627,43.509,13.073,65.64,18.312,8.585,2.759,17.56-.864,23.915-6.745,23.106-20.459,45.237-42.116,65.137-65.724,2.983-3.762,6.94-8.947,3.261-13.685-7.971-14.438-20.681-25.476-29.545-39.3,14.299,5.436,28.402,11.874,43.397,15.274,11.539,2.007,19.427-8.807,25.977-16.584,14.215-20.821,23.357-46.965,19.539-72.301-21.489,2.007-42.338,8.39-62.573,15.664-94.042,36.318-172.586,105.498-230.533,186.997-27.482,39.467-49.892,82.363-67.675,127.043-6.94,18.005-15.414,35.481-20.347,54.184-2.397-28.04-.753-56.246-1.254-84.37.474-25.531-.334-51.174,1.449-76.621,5.909-8.641,12.292-17.058,16.389-26.758,16.584-36.792,25.726-76.51,32.221-116.172,3.4-23.134,7.832-46.882,3.54-70.183-4.404-19.929-21.295-33.698-37.293-44.708-4.655-3.596-11.651-6.355-11.568-13.267-8.919-77.179-16.054-155.389-40.638-229.529-4.822-12.32-8.668-26.925-20.792-34.117-9.979-4.013-23.636-2.759-30.409,6.439-11.316,13.908-17.978,30.939-24.611,47.439-1.506,4.961-5.24,12.487.696,15.971,15.19,10.285,31.078,19.734,44.234,32.722-18.925,4.432-39.133-.222-57.557,6.076-7.721,41.781-8.027,84.621-4.599,126.904,1.812,16.779,2.564,34.032,8.278,50.086,2.174,7.135,9.115,10.759,15.916,12.431,20.542,5.519,41.558,9.143,62.211,14.188-17.141,8.333-34.952,15.274-51.564,24.667-6.494,3.595-12.932,8.167-16.277,15.023-1.477,13.268,3.4,26.256,6.606,38.994,15.525,52.79,39.942,105.163,82.001,142.038,1.143,50.588-.919,101.204-2.954,151.766-2.899-17.309-10.285-33.363-16.389-49.669-33.391-90.53-90.53-172.001-164.224-234.268-44.122-36.596-94.153-67.201-149.48-83.283-18.73-5.184-37.99-9.755-57.557-9.086-1.533,22.66,9.086,43.704,19.901,62.88,27.009,44.122,65.389,79.437,102.097,115.308,4.738,4.906,10.591,8.473,16.64,11.568,23.134-6.188,41.419-22.717,63.075-32.249-8.529,21.155-24.166,39.273-28.736,61.932,4.125,4.906,9.393,8.752,16.166,8.39,20.626.223,41.39-2.035,61.514-6.634-10.814,11.568-24.026,21.964-29.712,37.238,9.672,8.306,21.685,12.905,33.307,17.783,25.977,10.73,53.655,16.556,81.555,19.232,19.009,39.802,31.329,82.893,36.123,126.736-15.859-17.057-29.684-36.039-47.021-51.731-55.94-51.62-127.182-86.6-202.41-98.752-63.075-10.703-129.133-8.697-190.341,10.814-12.236,4.655-25.893,7.804-35.51,17.253,12.459,23.135,34.088,40.081,57.39,51.425,6.773,3.122,15.803,6.968,22.493,1.588,20.041-15.803,33.419-38.269,52.54-55.104-7.08,20.319-17.002,39.83-21.016,61.069-1.644,8.975,9.143,10.675,15.302,13.016,13.129,3.568,26.368,9.811,40.276,7.888,17.476-6.912,25.894-24.584,36.903-38.436,1.533,13.686-2.313,28.569,3.846,41.419,7.526,11.344,23.302,8.724,34.116,4.181,25.308-9.031,44.067-28.765,63.354-46.52-5.1,16.807-15.525,31.663-19.064,48.972-1.199,9.142,9.894,12.794,17.197,11.344,33.754-3.986,66.309-14.995,97.832-27.343,19.511,14.521,34.478,34.172,47.439,54.575,11.707,18.033,20.347,38.018,25.782,58.811-15.832-16.25-35.565-29.099-57.835-34.311-36.876-10.341-75.674-3.679-112.02,5.407-48.219,13.769-92.843,39.439-129.663,73.388-22.8,21.684-43.788,46.798-54.602,76.732,34.98,10.871,73.807,5.603,106.501-10.201,5.908-3.54,15.19-7.358,14.103-15.748-1.031-18.814-5.156-37.294-8.64-55.745,9.086,15.636,19.789,30.66,33.224,42.923,7.387,6.773,17.392-.028,24.863-3.4,40.443-23.496,75.618-57.696,95.797-100.285,17.114,1.254,34.2,6.048,48.387,15.999,17.782,11.456,30.074,29.823,37.544,49.334,6.299,16.278,4.933,34.005,5.491,51.118-15.636-15.107-38.77-22.187-59.981-16.278.334,1.004.975,3.01,1.31,3.986,11.372,9.727,24.946,17.085,34.534,28.875,8.027,10.173,16.417,20.709,20.43,33.252,1.394,21.406.112,42.896-.027,64.358-2.174,36.15-.725,72.496-4.125,108.591-.781,47.411-3.094,94.739-5.77,142.066-17.699-31.914-54.296-55.382-91.617-48.609,2.481,2.955,5.937,4.544,9.504,5.937,18.229,7.135,34.451,19.65,45.46,35.899,17.17,25.225,24.221,56.302,22.66,86.599-21.295-30.687-58.281-53.041-96.522-48.163-5.435,1.532-14.187-1.032-16.835,5.351,35.008,6.522,67.898,25.922,88.244,55.495-17.17-7.47-35.76-11.679-54.49-11.178-16.11.419-33.893,3.568-46.213,14.606,25.949.557,53.069,2.007,76.51,14.382-30.241.641-66.587,1.143-87.854,26.2,18.284-1.589,36.625-4.794,55.048-2.898,4.989.808,10.787.25,14.828,3.902-20.458.446-40.583,4.766-60.372,9.783-12.236,3.762-25.169,6.856-35.51,14.8,63.131,1.533,126.345.614,189.505.892,70.573-.613,141.174.557,211.747-.725-4.878-5.742-11.539-9.421-18.284-12.459-25.615-11.288-53.822-18.201-81.917-15.72,22.437-15.107,50.839-17.894,77.123-14.745-20.793-19.928-53.153-19.984-79.854-15.33,9.114-8.501,21.127-12.849,33.335-14.354,12.319-1.171,25.587-3.457,37.432,1.142l-1.059-1.7c1.031-.474,3.094-1.421,4.125-1.895-9.727-5.491-19.817-10.62-30.854-12.765-22.633-4.098-45.628,1.756-66.169,11.232,15.162-22.382,33.781-42.422,55.271-58.81,6.745-5.352,15.023-8.919,20.375-15.887-29.851-.836-56.999,15.915-76.761,37.07,3.066-31.551,14.968-61.319,19.678-92.509-7.163,3.428-10.062,11.261-14.159,17.532-13.044,22.967-24.054,47.16-32.862,72.051-3.01-57.697-2.648-115.532-4.822-173.256.808-11.149-3.233-23.58,3.568-33.447,11.567-19.287,25.447-37.154,40.526-53.822,6.41-7.135,14.605-12.932,18.73-21.824-23.246-6.104-49.948,1.087-65.807,19.456-.028-44.401-.613-88.774-1.003-133.147-.195-12.961-1.505-26.814,5.017-38.576,14.159-27.287,44.903-43.508,75.033-44.708,18.368,24.5,35.481,51.286,60.539,69.876,4.237,2.564,10.285,7.135,14.94,2.815,6.578-5.491,11.846-12.319,17.95-18.312-.864,11.595-.975,23.218.139,34.785,5.547,5.185,15.246,11.4,21.629,3.93,13.825-14.745,25.253-31.635,39.551-45.962-4.431,19.901-13.1,38.631-17.114,58.588-1.645,6.215,5.881,8.334,9.923,10.982,30.464,14.438,65.5,19.761,98.78,14.187,4.125-1.532,13.519-2.257,11.037-8.807-11.623-30.464-34.283-55.132-58.309-76.482-42.952-35.593-96.188-59.313-151.849-64.999-31.524-3.93-64.442-.641-93.763,11.93-12.877,5.24-23.496,14.41-35.621,20.96,11.01-43.815,35.315-84.314,69.626-113.804,24.249,9.477,47.857,21.629,73.667,26.395,6.494,1.533,13.044-3.54,12.96-10.285-.028-13.407-6.243-25.81-8.473-38.882,17.309,14.438,32.193,33.669,54.184,41.084,17.643,6.104,32.444-8.557,48.805-12.236,10.508-3.289,21.434,1.143,32.081-.919,5.073-1.004,10.982-5.185,9.17-11.093-3.205-16.389-8.5-32.304-12.347-48.526,13.407,12.96,22.995,29.6,37.879,41.112,4.794,5.044,15.441,1.115,13.295-6.383-3.4-19.594-12.32-37.572-18.675-56.275,16.891,17.616,30.66,39.328,52.902,50.895,12.348,4.627,25.503-.808,37.07-5.323,24.054-10.48,47.913-26.73,58.895-51.397-10.759-6.94-22.939-11.149-35.008-15.163-47.021-15.245-97.191-17.056-146.108-12.904Z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="header">
+  <h1>Bananas Simulation — Interactive Wireframe v0.6</h1>
+  <div class="meta">Prepared for: DESE SPA Educator Review Panel (April 2026) · Prototype by <svg class="cc-logo" viewBox="0 0 255 80" xmlns="http://www.w3.org/2000/svg"><defs><style>.cc0{fill:#231f20;fill-rule:evenodd}.cc1{fill:#ad441d;fill-rule:evenodd}.cc2{fill:#ffd26c;fill-rule:evenodd}.cc3{fill:#ffc656;fill-rule:evenodd}.cc4{fill:#fff}.cc5{fill:#00758d}.cc6{fill:#e75300}</style></defs><path class="cc6" d="M62.6,29.6c4.3,3.1,8.4,7.8,8.2,10.3,0,1.5-5.4,6.8-11.2,8.9,1.4,5.2,1.5,11.4-.2,13.3-.9,1-7.7,1.7-13.4-.2.3-1.1.6-2.5.6-4.2.2-6.9,8.9-11.4,8.9-23.5s-11-19.7-20.1-19.7-20.1,8.3-20.1,19.7,8.7,16.6,8.9,23.5c.1,1.9.3,3.5.8,4.7-4.5,2-9.9,3-11.8,1.7-1.2-.8-3.1-8.2-1.9-14.4-5-1.4-10.4-4.4-11.2-6.8-.4-1.4,2.7-8.3,7.6-12.3-3-4.4-5.3-10.2-4.3-12.5.6-1.4,7.3-4.5,13.6-4.5.4-5.3,2.4-11.3,4.6-12.4,1.3-.7,8.5,1.3,13.2,5.5C38.5,2.9,43.7-.4,46.1.2c1.4.3,5.7,6.6,6.7,12.9,5.2-.5,11.3.5,12.8,2.5.9.9.2,8.5-3,14Z"/><path class="cc1" d="M42.4,42.4c4.3.5,8.7-3.1,13.2-.5,1.6,1,3,3.8,3.8,7-2,.7-4.1,1.1-6.1.7-3.7-.6-8-4.1-10.9-7.2ZM25.2,37.8c-2.5,3.6-1.7,9.3-6.2,11.9-1.6,1-4.7.8-7.9,0,.4-2.2,1.2-4.2,2.5-5.8,2.4-2.9,7.5-5,11.6-6ZM25.8,30.7c-4.2,1.1-7.2,6-12.2,5.1-1.9-.3-4.1-2.5-5.9-5.3,1.7-1.4,3.5-2.4,5.5-2.8,3.6-.7,8.8,1,12.6,3ZM30.7,25.5c-3.9-1.9-9.2-.1-12.5-4.1-1.2-1.5-1.5-4.6-1.3-7.9,2.1,0,4.2.4,6,1.5,3.2,1.8,6.1,6.6,7.8,10.5ZM37.7,24.9c-1.8-4.1-7-6.2-7-11.4s1.7-4.5,4-6.9c1.6,1.4,3,3.1,3.7,5.1,1.3,3.5.5,9-.7,13.2ZM45.3,35.8c3.6-2.5,4.7-8.1,9.8-9,1.9-.3,4.7.9,7.3,2.9-1.1,1.9-2.5,3.5-4.2,4.6-3.2,1.9-8.7,2.1-12.9,1.5ZM52.7,12.9c.3,2.2.3,4.3-.4,6.3-1.2,3.6-5.3,7.3-8.9,9.7,1.2-4.3-1.5-9.3,1.8-13.3,1.3-1.5,4.2-2.4,7.5-2.7Z"/><path class="cc2" d="M27.8,65.2c-.9-.3-1.7-.9-2.1-1.6-.8-1.3-1.4-3.1-1.5-5.9-.2-6.9-8.9-11.4-8.9-23.5s11-19.7,20.1-19.7,20.1,8.3,20.1,19.7-8.7,16.6-8.9,23.5c0,2.9-.7,4.8-1.6,6.1-.5.7-1.1,1.1-1.9,1.5h-15.3Z"/><path class="cc4" d="M39.3,37.2c.3-.4,2.5,0,4.5-.5.6-.2,1.1-.5,1.6-.8-3.2-.4-5.6-1.2-5.7-1.9,0-.5,2-1.5,3.1-3.4.3-.5.5-1.1.7-1.7-2.7,1.8-5,2.8-5.5,2.3-.4-.4.6-2.5.3-4.6,0-.6-.3-1.2-.5-1.7-.9,3.1-2.1,5.4-2.8,5.4s-1.1-2.3-2.7-3.7c-.5-.4-1-.7-1.5-1,1.3,3,1.8,5.5,1.2,6-.4.3-2.3-1-4.4-1.1-.6,0-1.2.1-1.8.2,2.8,1.5,4.8,3,4.7,3.8-.1.5-2.4.7-4,2.1-.5.4-.9.8-1.2,1.3,3.1-.7,5.6-.9,6-.2.2.5-1.4,2.1-1.8,4.2-.1.6-.1,1.2-.1,1.8,1.9-2.6,3.8-4.3,4.4-4.1.5.2.3,2.5,1.3,4.4.3.6.7,1,1.1,1.5-.2-3.2.2-5.8.8-6,.5,0,1.8,1.7,3.8,2.5.6.2,1.1.4,1.7.4-2.2-2.4-3.6-4.6-3.2-5.2Z"/><path class="cc3" d="M44,61.2c-.6-.3-1.1-.6-1.6-.9-.9-.6-1.8-1.3-2.5-2.2-2.4-2.9-3.5-8.4-3.8-12.7,3,3.2,8.6,3.3,10.4,8.3,0,.2,0,.3,0,.5l.3,1.1c-.2.8-.4,1.6-.4,2.4,0,1.7-.3,3.1-.6,4.3-.6-.2-1.2-.5-1.9-.8ZM29.3,43.7c.3,4.4,4.5,8.2,2.8,13.2-.5,1.4-2,2.8-4,4-.6.4-1.3.8-2.1,1.1-.4.2-.7.3-1,.5-.4-1.2-.7-2.8-.8-4.7v-1.9c0-.4,0-.9.1-1.3.5-3.6,2.7-7.9,5-10.9ZM50.7,22.2c-1.8,2.6-4.7,5.1-7.3,6.8,1.1-3.8-.9-8.2.9-11.9,2.4,1.2,4.6,2.9,6.4,5.1ZM45.3,35.8c3.3-2.3,4.5-7.2,8.6-8.7.9,2.2,1.5,4.5,1.5,7.1v1.2c-3.1.8-7,.8-10.1.4ZM37.7,24.9c-1.6-3.6-5.8-5.6-6.8-9.7,1.5-.4,3-.6,4.5-.6s2.4.1,3.7.4c0,3.1-.5,6.9-1.4,9.9ZM30.7,25.5c-3.4-1.7-7.9-.5-11.2-2.9,1.7-2.2,3.9-4,6.2-5.3,2.1,2.3,3.8,5.5,5,8.2ZM25.8,30.7c-3.7,1-6.4,4.8-10.4,5.2,0-.5-.1-1.1-.1-1.6,0-2.3.5-4.6,1.3-6.6,3,.3,6.5,1.6,9.2,3ZM25.2,37.8c-2.3,3.2-1.8,8.2-5,11-1.4-2.2-2.8-4.5-3.8-7.4,2.6-1.6,6-2.9,8.8-3.6ZM42.4,42.4c3.9.4,7.9-2.5,11.9-1.1-1,2.9-2.4,5.3-3.8,7.4-2.9-1.4-5.9-4-8.1-6.3Z"/><path class="cc5" d="M42.8,72.1v1c.7,0,1.3.7,1.3,1.5s-.5,1.4-1.3,1.4l-4.9,1.3c.3.3.5.7.5,1.2,0,.8-.6,1.5-1.3,1.5h-3.6c-.7,0-1.3-.7-1.3-1.5s.3-1.1.7-1.3l-5.1-1.2c-.7,0-1.3-.7-1.3-1.5s.6-1.5,1.3-1.5h12.1v-.3l-12.1-.7c-.7,0-1.3-.7-1.3-1.5s.6-1.5,1.3-1.5h12v-.3l-12-.7c-.7,0-1.3-.7-1.3-1.5s.6-1.5,1.3-1.5h15c.7,0,1.3.7,1.3,1.5s-.6,1.5-1.3,1.5h0v1h0c.7,0,1.3.7,1.3,1.5,0,.9-.5,1.6-1.3,1.6Z"/><path class="cc0" d="M228.5,25.3c.5-1.3,2.6-3.5,4.6-3.5s1.4.2,1.4.2v4.4s-1-.3-1.5-.3c-2.9,0-4.4,3.1-4.4,6.3v7.4h-4.2v-14h0c0-.1-.1-.1-.1-.1h-2.3v-3.6h3.8c1.4,0,2.7.7,2.7,2.2,0,0,0,.8,0,1ZM168.2,24.2c1.1-1.3,2.9-2.6,5.7-2.6,4.1,0,6,2.5,6,6.9v7.5h0c0,0,.1,0,.1,0h2.1v3.6h-3.8c-1.4,0-2.6-.7-2.6-2.2v-8.3c0-2.3-.4-3.6-2.5-3.6s-4.9,2.7-4.9,5.8v8.3h-4.3v-14h0c0-.1-.1-.1-.1-.1h-2.1v-3.6h3.8c1.6,0,2.5.7,2.6,2.2ZM86.1,20c1,0,1.4.7,1.4,1.5v2.5h-2.5v-1.7h-2.2v12.8h-2.7v-12.7h-2.2v1.6h-2.4v-2.4c0-.9.4-1.7,1.4-1.7h9.2ZM91.9,25.4c.7-.8,1.9-1.5,3.4-1.5,2.6,0,3.8,1.5,3.8,4.3v4.7h1.6v2.3h-4.2v-6.5c0-1.4-.3-2.2-1.6-2.2s-3,1.5-3,3.6v5.2h-2.6v-12.9h-.9v-2.4h3.6v5.4h-.1ZM107,35.4c-3.4,0-5.7-2.5-5.7-5.8s2.3-5.8,5.4-5.8,4.7,2.4,4.7,5.2,0,1.1,0,1.1h-7.3c.3,1.8,1.6,2.8,3.1,2.8s2.2-.6,3.1-1.4l1.2,2.1s-.3.3-.5.4c-1.1.9-2.5,1.4-3.9,1.4ZM106.7,26.1c-1.2,0-2.2.7-2.5,2h4.6c-.2-1.3-1.1-2-2.1-2ZM129.6,39.8c-7.2,0-12.4-5.7-12.4-12.8s5.3-12.5,12.2-12.5,9.3,1.1,9.3,5.2v3.4h-4.1v-2.4c0-1.8-3.8-2.2-5-2.2-4.6,0-7.9,3.4-7.9,8.4s3.5,8.9,8.1,8.9,7.3-3.4,7.3-3.4l2.1,3c-.1,0-2.7,4.4-9.6,4.4ZM150.7,40.2c-5.2,0-9.4-3.9-9.4-9.4s4.2-9.3,9.4-9.3,9.4,3.9,9.4,9.3c0,5.4-4.2,9.4-9.4,9.4ZM150.7,25.4c-2.8,0-5.1,2.2-5.1,5.4s2.3,5.4,5.1,5.4,5.1-2.2,5.1-5.4-2.3-5.4-5.1-5.4ZM193.1,40.2c-5,0-9.4-3.5-9.4-9.3s4-9.4,9.2-9.4,7,1,7,4.4v1.9h-3.9v-1c0-1-2.3-1.3-3-1.3-3,0-5,2.1-5,5.4s2.3,5.4,5.2,5.4,3.7-1.1,5.4-2.5l1.7,3.4c-2,1.8-4.4,3-7.2,3ZM210.9,40.2c-5.2,0-9.4-3.9-9.4-9.4s4.2-9.3,9.4-9.3,9.4,3.9,9.4,9.3c0,5.4-4.2,9.4-9.4,9.4ZM210.9,25.4c-2.8,0-5.1,2.2-5.1,5.4s2.3,5.4,5.1,5.4,5.1-2.2,5.1-5.4-2.3-5.4-5.1-5.4ZM248.4,23.2v-4.2h-2v-3.6h6.2v20.6h0c0,0,.1,0,.1,0h2.2v3.6h-3.8c-1.4,0-2.3-.7-2.5-1.7-1.3,1.4-3.1,2.1-5,2.1-4.8,0-7.7-3.9-7.7-9.3s3.2-9.3,8-9.3c1.5,0,3.3.6,4.5,1.7ZM244.4,25.5c-2.2,0-4.2,1.8-4.2,5.4s1.8,5.4,4.1,5.4,4.2-1.5,4.2-5.4-1.5-5.4-4.1-5.4ZM122.1,50.5c1-1.2,2.8-2.5,5.4-2.5,3.9,0,5.6,2.3,5.6,6.5v7h0c0,0,.1,0,.1,0h2.3v3.4h-4c-1.4,0-2.5-.7-2.5-2v-7.9c0-2.2-.4-3.4-2.3-3.4-2.7,0-4.6,2.5-4.6,5.5v7.9h-4v-13.2h0c0,0,0,0,0,0h-2v-3.4h3.6c1.6,0,2.5.7,2.5,2.1ZM106.5,65.5c-4.8,0-8.8-3.7-8.8-8.8s4-8.7,8.8-8.7,8.8,3.7,8.8,8.7-4,8.8-8.8,8.8ZM106.5,51.7c-2.6,0-4.7,2.1-4.7,5s2.1,5.1,4.7,5.1,4.7-2.1,4.7-5.1-2.2-5-4.7-5ZM142.6,65.5c-3.8,0-6.3-3.1-6.3-3.1l2.2-2.7s1.6,2.3,4.2,2.3,2.6-.7,2.6-1.5c0-1.4-2.5-2-3.5-2.3-2.2-.8-5.1-2-5.1-5.3s3.5-4.9,6.2-4.9,5.8.9,5.8,3.7v1.7h-3.6v-.8c0-.4-.7-1.1-2.2-1.1s-2.2.6-2.2,1.3c0,1.3,2.3,1.9,3.2,2.2,2.3.8,5.4,1.9,5.4,5.2,0,3.6-3.1,5.3-6.7,5.3ZM160.3,65.5c-4.8,0-8.8-3.7-8.8-8.8s4-8.7,8.8-8.7,8.8,3.7,8.8,8.7-3.9,8.8-8.8,8.8ZM160.3,51.7c-2.6,0-4.7,2.1-4.7,5s2.1,5.1,4.7,5.1,4.7-2.1,4.7-5.1c.1-2.9-2.1-5-4.7-5ZM176.8,51.5c.5-1.2,2.5-3.3,4.3-3.3s1.3,0,1.3,0v4.1s-1-.2-1.4-.2c-2.8,0-4.1,2.9-4.1,5.9v7h-4v-13.2h0c0,0-.1,0-.1,0h-2.4v-3.4h4c1.4,0,2.5.7,2.5,2-.1.2-.1,1-.1,1.1ZM192,65.3c-2,0-6.4-.7-6.4-6.4v-7.1h-2.2v-3.4h2.2v-4.3h3.9v4.3h3.7v3.4h-3.7v6.8c0,2.7,1.7,3,2.7,3s1.2,0,1.2,0v3.6c.2,0-.7.2-1.4.2ZM202.3,46.3h-4.1v-4.1h4.1v4.1ZM204.2,65.1h-4.2c-1,0-1.8-.8-1.8-2.5v-10.8h-2.5v-3.4h4.1c2.3,0,2.4,1.7,2.4,2.5v10.8h2v3.4ZM218.6,63.1c-1,1.2-2.7,2.4-5.3,2.4-3.7,0-5.6-2.2-5.6-6.5v-7.2h-2.1v-3.4h4.1c1.2,0,2,1,2,1.9v8c0,2.1.4,3.4,2.3,3.4s4.4-2.6,4.4-5.6v-7.8h4v13.2q0,0,.1,0h1.9v3.4h-3.5c-1.3,0-2.2-.6-2.3-1.9ZM232.6,50.5c1.2-1.4,2.9-2.5,4.9-2.5s3.9.9,4.7,2.9c1.1-1.6,3.1-2.9,5.4-2.9,3.8,0,5.5,2.3,5.5,6.5v7.2h1.9v3.4h-6v-9.9c0-2.2-.4-3.4-2.2-3.4s-4,2.6-4,5.6v7.7h-4v-9.9c0-2.1-.3-3.4-2.1-3.4s-4.1,2.7-4.1,5.7v7.6h-4v-13.2h0c0,0-.1,0-.1,0h-2.4v-3.4h4c1.5,0,2.4.7,2.5,2.1ZM86.8,65.4c-6.7,0-11.6-5.3-11.6-12s5-11.7,11.5-11.7,8.7,1,8.7,4.9v3.2h-3.9v-2.2c0-1.7-3.6-2.1-4.7-2.1-4.3,0-7.4,3.2-7.4,7.8s3.2,8.3,7.6,8.3,6.8-3.2,6.8-3.2l2,2.8s-2.5,4.2-9,4.2Z"/></svg></div>
+</div>
+
+<div class="app">
+  <div class="tabs" id="tabs"></div>
+  <div class="main">
+    <div class="sky">
+      <span class="badge" id="badge">A</span>
+      <div class="gen-pill" id="genPill">Select parents and click Cross Plants</div>
+      <div class="parents">
+        <div class="parent-tag">Parent 1<small id="p1type">Wild Banana</small></div>
+        <div class="parent-col">
+          <div class="parent-img"><svg id="p1svg" style="width:38px;height:38px;color:var(--healthy)"><use href="#bt"/></svg></div>
+          <div class="parent-name" id="p1name">W1</div>
+        </div>
+        <span class="cross-sym">×</span>
+        <div class="parent-col">
+          <div class="parent-img"><svg id="p2svg" style="width:38px;height:38px;color:#388E3C"><use href="#bt"/></svg></div>
+          <div class="parent-name" id="p2name">C1</div>
+        </div>
+        <div class="parent-tag">Parent 2<small id="p2type">Cavendish</small></div>
+      </div>
+      <div class="offspring-grid" id="grid"></div>
+    </div>
+
+    <div class="right-col">
+      <div class="card">
+        <h3>Offspring Phenotypes</h3>
+        <div class="pie-wrap"><svg id="pie" width="130" height="130" viewBox="-80 -80 160 160"></svg></div>
+        <div class="legend">
+          <div class="key"><span class="sw" style="background:var(--healthy)"></span><span class="nm">Healthy</span><span class="pc" id="healthyPct">–</span></div>
+          <div class="key"><span class="sw" style="background:var(--infected)"></span><span class="nm">Infected</span><span class="pc" id="infectedPct">–</span></div>
+        </div>
+      </div>
+      <div class="card line-card">
+        <h3>Fungus Resistance over Generations</h3>
+        <div class="line-wrap"><svg id="lineChart" viewBox="0 0 340 140" preserveAspectRatio="xMidYMid meet"></svg></div>
+        <div class="legend" style="margin-top:2px">
+          <div class="key" style="display:flex;align-items:center;gap:4px">
+            <span style="width:14px;height:2px;background:var(--healthy);display:inline-block"></span>
+            <span class="nm" style="font-size:11px">% Healthy</span>
+          </div>
+          <div class="key" style="display:flex;align-items:center;gap:4px">
+            <span style="width:14px;height:2px;background:var(--infected);display:inline-block;border-top:1px dashed var(--infected)"></span>
+            <span class="nm" style="font-size:11px">% Infected</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control">
+      <label>Parent 1</label>
+      <select class="dd" id="sel1">
+        <option value="W1">Wild W1</option>
+        <option value="W2">Wild W2</option>
+        <option value="W3">Wild W3</option>
+        <option value="C1">Cavendish C1</option>
+        <option value="C2">Cavendish C2</option>
+      </select>
+    </div>
+    <div class="control">
+      <label>Parent 2</label>
+      <select class="dd" id="sel2">
+        <option value="C1">Cavendish C1</option>
+        <option value="C2">Cavendish C2</option>
+        <option value="W1">Wild W1</option>
+        <option value="W2">Wild W2</option>
+        <option value="W3">Wild W3</option>
+      </select>
+    </div>
+    <div class="control" style="display:flex;flex-direction:column">
+      <label>&nbsp;</label>
+      <button class="breed-btn" id="crossBtn" onclick="doCross()">Cross Plants <span class="sub">(5–20 offspring)</span></button>
+    </div>
+    <div class="control" style="display:flex;flex-direction:column">
+      <label>&nbsp;</label>
+      <button class="fungus-btn needs-cross" id="fungusBtn" onclick="introduceFungus()">Introduce Fungus</button>
+    </div>
+    <div class="control" style="display:flex;flex-direction:column">
+      <label>&nbsp;</label>
+      <button class="reset-btn" onclick="resetTrial()">↺ Reset Trial</button>
+    </div>
+  </div>
+</div>
+
+<div class="annotations">
+  <h2>Designer notes (v0.6 — generation rows + expanded charts)</h2>
+  <ul>
+    <li><b>Fungus mechanic:</b> Students cross plants first, then introduce fungus. Once introduced, the button locks permanently — fungus cannot be removed. This models real-world irreversibility of fungal contamination.</li>
+    <li><b>Generation rows:</b> Each cross creates a labeled row (G1, G2, G3…) in the offspring grid with a light border. This helps students correlate generations between the grid and the line graph x-axis.</li>
+    <li><b>Fungus marker (both views):</b> A blue dashed line appears in BOTH the offspring grid (horizontal divider) and the line graph (vertical marker) at the generation when fungus was introduced. This reinforces the connection between the two visualizations.</li>
+    <li><b>Vertical marker on line graph:</b> A blue dashed line labeled "Fungus introduced" appears at the generation when the button was clicked. Pre-fungus data points show 100% healthy (students can't observe resistance). Post-fungus data points show actual resistance.</li>
+    <li><b>Workflow:</b> (1) Select parents → (2) Cross several times (all plants look healthy) → (3) Click "Introduce Fungus" (locks, marker appears, existing plants reveal phenotype) → (4) Keep crossing to see how resistance changes over more generations.</li>
+    <li><b>Pie chart + grid:</b> Before fungus, all plants appear green and pie shows 100% healthy. After fungus, non-resistant plants turn brown/wilted and pie shows real percentages.</li>
+    <li><b>Reset Trial:</b> Clears everything including the fungus state, so students can start a fresh experiment in that tab.</li>
+  </ul>
+  <h2 style="margin-top:10px">Questions for the educator panel</h2>
+  <ol style="margin:3px 0 0; padding-left:18px;">
+    <li style="margin-bottom:4px"><b>Offspring sample size &amp; randomness:</b> Each cross currently produces 5–20 random offspring. Small samples mean students might get a 50/50 cross that happens to come out 3 resistant / 9 not-resistant, which could lead to incorrect but reasonable conclusions. Is that variability pedagogically valuable (teaching about sample size), or should the simulation nudge results closer to expected Mendelian ratios to keep the assessment fair?</li>
+    <li style="margin-bottom:4px"><b>Fungus reversibility:</b> The current design makes introducing fungus a one-way permanent action per trial. Should students be allowed to turn fungus off within a trial after it has already been introduced? Is it important that students can choose <em>when</em> to introduce fungus (after 1 cross, after 3, etc.), or should the simulation prompt them at a fixed point?</li>
+    <li style="margin-bottom:4px"><b>Pre-fungus plant appearance:</b> Right now, pre-fungus plants all look identically healthy — students literally cannot tell resistant from non-resistant. Is that level of ambiguity appropriate for grades 6–8, or should there be some subtle visual hint (like slightly different leaf shapes for wild vs. Cavendish offspring) so students have something to observe and discuss even before introducing the pathogen?</li>
+    <li style="margin-bottom:4px"><b>Line graph metric &amp; marker label:</b> The "Fungus Resistance over Generations" chart tracks cumulative resistance percentage. Is "cumulative across all offspring so far" the right metric, or should each generation point reflect only the offspring from that specific cross? Cumulative data smooths out noise but obscures generational trends. Also, is the "Fungus introduced" vertical marker label clear enough, or should it include a brief explanation like "Plants now exposed to fungus"?</li>
+    <li style="margin-bottom:4px"><b>Vocabulary level:</b> Are terms like "phenotype" and "resistance" appropriate for the target grade band, or should the interface use simplified language like "what the plant looks like" and "ability to fight off disease"?</li>
+    <li style="margin-bottom:4px"><b>Time on task:</b> How long will students typically have with the simulation during the assessment?</li>
+  </ol>
+</div>
+
+<script>
+// === GENETICS MODEL (hidden from students) ===
+const PARENTS = {
+  W1: { name: 'Wild W1',  type: 'Wild Banana', alleles: ['R','R'], color: '#4CAF50' },
+  W2: { name: 'Wild W2',  type: 'Wild Banana', alleles: ['R','r'], color: '#4CAF50' },
+  W3: { name: 'Wild W3',  type: 'Wild Banana', alleles: ['R','r'], color: '#4CAF50' },
+  C1: { name: 'Cavendish C1', type: 'Cavendish', alleles: ['r','r'], color: '#388E3C' },
+  C2: { name: 'Cavendish C2', type: 'Cavendish', alleles: ['r','r'], color: '#388E3C' },
+};
+
+function randomAllele(p) { return p.alleles[Math.random() < 0.5 ? 0 : 1]; }
+function isResistant(a1, a2) { return a1 === 'R' || a2 === 'R'; }
+
+// === STATE ===
+const TABS = ['A','B','C','D','E'];
+let trials = {};
+TABS.forEach(t => { trials[t] = newTrial(); });
+let activeTab = 'A';
+
+function newTrial() {
+  return {
+    p1: 'W1', p2: 'C1',
+    offspring: [],        // [{resistant: bool}]
+    generations: 0,
+    fungusGen: null,       // generation number when fungus was introduced (null = not yet)
+    genHistory: [],        // [{resistantPct}] — always stores REAL data
+    genCounts: [],         // [count_per_generation] — e.g. [12, 8, 15]
+  };
+}
+
+// === RENDER ===
+function render() {
+  const trial = trials[activeTab];
+  const fungusActive = trial.fungusGen !== null;
+
+  // --- Tabs ---
+  document.getElementById('tabs').innerHTML = TABS.map(t => {
+    const tr = trials[t];
+    const n = tr.offspring.length;
+    const hasFungus = tr.fungusGen !== null;
+    let tabHealthy = n;
+    if (hasFungus && tr.genCounts.length > 0) {
+      const pre = tr.genCounts.slice(0, tr.fungusGen).reduce((a,b) => a+b, 0);
+      const postRes = tr.offspring.slice(pre).filter(o => o.resistant).length;
+      tabHealthy = pre + postRes;
+    }
+    const pctH = n > 0 ? (hasFungus ? Math.round(tabHealthy/n*100) : 100) : 0;
+    const pctI = n > 0 ? 100 - pctH : 0;
+    const cls = t === activeTab ? 'tab active' : (n > 0 ? 'tab' : 'tab empty');
+    const info = n > 0 ? `${tr.p1} × ${tr.p2} · ${n}` : '+ New';
+    const stats = n > 0
+      ? `<div class="tab-stats"><span><span class="sw" style="background:var(--healthy)"></span>${pctH}%</span><span><span class="sw" style="background:var(--infected)"></span>${pctI}%</span></div>`
+      : '';
+    return `<div class="${cls}" onclick="switchTab('${t}')"><span class="tab-letter">${t}</span><div class="tab-info">${info}</div>${stats}</div>`;
+  }).join('');
+
+  // --- Badge + Gen pill ---
+  document.getElementById('badge').textContent = activeTab;
+  const n = trial.offspring.length;
+  let pillText = 'Select parents and click Cross Plants';
+  if (n > 0) {
+    pillText = `Crosses: ${trial.generations} · Offspring: ${n}`;
+    if (fungusActive) pillText += ' · Fungus active';
+  }
+  document.getElementById('genPill').textContent = pillText;
+
+  // --- Parents ---
+  const p1 = PARENTS[trial.p1], p2 = PARENTS[trial.p2];
+  document.getElementById('p1svg').style.color = p1.color;
+  document.getElementById('p2svg').style.color = p2.color;
+  document.getElementById('p1name').textContent = trial.p1;
+  document.getElementById('p2name').textContent = trial.p2;
+  document.getElementById('p1type').textContent = p1.type;
+  document.getElementById('p2type').textContent = p2.type;
+  document.getElementById('sel1').value = trial.p1;
+  document.getElementById('sel2').value = trial.p2;
+
+  // --- Fungus button ---
+  const btn = document.getElementById('fungusBtn');
+  if (fungusActive) {
+    btn.className = 'fungus-btn locked';
+    btn.innerHTML = '<span class="lock-icon">🔒</span> Fungus active';
+  } else if (trial.generations === 0) {
+    btn.className = 'fungus-btn needs-cross';
+    btn.textContent = 'Introduce Fungus';
+  } else {
+    btn.className = 'fungus-btn ready';
+    btn.textContent = 'Introduce Fungus';
+  }
+
+  // --- Offspring grid (generation rows) ---
+  const grid = document.getElementById('grid');
+  if (n === 0) {
+    grid.innerHTML = '<div class="empty-state">No offspring yet — click Cross Plants to begin</div>';
+  } else {
+    let html = '';
+    let offset = 0;
+    for (let g = 0; g < trial.genCounts.length; g++) {
+      const genNum = g + 1;
+      const count = trial.genCounts[g];
+      const genOffspring = trial.offspring.slice(offset, offset + count);
+      offset += count;
+
+      // Insert fungus divider BEFORE this generation if fungus was introduced at the previous generation
+      if (trial.fungusGen !== null && genNum === trial.fungusGen + 1) {
+        html += `<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced after G${trial.fungusGen}</span></div>`;
+      }
+
+      html += `<div class="gen-row">`;
+      html += `<div class="gen-label">G${genNum}</div>`;
+      html += `<div class="gen-plants">`;
+      const showInfection = fungusActive && genNum > trial.fungusGen;
+      genOffspring.forEach(o => {
+        if (!showInfection || o.resistant) {
+          html += `<div class="plant"><svg class="healthy-look" style="width:30px;height:30px"><use href="#bt"/></svg></div>`;
+        } else {
+          html += `<div class="plant show-border"><svg class="infected-look" style="width:30px;height:30px"><use href="#bt"/></svg></div>`;
+        }
+      });
+      html += `</div></div>`;
+    }
+
+    // If fungus was introduced at the LAST generation (no generations after it yet), show divider at the end
+    if (trial.fungusGen !== null && trial.fungusGen === trial.generations) {
+      html += `<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced after G${trial.fungusGen}</span></div>`;
+    }
+
+    grid.innerHTML = html;
+
+    // Auto-scroll to bottom
+    requestAnimationFrame(() => {
+      grid.scrollTop = grid.scrollHeight;
+    });
+  }
+
+  renderPie(trial);
+  renderLine(trial);
+}
+
+function renderPie(trial) {
+  const svg = document.getElementById('pie');
+  const n = trial.offspring.length;
+  const fungusActive = trial.fungusGen !== null;
+
+  if (n === 0) {
+    svg.innerHTML = '<circle cx="0" cy="0" r="65" fill="#e0e3e7"/><text x="0" y="4" text-anchor="middle" font-size="14" fill="#525d6c">No data</text>';
+    document.getElementById('healthyPct').textContent = '–';
+    document.getElementById('infectedPct').textContent = '–';
+    return;
+  }
+
+  // Only post-fungus generations show infection; pre-fungus generations count as all healthy
+  let visibleHealthy = n; // default: all healthy
+  if (fungusActive && trial.genCounts.length > 0) {
+    const preFungusCount = trial.genCounts.slice(0, trial.fungusGen).reduce((a,b) => a+b, 0);
+    const postFungusOffspring = trial.offspring.slice(preFungusCount);
+    const postFungusResistant = postFungusOffspring.filter(o => o.resistant).length;
+    visibleHealthy = preFungusCount + postFungusResistant;
+  }
+  const pctH = Math.round(visibleHealthy / n * 100);
+  const pctI = 100 - pctH;
+
+  if (pctH === 100) {
+    svg.innerHTML = `<circle cx="0" cy="0" r="65" fill="#4CAF50"/><text x="0" y="6" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">100%</text>`;
+  } else if (pctH === 0) {
+    svg.innerHTML = `<circle cx="0" cy="0" r="65" fill="#8B5A2B"/><text x="0" y="6" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">100%</text>`;
+  } else {
+    const angle = pctH / 100 * 360;
+    const large = angle > 180 ? 1 : 0;
+    const endX = 65 * Math.sin(angle * Math.PI / 180);
+    const endY = -65 * Math.cos(angle * Math.PI / 180);
+    svg.innerHTML = `
+      <path d="M 0 -65 A 65 65 0 ${large} 1 ${endX.toFixed(2)} ${endY.toFixed(2)} L 0 0 Z" fill="#4CAF50"/>
+      <path d="M ${endX.toFixed(2)} ${endY.toFixed(2)} A 65 65 0 ${1-large} 1 0 -65 L 0 0 Z" fill="#8B5A2B"/>
+      <text x="22" y="5" text-anchor="middle" font-size="16" font-weight="700" fill="#fff" font-family="-apple-system,sans-serif">${pctH}%</text>
+      <text x="-22" y="5" text-anchor="middle" font-size="16" font-weight="700" fill="#fff" font-family="-apple-system,sans-serif">${pctI}%</text>
+    `;
+  }
+  document.getElementById('healthyPct').textContent = pctH + '%';
+  document.getElementById('infectedPct').textContent = pctI + '%';
+}
+
+function renderLine(trial) {
+  const svg = document.getElementById('lineChart');
+  const hist = trial.genHistory;
+  const fungusGen = trial.fungusGen;
+
+  // Scaled-up chart: viewBox 0 0 340 140
+  const leftPad = 42, rightPad = 330, topY = 14, botY = 124;
+
+  // Grid lines
+  let html = `
+    <line x1="${leftPad}" y1="${topY}" x2="${rightPad}" y2="${topY}" stroke="#e0e3e7" stroke-dasharray="2 3"/>
+    <line x1="${leftPad}" y1="${topY + (botY-topY)*0.25}" x2="${rightPad}" y2="${topY + (botY-topY)*0.25}" stroke="#e0e3e7" stroke-dasharray="2 3"/>
+    <line x1="${leftPad}" y1="${topY + (botY-topY)*0.5}" x2="${rightPad}" y2="${topY + (botY-topY)*0.5}" stroke="#e0e3e7" stroke-dasharray="2 3"/>
+    <line x1="${leftPad}" y1="${topY + (botY-topY)*0.75}" x2="${rightPad}" y2="${topY + (botY-topY)*0.75}" stroke="#e0e3e7" stroke-dasharray="2 3"/>
+    <line x1="${leftPad}" y1="${botY}" x2="${rightPad}" y2="${botY}" stroke="#c6ccd4"/>
+    <text x="${leftPad - 4}" y="${topY + 4}" font-size="9" fill="#525d6c" text-anchor="end">100%</text>
+    <text x="${leftPad - 4}" y="${topY + (botY-topY)*0.25 + 4}" font-size="9" fill="#525d6c" text-anchor="end">75%</text>
+    <text x="${leftPad - 4}" y="${topY + (botY-topY)*0.5 + 4}" font-size="9" fill="#525d6c" text-anchor="end">50%</text>
+    <text x="${leftPad - 4}" y="${topY + (botY-topY)*0.75 + 4}" font-size="9" fill="#525d6c" text-anchor="end">25%</text>
+    <text x="${leftPad - 4}" y="${botY + 4}" font-size="9" fill="#525d6c" text-anchor="end">0%</text>
+  `;
+
+  if (hist.length === 0) {
+    html += `<text x="${(leftPad + rightPad)/2}" y="${(topY + botY)/2 + 3}" text-anchor="middle" font-size="12" fill="#aaa" font-style="italic">Cross plants to see data</text>`;
+    svg.innerHTML = html;
+    return;
+  }
+
+  const plotLeft = leftPad + 12;
+  const plotRight = rightPad - 8;
+  const maxPts = Math.max(hist.length, 2);
+  const xStep = (plotRight - plotLeft) / Math.max(maxPts - 1, 1);
+  const yRange = botY - topY;
+  const yScale = (pct) => botY - (pct / 100) * yRange;
+
+  // Build display points
+  const displayPts = hist.map((h, i) => {
+    const genNum = i + 1;
+    if (fungusGen === null || genNum < fungusGen) {
+      return { healthyPct: 100, infectedPct: 0 };
+    } else {
+      return { healthyPct: h.resistantPct, infectedPct: 100 - h.resistantPct };
+    }
+  });
+
+  // Healthy line (solid green)
+  let healthyPts = displayPts.map((p, i) => `${(plotLeft + i * xStep).toFixed(1)},${yScale(p.healthyPct).toFixed(1)}`).join(' ');
+  html += `<polyline points="${healthyPts}" fill="none" stroke="#4CAF50" stroke-width="2.5"/>`;
+  displayPts.forEach((p, i) => {
+    const cx = plotLeft + i * xStep;
+    const cy = yScale(p.healthyPct);
+    html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4" fill="#4CAF50"/>`;
+  });
+
+  // Infected line (dashed brown) — only from fungus onward
+  if (fungusGen !== null) {
+    const postFungus = displayPts.map((p, i) => ({ ...p, i })).filter((_, i) => (i + 1) >= fungusGen);
+    if (postFungus.length > 0) {
+      let infPts = postFungus.map(p => `${(plotLeft + p.i * xStep).toFixed(1)},${yScale(p.infectedPct).toFixed(1)}`).join(' ');
+      html += `<polyline points="${infPts}" fill="none" stroke="#8B5A2B" stroke-width="2.5" stroke-dasharray="4 4"/>`;
+      postFungus.forEach(p => {
+        const cx = plotLeft + p.i * xStep;
+        const cy = yScale(p.infectedPct);
+        html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5" fill="#8B5A2B"/>`;
+      });
+    }
+  }
+
+  // Vertical fungus introduction marker
+  if (fungusGen !== null && fungusGen <= hist.length) {
+    const markerIdx = fungusGen - 1;
+    const markerX = plotLeft + markerIdx * xStep;
+    html += `<line x1="${markerX.toFixed(1)}" y1="${topY - 2}" x2="${markerX.toFixed(1)}" y2="${botY + 3}" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+    html += `<text x="${(markerX + 4).toFixed(1)}" y="${topY + 2}" font-size="8" fill="#1565C0" font-weight="600">Fungus</text>`;
+    html += `<text x="${(markerX + 4).toFixed(1)}" y="${topY + 11}" font-size="8" fill="#1565C0" font-weight="600">introduced</text>`;
+  }
+
+  // X-axis labels
+  hist.forEach((h, i) => {
+    const cx = plotLeft + i * xStep;
+    html += `<text x="${cx.toFixed(1)}" y="${botY + 13}" font-size="10" fill="#525d6c" text-anchor="middle" font-weight="500">G${i + 1}</text>`;
+  });
+
+  svg.innerHTML = html;
+}
+
+// === ACTIONS ===
+function doCross() {
+  const trial = trials[activeTab];
+  const p1 = PARENTS[trial.p1];
+  const p2 = PARENTS[trial.p2];
+  const count = 5 + Math.floor(Math.random() * 16); // 5-20
+  for (let i = 0; i < count; i++) {
+    const a1 = randomAllele(p1);
+    const a2 = randomAllele(p2);
+    trial.offspring.push({ resistant: isResistant(a1, a2) });
+  }
+  trial.generations++;
+  trial.genCounts.push(count);
+  // Record REAL cumulative stats
+  const totalRes = trial.offspring.filter(o => o.resistant).length;
+  trial.genHistory.push({ resistantPct: Math.round(totalRes / trial.offspring.length * 100) });
+  render();
+}
+
+function introduceFungus() {
+  const trial = trials[activeTab];
+  if (trial.fungusGen !== null || trial.generations === 0) return;
+  trial.fungusGen = trial.generations;
+  render();
+}
+
+function resetTrial() {
+  trials[activeTab] = newTrial();
+  trials[activeTab].p1 = document.getElementById('sel1').value;
+  trials[activeTab].p2 = document.getElementById('sel2').value;
+  render();
+}
+
+function switchTab(t) {
+  activeTab = t;
+  render();
+}
+
+document.getElementById('sel1').addEventListener('change', e => { trials[activeTab].p1 = e.target.value; render(); });
+document.getElementById('sel2').addEventListener('change', e => { trials[activeTab].p2 = e.target.value; render(); });
+
+render();
+</script>
+</body>
+</html>
