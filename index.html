@@ -658,6 +658,7 @@ function renderLine(trial) {
     if (fungusGen === 0) {
       const markerX = leftPad;
       html += `<line x1="${markerX}" y1="${topY - 2}" x2="${markerX}" y2="${botY + 3}" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+      html += `<rect x="${markerX + 2}" y="${topY - 8}" width="52" height="22" rx="2" fill="white" fill-opacity="0.85"/>`;
       html += `<text x="${markerX + 4}" y="${topY + 2}" font-size="8" fill="#1565C0" font-weight="600">Fungus</text>`;
       html += `<text x="${markerX + 4}" y="${topY + 11}" font-size="8" fill="#1565C0" font-weight="600">introduced</text>`;
     }
@@ -716,6 +717,7 @@ function renderLine(trial) {
       ? leftPad
       : plotLeft + (fungusGen - 1 + 0.5) * xStep;
     html += `<line x1="${markerX.toFixed(1)}" y1="${topY - 2}" x2="${markerX.toFixed(1)}" y2="${botY + 3}" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+    html += `<rect x="${(markerX + 2).toFixed(1)}" y="${topY - 8}" width="52" height="22" rx="2" fill="white" fill-opacity="0.85"/>`;
     html += `<text x="${(markerX + 4).toFixed(1)}" y="${topY + 2}" font-size="8" fill="#1565C0" font-weight="600">Fungus</text>`;
     html += `<text x="${(markerX + 4).toFixed(1)}" y="${topY + 11}" font-size="8" fill="#1565C0" font-weight="600">introduced</text>`;
   }
