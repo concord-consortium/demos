@@ -2186,15 +2186,14 @@
     transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
   }
   .section-cal .heatmap-cell.partial:hover {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 0 0 2px var(--border);
+    box-shadow: 0 0 0 1px #E8EDF5, 0 0 0 2px var(--border);
   }
   .section-cal .heatmap-cell.all:hover {
     box-shadow: 0 0 0 1px #E8EDF5, 0 0 0 2px var(--border);
   }
   .section-cal .heatmap-cell.none:hover {
     border-color: var(--surface2);
-    box-shadow: 0 0 0 1px var(--accent), 0 0 0 2px var(--border);
+    box-shadow: 0 0 0 1px #E8EDF5, 0 0 0 2px var(--border);
   }
   .section-cal .heatmap-cell:not(.blank):not(.inactive):active {
     transform: scale(0.94);
@@ -2232,12 +2231,12 @@
   }
   .section-cal.cal-wellness .heatmap-cell.today.none {
     background: var(--surface2);
-    border-color: var(--border);
+    border-color: var(--subtext);
     color: var(--text);
   }
   .section-cal.cal-wellness .heatmap-cell.today.none:hover {
     border-color: var(--surface2);
-    box-shadow: 0 0 0 1px var(--accent), 0 0 0 2px var(--border);
+    box-shadow: 0 0 0 1px #E8EDF5, 0 0 0 2px var(--border);
   }
   .section-cal.cal-wellness .heatmap-cell.today.all {
     background: var(--accent);
@@ -2251,7 +2250,7 @@
   }
   .section-cal.cal-performance .heatmap-cell.today.none {
     background: var(--surface2);
-    border-color: var(--border);
+    border-color: var(--subtext);
     color: var(--text);
   }
   .section-cal.cal-performance .heatmap-cell.today.all {
@@ -3917,7 +3916,7 @@
         <label class="field-label" for="profile-gender">Gender<span class="required-mark" aria-hidden="true">*</span></label>
         <div class="field-with-info">
           <select id="profile-gender" class="field-select">
-            <option value="" disabled selected>Select …</option>
+            <option value="" disabled selected>Select…</option>
             <option>Male</option>
             <option>Female</option>
             <option>Non-binary</option>
@@ -3934,7 +3933,7 @@
         <label class="field-label" for="profile-sport">Athlete Type<span class="required-mark" aria-hidden="true">*</span></label>
         <div class="field-with-info">
           <select id="profile-sport" class="field-select">
-            <option value="" disabled selected>Select …</option>
+            <option value="" disabled selected>Select…</option>
             <option>Endurance</option>
             <option>Strength and Power</option>
           </select>
@@ -3949,7 +3948,7 @@
         <label class="field-label" for="profile-competition-term">Competition Term</label>
         <div class="field-with-info">
           <select id="profile-competition-term" class="field-select">
-            <option value="" disabled selected>Select …</option>
+            <option value="" disabled selected>Select…</option>
             <option value="bout">Bout</option>
             <option value="game">Game</option>
             <option value="match">Match</option>
@@ -4181,7 +4180,7 @@
               <span class="section-cal-legend-label">Data entered:</span>
               <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--accent);"></span> All</span>
               <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:#007A84;"></span> Some</span>
-              <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--surface2); border: 1.5px solid var(--border);"></span> None</span>
+              <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--surface2); border: 1.5px solid var(--subtext);"></span> None</span>
             </div>
           </div>
           <hr class="section-rule" aria-hidden="true">
@@ -4286,7 +4285,7 @@
           <span class="date-nav-legend-label">Data entered:</span>
           <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--accent);"></span> All</span>
           <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:#007A84;"></span> Some</span>
-          <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--surface2); border: 1.5px solid var(--border);"></span> None</span>
+          <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--surface2); border: 1.5px solid var(--subtext);"></span> None</span>
         </div>
       </div>
 
@@ -4615,7 +4614,7 @@
 </div><!-- /phone -->
 
   <nav class="device-switcher" aria-label="Device preview size">
-    <div class="device-switcher-label">Preview <span class="version-tag">v1.6</span></div>
+    <div class="device-switcher-label">Preview <span class="version-tag">v1.7</span></div>
 
     <button class="device-btn active" type="button" data-w="360" data-h="740" data-r="44" data-os="ios" data-cutout="dynamic-island">
       <span class="db-name">Generic Phone</span>
