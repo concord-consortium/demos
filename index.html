@@ -501,7 +501,9 @@ function render() {
   document.getElementById('badge').textContent = activeTab;
   const n = trial.offspring.length;
   let pillText = 'Select parents and click Cross Plants';
-  if (n > 0) {
+  if (fungusActive && n === 0) {
+    pillText = 'Fungus active — cross plants to observe';
+  } else if (n > 0) {
     pillText = `Crosses: ${trial.generations} · Offspring: ${n}`;
     if (fungusActive) pillText += ' · Fungus active';
   }
@@ -523,9 +525,6 @@ function render() {
   if (fungusActive) {
     btn.className = 'fungus-btn locked';
     btn.innerHTML = '<span class="lock-icon">🔒</span> Fungus active';
-  } else if (trial.generations === 0) {
-    btn.className = 'fungus-btn needs-cross';
-    btn.textContent = 'Introduce Fungus';
   } else {
     btn.className = 'fungus-btn ready';
     btn.textContent = 'Introduce Fungus';
@@ -533,19 +532,27 @@ function render() {
 
   // --- Offspring grid (generation rows) ---
   const grid = document.getElementById('grid');
-  if (n === 0) {
+  if (n === 0 && !fungusActive) {
     grid.innerHTML = '<div class="empty-state">No offspring yet — click Cross Plants to begin</div>';
+  } else if (n === 0 && fungusActive) {
+    grid.innerHTML = '<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced — cross plants to observe</span></div><div class="empty-state">No offspring yet — click Cross Plants to begin</div>';
   } else {
     let html = '';
     let offset = 0;
+
+    // If fungus was introduced before any crosses (fungusGen === 0), show divider at the top
+    if (trial.fungusGen === 0) {
+      html += `<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced before crossing</span></div>`;
+    }
+
     for (let g = 0; g < trial.genCounts.length; g++) {
       const genNum = g + 1;
       const count = trial.genCounts[g];
       const genOffspring = trial.offspring.slice(offset, offset + count);
       offset += count;
 
-      // Insert fungus divider BEFORE this generation if fungus was introduced at the previous generation
-      if (trial.fungusGen !== null && genNum === trial.fungusGen + 1) {
+      // Insert fungus divider BEFORE this generation if fungus was introduced at the previous generation (but not gen 0, handled above)
+      if (trial.fungusGen !== null && trial.fungusGen > 0 && genNum === trial.fungusGen + 1) {
         html += `<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced after G${trial.fungusGen}</span></div>`;
       }
 
@@ -564,7 +571,7 @@ function render() {
     }
 
     // If fungus was introduced at the LAST generation (no generations after it yet), show divider at the end
-    if (trial.fungusGen !== null && trial.fungusGen === trial.generations) {
+    if (trial.fungusGen !== null && trial.fungusGen > 0 && trial.fungusGen === trial.generations) {
       html += `<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced after G${trial.fungusGen}</span></div>`;
     }
 
@@ -647,6 +654,13 @@ function renderLine(trial) {
 
   if (hist.length === 0) {
     html += `<text x="${(leftPad + rightPad)/2}" y="${(topY + botY)/2 + 3}" text-anchor="middle" font-size="12" fill="#aaa" font-style="italic">Cross plants to see data</text>`;
+    // Show fungus marker even with no data if fungus was introduced at gen 0
+    if (fungusGen === 0) {
+      const markerX = leftPad;
+      html += `<line x1="${markerX}" y1="${topY - 2}" x2="${markerX}" y2="${botY + 3}" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+      html += `<text x="${markerX + 4}" y="${topY + 2}" font-size="8" fill="#1565C0" font-weight="600">Fungus</text>`;
+      html += `<text x="${markerX + 4}" y="${topY + 11}" font-size="8" fill="#1565C0" font-weight="600">introduced</text>`;
+    }
     svg.innerHTML = html;
     return;
   }
@@ -661,9 +675,12 @@ function renderLine(trial) {
   // Build display points
   const displayPts = hist.map((h, i) => {
     const genNum = i + 1;
-    if (fungusGen === null || genNum < fungusGen) {
+    if (fungusGen === null || (fungusGen > 0 && genNum <= fungusGen)) {
+      // Pre-fungus: show all as healthy (fungus not yet introduced)
+      // Note: genNum <= fungusGen because fungus is introduced AFTER that generation
       return { healthyPct: 100, infectedPct: 0 };
     } else {
+      // Post-fungus (or fungusGen === 0 meaning all generations are post-fungus)
       return { healthyPct: h.resistantPct, infectedPct: 100 - h.resistantPct };
     }
   });
@@ -679,7 +696,7 @@ function renderLine(trial) {
 
   // Infected line (dashed brown) — only from fungus onward
   if (fungusGen !== null) {
-    const postFungus = displayPts.map((p, i) => ({ ...p, i })).filter((_, i) => (i + 1) >= fungusGen);
+    const postFungus = displayPts.map((p, i) => ({ ...p, i })).filter((_, i) => fungusGen === 0 || (i + 1) > fungusGen);
     if (postFungus.length > 0) {
       let infPts = postFungus.map(p => `${(plotLeft + p.i * xStep).toFixed(1)},${yScale(p.infectedPct).toFixed(1)}`).join(' ');
       html += `<polyline points="${infPts}" fill="none" stroke="#8B5A2B" stroke-width="2.5" stroke-dasharray="4 4"/>`;
@@ -691,19 +708,29 @@ function renderLine(trial) {
     }
   }
 
-  // Vertical fungus introduction marker
-  if (fungusGen !== null && fungusGen <= hist.length) {
-    const markerIdx = fungusGen - 1;
-    const markerX = plotLeft + markerIdx * xStep;
+  // Vertical fungus introduction marker — positioned between fungusGen and the next generation
+  if (fungusGen !== null && (fungusGen === 0 || fungusGen <= hist.length)) {
+    // If fungusGen is 0 (introduced before any crosses), place marker at the left edge of the plot
+    // Otherwise place it halfway between the fungusGen tick and the next tick
+    const markerX = fungusGen === 0
+      ? leftPad
+      : plotLeft + (fungusGen - 1 + 0.5) * xStep;
     html += `<line x1="${markerX.toFixed(1)}" y1="${topY - 2}" x2="${markerX.toFixed(1)}" y2="${botY + 3}" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="4 3"/>`;
     html += `<text x="${(markerX + 4).toFixed(1)}" y="${topY + 2}" font-size="8" fill="#1565C0" font-weight="600">Fungus</text>`;
     html += `<text x="${(markerX + 4).toFixed(1)}" y="${topY + 11}" font-size="8" fill="#1565C0" font-weight="600">introduced</text>`;
   }
 
-  // X-axis labels
+  // X-axis labels — thin when generations crowd the axis
+  const labelW = 22; // approximate width of "G##" at font-size 10
+  const skipN = Math.max(1, Math.ceil(labelW / xStep)); // show every Nth label
   hist.forEach((h, i) => {
     const cx = plotLeft + i * xStep;
-    html += `<text x="${cx.toFixed(1)}" y="${botY + 13}" font-size="10" fill="#525d6c" text-anchor="middle" font-weight="500">G${i + 1}</text>`;
+    // Always draw a small tick mark
+    html += `<line x1="${cx.toFixed(1)}" y1="${botY}" x2="${cx.toFixed(1)}" y2="${botY + 4}" stroke="#525d6c" stroke-width="1"/>`;
+    // Only draw the text label every Nth generation
+    if (i % skipN === 0) {
+      html += `<text x="${cx.toFixed(1)}" y="${botY + 13}" font-size="10" fill="#525d6c" text-anchor="middle" font-weight="500">G${i + 1}</text>`;
+    }
   });
 
   svg.innerHTML = html;
@@ -730,7 +757,7 @@ function doCross() {
 
 function introduceFungus() {
   const trial = trials[activeTab];
-  if (trial.fungusGen !== null || trial.generations === 0) return;
+  if (trial.fungusGen !== null) return;
   trial.fungusGen = trial.generations;
   render();
 }
