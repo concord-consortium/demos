@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Bananas Simulation — Interactive Wireframe v0.6</title>
+<title>Bananas Simulation — Interactive Prototype</title>
 <style>
   :root {
     --healthy: #4CAF50;
@@ -182,6 +182,9 @@
     padding: 6px 8px; font-size: 11px; color: var(--ink); cursor: pointer;
     appearance: auto;
   }
+  select.dd:disabled {
+    background: #f0f0f0; color: #999; cursor: not-allowed;
+  }
   .breed-btn {
     background: var(--accent); color: #fff; border: none; border-radius: 7px;
     padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
@@ -217,16 +220,6 @@
   }
   .reset-btn:hover { background: #f0f2f5; }
 
-  /* ===== ANNOTATIONS ===== */
-  .annotations {
-    max-width: 1060px; margin: 10px auto 0;
-    background: #fff8e1; border: 1px dashed #e8c97a; border-radius: 8px;
-    padding: 10px 14px; font-size: 11px; color: #6a5a20;
-  }
-  .annotations h2 { margin: 0 0 4px; font-size: 12px; color: #5a4c1b; }
-  .annotations ul { margin: 3px 0 0; padding-left: 14px; }
-  .annotations li { margin-bottom: 2px; }
-  .annotations li b { color: #3f3510; }
 
   /* ===== ABOUT SIDEBAR ===== */
   .about-btn {
@@ -285,7 +278,7 @@
 </svg>
 
 <div class="header">
-  <h1>Bananas Simulation — Interactive Wireframe v0.6</h1>
+  <h1>Bananas Simulation — Interactive Prototype</h1>
   <div class="meta"><button class="about-btn" onclick="toggleAbout()">About this prototype</button> &nbsp; Prepared for: DESE SPA Educator Review Panel (April 2026) · Prototype by <svg class="cc-logo" viewBox="0 0 255 80" xmlns="http://www.w3.org/2000/svg"><defs><style>.cc0{fill:#231f20;fill-rule:evenodd}.cc1{fill:#ad441d;fill-rule:evenodd}.cc2{fill:#ffd26c;fill-rule:evenodd}.cc3{fill:#ffc656;fill-rule:evenodd}.cc4{fill:#fff}.cc5{fill:#00758d}.cc6{fill:#e75300}</style></defs><path class="cc6" d="M62.6,29.6c4.3,3.1,8.4,7.8,8.2,10.3,0,1.5-5.4,6.8-11.2,8.9,1.4,5.2,1.5,11.4-.2,13.3-.9,1-7.7,1.7-13.4-.2.3-1.1.6-2.5.6-4.2.2-6.9,8.9-11.4,8.9-23.5s-11-19.7-20.1-19.7-20.1,8.3-20.1,19.7,8.7,16.6,8.9,23.5c.1,1.9.3,3.5.8,4.7-4.5,2-9.9,3-11.8,1.7-1.2-.8-3.1-8.2-1.9-14.4-5-1.4-10.4-4.4-11.2-6.8-.4-1.4,2.7-8.3,7.6-12.3-3-4.4-5.3-10.2-4.3-12.5.6-1.4,7.3-4.5,13.6-4.5.4-5.3,2.4-11.3,4.6-12.4,1.3-.7,8.5,1.3,13.2,5.5C38.5,2.9,43.7-.4,46.1.2c1.4.3,5.7,6.6,6.7,12.9,5.2-.5,11.3.5,12.8,2.5.9.9.2,8.5-3,14Z"/><path class="cc1" d="M42.4,42.4c4.3.5,8.7-3.1,13.2-.5,1.6,1,3,3.8,3.8,7-2,.7-4.1,1.1-6.1.7-3.7-.6-8-4.1-10.9-7.2ZM25.2,37.8c-2.5,3.6-1.7,9.3-6.2,11.9-1.6,1-4.7.8-7.9,0,.4-2.2,1.2-4.2,2.5-5.8,2.4-2.9,7.5-5,11.6-6ZM25.8,30.7c-4.2,1.1-7.2,6-12.2,5.1-1.9-.3-4.1-2.5-5.9-5.3,1.7-1.4,3.5-2.4,5.5-2.8,3.6-.7,8.8,1,12.6,3ZM30.7,25.5c-3.9-1.9-9.2-.1-12.5-4.1-1.2-1.5-1.5-4.6-1.3-7.9,2.1,0,4.2.4,6,1.5,3.2,1.8,6.1,6.6,7.8,10.5ZM37.7,24.9c-1.8-4.1-7-6.2-7-11.4s1.7-4.5,4-6.9c1.6,1.4,3,3.1,3.7,5.1,1.3,3.5.5,9-.7,13.2ZM45.3,35.8c3.6-2.5,4.7-8.1,9.8-9,1.9-.3,4.7.9,7.3,2.9-1.1,1.9-2.5,3.5-4.2,4.6-3.2,1.9-8.7,2.1-12.9,1.5ZM52.7,12.9c.3,2.2.3,4.3-.4,6.3-1.2,3.6-5.3,7.3-8.9,9.7,1.2-4.3-1.5-9.3,1.8-13.3,1.3-1.5,4.2-2.4,7.5-2.7Z"/><path class="cc2" d="M27.8,65.2c-.9-.3-1.7-.9-2.1-1.6-.8-1.3-1.4-3.1-1.5-5.9-.2-6.9-8.9-11.4-8.9-23.5s11-19.7,20.1-19.7,20.1,8.3,20.1,19.7-8.7,16.6-8.9,23.5c0,2.9-.7,4.8-1.6,6.1-.5.7-1.1,1.1-1.9,1.5h-15.3Z"/><path class="cc4" d="M39.3,37.2c.3-.4,2.5,0,4.5-.5.6-.2,1.1-.5,1.6-.8-3.2-.4-5.6-1.2-5.7-1.9,0-.5,2-1.5,3.1-3.4.3-.5.5-1.1.7-1.7-2.7,1.8-5,2.8-5.5,2.3-.4-.4.6-2.5.3-4.6,0-.6-.3-1.2-.5-1.7-.9,3.1-2.1,5.4-2.8,5.4s-1.1-2.3-2.7-3.7c-.5-.4-1-.7-1.5-1,1.3,3,1.8,5.5,1.2,6-.4.3-2.3-1-4.4-1.1-.6,0-1.2.1-1.8.2,2.8,1.5,4.8,3,4.7,3.8-.1.5-2.4.7-4,2.1-.5.4-.9.8-1.2,1.3,3.1-.7,5.6-.9,6-.2.2.5-1.4,2.1-1.8,4.2-.1.6-.1,1.2-.1,1.8,1.9-2.6,3.8-4.3,4.4-4.1.5.2.3,2.5,1.3,4.4.3.6.7,1,1.1,1.5-.2-3.2.2-5.8.8-6,.5,0,1.8,1.7,3.8,2.5.6.2,1.1.4,1.7.4-2.2-2.4-3.6-4.6-3.2-5.2Z"/><path class="cc3" d="M44,61.2c-.6-.3-1.1-.6-1.6-.9-.9-.6-1.8-1.3-2.5-2.2-2.4-2.9-3.5-8.4-3.8-12.7,3,3.2,8.6,3.3,10.4,8.3,0,.2,0,.3,0,.5l.3,1.1c-.2.8-.4,1.6-.4,2.4,0,1.7-.3,3.1-.6,4.3-.6-.2-1.2-.5-1.9-.8ZM29.3,43.7c.3,4.4,4.5,8.2,2.8,13.2-.5,1.4-2,2.8-4,4-.6.4-1.3.8-2.1,1.1-.4.2-.7.3-1,.5-.4-1.2-.7-2.8-.8-4.7v-1.9c0-.4,0-.9.1-1.3.5-3.6,2.7-7.9,5-10.9ZM50.7,22.2c-1.8,2.6-4.7,5.1-7.3,6.8,1.1-3.8-.9-8.2.9-11.9,2.4,1.2,4.6,2.9,6.4,5.1ZM45.3,35.8c3.3-2.3,4.5-7.2,8.6-8.7.9,2.2,1.5,4.5,1.5,7.1v1.2c-3.1.8-7,.8-10.1.4ZM37.7,24.9c-1.6-3.6-5.8-5.6-6.8-9.7,1.5-.4,3-.6,4.5-.6s2.4.1,3.7.4c0,3.1-.5,6.9-1.4,9.9ZM30.7,25.5c-3.4-1.7-7.9-.5-11.2-2.9,1.7-2.2,3.9-4,6.2-5.3,2.1,2.3,3.8,5.5,5,8.2ZM25.8,30.7c-3.7,1-6.4,4.8-10.4,5.2,0-.5-.1-1.1-.1-1.6,0-2.3.5-4.6,1.3-6.6,3,.3,6.5,1.6,9.2,3ZM25.2,37.8c-2.3,3.2-1.8,8.2-5,11-1.4-2.2-2.8-4.5-3.8-7.4,2.6-1.6,6-2.9,8.8-3.6ZM42.4,42.4c3.9.4,7.9-2.5,11.9-1.1-1,2.9-2.4,5.3-3.8,7.4-2.9-1.4-5.9-4-8.1-6.3Z"/><path class="cc5" d="M42.8,72.1v1c.7,0,1.3.7,1.3,1.5s-.5,1.4-1.3,1.4l-4.9,1.3c.3.3.5.7.5,1.2,0,.8-.6,1.5-1.3,1.5h-3.6c-.7,0-1.3-.7-1.3-1.5s.3-1.1.7-1.3l-5.1-1.2c-.7,0-1.3-.7-1.3-1.5s.6-1.5,1.3-1.5h12.1v-.3l-12.1-.7c-.7,0-1.3-.7-1.3-1.5s.6-1.5,1.3-1.5h12v-.3l-12-.7c-.7,0-1.3-.7-1.3-1.5s.6-1.5,1.3-1.5h15c.7,0,1.3.7,1.3,1.5s-.6,1.5-1.3,1.5h0v1h0c.7,0,1.3.7,1.3,1.5,0,.9-.5,1.6-1.3,1.6Z"/><path class="cc0" d="M228.5,25.3c.5-1.3,2.6-3.5,4.6-3.5s1.4.2,1.4.2v4.4s-1-.3-1.5-.3c-2.9,0-4.4,3.1-4.4,6.3v7.4h-4.2v-14h0c0-.1-.1-.1-.1-.1h-2.3v-3.6h3.8c1.4,0,2.7.7,2.7,2.2,0,0,0,.8,0,1ZM168.2,24.2c1.1-1.3,2.9-2.6,5.7-2.6,4.1,0,6,2.5,6,6.9v7.5h0c0,0,.1,0,.1,0h2.1v3.6h-3.8c-1.4,0-2.6-.7-2.6-2.2v-8.3c0-2.3-.4-3.6-2.5-3.6s-4.9,2.7-4.9,5.8v8.3h-4.3v-14h0c0-.1-.1-.1-.1-.1h-2.1v-3.6h3.8c1.6,0,2.5.7,2.6,2.2ZM86.1,20c1,0,1.4.7,1.4,1.5v2.5h-2.5v-1.7h-2.2v12.8h-2.7v-12.7h-2.2v1.6h-2.4v-2.4c0-.9.4-1.7,1.4-1.7h9.2ZM91.9,25.4c.7-.8,1.9-1.5,3.4-1.5,2.6,0,3.8,1.5,3.8,4.3v4.7h1.6v2.3h-4.2v-6.5c0-1.4-.3-2.2-1.6-2.2s-3,1.5-3,3.6v5.2h-2.6v-12.9h-.9v-2.4h3.6v5.4h-.1ZM107,35.4c-3.4,0-5.7-2.5-5.7-5.8s2.3-5.8,5.4-5.8,4.7,2.4,4.7,5.2,0,1.1,0,1.1h-7.3c.3,1.8,1.6,2.8,3.1,2.8s2.2-.6,3.1-1.4l1.2,2.1s-.3.3-.5.4c-1.1.9-2.5,1.4-3.9,1.4ZM106.7,26.1c-1.2,0-2.2.7-2.5,2h4.6c-.2-1.3-1.1-2-2.1-2ZM129.6,39.8c-7.2,0-12.4-5.7-12.4-12.8s5.3-12.5,12.2-12.5,9.3,1.1,9.3,5.2v3.4h-4.1v-2.4c0-1.8-3.8-2.2-5-2.2-4.6,0-7.9,3.4-7.9,8.4s3.5,8.9,8.1,8.9,7.3-3.4,7.3-3.4l2.1,3c-.1,0-2.7,4.4-9.6,4.4ZM150.7,40.2c-5.2,0-9.4-3.9-9.4-9.4s4.2-9.3,9.4-9.3,9.4,3.9,9.4,9.3c0,5.4-4.2,9.4-9.4,9.4ZM150.7,25.4c-2.8,0-5.1,2.2-5.1,5.4s2.3,5.4,5.1,5.4,5.1-2.2,5.1-5.4-2.3-5.4-5.1-5.4ZM193.1,40.2c-5,0-9.4-3.5-9.4-9.3s4-9.4,9.2-9.4,7,1,7,4.4v1.9h-3.9v-1c0-1-2.3-1.3-3-1.3-3,0-5,2.1-5,5.4s2.3,5.4,5.2,5.4,3.7-1.1,5.4-2.5l1.7,3.4c-2,1.8-4.4,3-7.2,3ZM210.9,40.2c-5.2,0-9.4-3.9-9.4-9.4s4.2-9.3,9.4-9.3,9.4,3.9,9.4,9.3c0,5.4-4.2,9.4-9.4,9.4ZM210.9,25.4c-2.8,0-5.1,2.2-5.1,5.4s2.3,5.4,5.1,5.4,5.1-2.2,5.1-5.4-2.3-5.4-5.1-5.4ZM248.4,23.2v-4.2h-2v-3.6h6.2v20.6h0c0,0,.1,0,.1,0h2.2v3.6h-3.8c-1.4,0-2.3-.7-2.5-1.7-1.3,1.4-3.1,2.1-5,2.1-4.8,0-7.7-3.9-7.7-9.3s3.2-9.3,8-9.3c1.5,0,3.3.6,4.5,1.7ZM244.4,25.5c-2.2,0-4.2,1.8-4.2,5.4s1.8,5.4,4.1,5.4,4.2-1.5,4.2-5.4-1.5-5.4-4.1-5.4ZM122.1,50.5c1-1.2,2.8-2.5,5.4-2.5,3.9,0,5.6,2.3,5.6,6.5v7h0c0,0,.1,0,.1,0h2.3v3.4h-4c-1.4,0-2.5-.7-2.5-2v-7.9c0-2.2-.4-3.4-2.3-3.4-2.7,0-4.6,2.5-4.6,5.5v7.9h-4v-13.2h0c0,0,0,0,0,0h-2v-3.4h3.6c1.6,0,2.5.7,2.5,2.1ZM106.5,65.5c-4.8,0-8.8-3.7-8.8-8.8s4-8.7,8.8-8.7,8.8,3.7,8.8,8.7-4,8.8-8.8,8.8ZM106.5,51.7c-2.6,0-4.7,2.1-4.7,5s2.1,5.1,4.7,5.1,4.7-2.1,4.7-5.1-2.2-5-4.7-5ZM142.6,65.5c-3.8,0-6.3-3.1-6.3-3.1l2.2-2.7s1.6,2.3,4.2,2.3,2.6-.7,2.6-1.5c0-1.4-2.5-2-3.5-2.3-2.2-.8-5.1-2-5.1-5.3s3.5-4.9,6.2-4.9,5.8.9,5.8,3.7v1.7h-3.6v-.8c0-.4-.7-1.1-2.2-1.1s-2.2.6-2.2,1.3c0,1.3,2.3,1.9,3.2,2.2,2.3.8,5.4,1.9,5.4,5.2,0,3.6-3.1,5.3-6.7,5.3ZM160.3,65.5c-4.8,0-8.8-3.7-8.8-8.8s4-8.7,8.8-8.7,8.8,3.7,8.8,8.7-3.9,8.8-8.8,8.8ZM160.3,51.7c-2.6,0-4.7,2.1-4.7,5s2.1,5.1,4.7,5.1,4.7-2.1,4.7-5.1c.1-2.9-2.1-5-4.7-5ZM176.8,51.5c.5-1.2,2.5-3.3,4.3-3.3s1.3,0,1.3,0v4.1s-1-.2-1.4-.2c-2.8,0-4.1,2.9-4.1,5.9v7h-4v-13.2h0c0,0-.1,0-.1,0h-2.4v-3.4h4c1.4,0,2.5.7,2.5,2-.1.2-.1,1-.1,1.1ZM192,65.3c-2,0-6.4-.7-6.4-6.4v-7.1h-2.2v-3.4h2.2v-4.3h3.9v4.3h3.7v3.4h-3.7v6.8c0,2.7,1.7,3,2.7,3s1.2,0,1.2,0v3.6c.2,0-.7.2-1.4.2ZM202.3,46.3h-4.1v-4.1h4.1v4.1ZM204.2,65.1h-4.2c-1,0-1.8-.8-1.8-2.5v-10.8h-2.5v-3.4h4.1c2.3,0,2.4,1.7,2.4,2.5v10.8h2v3.4ZM218.6,63.1c-1,1.2-2.7,2.4-5.3,2.4-3.7,0-5.6-2.2-5.6-6.5v-7.2h-2.1v-3.4h4.1c1.2,0,2,1,2,1.9v8c0,2.1.4,3.4,2.3,3.4s4.4-2.6,4.4-5.6v-7.8h4v13.2q0,0,.1,0h1.9v3.4h-3.5c-1.3,0-2.2-.6-2.3-1.9ZM232.6,50.5c1.2-1.4,2.9-2.5,4.9-2.5s3.9.9,4.7,2.9c1.1-1.6,3.1-2.9,5.4-2.9,3.8,0,5.5,2.3,5.5,6.5v7.2h1.9v3.4h-6v-9.9c0-2.2-.4-3.4-2.2-3.4s-4,2.6-4,5.6v7.7h-4v-9.9c0-2.1-.3-3.4-2.1-3.4s-4.1,2.7-4.1,5.7v7.6h-4v-13.2h0c0,0-.1,0-.1,0h-2.4v-3.4h4c1.5,0,2.4.7,2.5,2.1ZM86.8,65.4c-6.7,0-11.6-5.3-11.6-12s5-11.7,11.5-11.7,8.7,1,8.7,4.9v3.2h-3.9v-2.2c0-1.7-3.6-2.1-4.7-2.1-4.3,0-7.4,3.2-7.4,7.8s3.2,8.3,7.6,8.3,6.8-3.2,6.8-3.2l2,2.8s-2.5,4.2-9,4.2Z"/></svg></div>
 </div>
 
@@ -313,7 +306,7 @@
 
     <div class="right-col">
       <div class="card">
-        <h3>Offspring Phenotypes</h3>
+        <h3>Offspring Phenotypes – All Generations</h3>
         <div class="pie-wrap"><svg id="pie" width="130" height="130" viewBox="-80 -80 160 160"></svg></div>
         <div class="legend">
           <div class="key"><span class="sw" style="background:var(--healthy)"></span><span class="nm">Healthy</span><span class="pc" id="healthyPct">–</span></div>
@@ -341,6 +334,7 @@
     <div class="control">
       <label>Parent 1</label>
       <select class="dd" id="sel1">
+        <option value="" disabled selected>— Select —</option>
         <option value="W1">Wild W1</option>
         <option value="W2">Wild W2</option>
         <option value="W3">Wild W3</option>
@@ -351,6 +345,7 @@
     <div class="control">
       <label>Parent 2</label>
       <select class="dd" id="sel2">
+        <option value="" disabled selected>— Select —</option>
         <option value="C1">Cavendish C1</option>
         <option value="C2">Cavendish C2</option>
         <option value="W1">Wild W1</option>
@@ -373,27 +368,6 @@
   </div>
 </div>
 
-<div class="annotations">
-  <h2>Designer notes (v0.6 — generation rows + expanded charts)</h2>
-  <ul>
-    <li><b>Fungus mechanic:</b> Students cross plants first, then introduce fungus. Once introduced, the button locks permanently — fungus cannot be removed. This models real-world irreversibility of fungal contamination.</li>
-    <li><b>Generation rows:</b> Each cross creates a labeled row (G1, G2, G3…) in the offspring grid with a light border. This helps students correlate generations between the grid and the line graph x-axis.</li>
-    <li><b>Fungus marker (both views):</b> A blue dashed line appears in BOTH the offspring grid (horizontal divider) and the line graph (vertical marker) at the generation when fungus was introduced. This reinforces the connection between the two visualizations.</li>
-    <li><b>Vertical marker on line graph:</b> A blue dashed line labeled "Fungus introduced" appears at the generation when the button was clicked. Pre-fungus data points show 100% healthy (students can't observe resistance). Post-fungus data points show actual resistance.</li>
-    <li><b>Workflow:</b> (1) Select parents → (2) Cross several times (all plants look healthy) → (3) Click "Introduce Fungus" (locks, marker appears, existing plants reveal phenotype) → (4) Keep crossing to see how resistance changes over more generations.</li>
-    <li><b>Pie chart + grid:</b> Before fungus, all plants appear green and pie shows 100% healthy. After fungus, non-resistant plants turn brown/wilted and pie shows real percentages.</li>
-    <li><b>Reset Trial:</b> Clears everything including the fungus state, so students can start a fresh experiment in that tab.</li>
-  </ul>
-  <h2 style="margin-top:10px">Questions for the educator panel</h2>
-  <ol style="margin:3px 0 0; padding-left:18px;">
-    <li style="margin-bottom:4px"><b>Offspring sample size &amp; randomness:</b> Each cross currently produces 5–20 random offspring. Small samples mean students might get a 50/50 cross that happens to come out 3 resistant / 9 not-resistant, which could lead to incorrect but reasonable conclusions. Is that variability pedagogically valuable (teaching about sample size), or should the simulation nudge results closer to expected Mendelian ratios to keep the assessment fair?</li>
-    <li style="margin-bottom:4px"><b>Fungus reversibility:</b> The current design makes introducing fungus a one-way permanent action per trial. Should students be allowed to turn fungus off within a trial after it has already been introduced? Is it important that students can choose <em>when</em> to introduce fungus (after 1 cross, after 3, etc.), or should the simulation prompt them at a fixed point?</li>
-    <li style="margin-bottom:4px"><b>Pre-fungus plant appearance:</b> Right now, pre-fungus plants all look identically healthy — students literally cannot tell resistant from non-resistant. Is that level of ambiguity appropriate for grades 6–8, or should there be some subtle visual hint (like slightly different leaf shapes for wild vs. Cavendish offspring) so students have something to observe and discuss even before introducing the pathogen?</li>
-    <li style="margin-bottom:4px"><b>Line graph metric &amp; marker label:</b> The "Fungus Resistance over Generations" chart tracks cumulative resistance percentage. Is "cumulative across all offspring so far" the right metric, or should each generation point reflect only the offspring from that specific cross? Cumulative data smooths out noise but obscures generational trends. Also, is the "Fungus introduced" vertical marker label clear enough, or should it include a brief explanation like "Plants now exposed to fungus"?</li>
-    <li style="margin-bottom:4px"><b>Vocabulary level:</b> Are terms like "phenotype" and "resistance" appropriate for the target grade band, or should the interface use simplified language like "what the plant looks like" and "ability to fight off disease"?</li>
-    <li style="margin-bottom:4px"><b>Time on task:</b> How long will students typically have with the simulation during the assessment?</li>
-  </ol>
-</div>
 
 <div class="about-overlay" id="aboutOverlay" onclick="toggleAbout()"></div>
 <div class="about-sidebar" id="aboutSidebar">
@@ -411,9 +385,9 @@
     <h2>How It Works</h2>
     <p>Students work through a guided investigation across up to five independent trials (tabs A&ndash;E):</p>
     <ol>
-      <li><strong>Select parents</strong> &mdash; Choose from Wild banana varieties (which carry a dominant resistance allele, R) and Cavendish varieties (homozygous recessive, rr).</li>
-      <li><strong>Cross plants</strong> &mdash; Each cross produces 5&ndash;20 offspring whose genotypes are determined by Mendelian inheritance. Before the fungus is introduced, all plants appear identically healthy.</li>
-      <li><strong>Introduce fungus</strong> &mdash; A one-way, irreversible action that simulates real-world fungal contamination. Plants lacking the resistance allele (rr) visually wilt and turn brown.</li>
+      <li><strong>Select parents</strong> &mdash; Choose from Wild banana varieties (which carry a dominant resistance allele, R) and Cavendish varieties (homozygous recessive, rr). Parent selections are locked once the first cross is made; reset the trial to choose different parents.</li>
+      <li><strong>Cross plants</strong> &mdash; Each cross produces 5&ndash;20 offspring whose genotypes are determined by Mendelian inheritance. Before the fungus is introduced, all plants appear identically healthy. A maximum of 25 crosses (generations) are allowed per trial.</li>
+      <li><strong>Introduce fungus</strong> &mdash; A one-way, irreversible action that simulates real-world fungal contamination. Plants lacking the resistance allele (rr) visually wilt and turn brown. Fungus can be introduced at any time, even before the first cross.</li>
       <li><strong>Continue crossing</strong> &mdash; Students can keep crossing after the fungus to observe how resistance ratios change across generations.</li>
       <li><strong>Analyze data</strong> &mdash; A pie chart shows current healthy vs. infected proportions; a line graph tracks resistance percentage over generations.</li>
     </ol>
@@ -425,12 +399,14 @@
     <ul>
       <li><strong>Pre-fungus ambiguity:</strong> Before the fungus is introduced, all plants look green and healthy regardless of genotype.</li>
       <li><strong>Irreversible fungus:</strong> Once introduced, the fungus cannot be removed within a trial, modeling the permanence of real agricultural contamination.</li>
+      <li><strong>Locked parents:</strong> Once the first cross is made, parent selections are locked for the remainder of that trial. Students must reset the trial to choose different parents.</li>
+      <li><strong>Generation cap:</strong> Each trial allows a maximum of 25 crosses to keep the investigation focused.</li>
       <li><strong>Generation rows:</strong> Offspring are organized by generation (G1, G2, G3&hellip;) in the grid, making it easy to correlate with the line graph.</li>
       <li><strong>Dual markers:</strong> A blue dashed line appears in both the offspring grid and the line graph at the generation when fungus was introduced.</li>
     </ul>
 
     <h2>Status</h2>
-    <p>This is wireframe <strong>v0.6</strong>, intended for educator review and feedback. It is not a production release.</p>
+    <p>This is an interactive prototype, intended for educator review and feedback. It is not a production release.</p>
     <hr>
     <p><em>A Concord Consortium prototype.</em></p>
   </div>
@@ -462,12 +438,12 @@ let activeTab = 'A';
 
 function newTrial() {
   return {
-    p1: 'W1', p2: 'C1',
-    offspring: [],        // [{resistant: bool}]
+    p1: null, p2: null,    // null = not yet selected
+    offspring: [],          // [{resistant: bool}]
     generations: 0,
-    fungusGen: null,       // generation number when fungus was introduced (null = not yet)
-    genHistory: [],        // [{resistantPct}] — always stores REAL data
-    genCounts: [],         // [count_per_generation] — e.g. [12, 8, 15]
+    fungusGen: null,        // generation number when fungus was introduced (null = not yet)
+    genHistory: [],         // [{resistantPct}] — always stores REAL data
+    genCounts: [],          // [count_per_generation] — e.g. [12, 8, 15]
   };
 }
 
@@ -490,7 +466,7 @@ function render() {
     const pctH = n > 0 ? (hasFungus ? Math.round(tabHealthy/n*100) : 100) : 0;
     const pctI = n > 0 ? 100 - pctH : 0;
     const cls = t === activeTab ? 'tab active' : (n > 0 ? 'tab' : 'tab empty');
-    const info = n > 0 ? `${tr.p1} × ${tr.p2} · ${n}` : '+ New';
+    const info = n > 0 ? `${tr.p1 || '?'} × ${tr.p2 || '?'} · ${n}` : '+ New';
     const stats = n > 0
       ? `<div class="tab-stats"><span><span class="sw" style="background:var(--healthy)"></span>${pctH}%</span><span><span class="sw" style="background:var(--infected)"></span>${pctI}%</span></div>`
       : '';
@@ -500,25 +476,43 @@ function render() {
   // --- Badge + Gen pill ---
   document.getElementById('badge').textContent = activeTab;
   const n = trial.offspring.length;
-  let pillText = 'Select parents and click Cross Plants';
-  if (fungusActive && n === 0) {
+  const parentsSelected = trial.p1 && trial.p2;
+  const MAX_GENS = 25;
+  let pillText = 'Select two parents to begin';
+  if (!parentsSelected && n === 0) {
+    pillText = 'Select two parents to begin';
+  } else if (parentsSelected && n === 0 && !fungusActive) {
+    pillText = 'Click Cross Plants to begin';
+  } else if (fungusActive && n === 0) {
     pillText = 'Fungus active — cross plants to observe';
   } else if (n > 0) {
     pillText = `Crosses: ${trial.generations} · Offspring: ${n}`;
     if (fungusActive) pillText += ' · Fungus active';
+    if (trial.generations >= MAX_GENS) pillText += ' · Max reached';
   }
   document.getElementById('genPill').textContent = pillText;
 
+  // --- Cross Plants button ---
+  const crossBtn = document.getElementById('crossBtn');
+  crossBtn.disabled = !parentsSelected || trial.generations >= MAX_GENS;
+  crossBtn.style.opacity = crossBtn.disabled ? '0.45' : '1';
+  crossBtn.style.cursor = crossBtn.disabled ? 'not-allowed' : 'pointer';
+
   // --- Parents ---
-  const p1 = PARENTS[trial.p1], p2 = PARENTS[trial.p2];
-  document.getElementById('p1svg').style.color = p1.color;
-  document.getElementById('p2svg').style.color = p2.color;
-  document.getElementById('p1name').textContent = trial.p1;
-  document.getElementById('p2name').textContent = trial.p2;
-  document.getElementById('p1type').textContent = p1.type;
-  document.getElementById('p2type').textContent = p2.type;
-  document.getElementById('sel1').value = trial.p1;
-  document.getElementById('sel2').value = trial.p2;
+  const p1 = trial.p1 ? PARENTS[trial.p1] : null;
+  const p2 = trial.p2 ? PARENTS[trial.p2] : null;
+  document.getElementById('p1svg').style.color = p1 ? p1.color : '#ccc';
+  document.getElementById('p2svg').style.color = p2 ? p2.color : '#ccc';
+  document.getElementById('p1name').textContent = trial.p1 || '?';
+  document.getElementById('p2name').textContent = trial.p2 || '?';
+  document.getElementById('p1type').textContent = p1 ? p1.type : 'Not selected';
+  document.getElementById('p2type').textContent = p2 ? p2.type : 'Not selected';
+  document.getElementById('sel1').value = trial.p1 || '';
+  document.getElementById('sel2').value = trial.p2 || '';
+  // Lock dropdowns once crossing has begun
+  const hasCrossed = trial.generations > 0;
+  document.getElementById('sel1').disabled = hasCrossed;
+  document.getElementById('sel2').disabled = hasCrossed;
 
   // --- Fungus button ---
   const btn = document.getElementById('fungusBtn');
@@ -532,10 +526,13 @@ function render() {
 
   // --- Offspring grid (generation rows) ---
   const grid = document.getElementById('grid');
+  const emptyMsg = parentsSelected
+    ? 'No offspring yet — click Cross Plants to begin'
+    : 'Select two parents below, then click Cross Plants';
   if (n === 0 && !fungusActive) {
-    grid.innerHTML = '<div class="empty-state">No offspring yet — click Cross Plants to begin</div>';
+    grid.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
   } else if (n === 0 && fungusActive) {
-    grid.innerHTML = '<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced — cross plants to observe</span></div><div class="empty-state">No offspring yet — click Cross Plants to begin</div>';
+    grid.innerHTML = `<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced — cross plants to observe</span></div><div class="empty-state">${emptyMsg}</div>`;
   } else {
     let html = '';
     let offset = 0;
@@ -741,6 +738,8 @@ function renderLine(trial) {
 // === ACTIONS ===
 function doCross() {
   const trial = trials[activeTab];
+  if (!trial.p1 || !trial.p2) return;
+  if (trial.generations >= 25) return;
   const p1 = PARENTS[trial.p1];
   const p2 = PARENTS[trial.p2];
   const count = 5 + Math.floor(Math.random() * 16); // 5-20
@@ -766,8 +765,6 @@ function introduceFungus() {
 
 function resetTrial() {
   trials[activeTab] = newTrial();
-  trials[activeTab].p1 = document.getElementById('sel1').value;
-  trials[activeTab].p2 = document.getElementById('sel2').value;
   render();
 }
 
@@ -776,8 +773,8 @@ function switchTab(t) {
   render();
 }
 
-document.getElementById('sel1').addEventListener('change', e => { trials[activeTab].p1 = e.target.value; render(); });
-document.getElementById('sel2').addEventListener('change', e => { trials[activeTab].p2 = e.target.value; render(); });
+document.getElementById('sel1').addEventListener('change', e => { trials[activeTab].p1 = e.target.value || null; render(); });
+document.getElementById('sel2').addEventListener('change', e => { trials[activeTab].p2 = e.target.value || null; render(); });
 
 render();
 </script>
