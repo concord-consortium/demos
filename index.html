@@ -42,9 +42,21 @@
   }
 
   /* ===== TABS ===== */
-  .tabs { display: flex; gap: 4px; padding: 6px 8px 0; background: #fafbfc; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .tabs-wrapper {
+    display: flex; align-items: stretch; background: #fafbfc;
+    border-bottom: 1px solid var(--border); flex-shrink: 0; position: relative;
+  }
+  .tabs-scroll-btn {
+    width: 24px; flex-shrink: 0; border: none; background: #fafbfc;
+    color: var(--ink-soft); cursor: pointer; font-size: 14px; padding: 0;
+    display: none; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .tabs-scroll-btn:hover { background: #e8eaed; color: var(--ink); }
+  .tabs-scroll-btn.visible { display: flex; }
+  .tabs { display: flex; gap: 4px; padding: 6px 8px 0; flex: 1; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; scrollbar-width: thin; }
   .tab {
-    width: 130px; height: 54px;
+    width: 130px; min-width: 130px; height: 54px; flex-shrink: 0;
     background: var(--card); border: 1px solid var(--border); border-bottom: none;
     border-radius: 7px 7px 0 0; padding: 3px 6px;
     position: relative; cursor: pointer; user-select: none;
@@ -64,6 +76,13 @@
   .tab-stats { display: flex; justify-content: center; gap: 8px; font-size: 9px; color: var(--ink-soft); }
   .tab-stats .sw { display: inline-block; width: 7px; height: 7px; border-radius: 2px; vertical-align: middle; margin-right: 1px; }
   .tab.empty .tab-info { color: var(--ink-soft); }
+  .tab.add-new {
+    border: 2px dashed var(--border); background: transparent;
+    min-width: 70px; width: 70px; flex-shrink: 0;
+    display: grid; place-items: center;
+  }
+  .tab.add-new:hover { background: #f0f2f5; border-color: var(--ink-soft); }
+  .tab.add-new .tab-info { margin-top: 0; font-size: 11px; color: var(--ink-soft); }
 
   /* ===== MAIN — narrower left, wider right ===== */
   .main { display: grid; grid-template-columns: 580px 1fr; flex: 1; min-height: 0; background: #f7f8fa; }
@@ -107,7 +126,10 @@
   .gen-row {
     display: flex; align-items: flex-start; gap: 0;
     margin-bottom: 3px; position: relative;
+    cursor: pointer; border-radius: 6px; transition: background 0.15s;
   }
+  .gen-row:hover { background: #eef3f9; }
+  .gen-row.selected { background: #dce8f5; outline: 2px solid var(--accent); outline-offset: -1px; border-radius: 6px; }
   .gen-row:last-child { margin-bottom: 0; }
   .gen-label {
     width: 28px; min-width: 28px; padding-top: 8px;
@@ -283,7 +305,11 @@
 </div>
 
 <div class="app">
-  <div class="tabs" id="tabs"></div>
+  <div class="tabs-wrapper">
+    <button class="tabs-scroll-btn" id="tabsLeft" onclick="scrollTabs(-1)">&#8249;</button>
+    <div class="tabs" id="tabs"></div>
+    <button class="tabs-scroll-btn" id="tabsRight" onclick="scrollTabs(1)">&#8250;</button>
+  </div>
   <div class="main">
     <div class="sky">
       <span class="badge" id="badge">A</span>
@@ -306,7 +332,7 @@
 
     <div class="right-col">
       <div class="card">
-        <h3>Offspring Phenotypes – All Generations</h3>
+        <h3 id="pieTitle">Offspring Phenotypes – All Generations</h3>
         <div class="pie-wrap"><svg id="pie" width="130" height="130" viewBox="-80 -80 160 160"></svg></div>
         <div class="legend">
           <div class="key"><span class="sw" style="background:var(--healthy)"></span><span class="nm">Healthy</span><span class="pc" id="healthyPct">–</span></div>
@@ -431,10 +457,13 @@ function randomAllele(p) { return p.alleles[Math.random() < 0.5 ? 0 : 1]; }
 function isResistant(a1, a2) { return a1 === 'R' || a2 === 'R'; }
 
 // === STATE ===
-const TABS = ['A','B','C','D','E'];
+const ALL_TAB_LETTERS = ['A','B','C','D','E','F','G','H','I','J'];
+const MAX_TABS = 10;
+let tabList = ['A','B','C','D','E'];
 let trials = {};
-TABS.forEach(t => { trials[t] = newTrial(); });
+tabList.forEach(t => { trials[t] = newTrial(); });
 let activeTab = 'A';
+let selectedGen = null; // null = all generations, 1-based gen number = single gen selected
 
 function newTrial() {
   return {
@@ -453,7 +482,7 @@ function render() {
   const fungusActive = trial.fungusGen !== null;
 
   // --- Tabs ---
-  document.getElementById('tabs').innerHTML = TABS.map(t => {
+  let tabsHtml = tabList.map(t => {
     const tr = trials[t];
     const n = tr.offspring.length;
     const hasFungus = tr.fungusGen !== null;
@@ -472,6 +501,11 @@ function render() {
       : '';
     return `<div class="${cls}" onclick="switchTab('${t}')"><span class="tab-letter">${t}</span><div class="tab-info">${info}</div>${stats}</div>`;
   }).join('');
+  // Add "+ New" button if under max
+  if (tabList.length < MAX_TABS) {
+    tabsHtml += `<div class="tab add-new" onclick="addTrial()"><div class="tab-info">+ New</div></div>`;
+  }
+  document.getElementById('tabs').innerHTML = tabsHtml;
 
   // --- Badge + Gen pill ---
   document.getElementById('badge').textContent = activeTab;
@@ -553,7 +587,8 @@ function render() {
         html += `<div class="fungus-divider"><span class="fungus-divider-label">Fungus introduced after G${trial.fungusGen}</span></div>`;
       }
 
-      html += `<div class="gen-row">`;
+      const isSelected = selectedGen === genNum;
+      html += `<div class="gen-row${isSelected ? ' selected' : ''}" onclick="toggleGenSelection(${genNum})">`;
       html += `<div class="gen-label">G${genNum}</div>`;
       html += `<div class="gen-plants">`;
       const showInfection = fungusActive && genNum > trial.fungusGen;
@@ -586,9 +621,34 @@ function render() {
 
 function renderPie(trial) {
   const svg = document.getElementById('pie');
-  const n = trial.offspring.length;
   const fungusActive = trial.fungusGen !== null;
 
+  // Update pie chart title based on selection
+  const pieTitle = document.getElementById('pieTitle');
+  if (selectedGen !== null && selectedGen <= trial.genCounts.length) {
+    pieTitle.textContent = `Offspring Phenotypes – G${selectedGen}`;
+  } else {
+    pieTitle.textContent = 'Offspring Phenotypes – All Generations';
+  }
+
+  // Determine which offspring to show
+  let relevantOffspring, relevantCount, relevantFungusVisible;
+  if (selectedGen !== null && selectedGen <= trial.genCounts.length) {
+    // Single generation
+    const offset = trial.genCounts.slice(0, selectedGen - 1).reduce((a,b) => a+b, 0);
+    const count = trial.genCounts[selectedGen - 1];
+    relevantOffspring = trial.offspring.slice(offset, offset + count);
+    relevantCount = count;
+    // Is this generation post-fungus?
+    relevantFungusVisible = fungusActive && selectedGen > trial.fungusGen;
+  } else {
+    // All generations
+    relevantOffspring = trial.offspring;
+    relevantCount = trial.offspring.length;
+    relevantFungusVisible = fungusActive;
+  }
+
+  const n = relevantCount;
   if (n === 0) {
     svg.innerHTML = '<circle cx="0" cy="0" r="65" fill="#e0e3e7"/><text x="0" y="4" text-anchor="middle" font-size="14" fill="#525d6c">No data</text>';
     document.getElementById('healthyPct').textContent = '–';
@@ -596,13 +656,20 @@ function renderPie(trial) {
     return;
   }
 
-  // Only post-fungus generations show infection; pre-fungus generations count as all healthy
   let visibleHealthy = n; // default: all healthy
-  if (fungusActive && trial.genCounts.length > 0) {
-    const preFungusCount = trial.genCounts.slice(0, trial.fungusGen).reduce((a,b) => a+b, 0);
-    const postFungusOffspring = trial.offspring.slice(preFungusCount);
-    const postFungusResistant = postFungusOffspring.filter(o => o.resistant).length;
-    visibleHealthy = preFungusCount + postFungusResistant;
+  if (selectedGen !== null && selectedGen <= trial.genCounts.length) {
+    // Single generation view
+    if (relevantFungusVisible) {
+      visibleHealthy = relevantOffspring.filter(o => o.resistant).length;
+    }
+  } else {
+    // All generations view
+    if (fungusActive && trial.genCounts.length > 0) {
+      const preFungusCount = trial.genCounts.slice(0, trial.fungusGen).reduce((a,b) => a+b, 0);
+      const postFungusOffspring = trial.offspring.slice(preFungusCount);
+      const postFungusResistant = postFungusOffspring.filter(o => o.resistant).length;
+      visibleHealthy = preFungusCount + postFungusResistant;
+    }
   }
   const pctH = Math.round(visibleHealthy / n * 100);
   const pctI = 100 - pctH;
@@ -683,13 +750,29 @@ function renderLine(trial) {
     }
   });
 
+  const hasSelection = selectedGen !== null && selectedGen >= 1 && selectedGen <= hist.length;
+  const dimOpacity = hasSelection ? 0.2 : 1;
+
+  // Highlight band behind selected generation
+  if (hasSelection) {
+    const cx = plotLeft + (selectedGen - 1) * xStep;
+    const bandW = Math.min(xStep * 0.7, 16);
+    html += `<rect x="${(cx - bandW/2).toFixed(1)}" y="${topY - 2}" width="${bandW.toFixed(1)}" height="${(botY - topY + 4).toFixed(1)}" rx="3" fill="#1565C0" fill-opacity="0.08"/>`;
+  }
+
   // Healthy line (solid green)
   let healthyPts = displayPts.map((p, i) => `${(plotLeft + i * xStep).toFixed(1)},${yScale(p.healthyPct).toFixed(1)}`).join(' ');
-  html += `<polyline points="${healthyPts}" fill="none" stroke="#4CAF50" stroke-width="2.5"/>`;
+  html += `<polyline points="${healthyPts}" fill="none" stroke="#4CAF50" stroke-width="2.5" opacity="${dimOpacity}"/>`;
   displayPts.forEach((p, i) => {
     const cx = plotLeft + i * xStep;
     const cy = yScale(p.healthyPct);
-    html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4" fill="#4CAF50"/>`;
+    const isSel = hasSelection && (i + 1) === selectedGen;
+    if (isSel) {
+      html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="7" fill="#4CAF50" fill-opacity="0.2"/>`;
+      html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="5" fill="#4CAF50"/>`;
+    } else {
+      html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4" fill="#4CAF50" opacity="${dimOpacity}"/>`;
+    }
   });
 
   // Infected line (dashed brown) — only from fungus onward
@@ -697,11 +780,17 @@ function renderLine(trial) {
     const postFungus = displayPts.map((p, i) => ({ ...p, i })).filter((_, i) => fungusGen === 0 || (i + 1) > fungusGen);
     if (postFungus.length > 0) {
       let infPts = postFungus.map(p => `${(plotLeft + p.i * xStep).toFixed(1)},${yScale(p.infectedPct).toFixed(1)}`).join(' ');
-      html += `<polyline points="${infPts}" fill="none" stroke="#8B5A2B" stroke-width="2.5" stroke-dasharray="4 4"/>`;
+      html += `<polyline points="${infPts}" fill="none" stroke="#8B5A2B" stroke-width="2.5" stroke-dasharray="4 4" opacity="${dimOpacity}"/>`;
       postFungus.forEach(p => {
         const cx = plotLeft + p.i * xStep;
         const cy = yScale(p.infectedPct);
-        html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5" fill="#8B5A2B"/>`;
+        const isSel = hasSelection && (p.i + 1) === selectedGen;
+        if (isSel) {
+          html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="6" fill="#8B5A2B" fill-opacity="0.2"/>`;
+          html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4.5" fill="#8B5A2B"/>`;
+        } else {
+          html += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5" fill="#8B5A2B" opacity="${dimOpacity}"/>`;
+        }
       });
     }
   }
@@ -753,6 +842,7 @@ function doCross() {
   // Record REAL cumulative stats
   const totalRes = trial.offspring.filter(o => o.resistant).length;
   trial.genHistory.push({ resistantPct: Math.round(totalRes / trial.offspring.length * 100) });
+  selectedGen = null;
   render();
 }
 
@@ -765,16 +855,58 @@ function introduceFungus() {
 
 function resetTrial() {
   trials[activeTab] = newTrial();
+  selectedGen = null;
   render();
 }
 
 function switchTab(t) {
   activeTab = t;
+  selectedGen = null;
+  render();
+}
+
+function toggleGenSelection(genNum) {
+  selectedGen = (selectedGen === genNum) ? null : genNum;
+  renderPie(trials[activeTab]);
+  renderLine(trials[activeTab]);
+  // Update gen-row selected class without full re-render (avoids scroll reset)
+  document.querySelectorAll('.gen-row').forEach(row => {
+    const label = row.querySelector('.gen-label');
+    if (!label) return;
+    const gn = parseInt(label.textContent.replace('G',''));
+    row.classList.toggle('selected', gn === selectedGen);
+  });
+}
+
+function addTrial() {
+  if (tabList.length >= MAX_TABS) return;
+  const nextLetter = ALL_TAB_LETTERS[tabList.length];
+  tabList.push(nextLetter);
+  trials[nextLetter] = newTrial();
+  activeTab = nextLetter;
+  selectedGen = null;
   render();
 }
 
 document.getElementById('sel1').addEventListener('change', e => { trials[activeTab].p1 = e.target.value || null; render(); });
 document.getElementById('sel2').addEventListener('change', e => { trials[activeTab].p2 = e.target.value || null; render(); });
+
+// --- Tab scroll arrows ---
+function scrollTabs(dir) {
+  const el = document.getElementById('tabs');
+  el.scrollBy({ left: dir * 140, behavior: 'smooth' });
+}
+function updateTabArrows() {
+  const el = document.getElementById('tabs');
+  const leftBtn = document.getElementById('tabsLeft');
+  const rightBtn = document.getElementById('tabsRight');
+  leftBtn.classList.toggle('visible', el.scrollLeft > 2);
+  rightBtn.classList.toggle('visible', el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+}
+document.getElementById('tabs').addEventListener('scroll', updateTabArrows);
+// Re-check arrows after each render
+const origRender = render;
+render = function() { origRender(); requestAnimationFrame(updateTabArrows); };
 
 render();
 </script>
