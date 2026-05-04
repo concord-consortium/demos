@@ -91,18 +91,19 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
 /* pressure markers */
 .ps-marker{position:absolute;transform:translate(-50%,-50%);pointer-events:none;user-select:none;transition:opacity .35s;display:flex;flex-direction:column;align-items:center;gap:5px}
 .ps-marker.dim{opacity:.18}
-.ps-bubble{width:92px;height:92px;border-radius:50%;background:rgba(170,205,240,0.58);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:9px;gap:3px;opacity:0;transition:opacity .22s;pointer-events:none;cursor:grab}
-.ps-marker.draggable .ps-bubble{opacity:1;pointer-events:auto}
-.ps-marker.draggable .ps-bubble:active{cursor:grabbing}
+.ps-marker.draggable{pointer-events:auto;cursor:grab}
+.ps-marker.draggable:active{cursor:grabbing}
+.ps-main{position:relative;display:flex;align-items:center;justify-content:center}
+.ps-bubble{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:92px;height:92px;border-radius:50%;background:rgba(170,205,240,0.58);display:flex;align-items:flex-start;justify-content:center;padding-top:9px;opacity:0;transition:opacity .22s;pointer-events:none;z-index:2}
+.ps-marker.draggable .ps-bubble{opacity:1}
 .ps-drag-icon{display:flex;align-items:center;justify-content:center;opacity:0.85}
-.ps-content{display:flex;align-items:center;gap:4px;padding:0 6px}
+.ps-content{display:flex;align-items:center;gap:4px;padding:0 6px;position:relative;z-index:1}
 .ps-letter{font-size:50px;font-weight:900;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.4)}
 .ps-letter.H{color:#6b9de8}
 .ps-letter.L{color:#e06060}
-.ps-mb{font-size:11px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;text-align:center;opacity:0;transition:opacity .22s}
-.ps-marker.draggable .ps-mb{opacity:1}
+.ps-mb{font-size:11px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;text-align:center;position:relative;z-index:1}
 .ps-slider-wrap{display:flex;align-items:center;height:54px;position:relative}
-.ps-slider-track{width:6px;height:54px;background:rgba(255,255,255,.3);border-radius:3px;position:relative;cursor:ns-resize}
+.ps-slider-track{width:6px;height:54px;background:rgba(255,255,255,.3);border-radius:3px;position:relative;cursor:ns-resize;pointer-events:auto}
 .ps-slider-fill{position:absolute;bottom:0;width:100%;border-radius:3px;background:linear-gradient(to top,#6b9de8,rgba(107,157,232,.4));transition:height .15s}
 .ps-slider-thumb{position:absolute;width:20px;height:20px;left:-7px;transition:bottom .15s;pointer-events:none}
 
@@ -351,8 +352,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
 
     <!-- Pressure System Markers -->
     <div class="ps-marker" id="ps-L1" style="left:200px;top:152px" data-type="L">
-      <div class="ps-bubble">
-        <div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div>
+      <div class="ps-main">
+        <div class="ps-bubble"><div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div></div>
         <div class="ps-content">
           <span class="ps-letter L">L</span>
           <div class="ps-slider-wrap"><div class="ps-slider-track" id="sl-L1">
@@ -364,8 +365,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
       <div class="ps-mb" id="mb-L1">1008mb</div>
     </div>
     <div class="ps-marker" id="ps-L2" style="left:440px;top:118px" data-type="L">
-      <div class="ps-bubble">
-        <div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div>
+      <div class="ps-main">
+        <div class="ps-bubble"><div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div></div>
         <div class="ps-content">
           <span class="ps-letter L">L</span>
           <div class="ps-slider-wrap"><div class="ps-slider-track" id="sl-L2">
@@ -377,8 +378,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
       <div class="ps-mb" id="mb-L2">1007mb</div>
     </div>
     <div class="ps-marker" id="ps-H1" style="left:605px;top:395px" data-type="H">
-      <div class="ps-bubble">
-        <div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div>
+      <div class="ps-main">
+        <div class="ps-bubble"><div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div></div>
         <div class="ps-content">
           <span class="ps-letter H">H</span>
           <div class="ps-slider-wrap"><div class="ps-slider-track" id="sl-H1">
@@ -390,8 +391,8 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
       <div class="ps-mb" id="mb-H1">1023mb</div>
     </div>
     <div class="ps-marker" id="ps-H2" style="left:908px;top:380px" data-type="H">
-      <div class="ps-bubble">
-        <div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div>
+      <div class="ps-main">
+        <div class="ps-bubble"><div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div></div>
         <div class="ps-content">
           <span class="ps-letter H">H</span>
           <div class="ps-slider-wrap"><div class="ps-slider-track" id="sl-H2">
@@ -781,13 +782,12 @@ function updateLocReadout(x, y) {
 }
 
 // ── PRESSURE DRAG ────────────────────────────────────────────────────────
-document.querySelectorAll('.ps-bubble').forEach(function(bubble) {
-  bubble.addEventListener('mousedown', function(e) {
-    var el = bubble.closest('.ps-marker');
+document.querySelectorAll('.ps-marker').forEach(function(el) {
+  el.addEventListener('mousedown', function(e) {
     if (activeSection !== 'ps') return;
     if (e.target.closest('.ps-slider-track')) return;
-    psDrag = {el:el, bubble:bubble, id:el.id, ox:e.clientX-psPositions[el.id].x, oy:e.clientY-psPositions[el.id].y};
-    bubble.style.cursor = 'grabbing';
+    psDrag = {el:el, id:el.id, ox:e.clientX-psPositions[el.id].x, oy:e.clientY-psPositions[el.id].y};
+    el.style.cursor = 'grabbing';
     e.preventDefault();
   });
 });
@@ -798,7 +798,7 @@ document.addEventListener('mousemove', function(e) {
   psDrag.el.style.left = nx+'px'; psDrag.el.style.top = ny+'px';
 });
 document.addEventListener('mouseup', function() {
-  if (psDrag) { psDrag.bubble.style.cursor = 'grab'; psDrag = null; }
+  if (psDrag) { psDrag.el.style.cursor = ''; psDrag = null; }
 });
 
 // Pressure slider
