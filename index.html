@@ -45,6 +45,11 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
 .sc.on{display:block}
 .hint{line-height:1.55;color:#666;margin-bottom:11px}
 .info-box{padding:8px 10px;background:#e3f2fd;border-radius:5px;font-size:11.5px;color:#1565c0;line-height:1.4}
+.latlon-row{display:flex;align-items:center;gap:7px;margin-top:10px}
+.latlon-label{font-size:11.5px;font-weight:600;color:#555;white-space:nowrap}
+.latlon-input{width:76px;padding:4px 7px;border:1.5px solid #d0d0d0;border-radius:5px;font-size:12px;font-family:inherit;color:#333;text-align:right;transition:border-color .15s;background:#fff}
+.latlon-input:focus{outline:none;border-color:#1565c0}
+.latlon-unit{font-size:11px;color:#999}
 
 /* category slider */
 .cat-track{position:relative;height:14px;border-radius:7px;margin:11px 0 5px;cursor:pointer;background:linear-gradient(to right,#f2f2f2 0%,#ffffcc 20%,#ffe775 40%,#ffc140 60%,#ff8f20 80%,#ff6060 100%);border:1px solid rgba(0,0,0,.12)}
@@ -192,8 +197,16 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
             <span class="si">🌀</span><span class="st">Storm Start Location</span><span class="sa">▶</span>
           </div>
           <div class="sc" id="sc-loc">
-            <p class="hint">Drag the storm to a starting position within the highlighted area on the map.</p>
+            <p class="hint">Drag the storm to a starting position within the highlighted area on the map, or type a latitude and longitude below.</p>
             <div class="info-box" id="loc-readout">📍 Currently positioned near the Cape Verde Islands</div>
+            <div class="latlon-row">
+              <label class="latlon-label" for="loc-lat">Lat</label>
+              <input type="text" id="loc-lat" class="latlon-input" value="15.00" />
+              <span class="latlon-unit">°N</span>
+              <label class="latlon-label" for="loc-lon">Lon</label>
+              <input type="text" id="loc-lon" class="latlon-input" value="-23.00" />
+              <span class="latlon-unit">°W</span>
+            </div>
           </div>
         </div>
 
@@ -588,6 +601,41 @@ var catLabels = ['Tropical Storm (TS)','Category 1','Category 2','Category 3','C
 // Drop zone elliptical constraint (maps to the SVG path visual)
 var DZ = {cx:635, cy:518, rx:545, ry:170};
 
+// ── LAT/LON <-> PIXEL CONVERSION ─────────────────────────────────────────
+// Anchors: Gulf of Mexico (x=113,y=430)→(25°N,90°W), Cape Verde (x=1050,y=598)→(15°N,23°W)
+// lon(x) = -98.08 + 0.07150*x  |  lat(y) = 50.59 - 0.05952*y
+var LL = { lonA: -98.08, lonB: 0.07150, latC: 50.59, latD: -0.05952 };
+function pixelToLatLon(x, y) {
+  return { lat: LL.latC + LL.latD * y, lon: LL.lonA + LL.lonB * x };
+}
+function latLonToPixel(lat, lon) {
+  return { x: (lon - LL.lonA) / LL.lonB, y: (lat - LL.latC) / LL.latD };
+}
+function updateLatLonFields(x, y) {
+  var ll = pixelToLatLon(x, y);
+  document.getElementById('loc-lat').value = ll.lat.toFixed(2);
+  document.getElementById('loc-lon').value = ll.lon.toFixed(2);
+}
+function applyLatLon() {
+  var lat = parseFloat(document.getElementById('loc-lat').value);
+  var lon = parseFloat(document.getElementById('loc-lon').value);
+  if (isNaN(lat) || isNaN(lon)) return;
+  var px = latLonToPixel(lat, lon);
+  var nx = px.x, ny = px.y;
+  // Clamp to drop zone ellipse
+  var dx = (nx - DZ.cx) / DZ.rx, dy = (ny - DZ.cy) / DZ.ry;
+  if (dx*dx + dy*dy > 1) {
+    var a = Math.atan2(ny - DZ.cy, (nx - DZ.cx) * (DZ.ry / DZ.rx));
+    nx = DZ.cx + Math.cos(a) * DZ.rx;
+    ny = DZ.cy + Math.sin(a) * DZ.ry;
+  }
+  stormX = nx; stormY = ny;
+  stormEl.style.left = nx + 'px';
+  stormEl.style.top  = ny + 'px';
+  updateLocReadout(nx, ny);
+  updateLatLonFields(nx, ny); // reflect any clamping
+}
+
 var psDrag = null;
 var psPositions = {
   'ps-L1':{x:200,y:152},'ps-L2':{x:440,y:118},
@@ -762,7 +810,11 @@ document.addEventListener('mousemove', function(e) {
   updateLocReadout(nx, ny);
 });
 document.addEventListener('mouseup', function() {
-  if (stormDragging) { stormDragging = false; stormEl.style.cursor = 'grab'; }
+  if (stormDragging) {
+    stormDragging = false;
+    stormEl.style.cursor = 'grab';
+    updateLatLonFields(stormX, stormY);
+  }
 });
 
 function updateLocReadout(x, y) {
@@ -838,6 +890,15 @@ function toggleWind() {
 // ── INIT ─────────────────────────────────────────────────────────────────
 stormEl.style.left = stormX+'px';
 stormEl.style.top  = stormY+'px';
+updateLatLonFields(stormX, stormY);
+
+// Lat/lon field events: apply on Enter or blur
+['loc-lat','loc-lon'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('blur', applyLatLon);
+  el.addEventListener('keydown', function(e) { if (e.key === 'Enter') el.blur(); });
+});
 </script>
 </body>
 </html>
