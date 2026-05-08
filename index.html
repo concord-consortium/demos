@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600;700;900&display=swap" rel="stylesheet">
 <title>Storm Explorer — Interactive Prototype</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed','Helvetica Neue',sans-serif;background:#000}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Lato,'Roboto Condensed',Helvetica,Arial,sans-serif;background:#000}
 #app{display:flex;flex-direction:column;width:100vw;height:100vh}
 
 /* ── MIDDLE ROW: panel + map side by side ── */
 #middle{flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0}
 
-/* ── SETUP PANEL (pushes map right, no overlay) ── */
+/* ── SETUP PANEL ── */
 #panel{
   width:0;flex-shrink:0;overflow:hidden;
   transition:width 0.28s cubic-bezier(.4,0,.2,1);
@@ -24,57 +26,59 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
   background:#fff;border-radius:0 10px 10px 0;overflow:hidden
 }
 .ph{
-  background:#1e2d3d;color:#fff;padding:13px 15px;
+  background:#ff9900;color:#434343;padding:13px 15px;
   display:flex;align-items:center;justify-content:space-between;
   font-size:14px;font-weight:700;letter-spacing:.4px;flex-shrink:0
 }
 .ph-title{display:flex;align-items:center;gap:8px}
 .ph-icon{width:18px;height:18px;flex-shrink:0}
 .ph button{background:none;border:none;color:rgba(255,255,255,0.7);font-size:18px;cursor:pointer;line-height:1;padding:2px 5px;border-radius:3px;transition:color .15s,background .15s}
-.ph button:hover{background:rgba(255,255,255,.15);color:#fff}
+.ph button:hover{background:rgba(0,0,0,.08);color:#434343}
 .sections{flex:1;overflow-y:auto}
 .sec{border-bottom:1px solid #e8e8e8}
-.sh{display:flex;align-items:center;padding:11px 15px;cursor:pointer;font-size:12.5px;font-weight:600;color:#2c3e50;background:#fff;user-select:none;transition:background .13s;gap:9px}
-.sh:hover{background:#f5f5f5}
-.sh.on{background:#e8f3fc;color:#1565c0}
-.si{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sh{display:flex;align-items:center;padding:11px 15px;cursor:pointer;font-size:12.5px;font-weight:600;color:#434343;background:#fff;user-select:none;transition:background .13s;gap:9px}
+.sh:hover{background:#dfdfdf}
+.sh.on{background:#f0f0f0;color:#434343}
+.si-wrap{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:3px;flex-shrink:0;transition:box-shadow .13s}
+.sh:hover .si-wrap{box-shadow:0 0 0 1.5px rgba(255,255,255,0.5)}
+.sec-icon{width:18px;height:18px;display:block;overflow:visible}
 .st{flex:1}
 .sa{font-size:9px;color:#bbb;transition:transform .2s}
-.sh.on .sa{transform:rotate(90deg);color:#1565c0}
+.sh.on .sa{transform:rotate(90deg);color:#797979}
 .sc{display:none;padding:13px 15px;background:#fafafa;font-size:12px;color:#555}
 .sc.on{display:block}
 .hint{line-height:1.55;color:#666;margin-bottom:11px}
-.info-box{padding:8px 10px;background:#e3f2fd;border-radius:5px;font-size:11.5px;color:#1565c0;line-height:1.4}
+.info-box{padding:8px 10px;background:#eef3ea;border-radius:5px;font-size:11.5px;color:#434343;line-height:1.4}
 .latlon-row{display:flex;align-items:center;gap:7px;margin-top:10px}
-.latlon-label{font-size:11.5px;font-weight:600;color:#555;white-space:nowrap}
+.latlon-label{font-size:11.5px;font-weight:600;color:#434343;white-space:nowrap}
 .latlon-input{width:76px;padding:4px 7px;border:1.5px solid #d0d0d0;border-radius:5px;font-size:12px;font-family:inherit;color:#333;text-align:right;transition:border-color .15s;background:#fff}
-.latlon-input:focus{outline:none;border-color:#1565c0}
+.latlon-input:focus{outline:none;border-color:#797979}
 .latlon-unit{font-size:11px;color:#999}
 
 /* category slider */
 .cat-track{position:relative;height:14px;border-radius:7px;margin:11px 0 5px;cursor:pointer;background:linear-gradient(to right,#f2f2f2 0%,#ffffcc 20%,#ffe775 40%,#ffc140 60%,#ff8f20 80%,#ff6060 100%);border:1px solid rgba(0,0,0,.12)}
-.cat-thumb{position:absolute;top:-6px;width:26px;height:26px;border-radius:50%;background:#fff;border:2.5px solid #444;transform:translateX(-50%);cursor:grab;box-shadow:0 2px 5px rgba(0,0,0,.25);z-index:2}
+.cat-thumb{position:absolute;top:-6px;width:26px;height:26px;border-radius:50%;background:#fff;border:2.5px solid #797979;transform:translateX(-50%);cursor:grab;box-shadow:0 2px 5px rgba(0,0,0,.25);z-index:2}
 .cat-thumb:active{cursor:grabbing}
 .cat-ticks{display:flex;justify-content:space-between;font-size:10.5px;color:#777;padding:0 2px}
-.cat-label{margin-top:9px;text-align:center;font-size:13px;font-weight:700;color:#222}
+.cat-label{margin-top:9px;text-align:center;font-size:13px;font-weight:700;color:#434343}
 
 /* season */
 .season-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
 .s-btn{padding:9px 6px;border:1.5px solid #ddd;border-radius:6px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#555;transition:all .13s;text-align:center}
-.s-btn:hover{border-color:#1565c0;color:#1565c0}
-.s-btn.on{border-color:#1565c0;background:#1565c0;color:#fff}
+.s-btn:hover{border-color:#797979;color:#434343}
+.s-btn.on{border-color:#e07a00;background:#ff9900;color:#fff}
 .season-note{margin-top:9px;font-size:11px;color:#999;line-height:1.4}
 
 /* SST controls */
 .sst-row{display:flex;align-items:center;margin:7px 0;gap:7px}
-.sst-name{flex:1;font-size:12px;font-weight:600;color:#333}
+.sst-name{flex:1;font-size:12px;font-weight:600;color:#434343}
 .sst-ctrl{display:flex;align-items:center;gap:5px}
 .sst-btn{width:26px;height:26px;border-radius:50%;border:1.5px solid #ccc;background:#fff;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:all .13s;color:#666}
-.sst-btn.m:hover{background:#fff3e0;border-color:#1565c0;color:#1565c0}
+.sst-btn.m:hover{background:#e8f0ff;border-color:#2255cc;color:#2255cc}
 .sst-btn.p:hover{background:#ffebee;border-color:#c62828;color:#c62828}
 .sst-val{width:72px;text-align:center;font-size:11px;font-weight:700;color:#666}
 .sst-val.w{color:#c62828}
-.sst-val.c{color:#1565c0}
+.sst-val.c{color:#434343}
 
 /* ── MAP ── */
 #map{flex:1;position:relative;overflow:hidden;background:#3d1800}
@@ -103,14 +107,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
 .ps-marker.draggable .ps-bubble{opacity:1}
 .ps-drag-icon{display:flex;align-items:center;justify-content:center;opacity:0.85;position:relative;z-index:3}
 .ps-content{display:flex;align-items:center;gap:4px;padding:0 6px;position:relative;z-index:2}
-.ps-letter{font-size:50px;font-weight:900;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,.4)}
-.ps-letter.H{color:#6b9de8}
-.ps-letter.L{color:#e06060}
+.ps-letter{display:block;height:55px;width:auto;margin:-2px -4px -6px -2px}
 .ps-mb{font-size:11px;font-weight:600;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;text-align:center;position:relative;z-index:2}
 .ps-slider-wrap{display:flex;align-items:center;height:54px;position:relative}
 .ps-slider-track{width:6px;height:54px;background:rgba(255,255,255,.3);border-radius:3px;position:relative;cursor:ns-resize;pointer-events:auto}
 .ps-slider-fill{position:absolute;bottom:0;width:100%;border-radius:3px;background:linear-gradient(to top,#6b9de8,rgba(107,157,232,.4));transition:height .15s}
-.ps-slider-thumb{position:absolute;width:20px;height:20px;left:-7px;transition:bottom .15s;pointer-events:none}
+.ps-slider-thumb{position:absolute;width:20px;height:20px;left:-7px;transition:bottom .15s;pointer-events:none;display:flex;align-items:center;justify-content:center}
 
 /* storm drag affordance */
 .storm-bubble{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:112px;height:112px;border-radius:50%;background:rgba(170,205,240,0.25);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:9px;opacity:0;transition:opacity .22s;pointer-events:none;z-index:-1}
@@ -135,36 +137,82 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
 .fs-btn{position:absolute;bottom:70px;right:10px;z-index:50;background:rgba(255,255,255,.85);border:none;padding:4px 7px;cursor:pointer;border-radius:2px;font-size:14px;color:#333}
 
 /* ── BOTTOM BAR ── */
-#bar{height:62px;background:#fff;border-top:1px solid #d8d8d8;display:flex;align-items:flex-end;padding:0 10px 0 10px;gap:0;z-index:200;flex-shrink:0;overflow:visible;position:relative}
+#bar{
+  height:65px;background:#fff;
+  border-top:1px solid #797979;
+  display:flex;align-items:flex-end;
+  padding:0 10px;gap:0;
+  z-index:200;flex-shrink:0;overflow:visible;position:relative
+}
 .bar-logo{display:flex;align-items:center;padding:0 8px 9px 0;flex-shrink:0}
-.bar-divider{width:1px;background:#e0e0e0;height:36px;margin:0 6px 9px;flex-shrink:0}
-/* Tab-style controls (rise above bar with rounded tops) */
-.bar-tab{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;padding:7px 14px 9px;background:#fff;border:1px solid #e0e0e0;border-bottom:none;border-radius:10px 10px 0 0;height:78px;box-shadow:-2px -4px 10px rgba(0,0,0,0.05),2px -4px 10px rgba(0,0,0,0.04);margin:0 2px;flex-shrink:0}
-.bar-tab-label{font-size:11px;font-weight:600;color:#333;text-align:center;line-height:1.3;white-space:nowrap}
+.bar-divider{width:1px;background:#797979;height:36px;margin:0 6px 9px;flex-shrink:0}
+
+/* Widget groups — rise 11px above the bar */
+.bar-tab{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  gap:5px;padding:7px 14px 9px;
+  background:#fff;
+  border-top:1px solid #797979;
+  border-left:1px solid #797979;
+  border-right:1px solid #797979;
+  border-bottom:none;
+  border-top-left-radius:9px;
+  border-top-right-radius:9px;
+  height:76px;
+  margin-top:-11px;
+  margin-bottom:0;
+  margin-left:2px;
+  margin-right:2px;
+  flex-shrink:0;
+  position:relative;
+  z-index:1000;
+}
+/* Cover the side borders at bar level with white blocks */
+.bar-tab::before{
+  content:'';position:absolute;left:-1px;bottom:0;
+  width:1px;height:66px;background:#fff;z-index:1001;
+}
+.bar-tab::after{
+  content:'';position:absolute;right:-1px;bottom:0;
+  width:1px;height:66px;background:#fff;z-index:1001;
+}
+.bar-tab-label{font-size:11px;font-weight:600;color:#434343;text-align:center;line-height:1.3;white-space:nowrap}
+
 /* Setup tab button */
 .setup-btn{padding:6px 12px;background:#ebebeb;color:#444;border:none;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s,color .15s;font-family:inherit}
-.setup-btn:hover{background:#ddd}
-.setup-btn.on{background:#ff8c00;color:#333333}
+.setup-btn:hover{background:#dfdfdf}
+.setup-btn.on{background:#ff8c00;color:#333}
+
 /* Season select */
 .season-sel{font-size:12px;font-weight:600;color:#333;border:1.5px solid #d0d0d0;border-radius:6px;padding:4px 6px;background:#fff;cursor:pointer;font-family:inherit;max-width:100px}
+
 /* iOS-style toggle */
 .tgl{width:42px;height:24px;background:#ff8c00;border-radius:12px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
 .tgl.off{background:#ccc}
 .tgl::after{content:'';position:absolute;top:3px;left:21px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.28)}
 .tgl.off::after{left:3px}
+
 /* Playback area */
-.pb-area{display:flex;align-items:center;padding:0 4px 7px;flex-shrink:0;gap:0}
-.pb-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 10px;cursor:pointer;border:none;background:none;font-size:11.5px;font-weight:500;color:#aaa;border-radius:5px;font-family:inherit}
-.pb-btn:hover{background:#f5f5f5}
-.pb-start{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 10px;cursor:pointer;border:none;background:none;font-size:12px;font-weight:700;color:#333;border-radius:5px;font-family:inherit}
+/* Playback controls */
+.pb-icon{filter:invert(1) brightness(0.475);display:block}
+.pb-icon:hover{filter:invert(1) brightness(0.33)}
+.pb-pair{display:flex;flex-direction:row;align-items:center}
+.pb-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 10px 3px;cursor:pointer;border:none;background:none;font-size:11px;font-weight:500;color:#797979;border-radius:5px;font-family:inherit}
+.pb-btn:hover{background:#f5f5f5;color:#434343}
+.pb-btn:hover .pb-icon{filter:invert(1) brightness(0.33)}
+.pb-btn:disabled .pb-icon{opacity:0.25}
+.pb-start{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 10px 3px;cursor:pointer;border:none;background:none;font-size:12px;font-weight:700;color:#434343;border-radius:5px;font-family:inherit}
 .pb-start:hover{background:#f5f5f5}
+.pb-start:disabled .pb-icon{opacity:0.25}
+.bar-tab-controls{gap:0;padding:0 8px 9px}
+.bar-tab-hs{flex:1;min-width:0;padding:7px 16px 9px;gap:3px}
+
 /* Hurricane Scale */
-.hs{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 8px 5px;min-width:0}
-.hs-title{font-weight:700;font-size:11px;margin-bottom:3px;color:#222}
+.hs-title{font-weight:700;font-size:11px;margin-bottom:3px;color:#434343}
 .hs-table{border-collapse:collapse}
 .hs-table td{padding:0;vertical-align:middle}
-.hs-row-lbl{font-size:10px;font-weight:600;color:#777;white-space:nowrap;padding-right:6px;text-align:left}
-.hs-cell{font-size:10.5px;font-weight:700;color:#333;text-align:center;width:44px;line-height:1.4}
+.hs-row-lbl{font-size:10px;font-weight:600;color:#797979;white-space:nowrap;padding-right:6px;text-align:left}
+.hs-cell{font-size:10.5px;font-weight:700;color:#434343;text-align:center;width:44px;line-height:1.4}
 .hs-speed{font-size:9.5px;color:#888;text-align:center;width:44px}
 .hs-mph{font-size:9.5px;color:#888;padding-left:3px}
 .hs-bar-row{display:flex;height:7px;border-radius:4px;overflow:hidden}
@@ -182,19 +230,19 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
     <div id="panel-inner">
       <div class="ph">
         <div class="ph-title">
-          <svg class="ph-icon" viewBox="0 -960 960 960" fill="rgba(255,255,255,.85)">
+          <svg class="ph-icon" viewBox="0 -960 960 960" fill="#434343">
             <path d="M433-80q-27 0-46.5-18T363-142l-9-66q-13-5-24.5-12T307-235l-62 26q-25 11-50 2t-39-32l-47-82q-14-23-8-49t27-43l53-40q-1-7-1-13.5v-27q0-6.5 1-13.5l-53-40q-21-17-27-43t8-49l47-82q14-23 39-32t50 2l62 26q11-8 23-15t24-12l9-66q4-26 23.5-44t46.5-18h94q27 0 46.5 18t23.5 44l9 66q13 5 24.5 12t22.5 15l62-26q25-11 50-2t39 32l47 82q14 23 8 49t-27 43l-53 40q1 7 1 13.5v27q0 6.5-2 13.5l53 40q21 17 27 43t-8 49l-48 82q-14 23-39 32t-50-2l-60-26q-11 8-23 15t-24 12l-9 66q-4 26-23.5 44T527-80h-94Zm7-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/>
           </svg>
           Storm Setup
         </div>
-        <button onclick="closePanel()" title="Close">✕</button>
+        <button onclick="closePanel()" title="Close" style="color:#434343;opacity:0.8">✕</button>
       </div>
       <div class="sections">
 
         <!-- 1. Start Location -->
         <div class="sec" id="sec-loc">
           <div class="sh" id="sh-loc" onclick="toggle('loc')">
-            <span class="si">🌀</span><span class="st">Storm Start Location</span><span class="sa">▶</span>
+            <div class="si-wrap"><svg class="sec-icon" viewBox="0 0 45 72" width="18" height="18"><path fill="#797979" d="M45,36.019 L45,36 C45,23.574 34.927,13.5 22.5,13.5 L22.5,0 C22.5,0 1.104,15.572 0.051,34.559 C0.021,35.036 0,35.516 0,36 C0,48.427 10.074,58.5 22.5,58.5 L22.5,72 C22.5,72 43.899,56.426 44.949,37.437 C44.979,36.968 44.999,36.496 45,36.019"/></svg></div><span class="st">Storm Start Location</span><span class="sa">▶</span>
           </div>
           <div class="sc" id="sc-loc">
             <p class="hint">Drag the storm to a starting position within the highlighted area on the map, or type a latitude and longitude below.</p>
@@ -213,7 +261,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
         <!-- 2. Starting Category -->
         <div class="sec" id="sec-cat">
           <div class="sh" id="sh-cat" onclick="toggle('cat')">
-            <span class="si">📊</span><span class="st">Starting Category</span><span class="sa">▶</span>
+            <div class="si-wrap"><svg id="panel-cat-icon" class="sec-icon" viewBox="0 0 45 72" width="18" height="18"><path id="panel-cat-path" fill="#797979" d="M45,36.019 L45,36 C45,23.574 34.927,13.5 22.5,13.5 L22.5,0 C22.5,0 1.104,15.572 0.051,34.559 C0.021,35.036 0,35.516 0,36 C0,48.427 10.074,58.5 22.5,58.5 L22.5,72 C22.5,72 43.899,56.426 44.949,37.437 C44.979,36.968 44.999,36.496 45,36.019"/></svg></div><span class="st">Starting Category</span><span class="sa">▶</span>
           </div>
           <div class="sc" id="sc-cat">
             <p class="hint">Drag the slider to set the storm's starting strength. The storm icon updates in real time.</p>
@@ -228,7 +276,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
         <!-- 3. Starting Season -->
         <div class="sec" id="sec-sea">
           <div class="sh" id="sh-sea" onclick="toggle('sea')">
-            <span class="si">📅</span><span class="st">Starting Season</span><span class="sa">▶</span>
+            <div class="si-wrap"><svg class="sec-icon" viewBox="0 -960 960 960" width="18" height="18"><path fill="#797979" d="m734-169-56-57q-11-12-11-28.5t11-27.5q11-11 27.5-11t28.5 11l57 56q12 12 12 28.5T791-169q-12 12-28.5 12T734-169Zm-494 9q-66 0-113-47T80-320q0-66 47-113t113-47q48 0 88.5 26t58.5 71l10 23h24q42 0 70.5 29t28.5 71q0 42-29 71t-71 29H240Zm359-112q-4-63-45.5-109T449-438q-31-54-83.5-85.5T250-560q26-73 89-116.5T480-720q100 0 170 70t70 170q0 65-32 120.5T599-272Zm201-168q-17 0-28.5-11.5T760-480q0-17 11.5-28.5T800-520h80q17 0 28.5 11.5T920-480q0 17-11.5 28.5T880-440h-80ZM226-678l-57-57q-11-11-11-28t11-28q12-12 28.5-12t28.5 12l56 57q11 12 11 28.5T282-678q-11 11-28 11t-28-11Zm452 0q-11-11-11-27.5t11-28.5l56-57q12-12 28.5-12t28.5 12q11 11 11 28t-11 28l-57 57q-11 11-28 11t-28-11Zm-226.5-93.5Q440-783 440-800v-80q0-17 11.5-28.5T480-920q17 0 28.5 11.5T520-880v80q0 17-11.5 28.5T480-760q-17 0-28.5-11.5Z"/></svg></div><span class="st">Starting Season</span><span class="sa">▶</span>
           </div>
           <div class="sc" id="sc-sea">
             <p class="hint">The season determines sea surface temperatures and wind shear across the basin.</p>
@@ -244,7 +292,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
         <!-- 4. SST Anomalies -->
         <div class="sec" id="sec-sst">
           <div class="sh" id="sh-sst" onclick="toggle('sst')">
-            <span class="si">🌊</span><span class="st">Sea Surface Temp Anomalies</span><span class="sa">▶</span>
+            <div class="si-wrap"><svg class="sec-icon" viewBox="0 -960 960 960" width="18" height="18"><path fill="#797979" d="M480-120q-83 0-141.5-58.5T280-320q0-48 21-89.5t59-70.5v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q38 29 59 70.5t21 89.5q0 83-58.5 141.5T480-120Zm-40-440h80v-160q0-17-11.5-28.5T480-760q-17 0-28.5 11.5T440-720v160Z"/></svg></div><span class="st">Sea Surface Temp Anomalies</span><span class="sa">▶</span>
           </div>
           <div class="sc" id="sc-sst">
             <p class="hint">Adjust sea surface temperature by up to ±5°F in each region. Changes are highlighted on the map.</p>
@@ -286,7 +334,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
         <!-- 5. Pressure Systems -->
         <div class="sec" id="sec-ps">
           <div class="sh" id="sh-ps" onclick="toggle('ps')">
-            <span class="si">💨</span><span class="st">Pressure Systems</span><span class="sa">▶</span>
+            <div class="si-wrap"><svg class="sec-icon" viewBox="0 -960 960 960" width="18" height="18"><path fill="#797979" d="M367-320H120q-17 0-28.5-11.5T80-360q0-17 11.5-28.5T120-400h247l-75-75q-11-11-11-27.5t11-28.5q12-12 28.5-12t28.5 12l143 143q6 6 8.5 13t2.5 15q0 8-2.5 15t-8.5 13L348-188q-12 12-28 11.5T292-189q-11-12-11.5-28t11.5-28l75-75Zm226-240 75 75q11 11 11 27.5T668-429q-12 12-28.5 12T611-429L468-572q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l144-144q12-12 28-11.5t28 12.5q11 12 11.5 28T668-715l-75 75h247q17 0 28.5 11.5T880-600q0 17-11.5 28.5T840-560H593Z"/></svg></div><span class="st">Pressure Systems</span><span class="sa">▶</span>
           </div>
           <div class="sc" id="sc-ps">
             <p class="hint">Drag the <strong>H</strong> and <strong>L</strong> markers on the map to reposition pressure systems. Use the vertical slider on each to adjust strength.</p>
@@ -366,12 +414,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
     <!-- Pressure System Markers -->
     <div class="ps-marker" id="ps-L1" style="left:200px;top:152px" data-type="L">
       <div class="ps-main">
-        <div class="ps-bubble"><div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div></div>
+        <div class="ps-bubble"><div class="ps-drag-icon"><img src="assets/drag.svg" width="10" height="10" alt="" style="display:block"></div></div>
         <div class="ps-content">
-          <span class="ps-letter L">L</span>
+          <img src="assets/low.svg" class="ps-letter L" alt="L">
           <div class="ps-slider-wrap"><div class="ps-slider-track" id="sl-L1">
             <div class="ps-slider-fill" style="height:40%"></div>
-            <div class="ps-slider-thumb" style="bottom:calc(40% - 10px)"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#797979"/><circle cx="10" cy="10" r="9" fill="#FFFFFF"/><polygon points="10,17 15,11.5 5,11.5" fill="#C9C9C9"/><polygon points="10,3 5,8.5 15,8.5" fill="#C9C9C9"/></svg></div>
+            <div class="ps-slider-thumb" style="bottom:calc(40% - 10px)"><img src="assets/slider-vertical.svg" width="20" height="20" alt="" style="display:block"></div>
           </div></div>
         </div>
       </div>
@@ -379,12 +427,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
     </div>
     <div class="ps-marker" id="ps-L2" style="left:440px;top:118px" data-type="L">
       <div class="ps-main">
-        <div class="ps-bubble"><div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div></div>
+        <div class="ps-bubble"><div class="ps-drag-icon"><img src="assets/drag.svg" width="10" height="10" alt="" style="display:block"></div></div>
         <div class="ps-content">
-          <span class="ps-letter L">L</span>
+          <img src="assets/low.svg" class="ps-letter L" alt="L">
           <div class="ps-slider-wrap"><div class="ps-slider-track" id="sl-L2">
             <div class="ps-slider-fill" style="height:45%"></div>
-            <div class="ps-slider-thumb" style="bottom:calc(45% - 10px)"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#797979"/><circle cx="10" cy="10" r="9" fill="#FFFFFF"/><polygon points="10,17 15,11.5 5,11.5" fill="#C9C9C9"/><polygon points="10,3 5,8.5 15,8.5" fill="#C9C9C9"/></svg></div>
+            <div class="ps-slider-thumb" style="bottom:calc(45% - 10px)"><img src="assets/slider-vertical.svg" width="20" height="20" alt="" style="display:block"></div>
           </div></div>
         </div>
       </div>
@@ -392,12 +440,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
     </div>
     <div class="ps-marker" id="ps-H1" style="left:605px;top:395px" data-type="H">
       <div class="ps-main">
-        <div class="ps-bubble"><div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div></div>
+        <div class="ps-bubble"><div class="ps-drag-icon"><img src="assets/drag.svg" width="10" height="10" alt="" style="display:block"></div></div>
         <div class="ps-content">
-          <span class="ps-letter H">H</span>
+          <img src="assets/high.svg" class="ps-letter H" alt="H">
           <div class="ps-slider-wrap"><div class="ps-slider-track" id="sl-H1">
             <div class="ps-slider-fill" style="height:65%"></div>
-            <div class="ps-slider-thumb" style="bottom:calc(65% - 10px)"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#797979"/><circle cx="10" cy="10" r="9" fill="#FFFFFF"/><polygon points="10,17 15,11.5 5,11.5" fill="#C9C9C9"/><polygon points="10,3 5,8.5 15,8.5" fill="#C9C9C9"/></svg></div>
+            <div class="ps-slider-thumb" style="bottom:calc(65% - 10px)"><img src="assets/slider-vertical.svg" width="20" height="20" alt="" style="display:block"></div>
           </div></div>
         </div>
       </div>
@@ -405,12 +453,12 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
     </div>
     <div class="ps-marker" id="ps-H2" style="left:908px;top:380px" data-type="H">
       <div class="ps-main">
-        <div class="ps-bubble"><div class="ps-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div></div>
+        <div class="ps-bubble"><div class="ps-drag-icon"><img src="assets/drag.svg" width="10" height="10" alt="" style="display:block"></div></div>
         <div class="ps-content">
-          <span class="ps-letter H">H</span>
+          <img src="assets/high.svg" class="ps-letter H" alt="H">
           <div class="ps-slider-wrap"><div class="ps-slider-track" id="sl-H2">
             <div class="ps-slider-fill" style="height:82%"></div>
-            <div class="ps-slider-thumb" style="bottom:calc(82% - 10px)"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#797979"/><circle cx="10" cy="10" r="9" fill="#FFFFFF"/><polygon points="10,17 15,11.5 5,11.5" fill="#C9C9C9"/><polygon points="10,3 5,8.5 15,8.5" fill="#C9C9C9"/></svg></div>
+            <div class="ps-slider-thumb" style="bottom:calc(82% - 10px)"><img src="assets/slider-vertical.svg" width="20" height="20" alt="" style="display:block"></div>
           </div></div>
         </div>
       </div>
@@ -424,7 +472,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
     -->
     <div id="storm" style="left:1050px;top:598px">
       <div class="storm-bubble">
-        <div class="storm-drag-icon"><svg width="10" height="10" viewBox="0 0 10 10" fill="#FFFFFF"><path d="M10,9 C10,9.553 9.553,10 9,10 C8.447,10 8,9.553 8,9 C8,8.447 8.447,8 9,8 C9.553,8 10,8.447 10,9"/><path d="M6,9 C6,9.553 5.552,10 5,10 C4.448,10 4,9.553 4,9 C4,8.447 4.448,8 5,8 C5.552,8 6,8.447 6,9"/><path d="M2,9 C2,9.553 1.552,10 1,10 C0.448,10 0,9.553 0,9 C0,8.447 0.448,8 1,8 C1.552,8 2,8.447 2,9"/><path d="M10,5 C10,5.552 9.553,6 9,6 C8.447,6 8,5.552 8,5 C8,4.448 8.447,4 9,4 C9.553,4 10,4.448 10,5"/><path d="M6,5 C6,5.552 5.552,6 5,6 C4.448,6 4,5.552 4,5 C4,4.448 4.448,4 5,4 C5.552,4 6,4.448 6,5"/><path d="M2,5 C2,5.552 1.552,6 1,6 C0.448,6 0,5.552 0,5 C0,4.448 0.448,4 1,4 C1.552,4 2,4.448 2,5"/><path d="M10,1 C10,1.552 9.553,2 9,2 C8.447,2 8,1.552 8,1 C8,0.448 8.447,0 9,0 C9.553,0 10,0.448 10,1"/><path d="M6,1 C6,1.552 5.552,2 5,2 C4.448,2 4,1.552 4,1 C4,0.448 4.448,0 5,0 C5.552,0 6,0.448 6,1"/><path d="M2,1 C2,1.552 1.552,2 1,2 C0.448,2 0,1.552 0,1 C0,0.448 0.448,0 1,0 C1.552,0 2,0.448 2,1"/></svg></div>
+        <div class="storm-drag-icon"><img src="assets/drag.svg" width="10" height="10" alt="" style="display:block"></div>
       </div>
       <svg width="54" height="86" viewBox="0 0 45 72" style="overflow:visible;display:block">
         <!-- Hurricane Symbol — fill changes with category color -->
@@ -511,37 +559,34 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Roboto Condensed',
 
   <!-- Temp tab -->
   <div class="bar-tab">
-    <svg width="17" height="35" viewBox="0 0 17 35" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12.5,4.5 L12.5,4.50003331 L12.5009852,19.2882029 L12.5010036,19.5652036 L12.7358543,19.7120866 C15.059401,21.165305 16.5,23.7086029 16.5,26.5 C16.5,30.8287618 13.0564385,34.369215 8.74042557,34.4964606 L8.49263955,34.5000542 L8.25220019,34.4962976 C3.94356153,34.369215 0.5,30.8287618 0.5,26.5 C0.5,23.7082084 1.94100915,21.1645997 4.26508784,19.7114974 L4.50001612,19.5646113 L4.50001582,19.2875431 L4.5,4.49999947 C4.5,2.290861 6.290861,0.5 8.5,0.5 C10.709139,0.5 12.5,2.290861 12.5,4.5 Z" stroke="#797979" stroke-width="1" fill="#E2F7FF"/>
-      <path d="M10,13 L10.0001762,21.2070823 C12.3085909,21.8600694 14,23.9825098 14,26.5 C14,29.5375661 11.5375661,32 8.5,32 C5.46243388,32 3,29.5375661 3,26.5 C3,23.982143 4.69190202,21.8594509 7.00083278,21.206797 L7,13 L10,13 Z" fill="#FF0000"/>
-    </svg>
+    <img src="assets/thermometer.svg" width="20" height="34" alt="">
     <div class="bar-tab-label">Temp</div>
   </div>
 
-  <!-- Playback controls -->
-  <div class="pb-area">
-    <button class="pb-btn">
-      <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
-        <path d="M15.2617,24.246 C10.1047,24.389 5.8657,20.308 5.7516673,15.209 C5.7497,15.096 5.8397,15 5.9527,14.999 C6.5787,14.997 8.4687,14.992 9.0667,14.996 C9.1727,14.997 9.2497,15.082 9.2527,15.188 C9.3657,18.678 12.6037,21.392 16.2527,20.617 C18.4047,20.16 20.1467,18.427 20.6117,16.277 C21.4027,12.623 18.6947,9.386 15.2067,9.261 L15.6047,12.328 C15.6367,12.573 15.3747,12.75 15.1587,12.628 L8.5297,8.879 C8.3557,8.78 8.3247,8.543 8.4677,8.403 L13.9237,3.088 C14.1007,2.916 14.3987,3.019 14.4307,3.265 L14.7537,5.763 C14.8367,5.761 14.9167,5.75 14.9997,5.75 C20.1957,5.75 24.3907,10.034 24.2457,15.262 C24.1137,20.089 20.0887,24.113 15.2617,24.246 M14.9997,0 C6.7157,0 -0.0003,6.716 -0.0003,15 C-0.0003,23.284 6.7157,30 14.9997,30 C23.2837,30 29.9997,23.284 29.9997,15 C29.9997,6.716 23.2837,0 14.9997,0" fill="#797979"/>
-      </svg>
-      <span>Reload</span>
-    </button>
-    <button class="pb-btn">
-      <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22.75,22.896 C22.75,23.326 22.243,23.555 21.92,23.272 L12.92,15.375 C12.807,15.276 12.75,15.138 12.75,15 L12.75,22.5 C12.75,22.776 12.526,23 12.25,23 L7.75,23 C7.474,23 7.25,22.776 7.25,22.5 L7.25,7.5 C7.25,7.223 7.474,7 7.75,7 L12.25,7 C12.526,7 12.75,7.223 12.75,7.5 L12.75,14.999 C12.75,14.861 12.807,14.723 12.92,14.624 L21.92,6.727 C22.243,6.444 22.75,6.673 22.75,7.103 L22.75,22.896 Z M15,0 C6.716,0 0,6.715 0,15 C0,23.284 6.716,30 15,30 C23.284,30 30,23.284 30,15 C30,6.715 23.284,0 15,0 Z" fill="#797979"/>
-      </svg>
-      <span>Restart</span>
-    </button>
+  <!-- Reload + Restart widget group -->
+  <div class="bar-tab bar-tab-controls">
+    <div class="pb-pair">
+      <button class="pb-btn">
+        <img src="assets/reload.svg" width="30" height="30" alt="" class="pb-icon">
+        <span>Reload</span>
+      </button>
+      <button class="pb-btn">
+        <img src="assets/restart.svg" width="30" height="30" alt="" class="pb-icon">
+        <span>Restart</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Start widget group -->
+  <div class="bar-tab bar-tab-start-group">
     <button class="pb-start">
-      <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
-        <path d="M23.285,15.429 L9.757,23.546 C9.424,23.746 9,23.506 9,23.117 L9,6.883 C9,6.494 9.424,6.254 9.757,6.454 L23.285,14.572 C23.609,14.766 23.609,15.235 23.285,15.429 M15,0 C6.716,0 0,6.716 0,15 C0,23.284 6.716,30 15,30 C23.284,30 30,23.284 30,15 C30,6.716 23.284,0 15,0" fill="#3d3d3d"/>
-      </svg>
+      <img src="assets/start.svg" width="30" height="30" alt="" class="pb-icon">
       <span>Start</span>
     </button>
   </div>
 
-  <!-- Hurricane Scale -->
-  <div class="hs">
+  <!-- Hurricane Scale widget group -->
+  <div class="bar-tab bar-tab-hs">
     <div class="hs-title">Hurricane Scale</div>
     <table class="hs-table">
       <tr>
@@ -768,6 +813,9 @@ function setCat(idx) {
   document.getElementById('cat-label').textContent = catLabels[idx];
   document.getElementById('storm-symbol').setAttribute('fill', catColors[idx]);
   document.getElementById('storm-label').textContent = catNames[idx];
+  // Update panel category icon color dynamically
+  var panelCatPath = document.getElementById('panel-cat-path');
+  if (panelCatPath) panelCatPath.setAttribute('fill', catColors[idx]);
 }
 
 // ── SEASON ───────────────────────────────────────────────────────────────
@@ -865,7 +913,8 @@ document.querySelectorAll('.ps-slider-track').forEach(function(track) {
       track.querySelector('.ps-slider-fill').style.height  = (pct*100)+'%';
       track.querySelector('.ps-slider-thumb').style.bottom = 'calc('+(pct*100)+'% - 10px)';
       var lbl  = document.getElementById('mb-'+track.id.replace('sl-',''));
-      var type = document.getElementById(mid).querySelector('.ps-letter').textContent.trim();
+      var letterEl = document.getElementById(mid).querySelector('.ps-letter');
+      var type = (letterEl.tagName === 'IMG') ? letterEl.getAttribute('alt') : letterEl.textContent.trim();
       lbl.textContent = (type==='H' ? Math.round(1015+pct*13) : Math.round(1010-pct*13))+'mb';
     }
     upd(e.clientY);

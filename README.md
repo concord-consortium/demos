@@ -39,9 +39,48 @@ Students interact with two main areas: a **Storm Setup panel** for configuring i
 
 ## Technical Details
 
-The prototype is a single self-contained HTML file with no external dependencies — all CSS, SVG assets, and JavaScript are inline. It runs entirely client-side with no server communication. Icons use SVGs from the Concord Consortium design system.
+The prototype now uses a **two-file structure**: `index.html` plus an `assets/` folder containing all SVG icons. Both must be deployed together. The HTML references assets by relative path (e.g., `assets/drag.svg`), so the folder structure must be preserved on the server.
+
+All logic is client-side with no server communication. The `storm-explorer-prototype.html` file is the canonical working copy; `index.html` is kept in sync for deployment.
+
+### Asset inventory (`assets/`)
+
+| File | Used for |
+|------|----------|
+| `cc-logo-small.svg` | Concord Consortium logo in the bottom bar |
+| `drag.svg` | 9-dot drag affordance on pressure markers and storm |
+| `high.svg` | H pressure system symbol (blue) |
+| `low.svg` | L pressure system symbol (red) |
+| `hurricane.svg` | Hurricane symbol (full detailed version) |
+| `reload.svg` | Reload playback button icon |
+| `restart.svg` | Restart playback button icon |
+| `start.svg` | Start playback button icon |
+| `pause.svg` | Pause playback button icon (reserved) |
+| `slider-vertical.svg` | Circular thumb for pressure-system vertical sliders |
+| `thermometer.svg` | Temperature tab icon in bottom bar |
+| `thermometer-hover.svg` | Temperature tab hover state (reserved) |
+| `season.svg` | Starting Season section icon (Material Design sun/weather) |
+| `sst-anomalies.svg` | Sea Surface Temp Anomalies section icon (thermometer) |
+| `pressure.svg` | Pressure Systems section icon (bidirectional arrows) |
 
 ## Recent Updates
+
+### Hurricane-model visual styling (May 2026)
+
+A comprehensive visual refresh to align the prototype's look and feel with the Concord Consortium hurricane-model production app. Key changes for future developers:
+
+- **Asset folder introduced** — SVG icons moved out of inline HTML and into `assets/`. All icons are referenced by relative path. The `assets/` folder must travel with `index.html` on any deployment.
+- **Lato font** — Typography switched from Roboto Condensed to Lato (loaded via Google Fonts), matching the hurricane-model primary typeface.
+- **Bottom bar widget groups** — Each control group now pops 11 px above the bar using the hurricane-model `widgetGroup` pattern: `height: 76px`, `margin-top: -11px`, `border-top-left-radius: 9px`, `border-top-right-radius: 9px`, 3-sided `#797979` border (no bottom border), `::before`/`::after` pseudo-elements covering the side borders with 66 px white blocks at the bar level.
+- **Playback controls split into widget groups** — Reload + Restart share one widget group; Start has its own; Hurricane Scale occupies the remaining flex space in a third widget group.
+- **Playback icon color** — Icons use CSS `filter: invert(1) brightness(0.475)` to render at `#797979`. Disabled state adds `opacity: 0.25` to the icon.
+- **Panel header** — Background changed to `#ff9900`, text and gear icon fill to `#434343`.
+- **Panel section icons** — Emoji placeholders replaced with inline SVGs. The Starting Category icon dynamically updates its fill color to match the currently selected Saffir-Simpson category. All icons use `#797979` fill; hovering the row adds a `box-shadow: 0 0 0 1.5px rgba(255,255,255,0.5)` outline ring around the icon.
+- **Season selected color** — Active season button uses `#ff9900` fill (was `#434343`).
+- **SST minus (−) button hover** — Blue hover effect (`#e8f0ff` background, `#2255cc` border/text) to indicate cooling intent, mirroring the existing red hover on `+` for warming.
+- **H/L pressure letters** — Replaced inline text characters with `assets/high.svg` and `assets/low.svg` image tags. The JS pressure-slider handler now reads the icon type from the `alt` attribute of the `<img>` element rather than `textContent` of a `<span>`.
+
+### Earlier updates
 
 - **Lat/Lon coordinate entry** — Added Lat and Lon text inputs to the Storm Start Location step. Values display in decimal degrees (e.g., 15.00°N, -23.00°W). Typing and pressing Enter (or tabbing away) moves the storm; dragging the storm updates the fields. Invalid or out-of-range coordinates are clamped to the nearest valid drop zone position.
 - **Pressure marker visibility** — H and L markers are now always visible on the map, not just during the Pressure Systems step. They dim to 18% opacity when another step is active, making it easy to see the pressure environment at a glance throughout setup.
