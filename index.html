@@ -1037,6 +1037,7 @@
     color: var(--text);
     display: flex; align-items: center; justify-content: center; gap: 8px;
     padding: 18px 24px;
+    min-height: 60px; box-sizing: border-box;
     margin: 0;
     background: var(--bg);
     background-image: linear-gradient(rgba(0, 90, 115, 0.25), rgba(0, 90, 115, 0.25));
@@ -1314,6 +1315,7 @@
     position: absolute;
     left: 0; right: 0;
     top: 100%;
+    max-height: 260px;
     background: var(--surface2);
     border: 1.5px solid var(--accent);
     border-top: none;
@@ -1396,7 +1398,7 @@
   .setup-btn:active { transform: scale(0.98); }
   .setup-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
-  /* ── Data table (Tracked Data Setup – Health & Wellness Log + Performance Log) ── */
+  /* ── Data table (Tracked Data Setup – Health & Performance Log + Competition Log) ── */
   .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -1428,6 +1430,10 @@
   .data-table tbody td:nth-child(2) { text-align: center; }
   .data-table tbody tr:last-child td { border-bottom: none; }
   .data-table .metric-name { font-weight: 600; }
+  .paired-metric { padding-left: 20px; font-weight: 400; color: var(--subtext); }
+  [data-paired-with] td { border-top: 1px dashed var(--border) !important; }
+  [data-metric-id="protein-intake"] td { border-bottom: none !important; }
+  .unit-toggle { display: flex; align-items: center; gap: 10px; margin-top: 4px; font-weight: 400; }
   .data-table .definition-link {
     color: var(--accent);
     text-decoration: underline;
@@ -1761,7 +1767,7 @@
     overflow: hidden;
     background: var(--surface2);
   }
-  /* Diagonal split: top-left = Health & Wellness Log, bottom-right = Performance Log */
+  /* Diagonal split: top-left = Health & Performance Log, bottom-right = Competition Log */
   .heatmap-cell::before,
   .heatmap-cell::after {
     content: '';
@@ -1770,20 +1776,20 @@
     width: 100%; height: 100%;
   }
   .heatmap-cell::before {
-    /* Health & Wellness Log triangle (top-left) */
+    /* Health & Performance Log triangle (top-left) */
     clip-path: polygon(0 0, 100% 0, 0 100%);
     background: var(--surface2);
   }
   .heatmap-cell::after {
-    /* Performance Log triangle (bottom-right) */
+    /* Competition Log triangle (bottom-right) */
     clip-path: polygon(100% 0, 100% 100%, 0 100%);
     background: var(--surface2);
   }
-  /* Health & Wellness Log colors (teal) — applied via .dl-* on ::before */
+  /* Health & Performance Log colors (teal) — applied via .dl-* on ::before */
   .heatmap-cell.dl-inactive::before { background: var(--surface); }
   .heatmap-cell.dl-none::before     { background: var(--surface2); }
   .heatmap-cell.dl-logged::before   { background: var(--accent); }
-  /* Performance Log colors (gold/secondary) — applied via .sl-* on ::after */
+  /* Competition Log colors (gold/secondary) — applied via .sl-* on ::after */
   .heatmap-cell.sl-inactive::after  { background: var(--surface); }
   .heatmap-cell.sl-none::after      { background: var(--surface2); }
   .heatmap-cell.sl-logged::after    { background: var(--secondary); }
@@ -2216,12 +2222,12 @@
   }
   .section-cal .heatmap-star::before,
   .section-cal .heatmap-star::after { display: none; }
-  /* Health & Wellness Log calendar: teal */
+  /* Health & Performance Log calendar: teal */
   .section-cal.cal-wellness .heatmap-cell.all     { background: var(--accent); border-color: var(--accent); color: #080A0E; }
   .section-cal.cal-wellness .heatmap-cell.partial { background: #007A84; border-color: #007A84; color: #E8EDF5; }
   .section-cal.cal-wellness .heatmap-cell.none    { background: var(--surface2); }
   .section-cal.cal-wellness .heatmap-cell.inactive { background: var(--surface); border-color: var(--border); color: var(--subtext); opacity: 0.45; }
-  /* Performance Log calendar: hot coral */
+  /* Competition Log calendar: hot coral */
   .section-cal.cal-performance .heatmap-cell.all     { background: #FF6B6B; border-color: #FF6B6B; color: #080A0E; }
   .section-cal.cal-performance .heatmap-cell.none    { background: var(--surface2); }
   .section-cal.cal-performance .heatmap-cell.inactive { background: var(--surface); border-color: var(--border); color: var(--subtext); opacity: 0.45; }
@@ -2625,82 +2631,7 @@
     letter-spacing: 0.04em;
   }
 
-  /* ── Performance Log table ── */
-  .performance-log-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: 'Barlow', sans-serif;
-    font-size: 16px;
-    margin-bottom: 16px;
-  }
-  .performance-log-table thead th {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--subtext);
-    padding: 10px 8px;
-    text-align: left;
-    border-bottom: 1.5px solid var(--border);
-  }
-  .performance-log-table tbody td {
-    padding: 12px 8px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    vertical-align: middle;
-  }
-  .performance-log-table tbody tr:last-child td { border-bottom: none; }
-  .performance-log-table .total-val {
-    font-weight: 700;
-    color: var(--accent);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
-  }
-  .performance-log-table .metric-name { font-weight: 600; }
-  .performance-log-table .metric-link {
-    color: var(--accent);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    cursor: pointer;
-    display: inline;
-    position: relative;
-    padding: 0 0 5px;
-    transition: filter 0.15s;
-  }
-  .performance-log-table .metric-link::before {
-    content: '';
-    position: absolute;
-    left: 0; right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    min-height: 44px;
-  }
-  .performance-log-table .metric-link:hover { filter: brightness(1.2); }
-  .performance-log-table .value-input {
-    background: var(--surface2);
-    border: 1.5px solid #546888;
-    border-radius: 6px;
-    min-height: 44px;
-    padding: 14px 16px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 16px;
-    width: 60px;
-    text-align: center;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .performance-log-table .value-input::placeholder { color: #7A8DA6; }
-  .performance-log-table .value-input:hover { border-color: var(--accent); }
-  .performance-log-table .value-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,179,192,0.18);
-  }
-  .performance-log-table .value-input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
-  .performance-log-table .value-input.has-value       { border-color: rgba(0,179,192,0.4); }
-  .performance-log-table .value-input.has-value:hover { border-color: var(--accent); }
-  .performance-log-table .value-input.has-value:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,179,192,0.18); }
+  /* ── Competition Log table ── */
 
   /* CODAP button */
   .section-rule {
@@ -3032,6 +2963,28 @@
   .body-table .metric-name {
     font-weight: 600;
   }
+  /* Multi-meal protein entry */
+  .meal-entries { display: flex; flex-direction: column; gap: 6px; max-width: 194px; }
+  .meal-row { display: flex; align-items: center; gap: 8px; }
+  .meal-row .meal-label { font-size: 16px; color: var(--subtext); white-space: nowrap; min-width: 52px; }
+  .meal-row .record-input { flex: 1; }
+  .protein-total-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--border); }
+  .protein-total-row .meal-label { font-size: 16px; color: var(--accent); font-weight: 600; white-space: nowrap; min-width: 52px; }
+  .protein-total-display,
+  .relative-protein-display {
+    display: block;
+    background: var(--surface2);
+    border: none;
+    border-radius: 6px;
+    min-height: 44px;
+    padding: 14px 16px;
+    color: var(--accent);
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    width: 90px;
+    box-sizing: border-box;
+  }
   .body-table .metric-link {
     color: var(--accent);
     text-decoration: underline;
@@ -3113,6 +3066,18 @@
   .color-swatch:hover { transform: scale(1.05); }
   .color-scale-static .color-swatch { cursor: default; }
   .color-scale-static .color-swatch:hover { transform: none; }
+  .color-scale.scale-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .color-scale.scale-5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .color-scale.scale-10 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .color-scale.scale-11 {
+    grid-template-columns: repeat(6, 1fr);
+  }
   .color-swatch.selected {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(0,179,192,0.18);
@@ -4011,7 +3976,7 @@
       <div class="screen-content">
         <p class="profile-welcome" id="tracked-welcome"><strong class="profile-welcome-title">Choose what to track</strong>Select the training and performance data you want DataGOAT to collect. You can update these choices anytime.</p>
 
-        <h3 class="info-section-heading">Health &amp; Wellness Log<button class="edit-toggle-btn" id="wellness-edit-toggle" type="button" aria-label="Edit metrics"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4,5L16.176,5L19,7.824L19,20C19,20.552 18.552,21 18,21L4,21C3.448,21 3,20.552 3,20L3,6C3,5.448 3.448,5 4,5Z" fill="rgba(0,179,192,0.35)"/><path d="M20,13L20,20C20,21.105 19.105,22 18,22L4,22C2.895,22 2,21.105 2,20L2,6C2,4.895 2.895,4 4,4L11,4" stroke="currentColor" stroke-width="2"/><polygon points="16.253 4.916 7 14.169 7 16.997 9.828 16.997 19.081 7.744" stroke="currentColor" stroke-width="2"/><path d="M19.431,1.738L18.728,2.441L21.556,5.269L22.263,4.563C22.458,4.367 22.458,4.051 22.263,3.855L20.138,1.737C19.942,1.542 19.626,1.543 19.431,1.738Z" stroke="currentColor" stroke-width="2"/></svg></button></h3>
+        <h3 class="info-section-heading">Health &amp; Performance Log<button class="edit-toggle-btn" id="wellness-edit-toggle" type="button" aria-label="Edit metrics"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4,5L16.176,5L19,7.824L19,20C19,20.552 18.552,21 18,21L4,21C3.448,21 3,20.552 3,20L3,6C3,5.448 3.448,5 4,5Z" fill="rgba(0,179,192,0.35)"/><path d="M20,13L20,20C20,21.105 19.105,22 18,22L4,22C2.895,22 2,21.105 2,20L2,6C2,4.895 2.895,4 4,4L11,4" stroke="currentColor" stroke-width="2"/><polygon points="16.253 4.916 7 14.169 7 16.997 9.828 16.997 19.081 7.744" stroke="currentColor" stroke-width="2"/><path d="M19.431,1.738L18.728,2.441L21.556,5.269L22.263,4.563C22.458,4.367 22.458,4.051 22.263,3.855L20.138,1.737C19.942,1.542 19.626,1.543 19.431,1.738Z" stroke="currentColor" stroke-width="2"/></svg></button></h3>
         <table class="data-table" id="wellness-table">
           <thead>
             <tr>
@@ -4051,6 +4016,13 @@
               <td><button class="metric-info-btn" type="button" data-metric="Protein" aria-label="Protein info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(1.989, 1.5)" fill="rgba(0,179,192,0.35)" stroke="currentColor"><path d="M5.26210412,18.3724483 C5.55373028,19.2473268 5.19211384,19.9472296 4.64385665,20.4838217 C3.96728396,21.1720594 2.85910454,21.1720594 2.17086679,20.4838217 C1.85591054,20.1688654 1.69259989,19.7605888 1.66926979,19.3406471 C1.24932812,19.317317 0.841051489,19.1540064 0.526095233,18.8390501 C-0.162142512,18.1508124 -0.188464192,17.0114688 0.526095233,16.3660603 C0.887711675,16.039439 1.76259016,15.4561866 2.63746865,15.7478128 C4.06331786,14.4170202 5.13270476,13.4189258 5.84562936,12.7535295 C6.13698261,13.1231773 7.59511342,14.5813082 8.31375482,15.1028225 C7.63561022,15.829406 6.61839332,16.9192813 5.26210412,18.3724483 Z" stroke-width="2"/><path d="M21.005699,5.5467728 C21.163641,7.39900171 20.5116132,9.21700865 19.2041695,10.5244096 C18.1891437,11.5249351 16.901277,12.1465355 15.5088474,12.288616 C13.5254471,12.4963019 11.8245225,13.2763272 10.545968,14.57447 C10.1027623,14.9965707 9.58587055,15.1645605 9.07657433,15.1645605 C8.57736943,15.1645605 8.05947066,14.9941128 7.59848838,14.5546031 L6.44364877,13.3997635 C6.02709829,12.983213 5.84535645,12.4659478 5.84535645,11.9566727 C5.84535645,11.3368328 6.10453107,10.7943743 6.55691183,10.3420075 C7.77989823,9.10891382 8.52485151,7.46845922 8.7088256,5.5673992 C8.89530515,3.65956993 9.91935964,2.01201364 11.5660347,0.947361521 C12.5237246,0.323412049 13.6538081,0 14.8391073,0 C15.9316502,0 16.97403,0.269241407 17.8807443,0.794743149 L18.1470937,0.958986543 C19.7579348,2.00585642 20.7717941,3.62528324 21.005699,5.5467728 Z" stroke-width="2"/></g></svg></button></td>
               <td class="col-del"></td>
             </tr>
+            <tr data-metric-id="relative-protein" data-builtin="true" data-paired-with="protein-intake">
+              <td class="col-drag"></td>
+              <td></td>
+              <td class="metric-name paired-metric">Relative Protein Intake</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Relative Protein" aria-label="Relative Protein Intake info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(1.989, 1.5)" fill="rgba(0,179,192,0.35)" stroke="currentColor"><path d="M5.26210412,18.3724483 C5.55373028,19.2473268 5.19211384,19.9472296 4.64385665,20.4838217 C3.96728396,21.1720594 2.85910454,21.1720594 2.17086679,20.4838217 C1.85591054,20.1688654 1.69259989,19.7605888 1.66926979,19.3406471 C1.24932812,19.317317 0.841051489,19.1540064 0.526095233,18.8390501 C-0.162142512,18.1508124 -0.188464192,17.0114688 0.526095233,16.3660603 C0.887711675,16.039439 1.76259016,15.4561866 2.63746865,15.7478128 C4.06331786,14.4170202 5.13270476,13.4189258 5.84562936,12.7535295 C6.13698261,13.1231773 7.59511342,14.5813082 8.31375482,15.1028225 C7.63561022,15.829406 6.61839332,16.9192813 5.26210412,18.3724483 Z" stroke-width="2"/><path d="M21.005699,5.5467728 C21.163641,7.39900171 20.5116132,9.21700865 19.2041695,10.5244096 C18.1891437,11.5249351 16.901277,12.1465355 15.5088474,12.288616 C13.5254471,12.4963019 11.8245225,13.2763272 10.545968,14.57447 C10.1027623,14.9965707 9.58587055,15.1645605 9.07657433,15.1645605 C8.57736943,15.1645605 8.05947066,14.9941128 7.59848838,14.5546031 L6.44364877,13.3997635 C6.02709829,12.983213 5.84535645,12.4659478 5.84535645,11.9566727 C5.84535645,11.3368328 6.10453107,10.7943743 6.55691183,10.3420075 C7.77989823,9.10891382 8.52485151,7.46845922 8.7088256,5.5673992 C8.89530515,3.65956993 9.91935964,2.01201364 11.5660347,0.947361521 C12.5237246,0.323412049 13.6538081,0 14.8391073,0 C15.9316502,0 16.97403,0.269241407 17.8807443,0.794743149 L18.1470937,0.958986543 C19.7579348,2.00585642 20.7717941,3.62528324 21.005699,5.5467728 Z" stroke-width="2"/></g></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
             <tr data-metric-id="lean-mass" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
               <td><input type="checkbox" class="track-check" checked aria-label="Track Lean Mass"></td>
@@ -4065,17 +4037,206 @@
               <td><button class="metric-info-btn" type="button" data-metric="Availability" aria-label="Availability info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="rgba(0,179,192,0.35)"/><path d="M22,11.08L22,12C21.997,16.429 19.082,20.328 14.835,21.584C10.588,22.84 6.021,21.152 3.611,17.437C1.201,13.722 1.521,8.864 4.398,5.497C7.276,2.131 12.025,1.058 16.07,2.86" stroke="currentColor" stroke-width="2"/><polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" stroke-width="2"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
+            <tr data-metric-id="mood" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Mood"></td>
+              <td class="metric-name">Mood</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Mood" aria-label="Mood info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="hrv" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track HRV (Heart Rate Variability)"></td>
+              <td class="metric-name">HRV (Heart Rate Variability)</td>
+              <td><button class="metric-info-btn" type="button" data-metric="HRV" aria-label="HRV (Heart Rate Variability) info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="pain" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Pain"></td>
+              <td class="metric-name">Pain</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Pain" aria-label="Pain info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="perceived-exertion" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Perceived Exertion"></td>
+              <td class="metric-name">Perceived Exertion</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Perceived Exertion" aria-label="Perceived Exertion info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="perceived-fatigue" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Perceived Fatigue"></td>
+              <td class="metric-name">Perceived Fatigue</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Perceived Fatigue" aria-label="Perceived Fatigue info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="readiness" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Readiness"></td>
+              <td class="metric-name">Readiness</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Readiness" aria-label="Readiness info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="soreness" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Soreness"></td>
+              <td class="metric-name">Soreness</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Soreness" aria-label="Soreness info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="overuse-injury-symptoms" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Overuse Injury Symptoms"></td>
+              <td class="metric-name">Overuse Injury Symptoms</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Overuse Injury Symptoms" aria-label="Overuse Injury Symptoms info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="1-rep-max-bench-press" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track 1 Rep Max Bench Press"></td>
+              <td class="metric-name">1 Rep Max Bench Press<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-bench" value="kg" checked> kg</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-bench" value="lbs"> lbs</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="1 Rep Max Bench Press" aria-label="1 Rep Max Bench Press info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="1-rep-max-deadlift" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track 1 Rep Max Deadlift"></td>
+              <td class="metric-name">1 Rep Max Deadlift<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-deadlift" value="kg" checked> kg</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-deadlift" value="lbs"> lbs</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="1 Rep Max Deadlift" aria-label="1 Rep Max Deadlift info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="1-rep-max-hang-clean" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track 1 Rep Max Hang Clean"></td>
+              <td class="metric-name">1 Rep Max Hang Clean<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-hang" value="kg" checked> kg</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-hang" value="lbs"> lbs</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="1 Rep Max Hang Clean" aria-label="1 Rep Max Hang Clean info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="1-rep-max-power-clean" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track 1 Rep Max Power Clean"></td>
+              <td class="metric-name">1 Rep Max Power Clean<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-power" value="kg" checked> kg</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-power" value="lbs"> lbs</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="1 Rep Max Power Clean" aria-label="1 Rep Max Power Clean info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="1-rep-max-squat" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track 1 Rep Max Squat"></td>
+              <td class="metric-name">1 Rep Max Squat<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-squat" value="kg" checked> kg</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-1rm-squat" value="lbs"> lbs</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="1 Rep Max Squat" aria-label="1 Rep Max Squat info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="1-mile-run" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track 1-Mile Run"></td>
+              <td class="metric-name">1-Mile Run</td>
+              <td><button class="metric-info-btn" type="button" data-metric="1-Mile Run" aria-label="1-Mile Run info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="10-meter-sprint" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track 10-Meter Sprint"></td>
+              <td class="metric-name">10-Meter Sprint</td>
+              <td><button class="metric-info-btn" type="button" data-metric="10-Meter Sprint" aria-label="10-Meter Sprint info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="40-yard-dash" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track 40-Yard Dash"></td>
+              <td class="metric-name">40-Yard Dash</td>
+              <td><button class="metric-info-btn" type="button" data-metric="40-Yard Dash" aria-label="40-Yard Dash info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="average-velocity" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Average Velocity"></td>
+              <td class="metric-name">Average Velocity<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-average-velocity" value="m/s" checked> m/s</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-average-velocity" value="mph"> mph</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="Average Velocity" aria-label="Average Velocity info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="beep-test" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Beep Test"></td>
+              <td class="metric-name">Beep Test</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Beep Test" aria-label="Beep Test info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="deceleration" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Deceleration"></td>
+              <td class="metric-name">Deceleration<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-deceleration" value="m/s" checked> m/s</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-deceleration" value="mph"> mph</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="Deceleration" aria-label="Deceleration info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="distance" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Distance"></td>
+              <td class="metric-name">Distance<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-distance" value="m" checked> m</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-distance" value="mi"> mi</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="Distance" aria-label="Distance info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="forward-acceleration" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Forward Acceleration"></td>
+              <td class="metric-name">Forward Acceleration<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-fwd-accel" value="m/s" checked> m/s</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-fwd-accel" value="mph"> mph</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="Forward Acceleration" aria-label="Forward Acceleration info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="heart-rate-zone" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Heart Rate Zone"></td>
+              <td class="metric-name">Heart Rate Zone</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Heart Rate Zone" aria-label="Heart Rate Zone info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="peak-velocity" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Peak Velocity"></td>
+              <td class="metric-name">Peak Velocity<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-peak-velocity" value="m/s" checked> m/s</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-peak-velocity" value="mph"> mph</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="Peak Velocity" aria-label="Peak Velocity info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="reactive-strength-index" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Reactive Strength Index"></td>
+              <td class="metric-name">Reactive Strength Index</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Reactive Strength Index" aria-label="Reactive Strength Index info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="standing-broad-jump" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Standing Broad Jump"></td>
+              <td class="metric-name">Standing Broad Jump</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Standing Broad Jump" aria-label="Standing Broad Jump info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="upward-acceleration" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Upward Acceleration"></td>
+              <td class="metric-name">Upward Acceleration<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-upward-accel" value="m/s" checked> m/s</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-upward-accel" value="mph"> mph</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="Upward Acceleration" aria-label="Upward Acceleration info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="vertical-jump" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Vertical Jump"></td>
+              <td class="metric-name">Vertical Jump</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Vertical Jump" aria-label="Vertical Jump info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
           </tbody>
         </table>
 
         <button class="add-measurement-btn" id="add-wellness-metric-btn" type="button">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Add Health &amp; Wellness Metric
+          Add Health &amp; Performance Metric
         </button>
 
         <div class="chart-divider"></div>
 
-        <h3 class="info-section-heading">Performance Log<button class="edit-toggle-btn" id="performance-edit-toggle" type="button" aria-label="Edit metrics"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4,5L16.176,5L19,7.824L19,20C19,20.552 18.552,21 18,21L4,21C3.448,21 3,20.552 3,20L3,6C3,5.448 3.448,5 4,5Z" fill="rgba(0,179,192,0.35)"/><path d="M20,13L20,20C20,21.105 19.105,22 18,22L4,22C2.895,22 2,21.105 2,20L2,6C2,4.895 2.895,4 4,4L11,4" stroke="currentColor" stroke-width="2"/><polygon points="16.253 4.916 7 14.169 7 16.997 9.828 16.997 19.081 7.744" stroke="currentColor" stroke-width="2"/><path d="M19.431,1.738L18.728,2.441L21.556,5.269L22.263,4.563C22.458,4.367 22.458,4.051 22.263,3.855L20.138,1.737C19.942,1.542 19.626,1.543 19.431,1.738Z" stroke="currentColor" stroke-width="2"/></svg></button></h3>
+        <h3 class="info-section-heading">Competition Log<button class="edit-toggle-btn" id="performance-edit-toggle" type="button" aria-label="Edit metrics"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4,5L16.176,5L19,7.824L19,20C19,20.552 18.552,21 18,21L4,21C3.448,21 3,20.552 3,20L3,6C3,5.448 3.448,5 4,5Z" fill="rgba(0,179,192,0.35)"/><path d="M20,13L20,20C20,21.105 19.105,22 18,22L4,22C2.895,22 2,21.105 2,20L2,6C2,4.895 2.895,4 4,4L11,4" stroke="currentColor" stroke-width="2"/><polygon points="16.253 4.916 7 14.169 7 16.997 9.828 16.997 19.081 7.744" stroke="currentColor" stroke-width="2"/><path d="M19.431,1.738L18.728,2.441L21.556,5.269L22.263,4.563C22.458,4.367 22.458,4.051 22.263,3.855L20.138,1.737C19.942,1.542 19.626,1.543 19.431,1.738Z" stroke="currentColor" stroke-width="2"/></svg></button></h3>
         <table class="data-table" id="performance-table">
           <thead>
             <tr>
@@ -4087,39 +4248,74 @@
             </tr>
           </thead>
           <tbody id="performance-metrics">
-            <tr data-metric-id="wins-losses" data-builtin="true">
+            <tr data-metric-id="winning-percentage" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked aria-label="Track Wins/Losses"></td>
-              <td class="metric-name">Wins/Losses</td>
-              <td><button class="metric-info-btn" type="button" data-metric="Wins/Losses" aria-label="Wins/Losses info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6,9L4.5,9C3.119,9 2,7.881 2,6.5C2,5.119 3.119,4 4.5,4L6,4" stroke-width="2"/><path d="M18,9L19.5,9C20.881,9 22,7.881 22,6.5C22,5.119 20.881,4 19.5,4L18,4" stroke-width="2"/><line x1="4" y1="22" x2="20" y2="22" stroke-width="2"/><path d="M14,14.66L14,17C14,17.55 14.47,17.98 14.97,18.21C16.15,18.75 17,20.24 17,22L7,22C7,20.24 7.85,18.75 9.03,18.21C9.53,17.98 10,17.55 10,17L10,14.66C10.631,14.881 11.301,15 12,15C12.699,15 13.369,14.881 13.993,14.661Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/><path d="M18,2L6,2L6,9C6,12.314 8.686,15 12,15C15.314,15 18,12.314 18,9L18,2Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/></svg></button></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Winning Percentage"></td>
+              <td class="metric-name">Winning Percentage</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Winning Percentage" aria-label="Winning Percentage info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6,9L4.5,9C3.119,9 2,7.881 2,6.5C2,5.119 3.119,4 4.5,4L6,4" stroke-width="2"/><path d="M18,9L19.5,9C20.881,9 22,7.881 22,6.5C22,5.119 20.881,4 19.5,4L18,4" stroke-width="2"/><line x1="4" y1="22" x2="20" y2="22" stroke-width="2"/><path d="M14,14.66L14,17C14,17.55 14.47,17.98 14.97,18.21C16.15,18.75 17,20.24 17,22L7,22C7,20.24 7.85,18.75 9.03,18.21C9.53,17.98 10,17.55 10,17L10,14.66C10.631,14.881 11.301,15 12,15C12.699,15 13.369,14.881 13.993,14.661Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/><path d="M18,2L6,2L6,9C6,12.314 8.686,15 12,15C15.314,15 18,12.314 18,9L18,2Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="scores" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Scores"></td>
+              <td class="metric-name">Scores</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Scores" aria-label="Scores info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="times" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Times"></td>
+              <td class="metric-name">Times<div class="unit-toggle"><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-times" value="h" checked> h</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-times" value="m"> m</label><label class="avail-yn-label"><input type="radio" class="avail-radio" name="unit-times" value="s"> s</label></div></td>
+              <td><button class="metric-info-btn" type="button" data-metric="Times" aria-label="Times info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="goals" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked aria-label="Track Goals"></td>
-              <td class="metric-name">Goals</td>
-              <td><button class="metric-info-btn" type="button" data-metric="Goals" aria-label="Goals info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></button></td>
+              <td><input type="checkbox" class="track-check" checked aria-label="Track Points/Goals"></td>
+              <td class="metric-name">Points/Goals</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Points/Goals" aria-label="Points/Goals info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
             <tr data-metric-id="assists" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked aria-label="Track Assists"></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Assists"></td>
               <td class="metric-name">Assists</td>
               <td><button class="metric-info-btn" type="button" data-metric="Assists" aria-label="Assists info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><g transform="translate(2.5, 1.5)"><circle cx="3" cy="17" r="3.5" fill="rgba(0,179,192,0.35)"/><path d="M3.06389255,13.498004 C3.2713296,11.1858619 3.98090915,9.20643206 5.14925207,7.62478319 C7.18259071,4.87214294 10.605458,3.32432432 15.1891892,3.32432432"/><polyline points="11.6351351 0 14.9594595 3.32432432 11.6351351 6.64864865"/><circle cx="16" cy="17" r="3.5" fill="rgba(0,179,192,0.35)"/></g></svg></button></td>
               <td class="col-del"></td>
             </tr>
-            <tr data-metric-id="yards" data-builtin="true">
-              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked aria-label="Track Yards"></td>
-              <td class="metric-name">Yards</td>
-              <td><button class="metric-info-btn" type="button" data-metric="Yards" aria-label="Yards info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><path d="M3 8h3M3 12h3M3 16h3M8 3v3M12 3v3M16 3v3"/></svg></button></td>
-              <td class="col-del"></td>
-            </tr>
             <tr data-metric-id="tackles" data-builtin="true">
               <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
-              <td><input type="checkbox" class="track-check" checked aria-label="Track Tackles"></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Tackles"></td>
               <td class="metric-name">Tackles</td>
               <td><button class="metric-info-btn" type="button" data-metric="Tackles" aria-label="Tackles info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><g transform="translate(3.4, 1.25)"><path d="M8.6,21.5 C8.6,21.5 17.2,17.2 17.2,10.75 L17.2,3.225 L8.6,0 L0,3.225 L0,10.75 C0,17.2 8.6,21.5 8.6,21.5 Z" fill="rgba(0,179,192,0.35)"/><line x1="5.375" y1="7.525" x2="11.825" y2="13.975"/><line x1="11.825" y1="7.525" x2="5.375" y2="13.975"/></g></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="rebounds" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Rebounds"></td>
+              <td class="metric-name">Rebounds</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Rebounds" aria-label="Rebounds info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="blocks" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Blocks"></td>
+              <td class="metric-name">Blocks</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Blocks" aria-label="Blocks info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="digs" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Digs"></td>
+              <td class="metric-name">Digs</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Digs" aria-label="Digs info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg></button></td>
+              <td class="col-del"></td>
+            </tr>
+            <tr data-metric-id="yards" data-builtin="true">
+              <td class="col-drag"><span class="drag-handle" tabindex="0" role="button" aria-label="Reorder"><svg width="24" height="24" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3" r="1.5"/><circle cx="10.5" cy="3" r="1.5"/><circle cx="5.5" cy="8" r="1.5"/><circle cx="10.5" cy="8" r="1.5"/><circle cx="5.5" cy="13" r="1.5"/><circle cx="10.5" cy="13" r="1.5"/></svg></span></td>
+              <td><input type="checkbox" class="track-check" aria-label="Track Yards"></td>
+              <td class="metric-name">Yards</td>
+              <td><button class="metric-info-btn" type="button" data-metric="Yards" aria-label="Yards info"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><path d="M3 8h3M3 12h3M3 16h3M8 3v3M12 3v3M16 3v3"/></svg></button></td>
               <td class="col-del"></td>
             </tr>
           </tbody>
@@ -4127,7 +4323,7 @@
 
         <button class="add-measurement-btn" id="add-performance-metric-btn" type="button">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Add Performance Metric
+          Add Competition Metric
         </button>
 
         <div style="margin-top: 16px;" id="tracked-to-dashboard-wrap">
@@ -4163,14 +4359,14 @@
       <div class="screen-content">
         <p class="profile-welcome" id="dashboard-welcome"><strong class="profile-welcome-title">Your Dashboard</strong>This is your home base. Here you&#x2019;ll see a snapshot of your recent activity, trends, and overall progress. Check back daily to stay on top of your goals.</p>
 
-        <!-- Health & Wellness Log Section -->
+        <!-- Health & Performance Log Section -->
         <div class="dash-log-section" id="dash-wellness-section">
           <div class="section-cal cal-wellness" id="cal-wellness">
             <div class="heatmap-day-labels">
               <span class="heatmap-year-label" id="cal-wellness-year"></span><span class="heatmap-day-label" aria-label="Sunday">S</span><span class="heatmap-day-label" aria-label="Monday">M</span><span class="heatmap-day-label" aria-label="Tuesday">T</span><span class="heatmap-day-label" aria-label="Wednesday">W</span><span class="heatmap-day-label" aria-label="Thursday">T</span><span class="heatmap-day-label" aria-label="Friday">F</span><span class="heatmap-day-label" aria-label="Saturday">S</span>
             </div>
             <div class="section-cal-scroll-wrap">
-              <div class="section-cal-weeks" id="cal-wellness-weeks" role="region" aria-label="Health &amp; Wellness Log calendar"></div>
+              <div class="section-cal-weeks" id="cal-wellness-weeks" role="region" aria-label="Health &amp; Performance Log calendar"></div>
               <div class="section-cal-nav">
                 <button class="section-cal-nav-btn" type="button" data-cal="cal-wellness-weeks" data-dir="up" aria-label="Show earlier weeks"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 14.5 12 9.5 7 14.5"/></svg></button>
                 <button class="section-cal-nav-btn" type="button" data-cal="cal-wellness-weeks" data-dir="down" aria-label="Show later weeks"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 9.5 12 14.5 17 9.5"/></svg></button>
@@ -4179,32 +4375,60 @@
             <div class="section-cal-legend">
               <span class="section-cal-legend-label">Data entered:</span>
               <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--accent);"></span> All</span>
-              <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:#007A84;"></span> Some</span>
+              <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:#023A3F;"></span> Some</span>
               <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--surface2); border: 1.5px solid var(--subtext);"></span> None</span>
             </div>
           </div>
           <hr class="section-rule" aria-hidden="true">
           <div class="dash-log-label-row">
-            <span class="section-cal-today" id="cal-wellness-today">Health &amp; Wellness Data</span>
+            <span class="section-cal-today" id="cal-wellness-today">Health &amp; Performance Data</span>
           </div>
-          <div class="dash-log-header" data-nav="wellness-log-screen" role="button" tabindex="0" aria-label="Go to Health &amp; Wellness Log">
+          <div class="dash-log-header" data-nav="wellness-log-screen" role="button" tabindex="0" aria-label="Go to Health &amp; Performance Log">
             <div class="dash-log-nav-btn" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
-            <p class="dash-log-status" id="dash-wellness-status">Log your&nbsp;<span class="status-highlight">5 metrics</span>&nbsp;for today.</p>
+            <p class="dash-log-status" id="dash-wellness-status">Log your&nbsp;<span class="status-highlight">6 metrics</span>&nbsp;for today.</p>
           </div>
           <div class="dash-chart-card">
           <div class="dash-chart-controls">
-            <select class="field-select" id="metrics-body-select" aria-label="Health &amp; Wellness metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
+            <select class="field-select" id="metrics-body-select" aria-label="Health &amp; Performance metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
               <option value="Hydration" selected>Hydration</option>
               <option value="Sleep Time">Total Sleep Time</option>
               <option value="Sleep Efficiency">Sleep Efficiency</option>
               <option value="Protein">Protein Intake</option>
+              <option value="Relative Protein">Relative Protein Intake</option>
               <option value="Lean Mass">Lean Mass</option>
               <option value="Availability">Availability</option>
+              <option value="Mood">Mood</option>
+              <option value="HRV">HRV (Heart Rate Variability)</option>
+              <option value="Pain">Pain</option>
+              <option value="Perceived Exertion">Perceived Exertion</option>
+              <option value="Perceived Fatigue">Perceived Fatigue</option>
+              <option value="Readiness">Readiness</option>
+              <option value="Soreness">Soreness</option>
+              <option value="Overuse Injury Symptoms">Overuse Injury Symptoms</option>
+              <option value="1 Rep Max Bench Press">1 Rep Max Bench Press</option>
+              <option value="1 Rep Max Deadlift">1 Rep Max Deadlift</option>
+              <option value="1 Rep Max Hang Clean">1 Rep Max Hang Clean</option>
+              <option value="1 Rep Max Power Clean">1 Rep Max Power Clean</option>
+              <option value="1 Rep Max Squat">1 Rep Max Squat</option>
+              <option value="1-Mile Run">1-Mile Run</option>
+              <option value="10-Meter Sprint">10-Meter Sprint</option>
+              <option value="40-Yard Dash">40-Yard Dash</option>
+              <option value="Average Velocity">Average Velocity</option>
+              <option value="Beep Test">Beep Test</option>
+              <option value="Deceleration">Deceleration</option>
+              <option value="Distance">Distance</option>
+              <option value="Forward Acceleration">Forward Acceleration</option>
+              <option value="Heart Rate Zone">Heart Rate Zone</option>
+              <option value="Peak Velocity">Peak Velocity</option>
+              <option value="Reactive Strength Index">Reactive Strength Index</option>
+              <option value="Standing Broad Jump">Standing Broad Jump</option>
+              <option value="Upward Acceleration">Upward Acceleration</option>
+              <option value="Vertical Jump">Vertical Jump</option>
             </select>
           </div>
-          <div class="chart-wrapper" id="body-chart-area" role="img" aria-label="Health &amp; Wellness metric chart"></div>
+          <div class="chart-wrapper" id="body-chart-area" role="img" aria-label="Health &amp; Performance metric chart"></div>
           <div class="time-range-picker" id="wellness-range-picker">
             <button class="time-range-btn active" type="button" data-range="7">7d</button>
             <button class="time-range-btn" type="button" data-range="14">2w</button>
@@ -4218,28 +4442,33 @@
 
         <hr class="section-rule" aria-hidden="true">
 
-        <!-- Performance Log Section -->
+        <!-- Competition Log Section -->
         <div class="dash-log-section" id="dash-performance-section">
           <div class="dash-log-label-row">
-            <span class="section-cal-today" id="cal-performance-today">Performance Data</span>
+            <span class="section-cal-today" id="cal-performance-today">Competition Data</span>
           </div>
-          <div class="dash-log-header" data-nav="performance-log-screen" role="button" tabindex="0" aria-label="Go to Performance Log">
+          <div class="dash-log-header" data-nav="performance-log-screen" role="button" tabindex="0" aria-label="Go to Competition Log">
             <div class="dash-log-nav-btn" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(3.5, 1.5)" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="12" r="8.5" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><line x1="8.5" y1="7" x2="8.5" y2="13"/><line x1="16.6213203" y1="3.87867966" x2="14.5" y2="6"/><line x1="5.5" y1="0.5" x2="11.5" y2="0.5"/></g></svg>
             </div>
-            <p class="dash-log-status" id="dash-performance-status">No perf. data logged today.</p>
+            <p class="dash-log-status" id="dash-performance-status">No competition data logged today.</p>
           </div>
           <div class="dash-chart-card">
           <div class="dash-chart-controls">
-            <select class="field-select" id="metrics-performance-select" aria-label="Performance metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
-              <option selected>Wins/Losses</option>
-              <option>Goals</option>
+            <select class="field-select" id="metrics-performance-select" aria-label="Competition metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
+              <option selected>Winning Percentage</option>
+              <option>Scores</option>
+              <option>Times</option>
+              <option>Points/Goals</option>
               <option>Assists</option>
-              <option>Yards</option>
               <option>Tackles</option>
+              <option>Rebounds</option>
+              <option>Blocks</option>
+              <option>Digs</option>
+              <option>Yards</option>
             </select>
           </div>
-          <div class="chart-wrapper" id="performance-chart-area" role="img" aria-label="Performance metric chart"></div>
+          <div class="chart-wrapper" id="performance-chart-area" role="img" aria-label="Competition metric chart"></div>
           <div class="time-range-picker" id="performance-range-picker">
             <button class="time-range-btn active" type="button" data-range="7">7d</button>
             <button class="time-range-btn" type="button" data-range="14">2w</button>
@@ -4260,15 +4489,15 @@
     </div>
   </div><!-- /dashboard-screen -->
 
-  <!-- Health & Wellness Log Screen -->
-  <div class="screen" id="wellness-log-screen" role="main" aria-label="Health &amp; Wellness Log">
+  <!-- Health & Performance Log Screen -->
+  <div class="screen" id="wellness-log-screen" role="main" aria-label="Health &amp; Performance Log">
     <div class="screen-header" id="wellness-log-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
     </div>
     <div class="accent-line" aria-hidden="true"></div>
     <div class="screen-body">
-      <h2 class="section-heading"><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Health &amp; Wellness Log</h2>
+      <h2 class="section-heading"><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Health &amp; Performance Log</h2>
 
       <!-- Date Navigator -->
       <div class="date-nav date-nav--with-legend">
@@ -4284,13 +4513,13 @@
         <div class="date-nav-legend" aria-label="Calendar legend">
           <span class="date-nav-legend-label">Data entered:</span>
           <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--accent);"></span> All</span>
-          <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:#007A84;"></span> Some</span>
+          <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:#023A3F;"></span> Some</span>
           <span class="heatmap-legend-item"><span class="heatmap-legend-swatch" style="background:var(--surface2); border: 1.5px solid var(--subtext);"></span> None</span>
         </div>
       </div>
 
       <div class="screen-content">
-        <p class="profile-welcome" id="wellness-log-welcome"><strong class="profile-welcome-title">Your Health &amp; Wellness Log</strong>Record your health &amp; wellness metrics here. Logging consistently &#x2014; even on rest days &#x2014; helps you and your team spot patterns over time.</p>
+        <p class="profile-welcome" id="wellness-log-welcome"><strong class="profile-welcome-title">Your Health &amp; Performance Log</strong>Record your health &amp; performance metrics here. Logging consistently &#x2014; even on rest days &#x2014; helps you and your team spot patterns over time.</p>
 
         <!-- Body Tracking Table -->
         <table class="body-table">
@@ -4328,10 +4557,20 @@
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Sleep Efficiency</span></td>
               <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" value="89" placeholder="%" aria-label="Sleep Efficiency"><span class="field-unit">%</span></div></td>
             </tr>
-            <tr>
-              <td><div class="track-cell" id="avg-protein">1.5g</div></td>
+            <tr id="protein-intake-row">
+              <td><div class="track-cell" id="avg-protein">140g</div></td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button" data-metric="Protein">Protein Intake</span></td>
-              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" value="1.78" placeholder="g" aria-label="Protein Intake"><span class="field-unit">g</span></div></td>
+              <td>
+                <div class="meal-entries" id="protein-meal-entries">
+                  <div class="meal-row"><span class="meal-label">Meal 1</span><div class="record-cell"><input type="text" class="record-input protein-meal" inputmode="numeric" aria-label="Meal 1 protein (g)"><span class="field-unit">g</span></div></div>
+                  <div class="protein-total-row"><div class="record-cell"><span class="protein-total-display" id="protein-total">0</span><span class="field-unit">g</span></div><span class="meal-label">Total</span></div>
+                </div>
+              </td>
+            </tr>
+            <tr id="relative-protein-row">
+              <td><div class="track-cell" id="avg-relative-protein">1.5</div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button" data-metric="Relative Protein">Relative Protein Intake</span></td>
+              <td><div class="record-cell"><span class="relative-protein-display" id="relative-protein-display">0</span><span class="field-unit">g/kg</span></div></td>
             </tr>
             <tr>
               <td><div class="track-cell" id="avg-leanMass">165</div></td>
@@ -4374,6 +4613,19 @@
                 </div>
               </td>
             </tr>
+            <tr>
+              <td><div class="track-cell" id="avg-mood">—</div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Mood</span></td>
+              <td>
+                <div class="color-scale scale-5" role="radiogroup" aria-label="Mood level">
+                  <div class="color-swatch swatch-dark" style="background:#CCF5F7;" data-val="1" tabindex="-1" role="radio" aria-checked="false" aria-label="Mood 1">1</div>
+                  <div class="color-swatch swatch-dark" style="background:#99EAF0;" data-val="2" tabindex="-1" role="radio" aria-checked="false" aria-label="Mood 2">2</div>
+                  <div class="color-swatch swatch-dark" style="background:#55D5DD;" data-val="3" tabindex="-1" role="radio" aria-checked="false" aria-label="Mood 3">3</div>
+                  <div class="color-swatch swatch-light" style="background:#057A82;" data-val="4" tabindex="-1" role="radio" aria-checked="false" aria-label="Mood 4">4</div>
+                  <div class="color-swatch swatch-light" style="background:#023A3F;" data-val="5" tabindex="-1" role="radio" aria-checked="false" aria-label="Mood 5">5</div>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
 
@@ -4389,7 +4641,7 @@
     </div>
     <div class="accent-line" aria-hidden="true"></div>
     <div class="screen-body">
-      <h2 class="section-heading detail-heading"><button class="back-nav-btn" type="button" aria-label="Back to Health &amp; Wellness Log"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><span id="detail-heading-icon"></span><span id="detail-heading-name">Sleep Efficiency</span><button class="nav-menu-btn detail-menu-btn" type="button" aria-label="Menu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></h2>
+      <h2 class="section-heading detail-heading"><button class="back-nav-btn" type="button" aria-label="Back to Health &amp; Performance Log"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><span id="detail-heading-icon"></span><span id="detail-heading-name">Sleep Efficiency</span><button class="nav-menu-btn detail-menu-btn" type="button" aria-label="Menu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></h2>
 
       <div class="screen-content" id="detail-content">
         <!-- Content injected by JS per metric -->
@@ -4474,15 +4726,15 @@
     </div>
   </div><!-- /comp-term-info-screen -->
 
-  <!-- Performance Log Screen -->
-  <div class="screen" id="performance-log-screen" role="main" aria-label="Performance Log">
+  <!-- Competition Log Screen -->
+  <div class="screen" id="performance-log-screen" role="main" aria-label="Competition Log">
     <div class="screen-header" id="performance-log-header">
       <div class="wordmark" aria-label="DataGOAT"><span class="data">Data</span><span class="goat"><span class="goat-g">G</span>OA<span class="goat-t">T</span></span></div>
       <p class="tagline">Empowering Student Athletes through Data</p>
     </div>
     <div class="accent-line" aria-hidden="true"></div>
     <div class="screen-body">
-      <h2 class="section-heading"><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(3.5, 1.5)" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="12" r="8.5" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><line x1="8.5" y1="7" x2="8.5" y2="13"/><line x1="16.6213203" y1="3.87867966" x2="14.5" y2="6"/><line x1="5.5" y1="0.5" x2="11.5" y2="0.5"/></g></svg>Performance Log</h2>
+      <h2 class="section-heading"><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(3.5, 1.5)" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="12" r="8.5" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><line x1="8.5" y1="7" x2="8.5" y2="13"/><line x1="16.6213203" y1="3.87867966" x2="14.5" y2="6"/><line x1="5.5" y1="0.5" x2="11.5" y2="0.5"/></g></svg>Competition Log</h2>
 
       <!-- Date Navigator -->
       <div class="date-nav">
@@ -4496,42 +4748,72 @@
       </div>
 
       <div class="screen-content">
-        <p class="profile-welcome" id="performance-log-welcome"><strong class="profile-welcome-title">Your Performance Log</strong>Track your sport-specific performance data here. Log your numbers after each practice or competition to build a complete picture of your progress.</p>
+        <p class="profile-welcome" id="performance-log-welcome"><strong class="profile-welcome-title">Your Competition Log</strong>Track your competition data here. Log your numbers after each competition to build a complete picture of your progress.</p>
 
-        <!-- Performance Log Data Table -->
-        <table class="performance-log-table">
+        <!-- Competition Log Data Table -->
+        <table class="body-table performance-log-table">
           <thead>
             <tr>
-              <th>Total</th>
+              <th><span class="track-label">Total</span></th>
               <th>Metric</th>
-              <th id="performance-log-value-header">Record</th>
+              <th><div class="record-header-label" id="performance-log-value-header">Record</div></th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td class="total-val">42%/58%</td>
-              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Wins/Losses</span></td>
-              <td></td>
+              <td><div class="track-cell">42%</div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Winning Percentage</span></td>
+              <td>
+                <div class="color-scale scale-2" role="radiogroup" aria-label="Winning Percentage">
+                  <div class="color-swatch swatch-dark" style="background:#CCF5F7;" data-val="Win" tabindex="-1" role="radio" aria-checked="false" aria-label="Win">Win</div>
+                  <div class="color-swatch swatch-light" style="background:#023A3F;" data-val="Loss" tabindex="-1" role="radio" aria-checked="false" aria-label="Loss">Loss</div>
+                </div>
+              </td>
             </tr>
             <tr>
-              <td class="total-val">34</td>
-              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Goals</span></td>
-              <td><input type="text" class="value-input" inputmode="numeric" value="3" aria-label="Goals"></td>
+              <td><div class="track-cell">—</div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Scores</span></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="numeric" aria-label="Scores"></div></td>
             </tr>
             <tr>
-              <td class="total-val">25</td>
+              <td><div class="track-cell">—</div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Times</span></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="decimal" placeholder="h" aria-label="Times"><span class="field-unit">h</span></div></td>
+            </tr>
+            <tr>
+              <td><div class="track-cell">34</div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Points/Goals</span></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="numeric" value="3" aria-label="Points/Goals"></div></td>
+            </tr>
+            <tr>
+              <td><div class="track-cell">25</div></td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Assists</span></td>
-              <td><input type="text" class="value-input" inputmode="numeric" aria-label="Assists"></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="numeric" aria-label="Assists"></div></td>
             </tr>
             <tr>
-              <td class="total-val"></td>
-              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Yards</span></td>
-              <td><input type="text" class="value-input" inputmode="numeric" aria-label="Yards"></td>
-            </tr>
-            <tr>
-              <td class="total-val">56</td>
+              <td><div class="track-cell">56</div></td>
               <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Tackles</span></td>
-              <td><input type="text" class="value-input" inputmode="numeric" aria-label="Tackles"></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="numeric" aria-label="Tackles"></div></td>
+            </tr>
+            <tr>
+              <td><div class="track-cell"></div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Rebounds</span></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="numeric" aria-label="Rebounds"></div></td>
+            </tr>
+            <tr>
+              <td><div class="track-cell"></div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Blocks</span></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="numeric" aria-label="Blocks"></div></td>
+            </tr>
+            <tr>
+              <td><div class="track-cell"></div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Digs</span></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="numeric" aria-label="Digs"></div></td>
+            </tr>
+            <tr>
+              <td><div class="track-cell"></div></td>
+              <td class="metric-name"><span class="metric-link" tabindex="0" role="button">Yards</span></td>
+              <td><div class="record-cell"><input type="text" class="record-input" inputmode="numeric" aria-label="Yards"></div></td>
             </tr>
           </tbody>
         </table>
@@ -4550,7 +4832,7 @@
     </div>
     <div class="accent-line" aria-hidden="true"></div>
     <div class="screen-body">
-      <h2 class="section-heading"><button class="back-nav-btn" id="add-metric-back" type="button" aria-label="Back to Tracked Data Setup"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><span id="add-metric-title">Add Health &amp; Wellness Metric</span></h2>
+      <h2 class="section-heading"><button class="back-nav-btn" id="add-metric-back" type="button" aria-label="Back to Tracked Data Setup"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><span id="add-metric-title">Add Health &amp; Perf. Metric</span></h2>
       <div class="screen-content">
         <div class="add-metric-col-headers">
           <span class="col-h-metric">Metric</span>
@@ -4614,7 +4896,7 @@
 </div><!-- /phone -->
 
   <nav class="device-switcher" aria-label="Device preview size">
-    <div class="device-switcher-label">Preview <span class="version-tag">v1.7</span></div>
+    <div class="device-switcher-label">Preview <span class="version-tag">v1.8</span></div>
 
     <button class="device-btn active" type="button" data-w="360" data-h="740" data-r="44" data-os="ios" data-cutout="dynamic-island">
       <span class="db-name">Generic Phone</span>
@@ -5056,9 +5338,9 @@
     'about-screen': 'About',
     'tracked-data-screen': 'Tracked Data Setup',
     'dashboard-screen': 'Dashboard',
-    'wellness-log-screen': 'Health & Wellness Log',
+    'wellness-log-screen': 'Health & Performance Log',
     'metric-detail-screen': 'Metric Detail',
-    'performance-log-screen': 'Performance Log',
+    'performance-log-screen': 'Competition Log',
     'athlete-type-info-screen': 'Athlete Type',
     'gender-info-screen': 'Gender',
     'comp-term-info-screen': 'Competition Term',
@@ -5125,7 +5407,7 @@
     if (trackedToDashWrap) {
       trackedToDashWrap.style.display = stillOnboarding ? '' : 'none';
     }
-    // Reset Health & Wellness Log to today unless coming from a calendar day tap
+    // Reset Health & Performance Log to today unless coming from a calendar day tap
     if (screenId === 'wellness-log-screen') {
       if (window._calNavOverride) {
         window._calNavOverride = false;
@@ -5301,8 +5583,8 @@
   // ── Nav menu ──
   var navItems = [
     { id: 'dashboard-screen', label: 'Dashboard', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg>' },
-    { id: 'wellness-log-screen', label: 'Health & Wellness Log', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' },
-    { id: 'performance-log-screen', label: 'Performance Log', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(3.5, 1.5)" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="12" r="8.5" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><line x1="8.5" y1="7" x2="8.5" y2="13"/><line x1="16.6213203" y1="3.87867966" x2="14.5" y2="6"/><line x1="5.5" y1="0.5" x2="11.5" y2="0.5"/></g></svg>' },
+    { id: 'wellness-log-screen', label: 'Health & Performance Log', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' },
+    { id: 'performance-log-screen', label: 'Competition Log', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(3.5, 1.5)" stroke="currentColor" stroke-width="2"><circle cx="8.5" cy="12" r="8.5" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><line x1="8.5" y1="7" x2="8.5" y2="13"/><line x1="16.6213203" y1="3.87867966" x2="14.5" y2="6"/><line x1="5.5" y1="0.5" x2="11.5" y2="0.5"/></g></svg>' },
     { id: 'profile-screen', label: 'Profile', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3,22 L3,20 C3,17.5147186 5.01471863,15.5 7.5,15.5 L16.5,15.5 C18.9852814,15.5 21,17.5147186 21,20 L21,22" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><circle cx="12" cy="6.75" r="4.75" fill="rgba(0,179,192,0.35)"/></svg>' },
     { id: 'tracked-data-screen', label: 'Tracked Data Setup', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(2.4178, 2)" stroke="currentColor" stroke-width="2"><path d="M11.2681634,0 L11.7076987,3.11005391 C12.7150062,3.42727603 13.627057,3.95929699 14.3901408,4.65240647 L17.3153681,3.4767355 L19.0555098,6.48469472 L16.5887706,8.438424 C16.6996076,8.94128951 16.758036,9.46382141 16.758036,10 C16.758036,10.5369741 16.6994341,11.060261 16.5882769,11.5638141 L19.0716275,13.4955398 L17.3264792,16.5121534 L14.4012172,15.337512 C13.6420227,16.0299503 12.7345578,16.5625913 11.732017,16.8822401 L11.2722207,20 L7.79235302,20 L7.35508151,16.8871536 C6.34933043,16.5689896 5.43880423,16.0366093 4.67705366,15.3435636 L1.74514835,16.5232645 L0,13.5066509 L2.4845879,11.5694084 C2.37262832,11.064137 2.31359154,10.5389629 2.31359154,10 C2.31359154,9.46421917 2.37193327,8.94206478 2.48261039,8.43954317 L0,6.50446019 L1.74514835,3.48784661 L4.67151706,4.6614788 C5.43076552,3.96927789 6.33822344,3.43686231 7.34071506,3.1174078 L7.79940684,0 L11.2681634,0 Z M9.58223239,7 C7.92537814,7 6.58223239,8.34314575 6.58223239,10 C6.58223239,11.6568542 7.92537814,13 9.58223239,13 C11.2390866,13 12.5822324,11.6568542 12.5822324,10 C12.5822324,8.34314575 11.2390866,7 9.58223239,7 Z" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><circle cx="9.58223239" cy="10" r="3" fill-rule="nonzero"/></g></svg>' },
     { id: 'about-screen', label: 'About', icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><line x1="12" y1="17.5" x2="12" y2="11" transform="translate(12, 14.25) rotate(180) translate(-12, -14.25)"/><line x1="10.875" y1="7.625" x2="13.125" y2="7.625" transform="translate(12, 7.625) rotate(90) translate(-12, -7.625)"/></svg>' },
@@ -5801,7 +6083,7 @@
     });
   });
 
-  // ── Date navigation for Health & Wellness Log & Performance Log ──
+  // ── Date navigation for Health & Performance Log & Competition Log ──
   (function () {
     var today = new Date();
     today.setHours(0,0,0,0);
@@ -5829,7 +6111,7 @@
         sleepEff:  ['85','73','','80','72','','82','90','75','68','','86','','84','91','72','80','','73','85','82','','72','83','','86','','71','90',''],
         sleepEffToday: '89',
         protein:   ['1.5','1.3','','1.6','','','1.2','1.6','1.9','1.1','1.5','1.7','','1.8','1.6','1.2','','','1.2','1.7','1.6','1.8','1.3','1.5','1.1','1.6','','1.2','1.7',''],
-        proteinToday: '1.78',
+        proteinToday: '',
         leanMass:  ['','','','','','','','','','','','','','','78','','','','','','','','','','','','','','',''],
         leanMassToday: ''
       },
@@ -5838,7 +6120,7 @@
         sleepEff:  ['88','78','','84','76','','86','93','77','75','','89','','87','94','78','85','','79','88','86','','77','87','','90','','82','92',''],
         sleepEffToday: '91',
         protein:   ['1.3','1.1','','1.4','','','1.0','1.4','1.6','1.0','1.3','1.5','','1.5','1.4','1.0','','','1.1','1.4','1.1','1.5','1.1','1.3','1.0','1.4','','1.2','1.5',''],
-        proteinToday: '1.42',
+        proteinToday: '',
         leanMass:  ['','','','','','','','','','','','','','','62','','','','','','','','','','','','','','',''],
         leanMassToday: ''
       },
@@ -5847,7 +6129,7 @@
         sleepEff:  ['78','68','','74','65','','76','83','67','62','','79','','77','84','69','74','','66','78','75','','72','77','','80','','68','83',''],
         sleepEffToday: '81',
         protein:   ['1.5','1.2','','1.7','','','1.3','1.6','2.0','1.3','1.5','1.8','','1.9','1.6','1.2','','','1.3','1.7','1.3','1.8','1.4','1.6','1.3','1.5','','1.3','1.7',''],
-        proteinToday: '1.72',
+        proteinToday: '',
         leanMass:  ['','','','','','','','','','','','','','','55','','','','','','','','','','','','','','',''],
         leanMassToday: ''
       },
@@ -5856,7 +6138,7 @@
         sleepEff:  ['80','73','','77','73','','79','84','74','70','','81','','79','84','73','77','','71','80','78','','75','79','','82','','74','83',''],
         sleepEffToday: '82',
         protein:   ['1.3','1.1','','1.4','','','1.0','1.3','1.5','1.0','1.0','1.4','','1.5','1.3','1.2','','','1.0','1.4','1.1','1.5','1.1','1.3','1.0','1.3','','1.2','1.4',''],
-        proteinToday: '1.35',
+        proteinToday: '',
         leanMass:  ['','','','','','','','','','','','','','','46','','','','','','','','','','','','','','',''],
         leanMassToday: ''
       },
@@ -5874,6 +6156,7 @@
     var sharedPracticeStatus = ['played','played','','played','dnp','played','','played','played','','played','played','dnp','','played','played','played','played','','played','dnp','','played','played','played','played','','played','played',''];
     var sharedGame           = [false,true,false,false,true,false,false,true,false,false,false,true,false,false,true,false,true,false,false,true,false,false,false,true,true,false,false,true,false,false];
     var sharedGameStatus     = ['','played','','','dnp','','','played','','','','played','','','played','','played','','','dnp','','','','played','played','','','played','',''];
+    var sharedMood           = ['3','4','','2','3','','4','5','3','2','4','3','','4','3','5','2','','3','4','','3','4','2','5','3','4','3','4',''];
 
     // Profile-specific chart goals
     var profileChartGoals = {
@@ -5912,17 +6195,66 @@
     window._defaultProfile = defaultProfile;
     window._currentProfileKey = currentProfileKey;
 
+    // Helper: split a total gram value into 3 meals with slight variation
+    function splitIntoMeals(totalG) {
+      if (!totalG || totalG <= 0) return [];
+      var base = Math.round(totalG / 3);
+      var m1 = base + Math.round((Math.random() - 0.5) * 8);
+      var m2 = base + Math.round((Math.random() - 0.5) * 8);
+      var m3 = totalG - m1 - m2;
+      return [Math.max(10, m1), Math.max(10, m2), Math.max(10, m3)];
+    }
+
+    // Pre-generate stable meal splits per profile (seeded by index so they don't change on reload)
+    function buildMealSplits(proteinArr, bodyWeightLbs) {
+      var weightKg = bodyWeightLbs / 2.205;
+      return proteinArr.map(function (gpkg) {
+        if (gpkg === '') return [];
+        var totalG = Math.round(parseFloat(gpkg) * weightKg);
+        var base = Math.round(totalG / 3);
+        // Deterministic variation based on value
+        var v1 = Math.round(base * 0.9);
+        var v2 = Math.round(base * 1.05);
+        var v3 = totalG - v1 - v2;
+        return [v1, v2, v3];
+      });
+    }
+
+    // Pre-build meal splits for each profile
+    var profileMealSplits = {};
+    Object.keys(profileVariants).forEach(function (key) {
+      var pv = profileVariants[key];
+      if (!pv) return;
+      pv._mealSplits = buildMealSplits(pv.protein, parseInt(pv.bodyWeight));
+      // Today's meals
+      if (pv.proteinToday !== '') {
+        var wtKg = parseInt(pv.bodyWeight) / 2.205;
+        var todayTotal = Math.round(parseFloat(pv.proteinToday) * wtKg);
+        var b = Math.round(todayTotal / 3);
+        pv._mealSplitsToday = [Math.round(b * 0.95), Math.round(b * 1.1)]; // 2 meals entered so far today
+      } else {
+        pv._mealSplitsToday = [];
+      }
+    });
+
     var blankDays = [2, 5, 12, 17]; // Days with no data entered at all
     function buildWellnessData(profileKey) {
       var v = profileVariants[profileKey] || profileVariants[defaultProfile];
+      var weightKg = parseInt(v.bodyWeight) / 2.205;
       var data = [];
       for (var i = 0; i <= HISTORY; i++) {
         var isToday = (i === HISTORY);
         var isBlank = blankDays.indexOf(i) !== -1;
+        var meals = (isToday || isBlank) ? [] : (v._mealSplits ? v._mealSplits[i] : []);
+        if (isToday && !isBlank && v._mealSplitsToday) meals = v._mealSplitsToday;
+        var mealTotal = meals.reduce(function (a, b) { return a + b; }, 0);
         data.push({
           hydration:      (isToday || isBlank) ? 0 : sharedHydration[i],
           sleepTime:      (isToday || isBlank) ? '' : sharedSleepTime[i],
           sleepEff:       (isToday || isBlank) ? '' : v.sleepEff[i],
+          proteinMeals:   meals.map(String),
+          proteinTotal:   meals.length ? String(mealTotal) : '',
+          relativeProtein: meals.length ? String(Math.round(mealTotal / weightKg * 100) / 100) : '',
           protein:        (isToday || isBlank) ? '' : v.protein[i],
           leanMass:       (isToday || isBlank) ? '' : v.leanMass[i],
           practiceYN:     (isToday || isBlank) ? '' : (sharedPractice[i] ? 'yes' : 'no'),
@@ -5930,7 +6262,8 @@
           practiceStatus: (isToday || isBlank) ? '' : sharedPracticeStatus[i],
           gameYN:         (isToday || isBlank) ? '' : (sharedGame[i] ? 'yes' : 'no'),
           game:           (isToday || isBlank) ? false : sharedGame[i],
-          gameStatus:     (isToday || isBlank) ? '' : sharedGameStatus[i]
+          gameStatus:     (isToday || isBlank) ? '' : sharedGameStatus[i],
+          mood:           (isToday || isBlank) ? '' : sharedMood[i]
         });
       }
       return data;
@@ -5941,8 +6274,9 @@
       var data = [];
       for (var i = 0; i <= HISTORY; i++) {
         data.push({
-          hydration: 0, sleepTime: '', sleepEff: '', protein: '', leanMass: '',
-          practiceYN: '', practice: false, practiceStatus: '', gameYN: '', game: false, gameStatus: ''
+          hydration: 0, sleepTime: '', sleepEff: '', proteinMeals: [], proteinTotal: '', relativeProtein: '', protein: '', leanMass: '',
+          practiceYN: '', practice: false, practiceStatus: '', gameYN: '', game: false, gameStatus: '',
+          mood: ''
         });
       }
       return data;
@@ -5976,7 +6310,7 @@
       });
     }
 
-    // ── Health & Wellness Log navigator ──
+    // ── Health & Performance Log navigator ──
     var dlOffset = HISTORY; // start at today
     var dlLabel = document.getElementById('wellness-log-date');
     var dlPrev  = document.getElementById('wellness-prev');
@@ -5991,9 +6325,10 @@
       if (row.hydration) filled++;
       if (row.sleepTime !== '') filled++;
       if (row.sleepEff !== '') filled++;
-      if (row.protein !== '') filled++;
+      if (row.proteinMeals && row.proteinMeals.length > 0 && row.proteinMeals.some(function(m) { return m !== ''; })) filled++;
       if (row.practiceYN !== '' && row.gameYN !== '') filled++;
-      if (filled === 5) {
+      if (row.mood !== '') filled++;
+      if (filled === 6) {
         dlChip.style.background = 'var(--accent)';
         dlChip.style.border = 'none';
       } else if (filled > 0) {
@@ -6005,6 +6340,93 @@
       }
     }
     window._updateWellnessChip = updateWellnessChip;
+
+    // ── Protein multi-meal logic ──
+
+    function updateProteinTotals() {
+      var container = document.getElementById('protein-meal-entries');
+      if (!container) return;
+      var inputs = container.querySelectorAll('.protein-meal');
+      var total = 0;
+      var meals = [];
+      inputs.forEach(function (inp) {
+        var v = inp.value.trim();
+        meals.push(v);
+        if (v !== '') total += parseFloat(v) || 0;
+      });
+      // Update total display
+      var totalEl = document.getElementById('protein-total');
+      if (totalEl) totalEl.textContent = total > 0 ? (total % 1 === 0 ? total : Math.round(total * 10) / 10) : '0';
+      // Update relative protein display
+      var weightKg = getAthleteWeightKg();
+      var relEl = document.getElementById('relative-protein-display');
+      if (relEl) relEl.textContent = (weightKg > 0 && total > 0) ? (Math.round(total / weightKg * 100) / 100).toFixed(2) : '—';
+      // Save to data model
+      var wd = window._wellnessData;
+      if (wd && window._dlOffset !== undefined) {
+        var row = wd[window._dlOffset];
+        row.proteinMeals = meals;
+        row.proteinTotal = total > 0 ? String(total) : '';
+        row.relativeProtein = (weightKg > 0 && total > 0) ? String(Math.round(total / weightKg * 100) / 100) : '';
+        // Keep legacy protein field in sync (g/kg)
+        row.protein = row.relativeProtein;
+      }
+      updateWellnessChip();
+    }
+
+    function addMealRow(container, mealNum, value) {
+      var div = document.createElement('div');
+      div.className = 'meal-row';
+      var label = document.createElement('span');
+      label.className = 'meal-label';
+      label.textContent = 'Meal ' + mealNum;
+      var cell = document.createElement('div');
+      cell.className = 'record-cell';
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'record-input protein-meal';
+      input.inputMode = 'numeric';
+      input.setAttribute('aria-label', 'Meal ' + mealNum + ' protein (g)');
+      if (value) input.value = value;
+      var unit = document.createElement('span');
+      unit.className = 'field-unit';
+      unit.textContent = 'g';
+      cell.appendChild(input);
+      cell.appendChild(unit);
+      div.appendChild(cell);
+      div.appendChild(label);
+      // Insert before the total row
+      var totalRow = container.querySelector('.protein-total-row');
+      container.insertBefore(div, totalRow);
+      // Listen for input
+      input.addEventListener('input', function () {
+        updateProteinTotals();
+        // Auto-add next meal if this is the last meal row and has a value
+        var mealRows = container.querySelectorAll('.meal-row');
+        var lastInput = mealRows[mealRows.length - 1].querySelector('.protein-meal');
+        if (lastInput === input && input.value.trim() !== '') {
+          addMealRow(container, mealRows.length + 1, '');
+        }
+      });
+      return input;
+    }
+
+    function renderProteinMeals(row) {
+      var container = document.getElementById('protein-meal-entries');
+      if (!container) return;
+      // Clear existing meal rows (keep total row)
+      var existingMeals = container.querySelectorAll('.meal-row');
+      existingMeals.forEach(function (el) { el.remove(); });
+      // Build meal rows from data — only meals with values
+      var meals = (row.proteinMeals || []).filter(function (m) { return m !== ''; });
+      for (var i = 0; i < meals.length; i++) {
+        addMealRow(container, i + 1, meals[i]);
+      }
+      // Always show one empty row for the next entry
+      addMealRow(container, meals.length + 1, '');
+      // Update totals
+      updateProteinTotals();
+    }
 
     function renderDailyDate() {
       window._dlOffset = dlOffset;
@@ -6040,16 +6462,15 @@
       var effInput = rows[2].querySelector('.record-input');
       if (effInput) effInput.value = row.sleepEff;
 
-      // Protein
-      var protInput = rows[3].querySelector('.record-input');
-      if (protInput) protInput.value = row.protein;
+      // Protein meals
+      renderProteinMeals(row);
 
-      // Lean Mass
-      var leanInput = rows[4].querySelector('.record-input');
+      // Lean Mass (row 5 now — after Protein Intake + Relative Protein)
+      var leanInput = rows[5] ? rows[5].querySelector('.record-input') : null;
       if (leanInput) leanInput.value = row.leanMass;
 
-      // Availability Y/N radios + participation radios
-      var availRow = rows[5];
+      // Availability Y/N radios + participation radios (row 6 now)
+      var availRow = rows[6];
       if (availRow) {
         var practiceOption = availRow.querySelector('[data-avail="practice"]');
         var gameOption = availRow.querySelector('[data-avail="game"]');
@@ -6075,13 +6496,27 @@
           r.checked = (row.gameStatus === r.value);
         });
       }
+
+      // Mood swatches
+      var moodRow = rows[7];
+      if (moodRow) {
+        var moodSwatches = moodRow.querySelectorAll('.color-swatch');
+        moodSwatches.forEach(function (s) {
+          s.classList.remove('selected');
+          s.setAttribute('aria-checked', 'false');
+          if (row.mood !== '' && s.getAttribute('data-val') === row.mood) {
+            s.classList.add('selected');
+            s.setAttribute('aria-checked', 'true');
+          }
+        });
+      }
     }
 
     dlPrev.addEventListener('click', function () { if (dlOffset > 0) { dlOffset--; renderDailyDate(); } });
     dlNext.addEventListener('click', function () { if (dlOffset < HISTORY) { dlOffset++; renderDailyDate(); } });
     renderDailyDate();
 
-    // ── Performance Log navigator ──
+    // ── Competition Log navigator ──
     var slOffset = HISTORY;
     var slLabel = document.getElementById('performance-log-date');
     var slPrev  = document.getElementById('performance-prev');
@@ -6101,18 +6536,18 @@
       var tbody = document.querySelector('.performance-log-table tbody');
       if (!tbody) return;
       var trs = tbody.querySelectorAll('tr');
-      // Row 0 = Wins/Losses (no input)
+      // Row 0 = Winning Percentage (tile selector)
       // Row 1 = Goals
-      var goalsInput = trs[1] ? trs[1].querySelector('.value-input') : null;
+      var goalsInput = trs[1] ? trs[1].querySelector('.record-input') : null;
       if (goalsInput) goalsInput.value = row.goals;
       // Row 2 = Assists
-      var assistsInput = trs[2] ? trs[2].querySelector('.value-input') : null;
+      var assistsInput = trs[2] ? trs[2].querySelector('.record-input') : null;
       if (assistsInput) assistsInput.value = row.assists;
       // Row 3 = Yards
-      var yardsInput = trs[3] ? trs[3].querySelector('.value-input') : null;
+      var yardsInput = trs[3] ? trs[3].querySelector('.record-input') : null;
       if (yardsInput) yardsInput.value = row.yards;
       // Row 4 = Tackles
-      var tacklesInput = trs[4] ? trs[4].querySelector('.value-input') : null;
+      var tacklesInput = trs[4] ? trs[4].querySelector('.record-input') : null;
       if (tacklesInput) tacklesInput.value = row.tackles;
     }
 
@@ -6154,20 +6589,10 @@
         });
       }
 
-      // Protein (row 3)
-      var protInput = rows[3] ? rows[3].querySelector('.record-input') : null;
-      if (protInput) {
-        protInput.addEventListener('input', function () {
-          var wd = window._wellnessData;
-          if (wd && window._dlOffset !== undefined) {
-            wd[window._dlOffset].protein = protInput.value;
-            updateWellnessChip();
-          }
-        });
-      }
+      // Protein meals are handled by renderProteinMeals / addMealListener below
 
-      // Lean Mass (row 4)
-      var leanInput = rows[4] ? rows[4].querySelector('.record-input') : null;
+      // Lean Mass (row 5 now)
+      var leanInput = rows[5] ? rows[5].querySelector('.record-input') : null;
       if (leanInput) {
         leanInput.addEventListener('input', function () {
           var wd = window._wellnessData;
@@ -6177,8 +6602,8 @@
         });
       }
 
-      // Availability Y/N radios + participation radios (row 5)
-      var availRow = rows[5];
+      // Availability Y/N radios + participation radios (row 6 now)
+      var availRow = rows[6];
       if (availRow) {
         availRow.querySelectorAll('[name="avail-practice-yn"]').forEach(function (r) {
           r.addEventListener('change', function () {
@@ -6222,7 +6647,7 @@
       }
     })();
 
-    // ── Live data binding: Performance Log inputs → performanceData ──
+    // ── Live data binding: Competition Log inputs → performanceData ──
     (function () {
       var tbody = document.querySelector('.performance-log-table tbody');
       if (!tbody) return;
@@ -6234,7 +6659,7 @@
         { row: 4, key: 'tackles' }
       ];
       fields.forEach(function (f) {
-        var input = trs[f.row] ? trs[f.row].querySelector('.value-input') : null;
+        var input = trs[f.row] ? trs[f.row].querySelector('.record-input') : null;
         if (input) {
           input.addEventListener('input', function () {
             var pd = window._performanceData;
@@ -6281,10 +6706,15 @@
       var seEl = document.getElementById('avg-sleepEff');
       if (seEl) seEl.textContent = seVals.length ? Math.round(seVals.reduce(function (a, b) { return a + b; }, 0) / seVals.length) + '%' : noData;
 
-      // Protein
-      var prVals = wd.filter(function (d) { return d.protein !== ''; }).map(function (d) { return parseFloat(d.protein); });
+      // Protein Total (grams)
+      var prVals = wd.filter(function (d) { return d.proteinTotal !== ''; }).map(function (d) { return parseInt(d.proteinTotal); });
       var prEl = document.getElementById('avg-protein');
-      if (prEl) prEl.textContent = prVals.length ? (Math.round(prVals.reduce(function (a, b) { return a + b; }, 0) / prVals.length * 100) / 100) + 'g' : noData;
+      if (prEl) prEl.textContent = prVals.length ? Math.round(prVals.reduce(function (a, b) { return a + b; }, 0) / prVals.length) + 'g' : noData;
+
+      // Relative Protein (g/kg)
+      var rpVals = wd.filter(function (d) { return d.relativeProtein !== ''; }).map(function (d) { return parseFloat(d.relativeProtein); });
+      var rpEl = document.getElementById('avg-relative-protein');
+      if (rpEl) rpEl.textContent = rpVals.length ? (Math.round(rpVals.reduce(function (a, b) { return a + b; }, 0) / rpVals.length * 100) / 100) : noData;
 
       // Lean Mass
       var lmVals = wd.filter(function (d) { return d.leanMass !== ''; }).map(function (d) { return parseInt(d.leanMass); });
@@ -6356,7 +6786,7 @@
     if (window._rebuildCalendars) window._rebuildCalendars();
   };
 
-  // Performance Log button on profile screen → Performance Log screen
+  // Competition Log button on profile screen → Competition Log screen
   var performanceLogBtn = document.querySelectorAll('#profile-screen .setup-btn')[1];
   if (performanceLogBtn) {
     performanceLogBtn.addEventListener('click', function () {
@@ -6364,7 +6794,7 @@
     });
   }
 
-  // Enter Health & Wellness Log / Enter Performance Log buttons handled by data-nav delegation below
+  // Enter Health & Performance Log / Enter Competition Log buttons handled by data-nav delegation below
 
   // ── Metric heading icons per metric ──
   window._svgUid = 0;
@@ -6374,13 +6804,46 @@
     'Sleep Time':       function() { var u = 'st' + (++window._svgUid); return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><defs><mask id="mc' + u + '"><rect width="24" height="24" fill="white"/><circle cx="17" cy="17" r="7" fill="black"/></mask><mask id="ch' + u + '"><rect width="24" height="24" fill="white"/><polyline points="17 12 17 17 20.5 19.75" stroke="black" stroke-width="2" stroke-linecap="butt" stroke-linejoin="miter" fill="none"/></mask></defs><path d="M10.766,1.032C15.378,1.421 19,5.288 19,10C19,14.971 14.971,19 10,19C5.288,19 1.421,15.378 1.032,10.766C2.16,11.545 3.527,12 5,12C8.866,12 12,8.866 12,5C12,3.55 11.559,2.203 10.805,1.086L10.766,1.032Z" stroke="currentColor" stroke-width="2" fill="rgba(0,179,192,0.35)" mask="url(#mc' + u + ')"/><circle cx="17" cy="17" r="6" stroke="currentColor" stroke-width="2" fill="currentColor" mask="url(#ch' + u + ')"/></svg>'; },
     'Sleep Efficiency': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.79,1C15.5258,1.4376 19.1036,5.4845 18.9576,10.2382C18.9466,10.5962 18.9147,10.949 18.8632,11.2952C18.2763,11.1034 17.6503,11 17,11C13.6863,11 11,13.6863 11,17L11.0005,18.9021C10.7494,18.931 10.4952,18.9497 10.2382,18.9576C5.4845,19.1036 1.4376,15.5258 1,10.79C3.7865,12.8496 7.6605,12.5607 10.1106,10.1106C12.5607,7.6605 12.8496,3.7865 10.79,1Z" stroke-width="2" fill="rgba(0,179,192,0.35)" stroke-linecap="round"/><path d="M23,21C23,19.6667 23,18.3333 23,17C23,13.6863 20.3137,11 17,11C13.6863,11 11,13.6863 11,17C11,18.3333 11,19.6667 11,21C11,22.1046 11.8954,23 13,23L21,23C22.1046,23 23,22.1046 23,21Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/><circle cx="17" cy="17.5" r="1.5" fill="currentColor" stroke="none"/><line x1="22.5" y1="14.5" x2="17" y2="17.5" stroke-width="1.5"/></svg>',
     'Protein':          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(1.989, 1.5)" fill="rgba(0,179,192,0.35)" stroke="currentColor"><path d="M5.26210412,18.3724483 C5.55373028,19.2473268 5.19211384,19.9472296 4.64385665,20.4838217 C3.96728396,21.1720594 2.85910454,21.1720594 2.17086679,20.4838217 C1.85591054,20.1688654 1.69259989,19.7605888 1.66926979,19.3406471 C1.24932812,19.317317 0.841051489,19.1540064 0.526095233,18.8390501 C-0.162142512,18.1508124 -0.188464192,17.0114688 0.526095233,16.3660603 C0.887711675,16.039439 1.76259016,15.4561866 2.63746865,15.7478128 C4.06331786,14.4170202 5.13270476,13.4189258 5.84562936,12.7535295 C6.13698261,13.1231773 7.59511342,14.5813082 8.31375482,15.1028225 C7.63561022,15.829406 6.61839332,16.9192813 5.26210412,18.3724483 Z" stroke-width="2"/><path d="M21.005699,5.5467728 C21.163641,7.39900171 20.5116132,9.21700865 19.2041695,10.5244096 C18.1891437,11.5249351 16.901277,12.1465355 15.5088474,12.288616 C13.5254471,12.4963019 11.8245225,13.2763272 10.545968,14.57447 C10.1027623,14.9965707 9.58587055,15.1645605 9.07657433,15.1645605 C8.57736943,15.1645605 8.05947066,14.9941128 7.59848838,14.5546031 L6.44364877,13.3997635 C6.02709829,12.983213 5.84535645,12.4659478 5.84535645,11.9566727 C5.84535645,11.3368328 6.10453107,10.7943743 6.55691183,10.3420075 C7.77989823,9.10891382 8.52485151,7.46845922 8.7088256,5.5673992 C8.89530515,3.65956993 9.91935964,2.01201364 11.5660347,0.947361521 C12.5237246,0.323412049 13.6538081,0 14.8391073,0 C15.9316502,0 16.97403,0.269241407 17.8807443,0.794743149 L18.1470937,0.958986543 C19.7579348,2.00585642 20.7717941,3.62528324 21.005699,5.5467728 Z" stroke-width="2"/></g></svg>',
+    'Relative Protein': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(1.989, 1.5)" fill="rgba(0,179,192,0.35)" stroke="currentColor"><path d="M5.26210412,18.3724483 C5.55373028,19.2473268 5.19211384,19.9472296 4.64385665,20.4838217 C3.96728396,21.1720594 2.85910454,21.1720594 2.17086679,20.4838217 C1.85591054,20.1688654 1.69259989,19.7605888 1.66926979,19.3406471 C1.24932812,19.317317 0.841051489,19.1540064 0.526095233,18.8390501 C-0.162142512,18.1508124 -0.188464192,17.0114688 0.526095233,16.3660603 C0.887711675,16.039439 1.76259016,15.4561866 2.63746865,15.7478128 C4.06331786,14.4170202 5.13270476,13.4189258 5.84562936,12.7535295 C6.13698261,13.1231773 7.59511342,14.5813082 8.31375482,15.1028225 C7.63561022,15.829406 6.61839332,16.9192813 5.26210412,18.3724483 Z" stroke-width="2"/><path d="M21.005699,5.5467728 C21.163641,7.39900171 20.5116132,9.21700865 19.2041695,10.5244096 C18.1891437,11.5249351 16.901277,12.1465355 15.5088474,12.288616 C13.5254471,12.4963019 11.8245225,13.2763272 10.545968,14.57447 C10.1027623,14.9965707 9.58587055,15.1645605 9.07657433,15.1645605 C8.57736943,15.1645605 8.05947066,14.9941128 7.59848838,14.5546031 L6.44364877,13.3997635 C6.02709829,12.983213 5.84535645,12.4659478 5.84535645,11.9566727 C5.84535645,11.3368328 6.10453107,10.7943743 6.55691183,10.3420075 C7.77989823,9.10891382 8.52485151,7.46845922 8.7088256,5.5673992 C8.89530515,3.65956993 9.91935964,2.01201364 11.5660347,0.947361521 C12.5237246,0.323412049 13.6538081,0 14.8391073,0 C15.9316502,0 16.97403,0.269241407 17.8807443,0.794743149 L18.1470937,0.958986543 C19.7579348,2.00585642 20.7717941,3.62528324 21.005699,5.5467728 Z" stroke-width="2"/></g></svg>',
     'Lean Mass':        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><g transform="translate(1, 4)" fill="rgba(0,179,192,0.35)" stroke="currentColor" stroke-width="2"><path d="M18.75,6 L21.9,6 C21.9552285,6 22,6.04477153 22,6.1 L22,9.9 C22,9.95522847 21.9552285,10 21.9,10 L18.75,10 L18.75,6 Z"/><rect x="7.5" y="6" width="7" height="4"/><path d="M0.1,6 L3.25,6 L3.25,10 L0.1,10 C0.044771525,10 0,9.95522847 0,9.9 L0,6.1 C0,6.04477153 0.044771525,6 0.1,6 Z"/><rect x="3.25" y="0.5" width="4.25" height="15" rx="1.25"/><rect x="14.5" y="0.5" width="4.25" height="15" rx="1.25"/></g></svg>',
     'Availability':     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="rgba(0,179,192,0.35)"/><path d="M22,11.08L22,12C21.997,16.429 19.082,20.328 14.835,21.584C10.588,22.84 6.021,21.152 3.611,17.437C1.201,13.722 1.521,8.864 4.398,5.497C7.276,2.131 12.025,1.058 16.07,2.86" stroke="currentColor" stroke-width="2"/><polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" stroke-width="2"/></svg>',
-    'Wins/Losses':      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6,9L4.5,9C3.119,9 2,7.881 2,6.5C2,5.119 3.119,4 4.5,4L6,4" stroke-width="2"/><path d="M18,9L19.5,9C20.881,9 22,7.881 22,6.5C22,5.119 20.881,4 19.5,4L18,4" stroke-width="2"/><line x1="4" y1="22" x2="20" y2="22" stroke-width="2"/><path d="M14,14.66L14,17C14,17.55 14.47,17.98 14.97,18.21C16.15,18.75 17,20.24 17,22L7,22C7,20.24 7.85,18.75 9.03,18.21C9.53,17.98 10,17.55 10,17L10,14.66C10.631,14.881 11.301,15 12,15C12.699,15 13.369,14.881 13.993,14.661Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/><path d="M18,2L6,2L6,9C6,12.314 8.686,15 12,15C15.314,15 18,12.314 18,9L18,2Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/></svg>',
-    'Goals':            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+    'Winning Percentage':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6,9L4.5,9C3.119,9 2,7.881 2,6.5C2,5.119 3.119,4 4.5,4L6,4" stroke-width="2"/><path d="M18,9L19.5,9C20.881,9 22,7.881 22,6.5C22,5.119 20.881,4 19.5,4L18,4" stroke-width="2"/><line x1="4" y1="22" x2="20" y2="22" stroke-width="2"/><path d="M14,14.66L14,17C14,17.55 14.47,17.98 14.97,18.21C16.15,18.75 17,20.24 17,22L7,22C7,20.24 7.85,18.75 9.03,18.21C9.53,17.98 10,17.55 10,17L10,14.66C10.631,14.881 11.301,15 12,15C12.699,15 13.369,14.881 13.993,14.661Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/><path d="M18,2L6,2L6,9C6,12.314 8.686,15 12,15C15.314,15 18,12.314 18,9L18,2Z" stroke-width="2" fill="rgba(0,179,192,0.35)"/></svg>',
+    'Scores':         '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Times':          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Points/Goals':     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
     'Assists':          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><g transform="translate(2.5, 1.5)"><circle cx="3" cy="17" r="3.5" fill="rgba(0,179,192,0.35)"/><path d="M3.06389255,13.498004 C3.2713296,11.1858619 3.98090915,9.20643206 5.14925207,7.62478319 C7.18259071,4.87214294 10.605458,3.32432432 15.1891892,3.32432432"/><polyline points="11.6351351 0 14.9594595 3.32432432 11.6351351 6.64864865"/><circle cx="16" cy="17" r="3.5" fill="rgba(0,179,192,0.35)"/></g></svg>',
     'Yards':            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><path d="M3 8h3M3 12h3M3 16h3M8 3v3M12 3v3M16 3v3"/></svg>',
-    'Tackles':          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><g transform="translate(3.4, 1.25)"><path d="M8.6,21.5 C8.6,21.5 17.2,17.2 17.2,10.75 L17.2,3.225 L8.6,0 L0,3.225 L0,10.75 C0,17.2 8.6,21.5 8.6,21.5 Z" fill="rgba(0,179,192,0.35)"/><line x1="5.375" y1="7.525" x2="11.825" y2="13.975"/><line x1="11.825" y1="7.525" x2="5.375" y2="13.975"/></g></svg>'
+    'Tackles':          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><g transform="translate(3.4, 1.25)"><path d="M8.6,21.5 C8.6,21.5 17.2,17.2 17.2,10.75 L17.2,3.225 L8.6,0 L0,3.225 L0,10.75 C0,17.2 8.6,21.5 8.6,21.5 Z" fill="rgba(0,179,192,0.35)"/><line x1="5.375" y1="7.525" x2="11.825" y2="13.975"/><line x1="11.825" y1="7.525" x2="5.375" y2="13.975"/></g></svg>',
+    'Rebounds':         '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Blocks':           '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Digs':             '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Mood':             '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'HRV':              '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Pain':             '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Perceived Exertion':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Perceived Fatigue':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Readiness':        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Soreness':         '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Overuse Injury Symptoms':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    '1 Rep Max Bench Press':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    '1 Rep Max Deadlift':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    '1 Rep Max Hang Clean':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    '1 Rep Max Power Clean':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    '1 Rep Max Squat':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    '1-Mile Run':       '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    '10-Meter Sprint':  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    '40-Yard Dash':     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Average Velocity': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Beep Test':        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Deceleration':     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Distance':         '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Forward Acceleration':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Heart Rate Zone':  '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Peak Velocity':    '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Reactive Strength Index':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Standing Broad Jump':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Upward Acceleration':'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>',
+    'Vertical Jump':    '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" fill="rgba(0,179,192,0.35)"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>'
   };
 
   // ── Metric detail content per metric ──
@@ -6469,6 +6932,26 @@
       xLabel: 'Day',
       goal: '1.4', goalPct: 56,
       bars: [65, 70, 55, 80, 75, 60, 72, 68, 78, 82, 58, 74, 70, 0],
+      unit: 'g/day'
+    },
+    'Relative Protein': {
+      type: 'bar',
+      displayName: 'Relative Protein Intake',
+      desc: 'Protein intake relative to body weight. Calculated as total daily protein (g) divided by body weight (kg). Useful for comparing intake across athletes of different sizes.',
+      whoCollects: 'Auto-calculated',
+      howCollected: 'Automatically computed from your daily Protein Intake total and your body weight from your Profile.',
+      estimatedRange: '0.6\u20133 g/kg/day (0.3\u20131.4 g/lb/day)',
+      whenCollected: 'Daily (auto)',
+      link: null,
+      references: [
+        { title: 'NCAA Nutrition, Hydration & Sleep', url: 'https://www.ncaa.org/sports/2016/8/4/nutrition-sleep-and-performance-educational-resources.aspx' }
+      ],
+      chartTitle: 'Your Relative Protein Intake',
+      chartDate: 'Mar 24, 2026 to Apr 06, 2026',
+      yTop: '2.5', yMid: '1.25',
+      xLabel: 'Day',
+      goal: '1.4', goalPct: 56,
+      bars: [65, 70, 55, 80, 75, 60, 72, 68, 78, 82, 58, 74, 70, 0],
       unit: 'g/kg/day'
     },
     'Lean Mass': {
@@ -6501,8 +6984,259 @@
       goal: '80%', avg: '84%',
       goalTop: '20%', avgTop: '16%',
       scatterDots: [[15,20],[47,30],[79,15],[111,25],[143,35],[175,18],[207,22],[239,40],[271,28],[295,12]]
+    },
+    'Mood': {
+      type: 'line',
+      desc: null,
+      whoCollects: null,
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Mood'
+    },
+    'HRV': {
+      type: 'line',
+      displayName: 'HRV (Heart Rate Variability)',
+      desc: null,
+      whoCollects: null,
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your HRV'
+    },
+    'Pain': {
+      type: 'line',
+      desc: null,
+      whoCollects: null,
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Pain'
+    },
+    'Perceived Exertion': {
+      type: 'line',
+      desc: null,
+      whoCollects: null,
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Perceived Exertion'
+    },
+    'Perceived Fatigue': {
+      type: 'line',
+      desc: null,
+      whoCollects: null,
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Perceived Fatigue'
+    },
+    'Readiness': {
+      type: 'line',
+      desc: null,
+      whoCollects: null,
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Readiness'
+    },
+    'Soreness': {
+      type: 'line',
+      desc: null,
+      whoCollects: null,
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Soreness'
+    },
+    'Overuse Injury Symptoms': {
+      type: 'line',
+      desc: null,
+      whoCollects: null,
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Overuse Injury Symptoms'
+    },
+    '1 Rep Max Bench Press': {
+      type: 'line',
+      desc: 'The maximum load achievable for 1 repetition of barbell bench press through a full range of motion.',
+      whoCollects: 'Self, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Total load in lbs or kgs',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your 1 Rep Max Bench Press'
+    },
+    '1 Rep Max Deadlift': {
+      type: 'line',
+      desc: 'The maximum load achievable for 1 repetition of barbell deadlift through a full range of motion.',
+      whoCollects: 'Self, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Total load in lbs or kgs',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your 1 Rep Max Deadlift'
+    },
+    '1 Rep Max Hang Clean': {
+      type: 'line',
+      desc: 'The maximum load achievable for 1 repetition of barbell hang clean through a full range of motion.',
+      whoCollects: 'Self, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Total load in lbs or kgs',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your 1 Rep Max Hang Clean'
+    },
+    '1 Rep Max Power Clean': {
+      type: 'line',
+      desc: 'The maximum load achievable for 1 repetition of a barbell power clean through a full range of motion.',
+      whoCollects: 'Self, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Total load in lbs or kgs',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your 1 Rep Max Power Clean'
+    },
+    '1 Rep Max Squat': {
+      type: 'line',
+      desc: 'The maximum load achievable for 1 repetition of barbell back squat through a full range of motion.',
+      whoCollects: 'Self, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Total load in lbs or kgs',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your 1 Rep Max Squat'
+    },
+    '1-Mile Run': {
+      type: 'line',
+      desc: 'The 1-mile run test is a field test used to assess cardiorespiratory endurance by measuring how quickly an individual can run a distance of one mile (1.6 kilometers).',
+      whoCollects: 'Team, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Track',
+      estimatedRange: '4\u201315 min',
+      whenCollected: null,
+      chartTitle: 'Your 1-Mile Run'
+    },
+    '10-Meter Sprint': {
+      type: 'line',
+      desc: 'Athlete\u2019s ability to accelerate and measure how quickly they perform a 10-meter sprint.',
+      whoCollects: 'Team, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Tape measure, timer, laser',
+      estimatedRange: '1\u20133 sec',
+      whenCollected: null,
+      chartTitle: 'Your 10-Meter Sprint'
+    },
+    '40-Yard Dash': {
+      type: 'line',
+      desc: 'The 40-yard dash is a sprint test used to measure short-distance speed and acceleration. It requires an individual to run 40 yards (36.6 meters) as fast as possible from a stationary start.',
+      whoCollects: 'Team, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Laser, timer',
+      estimatedRange: '4.2\u201310 sec',
+      whenCollected: null,
+      chartTitle: 'Your 40-Yard Dash'
+    },
+    'Average Velocity': {
+      type: 'line',
+      desc: 'Total distance divided by total time in a session or specific drill.',
+      whoCollects: 'S&C (Strength & Conditioning Coach), Sports Scientist',
+      howCollected: 'GPS unit, analyzed after collection',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Average Velocity'
+    },
+    'Beep Test': {
+      type: 'line',
+      desc: 'A maximal test involving continuous running between two lines 20 m apart in time to recorded beeps.',
+      whoCollects: 'Self, Team',
+      howCollected: 'Levels of beep and shuttle number',
+      estimatedRange: '1\u201321 levels',
+      whenCollected: null,
+      chartTitle: 'Your Beep Test'
+    },
+    'Deceleration': {
+      type: 'line',
+      desc: 'Rate at which athlete decreases speed.',
+      whoCollects: 'S&C (Strength & Conditioning Coach), Sports Scientist',
+      howCollected: 'GPS unit with tri-axial accelerometer',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Deceleration'
+    },
+    'Distance': {
+      type: 'line',
+      desc: 'Total distance traveled in a session.',
+      whoCollects: 'S&C (Strength & Conditioning Coach), Sports Scientist',
+      howCollected: 'GPS unit, analyzed after collection',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Distance'
+    },
+    'Forward Acceleration': {
+      type: 'line',
+      desc: 'Rate of change of velocity in horizontal plane. Includes starting from at-rest and in-motion as well as change of direction.',
+      whoCollects: 'S&C (Strength & Conditioning Coach), Sports Scientist',
+      howCollected: 'GPS unit with tri-axial accelerometer',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Forward Acceleration'
+    },
+    'Heart Rate Zone': {
+      type: 'line',
+      desc: 'Zone 1: 50\u201360% Max HR. Zone 2: 60\u201370% Max HR. Zone 3: 70\u201380% Max HR. Zone 4: 80\u201390% Max HR. Zone 5: 90\u2013100% Max HR',
+      whoCollects: 'Self, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Wearable heart rate monitor (e.g., Polar HR, Whoop Band)',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Heart Rate Zone'
+    },
+    'Peak Velocity': {
+      type: 'line',
+      desc: 'Highest velocity achieved in a session or specific drill.',
+      whoCollects: 'S&C (Strength & Conditioning Coach), Sports Scientist',
+      howCollected: 'GPS unit, analyzed after collection',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Peak Velocity'
+    },
+    'Reactive Strength Index': {
+      type: 'line',
+      displayName: 'Reactive Strength Index (RSImod)',
+      desc: 'Reactive strength index-modified (RSImod) can be calculated from a standing countermovement jump (CMJ) and represents the ratio of jump height (JH) to movement time, referred to as time to takeoff (TTT). RSImod has been reported to be both a reliable and valid indication of the athlete\u2019s lower-body impulsive or \u201cexplosive\u201d ability. Considering RSImod takes into consideration an outcome variable (i.e., JH) and a process variable (i.e., TTT), it appears to be a simple and effective means for evaluating jumping strategy and ultimately neuromuscular functional state (i.e., adaptation or fatigue).',
+      whoCollects: 'Self, S&C (Strength & Conditioning Coach)',
+      howCollected: null,
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Reactive Strength Index'
+    },
+    'Standing Broad Jump': {
+      type: 'line',
+      desc: 'The standing broad jump (also called the standing long jump) is a field test used to measure lower-body explosive power. It involves jumping forward as far as possible from a stationary standing position, using both legs to take off and land.',
+      whoCollects: 'Self, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Tape measure, board mat (in or cm)',
+      estimatedRange: '100\u2013350 cm',
+      whenCollected: null,
+      chartTitle: 'Your Standing Broad Jump'
+    },
+    'Upward Acceleration': {
+      type: 'line',
+      desc: 'Rate of change of velocity in vertical plane (jumping/landing).',
+      whoCollects: 'S&C (Strength & Conditioning Coach), Sports Scientist',
+      howCollected: 'GPS unit with tri-axial accelerometer',
+      estimatedRange: null,
+      whenCollected: null,
+      chartTitle: 'Your Upward Acceleration'
+    },
+    'Vertical Jump': {
+      type: 'line',
+      desc: 'The vertical jump test is a performance assessment used to measure lower-body explosive power by determining how high an individual can jump vertically from a standing position.',
+      whoCollects: 'Team, S&C (Strength & Conditioning Coach)',
+      howCollected: 'Vertec',
+      estimatedRange: '1\u201350 in',
+      whenCollected: null,
+      chartTitle: 'Your Vertical Jump'
     }
   };
+
+  function getAthleteWeightKg() {
+    var wEl = document.getElementById('profile-weight');
+    var lbs = wEl ? parseFloat(wEl.value) : 0;
+    return lbs > 0 ? lbs / 2.205 : 0;
+  }
 
   // ── Derive metric detail chart data from fake log data ──
   function rebuildMetricDetailCharts() {
@@ -6561,16 +7295,29 @@
     });
     metricDetails['Sleep Time'].bars = stBars;
 
-    // Protein — bar chart, last 14 days, scaled to profile-specific max
-    var prMax = pg.proteinMax || 2;
+    // Protein — bar chart, last 14 days, total grams scaled to max
+    var prMaxGpkg = pg.proteinMax || 2;
+    var wKg = getAthleteWeightKg();
+    var prMaxG = Math.round(prMaxGpkg * wKg);
+    var prGoalG = Math.round((pg.proteinGoal || 1.4) * wKg);
     var prBars = wd.slice(-14).map(function (d) {
-      return d.protein !== '' ? Math.round((parseFloat(d.protein) / prMax) * 100) : null;
+      return d.proteinTotal !== '' ? Math.round((parseInt(d.proteinTotal) / prMaxG) * 100) : null;
     });
     metricDetails['Protein'].bars = prBars;
-    metricDetails['Protein'].goal = pg.proteinGoalLabel;
+    metricDetails['Protein'].goal = prGoalG + 'g';
     metricDetails['Protein'].goalPct = pg.proteinGoalPct;
-    metricDetails['Protein'].yTop = pg.proteinYTop;
-    metricDetails['Protein'].yMid = pg.proteinYMid;
+    metricDetails['Protein'].yTop = prMaxG + 'g';
+    metricDetails['Protein'].yMid = Math.round(prMaxG / 2) + 'g';
+
+    // Relative Protein — bar chart, last 14 days, g/kg scaled to max
+    var rpBars = wd.slice(-14).map(function (d) {
+      return d.relativeProtein !== '' ? Math.round((parseFloat(d.relativeProtein) / prMaxGpkg) * 100) : null;
+    });
+    metricDetails['Relative Protein'].bars = rpBars;
+    metricDetails['Relative Protein'].goal = pg.proteinGoalLabel;
+    metricDetails['Relative Protein'].goalPct = pg.proteinGoalPct;
+    metricDetails['Relative Protein'].yTop = pg.proteinYTop;
+    metricDetails['Relative Protein'].yMid = pg.proteinYMid;
 
     // Lean Mass — line chart, scale to profile range
     var lmMax = pg.leanMassMax || 100;
@@ -6641,8 +7388,8 @@
     if (detailBackBtn) {
       var backLabel = 'Back to Dashboard';
       if (window.metricDetailOrigin === 'tracked-data-screen') backLabel = 'Back to Tracked Data Setup';
-      else if (window.metricDetailOrigin === 'wellness-log-screen') backLabel = 'Back to Health & Wellness Log';
-      else if (window.metricDetailOrigin === 'performance-log-screen') backLabel = 'Back to Performance Log';
+      else if (window.metricDetailOrigin === 'wellness-log-screen') backLabel = 'Back to Health & Performance Log';
+      else if (window.metricDetailOrigin === 'performance-log-screen') backLabel = 'Back to Competition Log';
       else if (window.metricDetailOrigin === 'add-metric-screen') backLabel = 'Back to Add Metric';
       detailBackBtn.setAttribute('aria-label', backLabel);
     }
@@ -6659,8 +7406,14 @@
       var linkIcon = '<span class="link-icon-wrap"><svg class="link-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2"><g transform="translate(3, 3)"><rect fill="rgba(0,179,192,0.35)" x="0" y="1" width="17" height="17"/><path d="M18,9 L18,16 C18,17.1045695 17.1045695,18 16,18 L2,18 C0.8954305,18 0,17.1045695 0,16 L0,2 C0,0.8954305 0.8954305,0 2,0 L9,0" stroke="currentColor"/><polyline points="12 0 18 0 18 6" stroke="currentColor"/><line x1="7" y1="11" x2="18" y2="0" stroke="currentColor"/></g></svg></span>';
 
       var metricLabel = (data && data.displayName) || name;
-      var learnMoreHtml = '<br><a class="metric-learn-more" href="' + linkUrl + '" target="_blank" rel="noopener noreferrer">' +
-        '<span class="link-text">Learn more about ' + metricLabel + ' ' + linkIcon + '</span></a>';
+      var learnMoreHtml;
+      if (data.link) {
+        learnMoreHtml = '<br><a class="metric-learn-more" href="' + linkUrl + '" target="_blank" rel="noopener noreferrer">' +
+          '<span class="link-text">Learn more about ' + metricLabel + ' ' + linkIcon + '</span></a>';
+      } else {
+        learnMoreHtml = '<br><span class="metric-learn-more" style="opacity:0.35; pointer-events:none;">' +
+          '<span class="link-text">Learn more about ' + metricLabel + ' ' + linkIcon + '</span></span>';
+      }
       var placeholderHtml = '<em style="opacity:0.55;">Coming soon</em>';
 
       function renderSection(heading, body, extra) {
@@ -6764,8 +7517,8 @@
       // Hide the chart section when visiting from Tracked Data Setup — users are
       // deciding whether to track the metric, so they don't need to see their data yet.
       var showChart = window.metricDetailOrigin !== 'tracked-data-screen' && window.metricDetailOrigin !== 'add-metric-screen';
-      var wellnessMetrics = ['Hydration', 'Sleep Time', 'Sleep Efficiency', 'Protein', 'Lean Mass', 'Availability'];
-      var perfMetrics = ['Goals', 'Assists', 'Yards', 'Tackles'];
+      var wellnessMetrics = ['Hydration', 'Sleep Time', 'Sleep Efficiency', 'Protein', 'Relative Protein', 'Lean Mass', 'Availability', 'Mood', 'HRV', 'Pain', 'Perceived Exertion', 'Perceived Fatigue', 'Readiness', 'Soreness', 'Overuse Injury Symptoms', '1 Rep Max Bench Press', '1 Rep Max Deadlift', '1 Rep Max Hang Clean', '1 Rep Max Power Clean', '1 Rep Max Squat', '1-Mile Run', '10-Meter Sprint', '40-Yard Dash', 'Average Velocity', 'Beep Test', 'Deceleration', 'Distance', 'Forward Acceleration', 'Heart Rate Zone', 'Peak Velocity', 'Reactive Strength Index', 'Standing Broad Jump', 'Upward Acceleration', 'Vertical Jump'];
+      var perfMetrics = ['Winning Percentage', 'Scores', 'Times', 'Points/Goals', 'Assists', 'Tackles', 'Rebounds', 'Blocks', 'Digs', 'Yards'];
       var isWellness = wellnessMetrics.indexOf(name) !== -1;
       var isPerf = perfMetrics.indexOf(name) !== -1;
 
@@ -6841,7 +7594,7 @@
   // Track where the user came from so the metric detail back button can route correctly
   window.metricDetailOrigin = null;
 
-  // Metric links (Wellness & Performance Log screens) → metric detail screen
+  // Metric links (Wellness & Competition Log screens) → metric detail screen
   document.querySelectorAll('.metric-link').forEach(function (link) {
     var key = link.getAttribute('data-metric') || link.textContent;
     var origin = link.closest('#performance-log-screen') ? 'performance-log-screen' : 'wellness-log-screen';
@@ -6868,7 +7621,7 @@
 
   // Back button on metric detail → origin-aware routing
   // From Tracked Data Setup → back to Tracked Data Setup
-  // From Health & Wellness Log → back to Health & Wellness Log
+  // From Health & Performance Log → back to Health & Performance Log
   // Otherwise → Dashboard
   var backNavBtn = document.querySelector('#metric-detail-screen .back-nav-btn');
   if (backNavBtn) {
@@ -6946,7 +7699,7 @@
     });
   }
 
-  // ── Activity Calendar (split diagonal: Health & Wellness Log + Performance Log) ──
+  // ── Activity Calendar (split diagonal: Health & Performance Log + Competition Log) ──
   (function () {
     var weeksContainer = document.getElementById('heatmap-weeks');
     var rangeLabel = document.getElementById('heatmap-range');
@@ -7077,7 +7830,7 @@
     render();
   })();
 
-  // ── Section calendars (Health & Wellness Log + Performance Log, single-color) ──
+  // ── Section calendars (Health & Performance Log + Competition Log, single-color) ──
   (function () {
     var A = 'all', P = 'partial', N = 'none', I = 'inactive', B = 'blank';
 
@@ -7088,12 +7841,13 @@
 
     // Build a day-status array from wellness data (30 days ending today)
     var dlDays = wd.map(function (d) {
-      var filled = 0, total = 5;
+      var filled = 0, total = 6;
       if (d.hydration) filled++;
       if (d.sleepTime !== '') filled++;
       if (d.sleepEff !== '') filled++;
       if (d.protein !== '') filled++;
       if (d.practiceYN !== '' && d.gameYN !== '') filled++;
+      if (d.mood !== '') filled++;
       if (filled === 0) return N;
       if (filled === total) return A;
       return P;
@@ -7350,8 +8104,9 @@
         if (d.sleepEff !== '') filled++;
         if (d.protein !== '') filled++;
         if (d.practiceYN !== '' && d.gameYN !== '') filled++;
+        if (d.mood !== '') filled++;
         if (filled === 0) return N;
-        if (filled === 5) return A;
+        if (filled === 6) return A;
         return P;
       });
       var slDays2 = pd2.map(function (d) {
@@ -7399,7 +8154,8 @@
       'Hydration':        { bars: wd.map(function(d) { return d.hydration ? Math.round(((9 - d.hydration) / 8) * 100) : null; }), goal: 75, goalLabel: '3', label: '1', labelBottom: '8', avgLabel: function(pct) { return Math.round((9 - (pct / 100) * 8) * 10) / 10; } },
       'Sleep Time':       { bars: wd.map(function(d) { return d.sleepTime !== '' ? Math.round((parseFloat(d.sleepTime) / 10) * 100) : null; }), goal: 70, goalLabel: '7h', label: '10h', avgLabel: function(pct) { return Math.round((pct / 100) * 10 * 10) / 10 + 'h'; } },
       'Sleep Efficiency': { bars: wd.map(function(d) { return d.sleepEff !== '' ? parseInt(d.sleepEff) : null; }), goal: pg.sleepEffGoal, goalLabel: pg.sleepEffGoalLabel, label: '100%' },
-      'Protein':          { bars: wd.map(function(d) { var pm = pg.proteinMax || 2; return d.protein !== '' ? Math.round((parseFloat(d.protein) / pm) * 100) : null; }), goal: pg.proteinGoalPct, goalLabel: pg.proteinGoalLabel, label: pg.proteinYTop + ' g/kg', avgLabel: function(pct) { var pm = pg.proteinMax || 2; return Math.round((pct / 100) * pm * 100) / 100 + ' g/kg'; } },
+      'Protein':          { bars: wd.map(function(d) { var wkg = getAthleteWeightKg(); var maxG = Math.round((pg.proteinMax || 2) * wkg); return d.proteinTotal !== '' ? Math.round((parseInt(d.proteinTotal) / maxG) * 100) : null; }), goal: pg.proteinGoalPct, goalLabel: Math.round((pg.proteinGoal || 1.4) * getAthleteWeightKg()) + 'g', label: Math.round((pg.proteinMax || 2) * getAthleteWeightKg()) + 'g', avgLabel: function(pct) { var wkg = getAthleteWeightKg(); var maxG = Math.round((pg.proteinMax || 2) * wkg); return Math.round((pct / 100) * maxG) + 'g'; } },
+      'Relative Protein': { bars: wd.map(function(d) { var pm = pg.proteinMax || 2; return d.relativeProtein !== '' ? Math.round((parseFloat(d.relativeProtein) / pm) * 100) : null; }), goal: pg.proteinGoalPct, goalLabel: pg.proteinGoalLabel + ' g/kg', label: pg.proteinYTop + ' g/kg', avgLabel: function(pct) { var pm = pg.proteinMax || 2; return (Math.round((pct / 100) * pm * 100) / 100) + ' g/kg'; } },
       'Lean Mass':        { bars: wd.map(function(d) { var lm = pg.leanMassMax || 100; return d.leanMass !== '' ? Math.round((parseInt(d.leanMass) / lm) * 100) : null; }), goal: pg.leanMassGoalPct, goalLabel: pg.leanMassGoalLabel, label: pg.leanMassYTop, noTodayGhost: true, avgLabel: function(pct) { var lm = pg.leanMassMax || 100; return Math.round((pct / 100) * lm) + ' kg'; } },
       'Availability':     { bars: wd.map(function(d) {
         var answered = d.practiceYN !== '' && d.gameYN !== '';
@@ -7524,7 +8280,7 @@
   // Initial render
   renderBodyChart('Hydration');
 
-  // Listen to Health & Wellness Log dropdown changes
+  // Listen to Health & Performance Log dropdown changes
   var bodySelect = document.getElementById('metrics-body-select');
   if (bodySelect) {
     bodySelect.addEventListener('change', function () {
@@ -7532,15 +8288,20 @@
     });
   }
 
-  // ── Performance Log chart derived from performanceData ──
+  // ── Competition Log chart derived from performanceData ──
   function buildPerformanceChartData() {
     var pd = window._performanceData;
     return {
-      'Wins/Losses':  { bars: pd.map(function() { return null; }), goal: 70, label: '100%' },
-      'Goals':        { bars: pd.map(function(d) { return d.goals !== '' ? Math.round((parseInt(d.goals) / 5) * 100) : null; }), goal: 60, label: '5' },
+      'Winning Percentage': { bars: pd.map(function() { return null; }), goal: 70, label: '100%' },
+      'Scores':  { bars: pd.map(function() { return null; }), goal: null, label: '' },
+      'Times':   { bars: pd.map(function() { return null; }), goal: null, label: '' },
+      'Points/Goals': { bars: pd.map(function(d) { return d.goals !== '' ? Math.round((parseInt(d.goals) / 5) * 100) : null; }), goal: 60, label: '5' },
       'Assists':      { bars: pd.map(function(d) { return d.assists !== '' ? Math.round((parseInt(d.assists) / 4) * 100) : null; }), goal: 50, label: '4' },
-      'Yards':        { bars: pd.map(function(d) { return d.yards !== '' ? Math.round((parseInt(d.yards) / 100) * 100) : null; }), goal: 65, label: '100' },
-      'Tackles':      { bars: pd.map(function(d) { return d.tackles !== '' ? Math.round((parseInt(d.tackles) / 10) * 100) : null; }), goal: 60, label: '10' }
+      'Tackles':      { bars: pd.map(function(d) { return d.tackles !== '' ? Math.round((parseInt(d.tackles) / 10) * 100) : null; }), goal: 60, label: '10' },
+      'Rebounds':     { bars: pd.map(function() { return null; }), goal: null, label: '' },
+      'Blocks':       { bars: pd.map(function() { return null; }), goal: null, label: '' },
+      'Digs':         { bars: pd.map(function() { return null; }), goal: null, label: '' },
+      'Yards':        { bars: pd.map(function(d) { return d.yards !== '' ? Math.round((parseInt(d.yards) / 100) * 100) : null; }), goal: 65, label: '100' }
     };
   }
   var performanceChartData = buildPerformanceChartData();
@@ -7648,7 +8409,7 @@
     wrapper.setAttribute('aria-label', desc);
   }
 
-  renderPerformanceChart('Wins/Losses');
+  renderPerformanceChart('Winning Percentage');
 
   var performanceSelect = document.getElementById('metrics-performance-select');
   if (performanceSelect) {
@@ -7666,15 +8427,16 @@
     var wd = window._wellnessData;
     if (wellnessStatus && wd && wd.length) {
       var today = wd[wd.length - 1];
-      var filled = 0, total = 5;
+      var filled = 0, total = 6;
       if (today.hydration) filled++;
       if (today.sleepTime !== '') filled++;
       if (today.sleepEff !== '') filled++;
       if (today.protein !== '') filled++;
       if (today.practiceYN !== '' && today.gameYN !== '') filled++;
+      if (today.mood !== '') filled++;
       var missing = total - filled;
       if (missing === 0) {
-        wellnessStatus.innerHTML = 'Great! You\u2019ve logged all your health & wellness data!';
+        wellnessStatus.innerHTML = 'Great! You\u2019ve logged all your health \u0026 performance data!';
       } else if (filled === 0) {
         wellnessStatus.innerHTML = 'Log your\u00a0<span class="status-highlight">' + total + ' metrics</span>\u00a0for today.';
       } else {
@@ -7690,7 +8452,7 @@
       if (hasPerf) {
         performanceStatus.innerHTML = 'Great! You\u2019ve logged your performance data!';
       } else {
-        performanceStatus.textContent = 'No performance data logged today.';
+        performanceStatus.textContent = 'No competition data logged today.';
       }
     }
   };
@@ -7703,6 +8465,7 @@
     'Sleep Time': 'Total Sleep Time',
     'Sleep Efficiency': 'Sleep Efficiency',
     'Protein': 'Protein Intake',
+    'Relative Protein': 'Relative Protein Intake',
     'Lean Mass': 'Lean Mass',
     'Availability': 'Availability'
   };
@@ -7782,7 +8545,17 @@
     var wellnessItems = [];
     wellnessRows.forEach(function (tr) {
       var cb = tr.querySelector('.track-check');
-      if (!cb || !cb.checked) return;
+      var pairedWith = tr.getAttribute('data-paired-with');
+      if (cb) {
+        if (!cb.checked) return;
+      } else if (pairedWith) {
+        // Paired metric — include if parent is checked
+        var parentRow = document.querySelector('#wellness-metrics [data-metric-id="' + pairedWith + '"]');
+        var parentCb = parentRow ? parentRow.querySelector('.track-check') : null;
+        if (!parentCb || !parentCb.checked) return;
+      } else {
+        return;
+      }
       var infoBtn = tr.querySelector('.metric-info-btn');
       if (!infoBtn) return;
       var key = infoBtn.getAttribute('data-metric');
@@ -7823,7 +8596,7 @@
     });
   });
 
-  // ── Time range picker (Health & Wellness Log + Performance Log charts) ──
+  // ── Time range picker (Health & Performance Log + Competition Log charts) ──
   document.querySelectorAll('.time-range-picker').forEach(function (picker) {
     picker.addEventListener('click', function (e) {
       var btn = e.target.closest('.time-range-btn');
@@ -7857,8 +8630,15 @@
     // Write back to wellness data
     var wd = window._wellnessData;
     if (wd && window._dlOffset !== undefined) {
-      wd[window._dlOffset].hydration = parseInt(swatch.getAttribute('data-val')) || 0;
+      var scaleLabel = swatch.closest('.color-scale').getAttribute('aria-label') || '';
+      if (scaleLabel.indexOf('Mood') !== -1) {
+        wd[window._dlOffset].mood = swatch.getAttribute('data-val');
+      } else {
+        wd[window._dlOffset].hydration = parseInt(swatch.getAttribute('data-val')) || 0;
+      }
       if (window._updateWellnessChip) window._updateWellnessChip();
+      if (window._updateDashStatus) window._updateDashStatus();
+      if (window._rebuildCalendars) window._rebuildCalendars();
     }
   }
   document.querySelectorAll('.color-swatch').forEach(function (swatch) {
@@ -8179,7 +8959,7 @@
   var addablePerformanceMetrics = [];
   for (var _i = 1; _i <= 10; _i++) {
     addableWellnessMetrics.push({ id: 'wellness-custom-' + _i, name: 'Wellness Metric' + _i });
-    addablePerformanceMetrics.push({ id: 'performance-custom-' + _i, name: 'Performance Metric' + _i });
+    addablePerformanceMetrics.push({ id: 'performance-custom-' + _i, name: 'Competition Metric' + _i });
   }
 
   // SVG constants
@@ -8197,7 +8977,9 @@
 
   function getDragMetricName(row) {
     var nameEl = row.querySelector('.metric-name');
-    return nameEl ? nameEl.textContent.trim() : '';
+    if (!nameEl) return '';
+    var first = nameEl.childNodes[0];
+    return first ? first.textContent.trim() : '';
   }
 
   function createGhost(row, x, y) {
@@ -8255,6 +9037,19 @@
           _dragTbody.appendChild(_dragRow);
         }
       }
+    }
+
+    // Move paired rows (e.g., Relative Protein follows Protein Intake)
+    var dragId = _dragRow.getAttribute('data-metric-id');
+    if (dragId) {
+      var paired = _dragTbody.querySelectorAll('[data-paired-with="' + dragId + '"]');
+      paired.forEach(function (pr) {
+        if (_dragRow.nextSibling) {
+          _dragTbody.insertBefore(pr, _dragRow.nextSibling);
+        } else {
+          _dragTbody.appendChild(pr);
+        }
+      });
     }
 
     removeGhost();
@@ -8407,6 +9202,15 @@
         _kbdTbody.insertBefore(_kbdRow, _kbdRow.previousElementSibling);
       } else if (key === 'ArrowDown' && _kbdRow.nextElementSibling) {
         _kbdTbody.insertBefore(_kbdRow.nextElementSibling, _kbdRow);
+      }
+      // Move paired rows
+      var kbdDragId = _kbdRow.getAttribute('data-metric-id');
+      if (kbdDragId) {
+        var kbdPaired = _kbdTbody.querySelectorAll('[data-paired-with="' + kbdDragId + '"]');
+        kbdPaired.forEach(function (pr) {
+          if (_kbdRow.nextSibling) { _kbdTbody.insertBefore(pr, _kbdRow.nextSibling); }
+          else { _kbdTbody.appendChild(pr); }
+        });
       }
       // Show drop indicator on adjacent row
       if (key === 'ArrowUp' && _kbdRow.nextElementSibling) {
@@ -8591,7 +9395,7 @@
     var metrics = (type === 'wellness') ? addableWellnessMetrics : addablePerformanceMetrics;
     var tbodyId = (type === 'wellness') ? 'wellness-metrics' : 'performance-metrics';
     var tbody = document.getElementById(tbodyId);
-    addMetricTitle.textContent = (type === 'wellness') ? 'Add Health & Wellness Metric' : 'Add Performance Metric';
+    addMetricTitle.textContent = (type === 'wellness') ? 'Add Health & Perf. Metric' : 'Add Competition Metric';
 
     var existing = [];
     tbody.querySelectorAll('tr').forEach(function (r) {
@@ -8695,27 +9499,195 @@
     _addMetricTarget = null;
   });
 
-  // ── Sync tracked data to Health & Wellness Log and Performance Log screens ──
+  // ── Sync tracked data to Health & Performance Log and Competition Log screens ──
 
   var dailyMetricRowMap = {
     'hydration': 'Hydration',
     'total-sleep-time': 'Total Sleep Time',
     'sleep-efficiency': 'Sleep Efficiency',
     'protein-intake': 'Protein Intake',
+    'relative-protein': 'Relative Protein Intake',
     'lean-mass': 'Lean Mass',
-    'availability': 'Availability'
+    'availability': 'Availability',
+    'mood': 'Mood',
+    'hrv': 'HRV',
+    'pain': 'Pain',
+    'perceived-exertion': 'Perceived Exertion',
+    'perceived-fatigue': 'Perceived Fatigue',
+    'readiness': 'Readiness',
+    'soreness': 'Soreness',
+    'overuse-injury-symptoms': 'Overuse Injury Symptoms',
+    '1-rep-max-bench-press': '1 Rep Max Bench Press',
+    '1-rep-max-deadlift': '1 Rep Max Deadlift',
+    '1-rep-max-hang-clean': '1 Rep Max Hang Clean',
+    '1-rep-max-power-clean': '1 Rep Max Power Clean',
+    '1-rep-max-squat': '1 Rep Max Squat',
+    '1-mile-run': '1-Mile Run',
+    '10-meter-sprint': '10-Meter Sprint',
+    '40-yard-dash': '40-Yard Dash',
+    'average-velocity': 'Average Velocity',
+    'beep-test': 'Beep Test',
+    'deceleration': 'Deceleration',
+    'distance': 'Distance',
+    'forward-acceleration': 'Forward Acceleration',
+    'heart-rate-zone': 'Heart Rate Zone',
+    'peak-velocity': 'Peak Velocity',
+    'reactive-strength-index': 'Reactive Strength Index',
+    'standing-broad-jump': 'Standing Broad Jump',
+    'upward-acceleration': 'Upward Acceleration',
+    'vertical-jump': 'Vertical Jump'
   };
   var performanceMetricRowMap = {
-    'wins-losses': 'Wins/Losses',
-    'goals': 'Goals',
+    'winning-percentage': 'Winning Percentage',
+    'scores': 'Scores',
+    'times': 'Times',
+    'points-goals': 'Points/Goals',
     'assists': 'Assists',
-    'yards': 'Yards',
-    'tackles': 'Tackles'
+    'tackles': 'Tackles',
+    'rebounds': 'Rebounds',
+    'blocks': 'Blocks',
+    'digs': 'Digs',
+    'yards': 'Yards'
   };
 
   function syncLogScreens() {
     syncDailyLog();
     syncPerformanceLog();
+  }
+
+  // Re-sync log when a unit toggle changes so the field-unit label updates
+  document.querySelectorAll('.unit-toggle input[type="radio"]').forEach(function (radio) {
+    radio.addEventListener('change', function () { syncDailyLog(); syncPerformanceLog(); });
+  });
+
+  // Swatch-card definitions for card-based metrics
+  var metricSwatchConfig = {
+    'Winning Percentage': {
+      scaleClass: 'scale-2', label: 'Winning Percentage', prefix: 'Result',
+      swatches: [
+        { val: 'Win', bg: '#CCF5F7', cls: 'swatch-dark' },
+        { val: 'Loss', bg: '#023A3F', cls: 'swatch-light' }
+      ]
+    },
+    'Mood': {
+      scaleClass: 'scale-5', label: 'Mood level', prefix: 'Mood',
+      swatches: [
+        { val: 1, bg: '#CCF5F7', cls: 'swatch-dark' },
+        { val: 2, bg: '#99EAF0', cls: 'swatch-dark' },
+        { val: 3, bg: '#55D5DD', cls: 'swatch-dark' },
+        { val: 4, bg: '#057A82', cls: 'swatch-light' },
+        { val: 5, bg: '#023A3F', cls: 'swatch-light' }
+      ]
+    },
+    'Perceived Fatigue': {
+      scaleClass: 'scale-5', label: 'Perceived Fatigue level', prefix: 'Perceived Fatigue',
+      swatches: [
+        { val: 1, bg: '#CCF5F7', cls: 'swatch-dark' },
+        { val: 2, bg: '#99EAF0', cls: 'swatch-dark' },
+        { val: 3, bg: '#55D5DD', cls: 'swatch-dark' },
+        { val: 4, bg: '#057A82', cls: 'swatch-light' },
+        { val: 5, bg: '#023A3F', cls: 'swatch-light' }
+      ]
+    },
+    'Soreness': {
+      scaleClass: 'scale-5', label: 'Soreness level', prefix: 'Soreness',
+      swatches: [
+        { val: 1, bg: '#CCF5F7', cls: 'swatch-dark' },
+        { val: 2, bg: '#99EAF0', cls: 'swatch-dark' },
+        { val: 3, bg: '#55D5DD', cls: 'swatch-dark' },
+        { val: 4, bg: '#057A82', cls: 'swatch-light' },
+        { val: 5, bg: '#023A3F', cls: 'swatch-light' }
+      ]
+    },
+    'Readiness': {
+      scaleClass: 'scale-10', label: 'Readiness level', prefix: 'Readiness',
+      swatches: [
+        { val: 1, bg: '#CCF5F7', cls: 'swatch-dark' },
+        { val: 2, bg: '#AAEEF2', cls: 'swatch-dark' },
+        { val: 3, bg: '#88E5EC', cls: 'swatch-dark' },
+        { val: 4, bg: '#66DCE5', cls: 'swatch-dark' },
+        { val: 5, bg: '#44D3DE', cls: 'swatch-dark' },
+        { val: 6, bg: '#057A82', cls: 'swatch-light' },
+        { val: 7, bg: '#046A71', cls: 'swatch-light' },
+        { val: 8, bg: '#035A60', cls: 'swatch-light' },
+        { val: 9, bg: '#024A50', cls: 'swatch-light' },
+        { val: 10, bg: '#023A3F', cls: 'swatch-light' }
+      ]
+    },
+    'Pain': {
+      scaleClass: 'scale-11', label: 'Pain level', prefix: 'Pain',
+      swatches: [
+        { val: 0, bg: '#CCF5F7', cls: 'swatch-dark' },
+        { val: 1, bg: '#B8F1F4', cls: 'swatch-dark' },
+        { val: 2, bg: '#A3ECF1', cls: 'swatch-dark' },
+        { val: 3, bg: '#8AE6EC', cls: 'swatch-dark' },
+        { val: 4, bg: '#6FDFE7', cls: 'swatch-dark' },
+        { val: 5, bg: '#55D8E1', cls: 'swatch-dark' },
+        { val: 6, bg: '#057A82', cls: 'swatch-light' },
+        { val: 7, bg: '#046A71', cls: 'swatch-light' },
+        { val: 8, bg: '#035A60', cls: 'swatch-light' },
+        { val: 9, bg: '#024A50', cls: 'swatch-light' },
+        { val: 10, bg: '#023A3F', cls: 'swatch-light' }
+      ]
+    },
+    'Perceived Exertion': {
+      scaleClass: 'scale-11', label: 'Perceived Exertion level', prefix: 'Perceived Exertion',
+      swatches: [
+        { val: 0, bg: '#CCF5F7', cls: 'swatch-dark' },
+        { val: 1, bg: '#B8F1F4', cls: 'swatch-dark' },
+        { val: 2, bg: '#A3ECF1', cls: 'swatch-dark' },
+        { val: 3, bg: '#8AE6EC', cls: 'swatch-dark' },
+        { val: 4, bg: '#6FDFE7', cls: 'swatch-dark' },
+        { val: 5, bg: '#55D8E1', cls: 'swatch-dark' },
+        { val: 6, bg: '#057A82', cls: 'swatch-light' },
+        { val: 7, bg: '#046A71', cls: 'swatch-light' },
+        { val: 8, bg: '#035A60', cls: 'swatch-light' },
+        { val: 9, bg: '#024A50', cls: 'swatch-light' },
+        { val: 10, bg: '#023A3F', cls: 'swatch-light' }
+      ]
+    }
+  };
+
+  var metricUnits = {
+    '1 Rep Max Bench Press': 'kg',
+    '1 Rep Max Deadlift': 'kg',
+    '1 Rep Max Hang Clean': 'kg',
+    '1 Rep Max Power Clean': 'kg',
+    '1 Rep Max Squat': 'kg',
+    '1-Mile Run': 'min',
+    '10-Meter Sprint': 'sec',
+    '40-Yard Dash': 'sec',
+    'Average Velocity': 'm/s',
+    'Beep Test': 'levels',
+    'Deceleration': 'm/s',
+    'Distance': 'm',
+    'Forward Acceleration': 'm/s',
+    'Heart Rate Zone': 'bpm',
+    'Peak Velocity': 'm/s',
+    'Standing Broad Jump': 'cm',
+    'Upward Acceleration': 'm/s',
+    'Vertical Jump': 'in',
+    'HRV': 'ms',
+    'Times': 'h'
+  };
+
+  function getMetricUnit(metricName) {
+    // Check for a unit-toggle radio in Tracked Data Setup (both sections)
+    var sections = ['#wellness-metrics tr', '#performance-metrics tr'];
+    for (var s = 0; s < sections.length; s++) {
+      var rows = document.querySelectorAll(sections[s]);
+      for (var i = 0; i < rows.length; i++) {
+        var nameCell = rows[i].querySelector('.metric-name');
+        if (!nameCell) continue;
+        var name = nameCell.childNodes[0] ? nameCell.childNodes[0].textContent.trim() : nameCell.textContent.trim();
+        if (name === metricName) {
+          var checked = rows[i].querySelector('.unit-toggle input[type="radio"]:checked');
+          if (checked) return checked.value;
+          return metricUnits[metricName] || '';
+        }
+      }
+    }
+    return metricUnits[metricName] || '';
   }
 
   function createDailyLogRow(metricName) {
@@ -8748,18 +9720,46 @@
     });
     tdName.appendChild(nameLink);
     tr.appendChild(tdName);
-    // Record input
+    // Record input — swatch cards or numeric field
     var tdRecord = document.createElement('td');
-    var cellWrap = document.createElement('div');
-    cellWrap.className = 'record-cell';
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'record-input';
-    input.inputMode = 'decimal';
-    input.placeholder = 'value';
-    input.setAttribute('aria-label', metricName);
-    cellWrap.appendChild(input);
-    tdRecord.appendChild(cellWrap);
+    var swatchCfg = metricSwatchConfig[metricName];
+    if (swatchCfg) {
+      var scale = document.createElement('div');
+      scale.className = 'color-scale ' + swatchCfg.scaleClass;
+      scale.setAttribute('role', 'radiogroup');
+      scale.setAttribute('aria-label', swatchCfg.label);
+      swatchCfg.swatches.forEach(function (s) {
+        var sw = document.createElement('div');
+        sw.className = 'color-swatch ' + s.cls;
+        sw.style.background = s.bg;
+        sw.setAttribute('data-val', s.val);
+        sw.setAttribute('tabindex', '-1');
+        sw.setAttribute('role', 'radio');
+        sw.setAttribute('aria-checked', 'false');
+        sw.setAttribute('aria-label', swatchCfg.prefix + ' ' + s.val);
+        sw.textContent = s.val;
+        scale.appendChild(sw);
+      });
+      tdRecord.appendChild(scale);
+    } else {
+      var cellWrap = document.createElement('div');
+      cellWrap.className = 'record-cell';
+      var unit = getMetricUnit(metricName);
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'record-input';
+      input.inputMode = 'decimal';
+      input.placeholder = unit || 'value';
+      input.setAttribute('aria-label', metricName);
+      cellWrap.appendChild(input);
+      if (unit) {
+        var unitSpan = document.createElement('span');
+        unitSpan.className = 'field-unit';
+        unitSpan.textContent = unit;
+        cellWrap.appendChild(unitSpan);
+      }
+      tdRecord.appendChild(cellWrap);
+    }
     tr.appendChild(tdRecord);
     return tr;
   }
@@ -8768,7 +9768,9 @@
     var tr = document.createElement('tr');
     // Total cell (empty for custom metrics)
     var tdTotal = document.createElement('td');
-    tdTotal.className = 'total-val';
+    var totalDiv = document.createElement('div');
+    totalDiv.className = 'track-cell';
+    tdTotal.appendChild(totalDiv);
     tr.appendChild(tdTotal);
     // Metric name (linked to info screen)
     var tdName = document.createElement('td');
@@ -8793,12 +9795,46 @@
     tr.appendChild(tdName);
     // Value input
     var tdVal = document.createElement('td');
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'value-input';
-    input.inputMode = 'numeric';
-    input.setAttribute('aria-label', metricName);
-    tdVal.appendChild(input);
+    var cfg = metricSwatchConfig[metricName];
+    if (cfg) {
+      var scale = document.createElement('div');
+      scale.className = 'color-scale ' + (cfg.scaleClass || '');
+      scale.setAttribute('role', 'radiogroup');
+      scale.setAttribute('aria-label', cfg.label || metricName);
+      cfg.swatches.forEach(function (sw) {
+        var swatch = document.createElement('div');
+        swatch.className = 'color-swatch ' + (sw.cls || '');
+        swatch.style.background = sw.bg;
+        swatch.dataset.val = sw.val;
+        swatch.setAttribute('tabindex', '-1');
+        swatch.setAttribute('role', 'radio');
+        swatch.setAttribute('aria-checked', 'false');
+        swatch.setAttribute('aria-label', (cfg.prefix ? cfg.prefix + ' ' : '') + sw.val);
+        swatch.textContent = sw.val;
+        scale.appendChild(swatch);
+      });
+      tdVal.appendChild(scale);
+    } else {
+      var wrapper = document.createElement('div');
+      wrapper.className = 'record-cell';
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'record-input';
+      input.inputMode = 'numeric';
+      input.setAttribute('aria-label', metricName);
+      var unit = getMetricUnit(metricName);
+      if (unit) {
+        input.placeholder = unit;
+        wrapper.appendChild(input);
+        var unitSpan = document.createElement('span');
+        unitSpan.className = 'field-unit';
+        unitSpan.textContent = unit;
+        wrapper.appendChild(unitSpan);
+      } else {
+        wrapper.appendChild(input);
+      }
+      tdVal.appendChild(wrapper);
+    }
     tr.appendChild(tdVal);
     return tr;
   }
@@ -8823,7 +9859,19 @@
     var fragment = document.createDocumentFragment();
     trackedRows.forEach(function (tr) {
       var metricId = tr.getAttribute('data-metric-id');
-      var isChecked = tr.querySelector('.track-check').checked;
+      var checkbox = tr.querySelector('.track-check');
+      var pairedWith = tr.getAttribute('data-paired-with');
+      var isChecked;
+      if (checkbox) {
+        isChecked = checkbox.checked;
+      } else if (pairedWith) {
+        // Paired metric inherits parent's checked state
+        var parentRow = tbody.querySelector('[data-metric-id="' + pairedWith + '"]');
+        var parentCheck = parentRow ? parentRow.querySelector('.track-check') : null;
+        isChecked = parentCheck ? parentCheck.checked : false;
+      } else {
+        isChecked = false;
+      }
       var displayName = dailyMetricRowMap[metricId];
 
       // For custom metrics, use the name from the tracked data row
@@ -8837,6 +9885,15 @@
       if (!logRow) {
         // Create a new log row for this custom metric
         logRow = createDailyLogRow(displayName);
+      } else {
+        // Update unit label if a unit-toggle radio changed
+        var unit = getMetricUnit(displayName);
+        var unitSpan = logRow.querySelector('.field-unit');
+        var recordInput = logRow.querySelector('.record-input');
+        if (unit && unitSpan) {
+          unitSpan.textContent = unit;
+          if (recordInput) recordInput.placeholder = unit;
+        }
       }
       logRow.style.display = isChecked ? '' : 'none';
       fragment.appendChild(logRow);
@@ -8884,6 +9941,14 @@
       var logRow = logRowMap[displayName];
       if (!logRow) {
         logRow = createPerformanceLogRow(displayName);
+      } else {
+        var unit = getMetricUnit(displayName);
+        var unitSpan = logRow.querySelector('.field-unit');
+        var valInput = logRow.querySelector('.record-input');
+        if (unit && unitSpan) {
+          unitSpan.textContent = unit;
+          if (valInput) valInput.placeholder = unit;
+        }
       }
       logRow.style.display = isChecked ? '' : 'none';
       fragment.appendChild(logRow);
@@ -8892,6 +9957,9 @@
     while (logTable.firstChild) logTable.removeChild(logTable.firstChild);
     logTable.appendChild(fragment);
   }
+
+  // Initial sync so unchecked metrics are hidden on page load
+  syncLogScreens();
 
 })();
 </script>
