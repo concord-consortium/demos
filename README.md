@@ -80,6 +80,17 @@ A comprehensive visual refresh to align the prototype's look and feel with the C
 - **SST minus (−) button hover** — Blue hover effect (`#e8f0ff` background, `#2255cc` border/text) to indicate cooling intent, mirroring the existing red hover on `+` for warming.
 - **H/L pressure letters** — Replaced inline text characters with `assets/high.svg` and `assets/low.svg` image tags. The JS pressure-slider handler now reads the icon type from the `alt` attribute of the `<img>` element rather than `textContent` of a `<span>`.
 
+### Accessibility and UX polish (May 2026)
+
+Fixes addressing designer feedback and WCAG 2.1 AA contrast compliance:
+
+- **Season button selected text** — Changed from `#ffffff` to `#434343` on the `#ff9900` background, bringing contrast from 2.14:1 to 4.62:1 (passes AA).
+- **Lat/Lon unit labels** — `°N` / `°W` labels changed from `#999` to `#434343` (regular text color), improving contrast from 2.7:1 to 9.7:1 and satisfying the design intent that units read as part of the coordinate display.
+- **Lat/Lon field spacing** — Added `margin-left: 10px` to the Lon label to create a clear visual gap between the Lat and Lon coordinate pairs.
+- **Season note and category ticks** — Secondary text elements (`.season-note`, `.cat-ticks`) darkened from `#999`/`#777` to `#666`, bringing both to 5.5:1 (passes AA).
+- **Starting Category section icon** — Added `stroke="#555" stroke-width="1.5"` to the panel icon path so it remains legible at all category fill colors, including the near-white TS level.
+- **SST cooling value color** — Negative (cooling) temperature values now display in blue (`#2255cc`) to match the − button hover color, mirroring the existing red for warming values.
+
 ### Earlier updates
 
 - **Lat/Lon coordinate entry** — Added Lat and Lon text inputs to the Storm Start Location step. Values display in decimal degrees (e.g., 15.00°N, -23.00°W). Typing and pressing Enter (or tabbing away) moves the storm; dragging the storm updates the fields. Invalid or out-of-range coordinates are clamped to the nearest valid drop zone position.

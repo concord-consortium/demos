@@ -53,13 +53,13 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Lato,'Roboto Conden
 .latlon-label{font-size:11.5px;font-weight:600;color:#434343;white-space:nowrap}
 .latlon-input{width:76px;padding:4px 7px;border:1.5px solid #d0d0d0;border-radius:5px;font-size:12px;font-family:inherit;color:#333;text-align:right;transition:border-color .15s;background:#fff}
 .latlon-input:focus{outline:none;border-color:#797979}
-.latlon-unit{font-size:11px;color:#999}
+.latlon-unit{font-size:11px;color:#434343}
 
 /* category slider */
 .cat-track{position:relative;height:14px;border-radius:7px;margin:11px 0 5px;cursor:pointer;background:linear-gradient(to right,#f2f2f2 0%,#ffffcc 20%,#ffe775 40%,#ffc140 60%,#ff8f20 80%,#ff6060 100%);border:1px solid rgba(0,0,0,.12)}
 .cat-thumb{position:absolute;top:-6px;width:26px;height:26px;border-radius:50%;background:#fff;border:2.5px solid #797979;transform:translateX(-50%);cursor:grab;box-shadow:0 2px 5px rgba(0,0,0,.25);z-index:2}
 .cat-thumb:active{cursor:grabbing}
-.cat-ticks{display:flex;justify-content:space-between;font-size:10.5px;color:#777;padding:0 2px}
+.cat-ticks{display:flex;justify-content:space-between;font-size:10.5px;color:#666;padding:0 2px}
 .cat-label{margin-top:9px;text-align:center;font-size:13px;font-weight:700;color:#434343}
 
 /* season */
@@ -67,7 +67,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Lato,'Roboto Conden
 .s-btn{padding:9px 6px;border:1.5px solid #ddd;border-radius:6px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#555;transition:all .13s;text-align:center}
 .s-btn:hover{border-color:#797979;color:#434343}
 .s-btn.on{border-color:#e07a00;background:#ff9900;color:#434343}
-.season-note{margin-top:9px;font-size:11px;color:#999;line-height:1.4}
+.season-note{margin-top:9px;font-size:11px;color:#666;line-height:1.4}
 
 /* SST controls */
 .sst-row{display:flex;align-items:center;margin:7px 0;gap:7px}
@@ -78,7 +78,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Lato,'Roboto Conden
 .sst-btn.p:hover{background:#ffebee;border-color:#c62828;color:#c62828}
 .sst-val{width:72px;text-align:center;font-size:11px;font-weight:700;color:#666}
 .sst-val.w{color:#c62828}
-.sst-val.c{color:#434343}
+.sst-val.c{color:#2255cc}
 
 /* ── MAP ── */
 #map{flex:1;position:relative;overflow:hidden;background:#3d1800}
@@ -251,7 +251,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Lato,'Roboto Conden
               <label class="latlon-label" for="loc-lat">Lat</label>
               <input type="text" id="loc-lat" class="latlon-input" value="15.00" />
               <span class="latlon-unit">°N</span>
-              <label class="latlon-label" for="loc-lon">Lon</label>
+              <label class="latlon-label" for="loc-lon" style="margin-left:10px">Lon</label>
               <input type="text" id="loc-lon" class="latlon-input" value="-23.00" />
               <span class="latlon-unit">°W</span>
             </div>
@@ -261,7 +261,7 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:Lato,'Roboto Conden
         <!-- 2. Starting Category -->
         <div class="sec" id="sec-cat">
           <div class="sh" id="sh-cat" onclick="toggle('cat')">
-            <div class="si-wrap"><svg id="panel-cat-icon" class="sec-icon" viewBox="0 0 45 72" width="18" height="18"><path id="panel-cat-path" fill="#797979" d="M45,36.019 L45,36 C45,23.574 34.927,13.5 22.5,13.5 L22.5,0 C22.5,0 1.104,15.572 0.051,34.559 C0.021,35.036 0,35.516 0,36 C0,48.427 10.074,58.5 22.5,58.5 L22.5,72 C22.5,72 43.899,56.426 44.949,37.437 C44.979,36.968 44.999,36.496 45,36.019"/></svg></div><span class="st">Starting Category</span><span class="sa">▶</span>
+            <div class="si-wrap"><svg id="panel-cat-icon" class="sec-icon" viewBox="0 0 45 72" width="18" height="18"><path id="panel-cat-path" fill="#797979" stroke="#555" stroke-width="1.5" d="M45,36.019 L45,36 C45,23.574 34.927,13.5 22.5,13.5 L22.5,0 C22.5,0 1.104,15.572 0.051,34.559 C0.021,35.036 0,35.516 0,36 C0,48.427 10.074,58.5 22.5,58.5 L22.5,72 C22.5,72 43.899,56.426 44.949,37.437 C44.979,36.968 44.999,36.496 45,36.019"/></svg></div><span class="st">Starting Category</span><span class="sa">▶</span>
           </div>
           <div class="sc" id="sc-cat">
             <p class="hint">Drag the slider to set the storm's starting strength. The storm icon updates in real time.</p>
