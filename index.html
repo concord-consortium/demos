@@ -479,7 +479,8 @@
     color: var(--subtext);
     font-size: 16px;
   }
-  .auth-switch-btn {
+  .auth-switch-btn,
+  .auth-alt-action {
     background: none;
     border: none;
     color: var(--accent);
@@ -497,9 +498,11 @@
     top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 100%; min-width: 44px; height: 44px;
   }
-  .auth-switch-btn:hover { text-decoration: underline; text-underline-offset: 3px; filter: brightness(1.2); }
+  .auth-switch-btn:hover,
+  .auth-alt-action:hover { text-decoration: underline; text-underline-offset: 3px; filter: brightness(1.2); }
   .cta-btn.auth-switch-btn:hover { text-decoration: none; }
-  .auth-switch-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; border-radius: 3px; }
+  .auth-switch-btn:focus-visible,
+  .auth-alt-action:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; border-radius: 3px; }
 
   /* Auth subtext — forgot password description */
   .auth-subtext {
@@ -541,6 +544,7 @@
   .social-btn:active { transform: scale(0.98); }
   .social-btn:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,179,192,0.18); }
   .social-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .social-btn:disabled { border-color: var(--border); color: var(--subtext); cursor: not-allowed; }
   .social-btn img {
     width: 24px; height: 24px;
     object-fit: contain; flex-shrink: 0;
@@ -932,6 +936,16 @@
     margin-bottom: 4px;
   }
   .profile-welcome.show { display: block; }
+  .profile-signed-in {
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    color: var(--subtext);
+    margin: 0 0 20px;
+  }
+  .profile-signed-in-email {
+    color: var(--accent);
+    font-weight: 600;
+  }
 
   .screen { display: none; flex-direction: column; flex: 1; min-height: 0; }
   .screen.active { display: flex; }
@@ -1188,10 +1202,18 @@
     border-bottom: 1px solid var(--border);
   }
   .nav-item:last-child { border-bottom: none; }
+  .nav-item[disabled] { border-bottom-color: #E0EFFF; }
   .nav-item:hover { background: rgba(0,179,192,0.12); }
   .nav-item.active { color: var(--accent); }
   .nav-item svg { flex-shrink: 0; color: var(--subtext); }
   .nav-item.active svg { color: var(--accent); }
+  .nav-onboarding-msg {
+    padding: 12px 18px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    color: var(--subtext);
+    border-bottom: 1px solid var(--border);
+  }
 
   /* Screen-title icon (direct svg child of .section-heading) + Dashboard home button + hamburger: muted stroke */
   .section-heading > svg,
@@ -2168,7 +2190,7 @@
   }
   .section-cal-nav-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(0,179,192,0.12); }
   .section-cal-nav-btn:active { transform: scale(0.96); }
-  .section-cal-nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .section-cal-nav-btn:disabled { opacity: 0.35; cursor: default; }
   .section-cal-nav-btn:disabled:hover { color: var(--subtext); border-color: var(--border); background: var(--surface2); }
   .section-cal-nav-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
   .section-cal .heatmap-cells { gap: 6px; }
@@ -2596,7 +2618,7 @@
   }
   .date-nav-btn:hover { color: var(--accent); background: rgba(0,179,192,0.12); }
   .date-nav-btn:active { transform: scale(0.95); }
-  .date-nav-btn:disabled { opacity: 0.3; pointer-events: none; }
+  .date-nav-btn:disabled { opacity: 0.35; pointer-events: none; }
   .date-nav-label {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 18px;
@@ -3769,14 +3791,15 @@
         <polyline points="38.79,25.85 29.21,35.44 23.5,29.73" stroke="var(--subtext)" stroke-width="2.75"/>
       </svg>
     </div>
-    <p class="auth-subtext">We sent a verification link to <strong id="signup-confirm-email" style="color: var(--accent);"></strong>. Click the link in the email to activate your account, then come back here and log in.</p>
-    <p class="auth-subtext" style="margin-top: -8px;">If the verification link email doesn&#x2019;t appear within a few minutes, check your spam folder.</p>
+    <p class="auth-subtext" id="verify-msg-main">We sent a verification link to <strong id="signup-confirm-email" style="color: var(--accent);"></strong>. Click the link in the email to activate your account, then come back here to continue.</p>
+    <p class="auth-subtext" id="verify-msg-spam" style="margin-top: -8px;">If the verification link email doesn&#x2019;t appear within a few minutes, check your spam folder.</p>
 
-    <button class="cta-btn auth-switch-btn" type="button" data-mode="login">
-      Continue to log in
+    <button class="cta-btn" type="button" id="verify-continue-btn">
+      Continue
     </button>
 
-    <p class="auth-alt-link"><button class="auth-switch-btn" type="button" id="resend-verify-btn" aria-label="Resend verification email">Resend Link</button></p>
+    <button class="social-btn" type="button" id="resend-verify-btn" aria-label="Resend verification email" style="margin-top: 12px;">Resend Link</button>
+    <p class="field-error-msg" id="resend-error" role="alert" style="margin-top:12px;"></p>
   </div><!-- /signup-confirm-panel -->
 
   <!-- Forgot Password — request reset -->
@@ -3829,19 +3852,20 @@
       <h2 class="section-heading"><button class="back-nav-btn" id="profile-back-btn" type="button" aria-label="Back to Sign Up" style="display:none;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3,22 L3,20 C3,17.5147186 5.01471863,15.5 7.5,15.5 L16.5,15.5 C18.9852814,15.5 21,17.5147186 21,20 L21,22" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><circle cx="12" cy="6.75" r="4.75" fill="rgba(0,179,192,0.35)" /></svg>Profile</h2>
 
       <div class="screen-content">
-      <p class="profile-welcome" id="profile-welcome"><strong class="profile-welcome-title">Welcome to DataGOAT</strong>First, complete your profile. Then you’ll choose what training and performance data to track.</p>
+      <p class="profile-welcome" id="profile-welcome"><strong class="profile-welcome-title">Welcome to DataGOAT</strong>First, complete your profile. Then you&#x2019;ll choose what training and performance data to track.</p>
+      <p class="profile-signed-in" id="profile-signed-in" style="display:none;">Logged in as <strong class="profile-signed-in-email" id="profile-signed-in-email"></strong></p>
       <div class="field-wrap">
         <label class="field-label" for="profile-fullname">Full Name<span class="required-mark" aria-hidden="true">*</span></label>
         <input id="profile-fullname" type="text" class="field-input" placeholder="Your name" autocomplete="name"/>
         <p class="field-error-msg" id="profile-fullname-error" aria-live="polite"></p>
       </div>
 
-      <div class="field-wrap">
+      <div class="field-wrap" id="profile-email-wrap" style="display:none;">
         <label class="field-label" for="profile-email">Email<span class="required-mark" aria-hidden="true">*</span></label>
         <input id="profile-email" type="email" class="field-input" placeholder="you@school.edu" autocomplete="email"/>
       </div>
 
-      <div class="field-wrap">
+      <div class="field-wrap" id="profile-password-wrap" style="display:none;">
         <label class="field-label" for="profile-password">Password<span class="required-mark" aria-hidden="true">*</span></label>
         <div class="input-with-eye">
           <input id="profile-password" type="password" class="field-input" placeholder="Create a password" autocomplete="new-password"/>
@@ -4896,7 +4920,7 @@
 </div><!-- /phone -->
 
   <nav class="device-switcher" aria-label="Device preview size">
-    <div class="device-switcher-label">Preview <span class="version-tag">v1.8</span></div>
+    <div class="device-switcher-label">Preview <span class="version-tag">v1.9</span></div>
 
     <button class="device-btn active" type="button" data-w="360" data-h="740" data-r="44" data-os="ios" data-cutout="dynamic-island">
       <span class="db-name">Generic Phone</span>
@@ -5373,30 +5397,92 @@
       }
     }
     // Lock/unlock the hamburger menu + dashboard home buttons on onboarding screens
-    var onboardingScreens = ['profile-screen', 'tracked-data-screen'];
+    var onboardingScreens = ['profile-screen', 'tracked-data-screen', 'gender-info-screen', 'athlete-type-info-screen', 'comp-term-info-screen'];
+    var navUnlockedScreens = ['tracked-data-screen'];
+    var stillOnboarding = window.isNewUser && !window._onboardingComplete;
     document.querySelectorAll('.nav-menu-btn').forEach(function (mbtn) {
       var parentScreen = mbtn.closest('.screen');
       if (!parentScreen) return;
-      var lock = window.isNewUser && !window._onboardingComplete && onboardingScreens.indexOf(parentScreen.id) !== -1;
-      mbtn.disabled = lock;
-      mbtn.style.opacity = lock ? '0.3' : '';
-      mbtn.style.pointerEvents = lock ? 'none' : '';
+      var isOnboarding = stillOnboarding && onboardingScreens.indexOf(parentScreen.id) !== -1;
+      // Hamburger is always enabled — but menu items are restricted during onboarding
+      mbtn.disabled = false;
+      mbtn.style.opacity = '';
+      mbtn.style.pointerEvents = '';
+      // Tag the menu overlay so we can restrict items
+      var overlay = parentScreen.querySelector('.nav-overlay');
+      if (overlay) {
+        overlay.setAttribute('data-onboarding', isOnboarding ? 'true' : 'false');
+        // Show/hide nav items and onboarding message
+        var menuEl = overlay.querySelector('.nav-menu');
+        if (menuEl) {
+          // Remove old onboarding message if present
+          var oldMsg = menuEl.querySelector('.nav-onboarding-msg');
+          if (oldMsg) oldMsg.remove();
+          var items = menuEl.querySelectorAll('.nav-item');
+          if (isOnboarding) {
+            var navUnlocked = navUnlockedScreens.indexOf(parentScreen.id) !== -1;
+            // Show onboarding message only on profile-related screens
+            if (!navUnlocked) {
+              var msg = document.createElement('div');
+              msg.className = 'nav-onboarding-msg';
+              msg.textContent = 'Complete your profile to unlock other sections.';
+              menuEl.insertBefore(msg, menuEl.firstChild);
+            }
+            // On nav-unlocked screens, enable all items
+            if (navUnlocked) {
+              items.forEach(function (item) {
+                item.style.display = '';
+                item.disabled = false;
+                item.style.opacity = '';
+                item.style.pointerEvents = '';
+              });
+            } else {
+              // Disable items that aren't Log Out, About, or the current/parent page
+              var profileChildScreens = ['gender-info-screen', 'athlete-type-info-screen', 'comp-term-info-screen'];
+              var isProfileChild = profileChildScreens.indexOf(parentScreen.id) !== -1;
+              items.forEach(function (item) {
+                var label = item.textContent.trim();
+                var isLogOut = label === 'Log Out';
+                var isAbout = label === 'About';
+                var isActive = item.classList.contains('active');
+                var isProfileNav = isProfileChild && label === 'Profile';
+                var enabled = isLogOut || isAbout || isActive || isProfileNav;
+                item.style.display = '';
+                item.disabled = !enabled;
+                item.style.opacity = enabled ? '' : '0.35';
+                item.style.pointerEvents = enabled ? '' : 'none';
+              });
+            }
+          } else {
+            items.forEach(function (item) {
+              item.style.display = '';
+              item.disabled = false;
+              item.style.opacity = '';
+              item.style.pointerEvents = '';
+            });
+          }
+        }
+      }
     });
     document.querySelectorAll('.nav-home-btn').forEach(function (hbtn) {
       var parentScreen = hbtn.closest('.screen');
       if (!parentScreen) return;
-      var hide = window.isNewUser && !window._onboardingComplete && onboardingScreens.indexOf(parentScreen.id) !== -1;
-      hbtn.style.display = hide ? 'none' : '';
+      var isOnboarding = stillOnboarding && onboardingScreens.indexOf(parentScreen.id) !== -1;
+      var isNavUnlocked = navUnlockedScreens.indexOf(parentScreen.id) !== -1;
+      var lockDashBtn = isOnboarding && !isNavUnlocked;
+      hbtn.style.display = '';
+      hbtn.disabled = lockDashBtn;
+      hbtn.style.opacity = lockDashBtn ? '0.35' : '';
+      hbtn.style.pointerEvents = lockDashBtn ? 'none' : '';
     });
-    // New-user back buttons
-    var stillOnboarding = window.isNewUser && !window._onboardingComplete;
+    // Hide back button on Tracked Data during onboarding — use hamburger menu instead
     var trackedBackBtn = document.getElementById('tracked-back-btn');
     if (trackedBackBtn) {
-      trackedBackBtn.style.display = stillOnboarding ? '' : 'none';
+      trackedBackBtn.style.display = 'none';
     }
     var profileBackBtn = document.getElementById('profile-back-btn');
     if (profileBackBtn) {
-      profileBackBtn.style.display = stillOnboarding ? '' : 'none';
+      profileBackBtn.style.display = 'none';
     }
     // Toggle button labels/visibility based on new vs returning user
     var profileToTrackedBtn = document.getElementById('profile-to-tracked-btn');
@@ -5802,6 +5888,13 @@
             window.setCustomSelect('profile-competition-term', '');
           }
         }
+        // Show "Logged in as" with email
+        var signedInEl = document.getElementById('profile-signed-in');
+        var signedInEmailEl = document.getElementById('profile-signed-in-email');
+        if (signedInEl && signedInEmailEl) {
+          signedInEmailEl.textContent = emailVal;
+          signedInEl.style.display = '';
+        }
         window._signupEmail = null;
         window._signupPass  = null;
         window._signupAutofilled = null;
@@ -5826,6 +5919,13 @@
           window.setCustomSelect('profile-sport', 'Strength and Power');
           window.setCustomSelect('profile-competition-term', 'Game');
         }
+        // Show "Logged in as" with email
+        var signedInEl2 = document.getElementById('profile-signed-in');
+        var signedInEmailEl2 = document.getElementById('profile-signed-in-email');
+        if (signedInEl2 && signedInEmailEl2) {
+          signedInEmailEl2.textContent = loginEmailVal;
+          signedInEl2.style.display = '';
+        }
         if (window._syncAllHasValue) window._syncAllHasValue();
         if (window.initializeUserData) window.initializeUserData();
         showScreen('dashboard-screen');
@@ -5848,6 +5948,61 @@
       window._signupEmail = emailVal;
       window._signupPass  = document.getElementById('signup-password').value;
       setAuthMode('signup-confirm');
+    });
+  }
+
+  // Verify email "Continue" → straight to Profile (new user)
+  var verifyContinueBtn = document.getElementById('verify-continue-btn');
+  if (verifyContinueBtn) {
+    verifyContinueBtn.addEventListener('click', function () {
+      window.isNewUser = true;
+      window._onboardingComplete = false;
+      window._hasData = false;
+      var emailVal = window._signupEmail || '';
+      var passVal  = window._signupPass || '';
+      var autofilled = window._signupAutofilled;
+
+      if (autofilled) {
+        document.getElementById('profile-fullname').value = 'Elijah Johnson';
+        document.getElementById('profile-email').value = emailVal;
+        document.getElementById('profile-password').value = passVal;
+        document.getElementById('profile-nickname').value = 'Eli';
+        document.getElementById('profile-age').value = '20';
+        document.getElementById('profile-height-ft').value = '6';
+        document.getElementById('profile-height-in').value = '1';
+        document.getElementById('profile-weight').value = '205';
+        if (window.setCustomSelect) {
+          window.setCustomSelect('profile-gender', 'Male');
+          window.setCustomSelect('profile-sport', 'Strength and Power');
+          window.setCustomSelect('profile-competition-term', 'Game');
+        }
+      } else {
+        document.getElementById('profile-fullname').value = '';
+        document.getElementById('profile-email').value = emailVal;
+        document.getElementById('profile-password').value = passVal;
+        document.getElementById('profile-nickname').value = '';
+        document.getElementById('profile-age').value = '';
+        document.getElementById('profile-height-ft').value = '';
+        document.getElementById('profile-height-in').value = '';
+        document.getElementById('profile-weight').value = '';
+        if (window.setCustomSelect) {
+          window.setCustomSelect('profile-gender', '');
+          window.setCustomSelect('profile-sport', '');
+          window.setCustomSelect('profile-competition-term', '');
+        }
+      }
+      var signedInEl = document.getElementById('profile-signed-in');
+      var signedInEmailEl = document.getElementById('profile-signed-in-email');
+      if (signedInEl && signedInEmailEl) {
+        signedInEmailEl.textContent = emailVal;
+        signedInEl.style.display = '';
+      }
+      window._signupEmail = null;
+      window._signupPass  = null;
+      window._signupAutofilled = null;
+      if (window._syncAllHasValue) window._syncAllHasValue();
+      if (window.initializeUserData) window.initializeUserData();
+      showScreen('profile-screen');
     });
   }
 
@@ -5944,16 +6099,52 @@
     });
   }
 
-  // Resend verification link button (prototype — just flash feedback)
+  // Resend verification link button
   var resendVerifyBtn = document.getElementById('resend-verify-btn');
+  var resendError = document.getElementById('resend-error');
+  var verifyMsgMain = document.getElementById('verify-msg-main');
+  var verifyMsgSpam = document.getElementById('verify-msg-spam');
+  var _resendLastPress = 0;
+  var _resendOriginalMain = '';
+  var _resendOriginalSpam = '';
   if (resendVerifyBtn) {
     resendVerifyBtn.addEventListener('click', function () {
-      resendVerifyBtn.textContent = 'Link Resent!';
-      resendVerifyBtn.disabled = true;
-      setTimeout(function () {
-        resendVerifyBtn.textContent = 'Resend Link';
-        resendVerifyBtn.disabled = false;
-      }, 3000);
+      if (!_resendOriginalMain && verifyMsgMain) _resendOriginalMain = verifyMsgMain.innerHTML;
+      if (!_resendOriginalSpam && verifyMsgSpam) _resendOriginalSpam = verifyMsgSpam.innerHTML;
+      var now = Date.now();
+      var tooSoon = (now - _resendLastPress) < 5000;
+      _resendLastPress = now;
+
+      if (tooSoon) {
+        // Error state — pressed too quickly
+        var email = document.getElementById('signup-confirm-email').textContent || '';
+        if (resendError) {
+          resendError.textContent = 'We had trouble sending the email. Please try again.';
+          resendError.classList.add('visible');
+        }
+        if (verifyMsgMain) {
+          verifyMsgMain.innerHTML = 'We had trouble sending the verification email to <strong style="color: var(--accent);">' + email + '</strong>. Tap Resend Link to try again.';
+        }
+        if (verifyMsgSpam) {
+          verifyMsgSpam.innerHTML = 'If the verification email doesn\u2019t appear within a few minutes, check your spam folder.';
+        }
+        resendVerifyBtn.disabled = true;
+        setTimeout(function () {
+          resendVerifyBtn.disabled = false;
+          if (resendError) { resendError.textContent = ''; resendError.classList.remove('visible'); }
+          if (verifyMsgMain) verifyMsgMain.innerHTML = _resendOriginalMain;
+          if (verifyMsgSpam) verifyMsgSpam.innerHTML = _resendOriginalSpam;
+        }, 5000);
+      } else {
+        // Normal state — resending
+        if (resendError) { resendError.textContent = ''; resendError.classList.remove('visible'); }
+        resendVerifyBtn.textContent = 'Resending link\u2026';
+        resendVerifyBtn.disabled = true;
+        setTimeout(function () {
+          resendVerifyBtn.textContent = 'Resend Link';
+          resendVerifyBtn.disabled = false;
+        }, 2000);
+      }
     });
   }
 
@@ -7514,9 +7705,9 @@
         renderSection('When / How Many Times Collected', data.whenCollected) +
         referencesHtml;
 
-      // Hide the chart section when visiting from Tracked Data Setup — users are
-      // deciding whether to track the metric, so they don't need to see their data yet.
-      var showChart = window.metricDetailOrigin !== 'tracked-data-screen' && window.metricDetailOrigin !== 'add-metric-screen';
+      // Always show the chart — even on Day 1 an empty chart sets the expectation
+      // that data will appear here once the user starts logging.
+      var showChart = true;
       var wellnessMetrics = ['Hydration', 'Sleep Time', 'Sleep Efficiency', 'Protein', 'Relative Protein', 'Lean Mass', 'Availability', 'Mood', 'HRV', 'Pain', 'Perceived Exertion', 'Perceived Fatigue', 'Readiness', 'Soreness', 'Overuse Injury Symptoms', '1 Rep Max Bench Press', '1 Rep Max Deadlift', '1 Rep Max Hang Clean', '1 Rep Max Power Clean', '1 Rep Max Squat', '1-Mile Run', '10-Meter Sprint', '40-Yard Dash', 'Average Velocity', 'Beep Test', 'Deceleration', 'Distance', 'Forward Acceleration', 'Heart Rate Zone', 'Peak Velocity', 'Reactive Strength Index', 'Standing Broad Jump', 'Upward Acceleration', 'Vertical Jump'];
       var perfMetrics = ['Winning Percentage', 'Scores', 'Times', 'Points/Goals', 'Assists', 'Tackles', 'Rebounds', 'Blocks', 'Digs', 'Yards'];
       var isWellness = wellnessMetrics.indexOf(name) !== -1;
@@ -7815,9 +8006,9 @@
       var canGoBack = startIdx > 0;
       var canGoForward = endOffset < weekData.length - 1;
       prevBtn.disabled = !canGoBack;
-      prevBtn.style.opacity = canGoBack ? '' : '0.3';
+      prevBtn.style.opacity = canGoBack ? '' : '0.35';
       nextBtn.disabled = !canGoForward;
-      nextBtn.style.opacity = canGoForward ? '' : '0.3';
+      nextBtn.style.opacity = canGoForward ? '' : '0.35';
     }
 
     prevBtn.addEventListener('click', function () {
