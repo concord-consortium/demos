@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MassSims</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    background: #fff;
+    color: #333;
+    letter-spacing: 0.02em;
+    padding: 20px;
+  }
+
+  /* Main layout: left buttons | viewport | right buttons */
+  .main-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  /* Button columns */
+  .btn-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 120px;
+    padding-top: 24px;
+  }
+
+  .btn-column [role="group"] {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .btn-column-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #767676;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .toggle-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    padding: 8px 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #666;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .toggle-btn:hover {
+    background: #e4e4e4;
+    color: #444;
+  }
+
+  .toggle-btn:focus-visible {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+
+  .toggle-btn.active {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+  }
+
+  /* Viewport display area */
+  .viewport-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .viewport-info {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 12px;
+    text-align: center;
+    min-height: 18px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .viewport-info strong {
+    color: #222;
+  }
+
+  /* Device frame */
+  .device-frame {
+    position: relative;
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+    box-sizing: content-box;
+    border: 2px solid #333;
+    transition: width 0.3s ease, height 0.3s ease;
+  }
+
+  .device-frame.no-limit {
+    border-color: #ccc;
+    border-style: dashed;
+    background: transparent;
+  }
+
+  /* Browser / OS chrome bars */
+  .chrome-top {
+    background: #1A2832;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    position: relative;
+  }
+
+  .chrome-top::after {
+    content: attr(data-label);
+    font-size: 16px;
+    color: #bbb;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .chrome-dots {
+    display: flex;
+    gap: 4px;
+    padding: 6px 0;
+  }
+
+  .chrome-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #444;
+  }
+
+  .chrome-address {
+    background: #2a2a2a;
+    border-radius: 3px;
+    height: 12px;
+    flex: 1;
+    margin-left: 8px;
+  }
+
+  .chrome-bottom {
+    background: #1A2832;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .chrome-bottom::after {
+    content: attr(data-label);
+    font-size: 16px;
+    color: #bbb;
+  }
+
+  .shelf-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: #333;
+  }
+
+  /* Available viewport area */
+  .viewport-area {
+    background: #0592af;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  /* AP container — floated centered unit */
+  .ap-container {
+    background: transparent;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ap-right-column {
+    display: flex;
+    flex-direction: column;
+    width: 767px;
+    box-sizing: content-box;
+    border: 1px solid #979797;
+    margin-right: 26px;
+  }
+
+  .ap-header {
+    background: #047a99;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+
+  .ap-header-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-left: 10px;
+    line-height: 1;
+  }
+
+  .ap-body {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Left column for 2-column layout */
+  .ap-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-left: 28px;
+    margin-right: 10px;
+    transition: width 0.25s ease;
+    overflow: hidden;
+  }
+
+  .ap-left-toggle {
+    background: #3f3f3f;
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .ap-left-toggle:hover {
+    background: #4a4a4a;
+  }
+
+  .ap-left-toggle-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #dfdfdf;
+    position: absolute;
+    left: 181px;
+    white-space: nowrap;
+  }
+
+  .ap-left-toggle-icon {
+    position: absolute;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .ap-left-toggle-icon-collapsed {
+    width: 32px;
+    height: 32px;
+    margin-top: 5px;
+    transform: scaleX(-1);
+  }
+
+  .ap-left-toggle-label-collapsed {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #dfdfdf;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin-top: 12px;
+    white-space: nowrap;
+  }
+
+  .ap-left-toggle:focus-visible {
+    outline: 2px solid #bbb;
+    outline-offset: -2px;
+  }
+
+  .ap-left-resources {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .ap-left-resources-header {
+    background: #dfdfdf;
+    height: 37px;
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .ap-left-resources-header-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #3f3f3f;
+  }
+
+  .ap-left-resources-body {
+    flex: 1;
+    background: #f4f4f4;
+    padding: 25px 20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    color: #3f3f3f;
+    line-height: 1.5;
+    overflow: auto;
+  }
+
+  .ap-left-resources-body p {
+    margin: 0 0 16px 0;
+  }
+
+  .ap-left-resources-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .ap-left-resources-body ul {
+    margin: 0 0 16px 0;
+    padding-left: 40px;
+  }
+
+  .ap-left-resources-body li {
+    margin-bottom: 12px;
+  }
+
+  .ap-left-resources-body li:last-child {
+    margin-bottom: 0;
+  }
+
+
+  /* Sim title bar */
+  .sim-title-bar {
+    height: 50px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    flex-shrink: 0;
+  }
+
+  .sim-title-left {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .sim-title-name {
+    font-family: 'Lato', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #3f3f3f;
+  }
+
+  .sim-title-desc {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    color: #666;
+  }
+
+  .sim-title-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sim-title-logo {
+    display: block;
+  }
+
+  .sim-title-info {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .sim-title-info::before {
+    content: "i";
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #3f3f3f;
+  }
+
+  /* Question containers below sim content */
+  .question-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 0 27px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .question-container {
+    width: 517px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #979797;
+    box-sizing: content-box;
+  }
+
+  .question-header {
+    background: #047a99;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+
+  .question-header-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-left: 10px;
+    line-height: 1;
+  }
+
+  .question-body {
+    background: #fff;
+    flex: 1;
+    min-height: 200px;
+    padding: 20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    color: #3f3f3f;
+    line-height: 1.5;
+  }
+
+  .question-input {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    height: 200px;
+    margin-top: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-style: italic;
+    color: #979797;
+    line-height: 1.5;
+  }
+
+  .content-area.standalone {
+    border: 2px solid #555;
+    border-radius: 10px;
+    box-sizing: content-box;
+    overflow: hidden;
+  }
+
+  /* Content area */
+  .content-area {
+    font-family: 'Lato', sans-serif;
+    background: #fff;
+    position: relative;
+    flex-shrink: 0;
+    transition: width 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    font-weight: 600;
+    color: #707070;
+    text-align: center;
+    white-space: pre-line;
+    pointer-events: none;
+  }
+
+  /* Sim content containers */
+  .sim-content {
+    display: flex;
+    gap: 10px;
+    padding: 0 10px 10px 10px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .sim-panel-tab {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 36px;
+    padding: 0 10px;
+    background: #e8e8e8;
+    border: 2px solid #555;
+    border-radius: 8px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    font-family: 'Lato', sans-serif;
+    white-space: nowrap;
+    z-index: 1;
+  }
+
+  .sim-panel-tab-label {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .sim-panel-tab-subtitle {
+    font-size: 16px;
+    font-weight: 400;
+    color: #333;
+  }
+
+  .sim-panel {
+    border: 2px solid #555;
+    border-radius: 8px;
+    background: #e8e8e8;
+    margin-top: 17px;
+    box-sizing: border-box;
+    flex: 1;
+  }
+
+
+</style>
+</head>
+<body>
+
+<div class="main-layout">
+  <!-- Left: Sims + Layout + Device buttons -->
+  <div class="btn-column">
+    <div role="group" aria-labelledby="sims-label">
+      <div class="btn-column-label" id="sims-label" style="display: flex; justify-content: space-between; align-items: baseline;"><span>Sims</span><span style="font-weight: 400; text-transform: none;">v0.1</span></div>
+      <button class="toggle-btn active" data-sim="bananas" aria-pressed="true">Bananas</button>
+      <button class="toggle-btn" data-sim="collapse" aria-pressed="false">Collapse!</button>
+      <button class="toggle-btn" data-sim="noreaster" aria-pressed="false">Nor&rsquo;easter Riley</button>
+      <button class="toggle-btn" data-sim="tbd" aria-pressed="false">TBD</button>
+    </div>
+
+    <div role="group" aria-labelledby="layout-label" style="margin-top: 16px;">
+      <div class="btn-column-label" id="layout-label">Layout</div>
+      <button class="toggle-btn" data-layout="standalone" aria-pressed="false">Standalone</button>
+      <button class="toggle-btn active" data-layout="ap-full" aria-pressed="true">AP Full Width</button>
+      <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false">AP 2-Column</button>
+    </div>
+
+    <div role="group" aria-labelledby="device-label" style="margin-top: 16px;">
+      <div class="btn-column-label" id="device-label">Device</div>
+      <button class="toggle-btn" data-device="none" aria-pressed="false">Teacher Desktop</button>
+      <button class="toggle-btn active" data-device="chromebook" aria-pressed="true">Chromebook</button>
+      <button class="toggle-btn" data-device="ipad" aria-pressed="false">iPad (&le; 9th gen)</button>
+      <button class="toggle-btn" data-device="ipad10" aria-pressed="false">iPad (10th gen)</button>
+      <button class="toggle-btn" data-device="android" aria-pressed="false">Android Tablet</button>
+    </div>
+  </div>
+
+  <!-- Center: Viewport -->
+  <div class="viewport-wrapper">
+    <div class="viewport-info" id="viewportInfo" aria-live="polite"></div>
+    <div id="viewportContainer"></div>
+  </div>
+
+  <!-- Spacer to balance the left button column -->
+  <div class="btn-column" style="visibility: hidden;" aria-hidden="true">
+    <div class="btn-column-label">Sims</div>
+    <button class="toggle-btn">Bananas</button>
+    <button class="toggle-btn">Collapse!</button>
+    <button class="toggle-btn">Nor'easter Riley</button>
+    <button class="toggle-btn">TBD</button>
+    <div class="btn-column-label" style="margin-top: 16px;">Layout</div>
+    <button class="toggle-btn">Standalone</button>
+    <button class="toggle-btn">AP Full Width</button>
+    <button class="toggle-btn">AP 2-Column</button>
+    <div class="btn-column-label" style="margin-top: 16px;">Device</div>
+    <button class="toggle-btn">Teacher Desktop</button>
+    <button class="toggle-btn">Chromebook</button>
+    <button class="toggle-btn">iPad (&le; 9th gen)</button>
+    <button class="toggle-btn">iPad (10th gen)</button>
+    <button class="toggle-btn">Android Tablet</button>
+  </div>
+</div>
+
+<script>
+const DEVICES = {
+  none: {
+    name: "Teacher Desktop",
+    screenW: null, screenH: null,
+    topChrome: 0, bottomChrome: 0,
+    topLabel: "", bottomLabel: ""
+  },
+  chromebook: {
+    name: "Chromebook",
+    screenW: 1366, screenH: 768,
+    topChrome: 111, bottomChrome: 48,
+    topLabel: "Chrome tabs + address + bookmarks: 111px",
+    bottomLabel: "ChromeOS shelf: 48px"
+  },
+  ipad: {
+    name: "iPad (\u2264 9th gen, landscape)",
+    screenW: 1024, screenH: 768,
+    topChrome: 50, bottomChrome: 0,
+    topLabel: "Safari: 50px",
+    bottomLabel: ""
+  },
+  ipad10: {
+    name: "iPad (10th gen, landscape)",
+    screenW: 1180, screenH: 820,
+    topChrome: 50, bottomChrome: 0,
+    topLabel: "Safari: 50px",
+    bottomLabel: ""
+  },
+  android: {
+    name: "Android Tablet (landscape)",
+    screenW: 1280, screenH: 800,
+    topChrome: 56, bottomChrome: 48,
+    topLabel: "Chrome: 56px",
+    bottomLabel: "Nav bar: 48px"
+  }
+};
+
+const AP_WIDTH = 1100;
+const AP_HEADER_H = 36;
+const AP_CONTENT_H = 562;
+
+const LAYOUTS = {
+  standalone: { name: "Standalone", hasAP: false, contentWidth: null },
+  "ap-full": { name: "AP Full Width", hasAP: true, contentWidth: 1044, sidebar: false },
+  "ap-2col": { name: "AP 2-Column", hasAP: true, contentWidth: 833, sidebar: true, sidebarExpanded: true }
+};
+
+const SIMS = {
+  bananas: {
+    name: "Bananas",
+    description: "Short description of the sim"
+  },
+  collapse: {
+    name: "Collapse!",
+    description: "Short description of the sim"
+  },
+  noreaster: {
+    name: "Nor\u2019easter Riley",
+    description: "Short description of the sim"
+  },
+  tbd: {
+    name: "TBD",
+    description: "Short description of the sim"
+  }
+};
+
+let activeSim = "bananas";
+let activeDevice = "chromebook";
+let activeLayout = "ap-full";
+let sidebarExpanded = true;
+
+const SCALE = 1;
+function getScale() { return SCALE; }
+
+function buildSimTitleBar() {
+  const bar = document.createElement("div");
+  bar.className = "sim-title-bar";
+
+  const left = document.createElement("div");
+  left.className = "sim-title-left";
+  const name = document.createElement("span");
+  name.className = "sim-title-name";
+  name.textContent = SIMS[activeSim].name;
+  const desc = document.createElement("span");
+  desc.className = "sim-title-desc";
+  desc.textContent = SIMS[activeSim].description;
+  left.appendChild(name);
+  left.appendChild(desc);
+
+  const right = document.createElement("div");
+  right.className = "sim-title-right";
+  const deseLogo = document.createElement("img");
+  deseLogo.src = "icons/DESE Logo.svg";
+  deseLogo.alt = "DESE";
+  deseLogo.className = "sim-title-logo";
+  const ccLogo = document.createElement("img");
+  ccLogo.src = "icons/CC Logo.svg";
+  ccLogo.alt = "Concord Consortium";
+  ccLogo.className = "sim-title-logo";
+  const infoBtn = document.createElement("div");
+  infoBtn.className = "sim-title-info";
+  infoBtn.setAttribute("role", "button");
+  infoBtn.setAttribute("tabindex", "0");
+  infoBtn.setAttribute("aria-label", "Information");
+  right.appendChild(deseLogo);
+  right.appendChild(ccLogo);
+  right.appendChild(infoBtn);
+
+  bar.appendChild(left);
+  bar.appendChild(right);
+  return bar;
+}
+
+function buildSimContent() {
+  if (activeSim === "bananas") {
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content";
+
+    const panels = [
+      { name: "Trials", width: 145, subtitle: null },
+      { name: "Simulation", width: 564, subtitle: "Select two parents to begin" },
+      { name: "Data", width: 294, subtitle: null, bg: "#fff" }
+    ];
+
+    panels.forEach(p => {
+      const panelWrap = document.createElement("div");
+      panelWrap.style.width = p.width + "px";
+      panelWrap.style.flexShrink = "0";
+      panelWrap.style.position = "relative";
+
+      // Panel body (full height)
+      const panel = document.createElement("div");
+      panel.className = "sim-panel";
+      panel.style.width = "100%";
+      panel.style.height = "calc(100% - 17px)";
+      if (p.bg) panel.style.background = p.bg;
+      panelWrap.appendChild(panel);
+
+      // Title tab (overlays top of panel)
+      const tab = document.createElement("div");
+      tab.className = "sim-panel-tab";
+      const tabLabel = document.createElement("span");
+      tabLabel.className = "sim-panel-tab-label";
+      tabLabel.textContent = p.name;
+      tab.appendChild(tabLabel);
+      if (p.subtitle) {
+        const pipe = document.createElement("span");
+        pipe.style.margin = "0 6px";
+        pipe.style.fontSize = "16px";
+        pipe.style.fontWeight = "400";
+        pipe.style.color = "#333";
+        pipe.textContent = "\u2022";
+        tab.appendChild(pipe);
+        const tabSub = document.createElement("span");
+        tabSub.className = "sim-panel-tab-subtitle";
+        tabSub.textContent = p.subtitle;
+        tab.appendChild(tabSub);
+      }
+      panelWrap.appendChild(tab);
+
+      wrap.appendChild(panelWrap);
+    });
+
+    return wrap;
+  }
+  return null;
+}
+
+function buildViewport() {
+  const scale = getScale();
+  const device = DEVICES[activeDevice];
+  const layout = LAYOUTS[activeLayout];
+  const container = document.getElementById("viewportContainer");
+  const info = document.getElementById("viewportInfo");
+  container.innerHTML = "";
+  container.style.paddingTop = "";
+  document.body.style.background = "";
+  document.body.style.overflow = "";
+  document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "");
+
+  const isNoLimit = activeDevice === "none";
+  const availW = isNoLimit ? (layout.hasAP ? AP_WIDTH : 1200) : device.screenW;
+  const availH = isNoLimit ? 700 : device.screenH - device.topChrome - device.bottomChrome;
+
+  // Content width
+  let contentW;
+  if (activeLayout === "ap-2col") {
+    // 28 left margin + sidebar + 10 right margin + 1 border + content + 1 border + 26 right margin = 1100
+    contentW = sidebarExpanded ? 767 : (AP_WIDTH - 28 - 45 - 10 - 2 - 26);
+  } else if (activeLayout === "ap-full") {
+    contentW = 1044;
+  } else {
+    contentW = 1024;
+  }
+
+  const contentH = AP_CONTENT_H;
+
+  // Info line
+  if (isNoLimit) {
+    info.innerHTML = `<strong>Teacher Desktop</strong> — <strong>${layout.name}</strong> — Content: <strong>${contentW} x ${contentH}</strong>`;
+  } else {
+    info.innerHTML = `<strong>${device.name}</strong> — ${device.screenW}x${device.screenH} screen, <strong>${availW}x${availH}</strong> available — Content: <strong>${contentW} x ${contentH}</strong>`;
+  }
+
+  // Device frame
+  const frame = document.createElement("div");
+  frame.className = "device-frame" + (isNoLimit ? " no-limit" : "");
+
+  if (isNoLimit && layout.hasAP) {
+    // Teacher Desktop + AP: white page, full height, no border
+    document.body.style.background = "#0592af";
+    document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "#fff");
+    frame.classList.remove("no-limit");
+    frame.style.width = (AP_WIDTH * scale) + "px";
+    frame.style.border = "none";
+    frame.style.background = "#fff";
+    frame.style.borderRadius = "0";
+    frame.style.margin = "0 auto";
+    frame.style.height = "100vh";
+    frame.style.overflow = "hidden";
+    frame.style.marginTop = "-" + container.getBoundingClientRect().top + "px";
+    frame.style.paddingTop = container.getBoundingClientRect().top + "px";
+    document.body.style.overflow = "hidden";
+  } else if (isNoLimit) {
+    const frameW = 1200;
+    const frameH = 700;
+    frame.style.width = (frameW * scale) + "px";
+    frame.style.height = (frameH * scale) + "px";
+  } else {
+    frame.style.width = (device.screenW * scale) + "px";
+    frame.style.height = (device.screenH * scale) + "px";
+  }
+
+  // Top chrome
+  if (!isNoLimit && device.topChrome > 0) {
+    const top = document.createElement("div");
+    top.className = "chrome-top";
+    top.style.height = (device.topChrome * scale) + "px";
+    top.setAttribute("data-label", device.topLabel);
+
+    frame.appendChild(top);
+  }
+
+  // Viewport area
+  const viewport = document.createElement("div");
+  viewport.className = "viewport-area";
+  viewport.style.alignItems = "flex-start";
+  if (isNoLimit && layout.hasAP) {
+    viewport.style.height = "auto";
+    viewport.style.minHeight = "100%";
+    viewport.style.background = "#fff";
+  } else {
+    viewport.style.height = (availH * scale) + "px";
+  }
+
+  if (layout.hasAP) {
+    // Page container — 1100 x availH, centered, flush with chrome
+    const page = document.createElement("div");
+    page.style.width = (1100 * scale) + "px";
+    page.style.minHeight = (isNoLimit ? "100%" : (availH * scale) + "px");
+    page.style.background = "#fff";
+    page.style.display = "flex";
+    page.style.flexDirection = "column";
+    page.style.alignItems = "center";
+    page.style.position = "relative";
+
+    // Activity container — same width as content, centered, with border
+    const ap = document.createElement("div");
+    ap.className = "ap-container";
+    ap.style.marginTop = "4px";
+    const apW = activeLayout === "ap-2col" ? AP_WIDTH : contentW;
+    ap.style.width = (apW * scale) + "px";
+
+    if (activeLayout === "ap-2col") {
+      // 2-column: left column + right side (header above content only)
+      const apBody = document.createElement("div");
+      apBody.className = "ap-body";
+
+      // Left column
+      const sidebarW = sidebarExpanded ? 267 : 45;
+      const leftCol = document.createElement("div");
+      leftCol.className = "ap-left-column";
+      leftCol.style.width = (sidebarW * scale) + "px";
+
+      // Toggle button
+      const toggleBtn = document.createElement("div");
+      toggleBtn.className = "ap-left-toggle";
+      toggleBtn.title = sidebarExpanded ? "Click to hide column" : "Click to show column";
+      toggleBtn.setAttribute("role", "button");
+      toggleBtn.setAttribute("tabindex", "0");
+      toggleBtn.setAttribute("aria-expanded", sidebarExpanded ? "true" : "false");
+      toggleBtn.setAttribute("aria-label", sidebarExpanded ? "Collapse left column" : "Expand left column");
+
+      if (sidebarExpanded) {
+        toggleBtn.style.height = (40 * scale) + "px";
+
+        const toggleLabel = document.createElement("span");
+        toggleLabel.className = "ap-left-toggle-label";
+        toggleLabel.textContent = "Hide";
+        toggleBtn.appendChild(toggleLabel);
+
+        const toggleIcon = document.createElement("img");
+        toggleIcon.className = "ap-left-toggle-icon";
+        toggleIcon.src = "icons/Double Arrow ICON.svg";
+        toggleIcon.alt = "Collapse";
+        toggleBtn.appendChild(toggleIcon);
+      } else {
+        toggleBtn.style.height = (350 * scale) + "px";
+        toggleBtn.style.flexDirection = "column";
+        toggleBtn.style.alignItems = "center";
+        toggleBtn.style.justifyContent = "flex-start";
+
+        const toggleIcon = document.createElement("img");
+        toggleIcon.className = "ap-left-toggle-icon-collapsed";
+        toggleIcon.src = "icons/Double Arrow ICON.svg";
+        toggleIcon.alt = "Expand";
+        toggleBtn.appendChild(toggleIcon);
+
+        const toggleLabel = document.createElement("span");
+        toggleLabel.className = "ap-left-toggle-label-collapsed";
+        toggleLabel.textContent = "Show";
+        toggleBtn.appendChild(toggleLabel);
+      }
+
+      function toggleSidebar() {
+        sidebarExpanded = !sidebarExpanded;
+        buildViewport();
+      }
+      toggleBtn.addEventListener("click", toggleSidebar);
+      toggleBtn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleSidebar();
+        }
+      });
+
+      leftCol.appendChild(toggleBtn);
+
+      // Resources container (fills remaining height)
+      if (sidebarExpanded) {
+        const resources = document.createElement("div");
+        resources.className = "ap-left-resources";
+
+        const resHeader = document.createElement("div");
+        resHeader.className = "ap-left-resources-header";
+        const resLabel = document.createElement("span");
+        resLabel.className = "ap-left-resources-header-label";
+        resLabel.textContent = "Instructions";
+        resHeader.appendChild(resLabel);
+        resources.appendChild(resHeader);
+
+        const resBody = document.createElement("div");
+        resBody.className = "ap-left-resources-body";
+        resBody.innerHTML = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+          <ul>
+            <li>Ut eu eros nec tortor tincidunt consequat eget eu eros.</li>
+            <li>Nullam in massa turpis.</li>
+            <li>Morbi ut libero nec nibh lacinia mollis.</li>
+            <li>Vestibulum vestibulum vestibulum placerat.</li>
+          </ul>
+          <p>Quisque dictum a justo eget semper. Pellentesque viverra augue a euismod consequat.</p>
+          <p>Have fun!</p>`;
+        resources.appendChild(resBody);
+
+        leftCol.appendChild(resources);
+      }
+
+      apBody.appendChild(leftCol);
+
+      // Right side: header + content (with border)
+      const rightSide = document.createElement("div");
+      rightSide.className = "ap-right-column";
+      rightSide.style.width = (contentW * scale) + "px";
+
+      // AP header (above content only)
+      const apHeader = document.createElement("div");
+      apHeader.className = "ap-header";
+      apHeader.style.height = (AP_HEADER_H * scale) + "px";
+      const apLabel = document.createElement("span");
+      apLabel.className = "ap-header-label";
+      apLabel.textContent = SIMS[activeSim].name + " Simulation";
+      apHeader.appendChild(apLabel);
+      rightSide.appendChild(apHeader);
+
+      // Content area
+      const content = document.createElement("div");
+      content.className = "content-area";
+      content.style.width = "100%";
+      content.style.height = (AP_CONTENT_H * scale) + "px";
+      content.appendChild(buildSimTitleBar());
+
+      const cLabel = document.createElement("div");
+      cLabel.className = "content-label";
+      cLabel.textContent = `Content\n${contentW} x ${AP_CONTENT_H}`;
+      content.appendChild(cLabel);
+
+      rightSide.appendChild(content);
+      apBody.appendChild(rightSide);
+      ap.appendChild(apBody);
+    } else {
+      // Full-width: border on whole AP container
+      ap.style.border = "1px solid #979797";
+      ap.style.boxSizing = "content-box";
+
+      const apHeader = document.createElement("div");
+      apHeader.className = "ap-header";
+      apHeader.style.height = (AP_HEADER_H * scale) + "px";
+      const apLabel = document.createElement("span");
+      apLabel.className = "ap-header-label";
+      apLabel.textContent = SIMS[activeSim].name + " Simulation";
+      apHeader.appendChild(apLabel);
+      ap.appendChild(apHeader);
+
+      const apBody = document.createElement("div");
+      apBody.className = "ap-body";
+
+      // Content area
+      const content = document.createElement("div");
+      content.className = "content-area";
+      content.style.width = (contentW * scale) + "px";
+      content.style.height = (AP_CONTENT_H * scale) + "px";
+      content.appendChild(buildSimTitleBar());
+      const simContent = buildSimContent();
+      if (simContent) content.appendChild(simContent);
+
+      apBody.appendChild(content);
+      ap.appendChild(apBody);
+    }
+    page.appendChild(ap);
+
+    // Question containers (below AP on the page)
+    if (activeLayout === "ap-full" || activeLayout === "ap-2col") {
+      const qRow = document.createElement("div");
+      qRow.className = "question-row";
+      if (activeLayout === "ap-2col") {
+        qRow.style.paddingLeft = "28px";
+        qRow.style.paddingRight = "26px";
+      }
+
+      [
+        { label: "Question #1", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eu eros nec tortor tincidunt consequat eget eu eros?" },
+        { label: "Question #2", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?" }
+      ].forEach(q => {
+        const qContainer = document.createElement("div");
+        qContainer.className = "question-container";
+
+        const qHeader = document.createElement("div");
+        qHeader.className = "question-header";
+        const qLabel = document.createElement("span");
+        qLabel.className = "question-header-label";
+        qLabel.textContent = q.label;
+        qHeader.appendChild(qLabel);
+        qContainer.appendChild(qHeader);
+
+        const qBody = document.createElement("div");
+        qBody.className = "question-body";
+        qBody.innerHTML = `<div>${q.text}</div><div class="question-input">Please type your answer here.</div>`;
+        qContainer.appendChild(qBody);
+
+        qRow.appendChild(qContainer);
+      });
+
+      page.appendChild(qRow);
+    }
+    viewport.appendChild(page);
+  } else if (activeLayout === "standalone" && isNoLimit) {
+    // Standalone + Teacher Desktop — gray background, content centered
+    const standaloneW = 1024;
+    const standaloneH = 562;
+
+    document.body.style.background = "#e0e0e0";
+
+    const topOffset = container.getBoundingClientRect().top;
+    const verticalPad = Math.max(0, (window.innerHeight - topOffset - standaloneH) / 2);
+    container.style.paddingTop = verticalPad + "px";
+
+    const content = document.createElement("div");
+    content.className = "content-area standalone";
+    content.style.width = (standaloneW * scale) + "px";
+    content.style.height = (standaloneH * scale) + "px";
+    content.style.margin = "0 auto";
+    content.appendChild(buildSimTitleBar());
+
+    const cLabel = document.createElement("div");
+    cLabel.className = "content-label";
+    cLabel.textContent = `Content\n${standaloneW} x ${standaloneH}`;
+    content.appendChild(cLabel);
+
+    container.appendChild(content);
+    return;
+  } else {
+    // Standalone with device frame
+    const standaloneW = 1024;
+    const standaloneH = 562;
+    const content = document.createElement("div");
+    content.className = "content-area standalone";
+    content.style.width = (standaloneW * scale) + "px";
+    content.style.height = (standaloneH * scale) + "px";
+    content.appendChild(buildSimTitleBar());
+
+    const cLabel = document.createElement("div");
+    cLabel.className = "content-label";
+    cLabel.textContent = `Content\n${standaloneW} x ${standaloneH}`;
+    content.appendChild(cLabel);
+
+    viewport.style.display = "flex";
+    viewport.style.justifyContent = "center";
+    viewport.style.alignItems = "center";
+    viewport.style.background = "#e0e0e0";
+    viewport.appendChild(content);
+  }
+
+  frame.appendChild(viewport);
+
+  // Bottom chrome
+  if (!isNoLimit && device.bottomChrome > 0) {
+    const bottom = document.createElement("div");
+    bottom.className = "chrome-bottom";
+    bottom.style.height = (device.bottomChrome * scale) + "px";
+    bottom.setAttribute("data-label", device.bottomLabel);
+
+    frame.appendChild(bottom);
+  }
+
+  container.appendChild(frame);
+}
+
+// Button wiring
+function wireToggleGroup(selector, stateKey, callback) {
+  document.querySelectorAll(selector).forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (callback) callback(btn);
+      document.querySelectorAll(selector).forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
+      });
+      btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
+      buildViewport();
+    });
+  });
+}
+
+wireToggleGroup("[data-sim]", "activeSim", btn => { activeSim = btn.dataset.sim; });
+wireToggleGroup("[data-layout]", "activeLayout", btn => {
+  activeLayout = btn.dataset.layout;
+  if (activeLayout === "ap-2col") sidebarExpanded = true;
+});
+wireToggleGroup("[data-device]", "activeDevice", btn => { activeDevice = btn.dataset.device; });
+
+buildViewport();
+</script>
+</body>
+</html>
