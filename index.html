@@ -207,6 +207,13 @@
       '\n\nfocusInIframe: ' + (ae && ae.tagName === 'IFRAME' ? 'YES (' + ae.id + ')' : 'no');
   }
 
+  // The BEFORE/AFTER/END markers are href="#" anchors so they're focusable and
+  // clickable to park focus before tabbing. Suppress the default navigation so a
+  // click doesn't jump the page to the top (focus is still applied to the anchor).
+  document.querySelectorAll('a.endmark').forEach(a => {
+    a.addEventListener('click', e => e.preventDefault());
+  });
+
   document.addEventListener('focusin', update, true);
   document.addEventListener('focusout', () => setTimeout(update, 0), true);
   window.addEventListener('blur', update);

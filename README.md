@@ -2,6 +2,54 @@
 
 A shared repository for creating quick demos that are automatically deployed to S3.
 
+---
+
+## This branch: iframe `tabindex` / focus behavior tests
+
+This demo probes how browsers handle keyboard **Tab** traversal into `<iframe>`
+elements, and how the `tabindex` attribute on the iframe affects it. It's a
+manual, cross-browser test page — open it, tab through the rows, and watch the
+sticky tracker bar report `document.activeElement`.
+
+### What it tests
+
+A parent page (`index.html`) embeds the same three child pages under different
+conditions:
+
+- **Children:**
+  - `child-buttons.html` — three focusable buttons.
+  - `child-empty.html` — no focusables, no scrollable content.
+  - `child-scroll.html` — a scrollable container, no focusables.
+- **Cases (7 rows):** each child is embedded with `tabindex="0"`, `tabindex="-1"`,
+  or no `tabindex` attribute, to compare whether and how focus descends into the
+  iframe, lands on the iframe element, targets an inner scroll container, or is
+  skipped entirely. Behavior varies by browser (Chrome, Firefox, Safari).
+
+### How to use it
+
+For each row, click the `BEFORE N` marker and press **Tab** (forward), or click
+`AFTER N` and press **Shift+Tab** (reverse), then read the tracker bar. Safari
+requires Full Keyboard Access (System Settings → Keyboard → Keyboard navigation),
+or hold Option while pressing Tab.
+
+**Focus rings:** a red outline means `:focus` matches (the element is focused); an
+added blue ring with a white spacer means `:focus-visible` also matches (the
+browser deems focus should be visible — i.e. keyboard-driven). So *red only* =
+mouse-focused, *red + blue* = keyboard-focused.
+
+### Cross-origin mode
+
+Append `?xorigin=1` to load the iframes from a second origin that serves the same
+files, so the parent can no longer read into them (the tracker shows
+"(cross-origin — cannot read inner)", matching a real cross-origin embed). The
+page only swaps the origin (protocol + host), keeping the path intact:
+
+- **Local:** `localhost` ⇄ `127.0.0.1` (same dev server, two origins).
+- **Deployed:** `models-resources.concord.org` ⇄ `models-resources.s3.amazonaws.com`
+  (the demo is published to both).
+
+---
+
 ## How It Works
 
 Each branch is deployed to its own folder on S3. To create a demo:
