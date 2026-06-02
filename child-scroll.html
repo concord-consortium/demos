@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>child-scroll</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+  body { font-family: -apple-system, sans-serif; font-size: 13px; background: #f0f0fd; }
+  #scroller {
+    height: 100%; overflow: auto; padding: 6px; box-sizing: border-box;
+    border: 1px dashed #88a;
+  }
+  .tall { height: 400px; background: linear-gradient(#fff, #c5c5e0); padding: 6px; }
+
+  /* Same dual-ring scheme as the parent: red for :focus, +blue for :focus-visible.
+     #scroller fills the iframe, so it uses the inset variant (like body). */
+  *:focus           { outline: 3px solid #d00; outline-offset: 0; }
+  *:focus-visible   { box-shadow: 0 0 0 4px #fff, 0 0 0 7px #06f; }
+  body:focus, #scroller:focus { outline-offset: -3px; }
+  body:focus-visible, #scroller:focus-visible {
+    box-shadow: inset 0 0 0 7px #fff, inset 0 0 0 10px #06f;
+  }
+</style>
+</head>
+<body>
+<div id="scroller">
+  <div>child-scroll.html — scrollable, no focusables. The scroller container is <code>#scroller</code>.</div>
+  <div class="tall">long content (400px tall) so the container overflows</div>
+</div>
+</body>
+</html>

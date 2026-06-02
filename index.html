@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>iframe tabIndex behavior tests (parent)</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 940px; margin: 1em auto; padding: 0 1em 4em; color: #222; }
+  h1 { font-size: 1.3em; margin-bottom: 0.25em; }
+  h2 { font-size: 1em; margin: 0 0 0.25em; }
+  code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
+  .tracker {
+    position: sticky; top: 0; background: #fff8c4;
+    border: 1px solid #d4cf72; padding: 0.5em 0.75em;
+    font-family: ui-monospace, Menlo, monospace; font-size: 0.85em;
+    z-index: 10; margin: 0 0 1em;
+    white-space: pre-wrap; word-break: break-all;
+  }
+  .test { border: 1px solid #ccc; padding: 0.6em 0.9em; margin: 0.75em 0; border-radius: 4px; }
+  .meta { font-size: 0.85em; color: #555; margin-bottom: 0.5em; }
+  .row { display: flex; align-items: center; gap: 0.75em; flex-wrap: wrap; }
+  iframe { width: 280px; height: 80px; border: 1px solid #888; background: #fafafa; }
+  .endmark {
+    padding: 3px 8px; background: #eef; border: 1px solid #99c;
+    text-decoration: none; color: #036; font-size: 0.85em; border-radius: 3px;
+  }
+  .endmark:focus { background: #ffe; }
+
+  /* Focus rings — applied universally so we can compare :focus vs :focus-visible
+     on every focusable element (iframe, links, buttons, body, scroll container).
+       :focus          → red outline (always when focused).
+       :focus-visible  → adds a blue ring with a white spacer (matches when the
+                         browser's modality heuristic deems focus should be visible,
+                         i.e. keyboard-driven). So mouse-focused = red only,
+                         keyboard-focused = red + blue. */
+  *:focus           { outline: 3px solid #d00; outline-offset: 0; }
+  *:focus-visible   { box-shadow: 0 0 0 4px #fff, 0 0 0 7px #06f; }
+  body:focus        { outline-offset: -3px; }
+  body:focus-visible { box-shadow: inset 0 0 0 7px #fff, inset 0 0 0 10px #06f; }
+  .legend { font-size: 0.85em; color: #555; margin-top: 0.5em; }
+  details { margin-top: 1em; }
+  summary { cursor: pointer; font-weight: 600; }
+  ol { margin-top: 0.25em; }
+</style>
+</head>
+<body>
+<h1>iframe <code>tabIndex</code> behavior tests</h1>
+<p class="legend">Click a <code>BEFORE N</code> marker, press Tab forward, and watch the tracker bar. For reverse, click <code>AFTER N</code> and press Shift+Tab. Try in each browser. Safari needs Full Keyboard Access on (System Settings → Keyboard → Keyboard navigation).</p>
+<p class="legend"><strong>Focus rings:</strong> red outline = <code>:focus</code> matches (element is focused). Blue ring with white spacer = <code>:focus-visible</code> matches additionally (browser deems focus should be visible — keyboard-driven). So <em>red only</em> = mouse-focused, <em>red + blue</em> = keyboard-focused.</p>
+
+<div class="tracker" id="tracker">tracker initializing…</div>
+
+<!-- 1: tabindex=0, has focusables -->
+<div class="test">
+  <h2>1. <code>tabindex="0"</code> · child has 3 buttons</h2>
+  <div class="meta">Expected: Tab from BEFORE descends to BUTTON 1. Shift+Tab from AFTER descends to BUTTON 3.</div>
+  <div class="row">
+    <a class="endmark" href="#" id="before-1">BEFORE 1</a>
+    <iframe id="iframe-1" tabindex="0" src="./child-buttons.html" title="iframe 1"></iframe>
+    <a class="endmark" href="#" id="after-1">AFTER 1</a>
+  </div>
+</div>
+
+<!-- 2: tabindex=0, empty -->
+<div class="test">
+  <h2>2. <code>tabindex="0"</code> · child empty (no focusables, no scroll)</h2>
+  <div class="meta">Question: does focus land on the iframe element / body / get skipped?</div>
+  <div class="row">
+    <a class="endmark" href="#" id="before-2">BEFORE 2</a>
+    <iframe id="iframe-2" tabindex="0" src="./child-empty.html" title="iframe 2"></iframe>
+    <a class="endmark" href="#" id="after-2">AFTER 2</a>
+  </div>
+</div>
+
+<!-- 3: tabindex=0, scrollable no focusables -->
+<div class="test">
+  <h2>3. <code>tabindex="0"</code> · child scrollable, no focusables</h2>
+  <div class="meta">Expected (Chrome/Firefox): scroll container becomes the tab stop per keyboard-focusable scrollers. Safari: likely body / no stop.</div>
+  <div class="row">
+    <a class="endmark" href="#" id="before-3">BEFORE 3</a>
+    <iframe id="iframe-3" tabindex="0" src="./child-scroll.html" title="iframe 3"></iframe>
+    <a class="endmark" href="#" id="after-3">AFTER 3</a>
+  </div>
+</div>
+
+<!-- 4: tabindex=-1, has focusables -->
+<div class="test">
+  <h2>4. <code>tabindex="-1"</code> · child has 3 buttons</h2>
+  <div class="meta">Question: is the inner content reachable from native Tab in the parent's sequence?</div>
+  <div class="row">
+    <a class="endmark" href="#" id="before-4">BEFORE 4</a>
+    <iframe id="iframe-4" tabindex="-1" src="./child-buttons.html" title="iframe 4"></iframe>
+    <a class="endmark" href="#" id="after-4">AFTER 4</a>
+  </div>
+</div>
+
+<!-- 5: tabindex=-1, empty -->
+<div class="test">
+  <h2>5. <code>tabindex="-1"</code> · child empty</h2>
+  <div class="meta">Expected: skipped entirely.</div>
+  <div class="row">
+    <a class="endmark" href="#" id="before-5">BEFORE 5</a>
+    <iframe id="iframe-5" tabindex="-1" src="./child-empty.html" title="iframe 5"></iframe>
+    <a class="endmark" href="#" id="after-5">AFTER 5</a>
+  </div>
+</div>
+
+<!-- 6: tabindex=-1, scrollable no focusables -->
+<div class="test">
+  <h2>6. <code>tabindex="-1"</code> · child scrollable, no focusables</h2>
+  <div class="meta">Question: does Chrome's scrollers rule still make the inner scroll container a tab stop, even with the iframe at -1?</div>
+  <div class="row">
+    <a class="endmark" href="#" id="before-6">BEFORE 6</a>
+    <iframe id="iframe-6" tabindex="-1" src="./child-scroll.html" title="iframe 6"></iframe>
+    <a class="endmark" href="#" id="after-6">AFTER 6</a>
+  </div>
+</div>
+
+<!-- 7: no tabindex attribute, has focusables -->
+<div class="test">
+  <h2>7. no <code>tabindex</code> attribute · child has 3 buttons</h2>
+  <div class="meta">Expected: same as case 1 (iframes are natively focusable).</div>
+  <div class="row">
+    <a class="endmark" href="#" id="before-7">BEFORE 7</a>
+    <iframe id="iframe-7" src="./child-buttons.html" title="iframe 7"></iframe>
+    <a class="endmark" href="#" id="after-7">AFTER 7</a>
+  </div>
+</div>
+
+<p><a class="endmark" href="#" id="end-marker">END</a></p>
+
+<details>
+  <summary>How to run</summary>
+  <ol>
+    <li>From this folder, serve over HTTP: <code>python3 -m http.server 8000</code></li>
+    <li>Open <code>http://localhost:8000/index.html</code> in each browser.</li>
+    <li>For each test row: click <code>BEFORE N</code>, press Tab, note what the tracker shows. Then click <code>AFTER N</code> and press Shift+Tab.</li>
+    <li>Safari: enable Full Keyboard Access (System Settings → Keyboard → Keyboard navigation) or hold Option while pressing Tab.</li>
+    <li><strong>Cross-origin variant:</strong> append <code>?xorigin=1</code> to load the iframes from a second origin that serves the same files, so the parent can't read into them. Locally, <code>localhost</code> and <code>127.0.0.1</code> are different origins — open <code>http://localhost:8000/index.html?xorigin=1</code> and the iframe srcs are rewritten to <code>http://127.0.0.1:8000/...</code>. When deployed, the swap is between <code>models-resources.concord.org</code> and <code>models-resources.s3.amazonaws.com</code> (the demo is published to both). The tracker's inner-element readout will then show "(cross-origin — cannot read inner)" instead of the inner activeElement, matching the AP scenario.</li>
+  </ol>
+</details>
+
+<script>
+  // Optional cross-origin mode (?xorigin=1): load the iframes from a second
+  // origin that serves the same files, so the parent can't read into them.
+  //   - Local:    localhost <-> 127.0.0.1 (same dev server, two origins).
+  //   - Deployed: models-resources.concord.org <-> models-resources.s3.amazonaws.com
+  //               (the demo is published to both; they serve identical paths).
+  // Only the origin (protocol + host) is swapped; the path is left intact.
+  (function() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('xorigin') !== '1') return;
+
+    const hostMap = {
+      'localhost': '127.0.0.1',
+      '127.0.0.1': 'localhost',
+      'models-resources.concord.org': 'models-resources.s3.amazonaws.com',
+      'models-resources.s3.amazonaws.com': 'models-resources.concord.org',
+    };
+    const otherHost = hostMap[location.hostname];
+    if (!otherHost) {
+      console.warn('xorigin: no known alternate origin for host "' + location.hostname +
+        '"; iframes left same-origin.');
+      return;
+    }
+    const newOrigin = location.protocol + '//' + otherHost + (location.port ? ':' + location.port : '');
+    const dir = location.pathname.replace(/[^/]+$/, '');
+    document.querySelectorAll('iframe').forEach(f => {
+      const src = f.getAttribute('src');
+      if (src && src.startsWith('./')) {
+        f.src = newOrigin + dir + src.slice(2);
+      }
+    });
+    document.title = '[cross-origin] ' + document.title;
+  })();
+
+  const tracker = document.getElementById('tracker');
+
+  function describe(el, depth) {
+    depth = depth || 0;
+    if (!el) return 'null';
+    if (depth > 2) return '…';
+    const tag = el.tagName ? el.tagName.toLowerCase() : '#' + el.nodeName;
+    const id = el.id ? '#' + el.id : '';
+    let text = '';
+    if (el.textContent && el.children && el.children.length === 0) {
+      text = ' "' + el.textContent.trim().slice(0, 30) + '"';
+    }
+    let inner = '';
+    if (tag === 'iframe') {
+      try {
+        const doc = el.contentDocument;
+        if (doc) {
+          const ae = doc.activeElement;
+          inner = '\n        → inner activeElement: ' + (ae ? describe(ae, depth + 1) : 'null');
+        }
+      } catch (e) {
+        inner = '\n        → (cross-origin — cannot read inner)';
+      }
+    }
+    return tag + id + text + inner;
+  }
+
+  function update() {
+    const ae = document.activeElement;
+    tracker.textContent =
+      'parent document.activeElement:\n    ' + describe(ae) +
+      '\n\nfocusInIframe: ' + (ae && ae.tagName === 'IFRAME' ? 'YES (' + ae.id + ')' : 'no');
+  }
+
+  document.addEventListener('focusin', update, true);
+  document.addEventListener('focusout', () => setTimeout(update, 0), true);
+  window.addEventListener('blur', update);
+  window.addEventListener('focus', update);
+  // Polling catches inner-frame focus moves (focus events inside the iframe don't bubble to parent).
+  setInterval(update, 200);
+  update();
+</script>
+</body>
+</html>
