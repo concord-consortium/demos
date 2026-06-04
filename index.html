@@ -743,9 +743,9 @@
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
-    padding: 31px 0 12px 0;
+    padding: 31px 0 12px 15px;
   }
 
   .trials-scroll:focus-visible {
@@ -1201,10 +1201,10 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 30px 10px 7px 10px;
+    padding: 30px 0 7px 15px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-start;
     min-height: 0;
     background: #fcfcfd;
@@ -1235,6 +1235,7 @@
     color: #333;
     font-style: italic;
     text-align: center;
+    width: 530px;
   }
 
   .gen-row {
@@ -1242,6 +1243,7 @@
     align-items: center;
     gap: 4px;
     margin: 3px 0;
+    width: 530px;
     padding: 4px 4px 4px 4px;
     border-radius: 6px;
     cursor: pointer;
@@ -1506,7 +1508,7 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <div class="btn-column">
     <div role="group" aria-labelledby="sims-label">
-      <div class="btn-column-label" id="sims-label" style="display: flex; justify-content: space-between; align-items: baseline;"><span>Sims</span><span style="font-weight: 400; text-transform: none;">v0.2</span></div>
+      <div class="btn-column-label" id="sims-label" style="display: flex; justify-content: space-between; align-items: baseline;"><span>Sims</span><span style="font-weight: 400; text-transform: none;">v0.3</span></div>
       <button class="toggle-btn active" data-sim="bananas" aria-pressed="true">Bananas</button>
       <button class="toggle-btn" data-sim="collapse" aria-pressed="false">Collapse!</button>
       <button class="toggle-btn" data-sim="noreaster" aria-pressed="false">Nor&rsquo;easter Riley</button>
@@ -1808,9 +1810,9 @@ function buildSimContent() {
     wrap.className = "sim-content";
 
     const panels = [
-      { name: "Trials", width: 145, subtitle: null },
+      { name: "Trials", width: 155, subtitle: null },
       { name: "Simulation", width: 564, subtitle: "Select two parents to begin" },
-      { name: "Data", width: 294, subtitle: null, bg: "#fff" }
+      { name: "Data", width: 285, subtitle: null, bg: "#fff" }
     ];
 
     panels.forEach(p => {
