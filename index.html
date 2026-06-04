@@ -45,6 +45,7 @@
 <body>
 <h1>iframe <code>tabIndex</code> behavior tests</h1>
 <p class="legend">Click a <code>BEFORE N</code> marker, press Tab forward, and watch the tracker bar. For reverse, click <code>AFTER N</code> and press Shift+Tab. Try in each browser. Safari needs Full Keyboard Access on (System Settings → Keyboard → Keyboard navigation).</p>
+<p class="legend"><strong>Scripted focus:</strong> with a <code>BEFORE N</code> marker focused (driven by the keypress so the modality stays keyboard): press <kbd>f</kbd> to call <code>iframe.focus()</code> — watch whether focus lands on the iframe element itself or descends to the first focusable inside (in Chrome it focuses just the iframe element). Press <kbd>b</kbd> to call <code>focus()</code> on the first button <em>inside</em> the iframe, testing whether a scripted focus on an inner element steals focus from the parent marker (button rows only; disabled under <code>?xorigin=1</code>).</p>
 <p class="legend"><strong>Focus rings:</strong> red outline = <code>:focus</code> matches (element is focused). Blue ring with white spacer = <code>:focus-visible</code> matches additionally (browser deems focus should be visible — keyboard-driven). So <em>red only</em> = mouse-focused, <em>red + blue</em> = keyboard-focused.</p>
 
 <div class="tracker" id="tracker">tracker initializing…</div>
@@ -134,6 +135,7 @@
     <li>From this folder, serve over HTTP: <code>python3 -m http.server 8000</code></li>
     <li>Open <code>http://localhost:8000/index.html</code> in each browser.</li>
     <li>For each test row: click <code>BEFORE N</code>, press Tab, note what the tracker shows. Then click <code>AFTER N</code> and press Shift+Tab.</li>
+    <li><strong>Scripted focus:</strong> with <code>BEFORE N</code> focused, press <kbd>f</kbd> to call <code>iframe.focus()</code> from JS (does focus land on the iframe or descend inside?), or <kbd>b</kbd> to call <code>focus()</code> on the first button inside the iframe (does it steal focus from the marker? — button rows only, same-origin only).</li>
     <li>Safari: enable Full Keyboard Access (System Settings → Keyboard → Keyboard navigation) or hold Option while pressing Tab.</li>
     <li><strong>Cross-origin variant:</strong> append <code>?xorigin=1</code> to load the iframes from a second origin that serves the same files, so the parent can't read into them. Locally, <code>localhost</code> and <code>127.0.0.1</code> are different origins — open <code>http://localhost:8000/index.html?xorigin=1</code> and the iframe srcs are rewritten to <code>http://127.0.0.1:8000/...</code>. When deployed, the swap is between <code>models-resources.concord.org</code> and <code>models-resources.s3.amazonaws.com</code> (the demo is published to both). The tracker's inner-element readout will then show "(cross-origin — cannot read inner)" instead of the inner activeElement, matching the AP scenario.</li>
   </ol>
@@ -212,6 +214,31 @@
   // click doesn't jump the page to the top (focus is still applied to the anchor).
   document.querySelectorAll('a.endmark').forEach(a => {
     a.addEventListener('click', e => e.preventDefault());
+  });
+
+  // Scripted-focus tests, driven by keydown on a BEFORE marker so the focus
+  // modality stays "keyboard" (so :focus-visible still applies, matching the
+  // keyboard-tabbing cases).
+  //   f → iframe.focus(): does focus land on the iframe element itself or descend
+  //       to the first focusable inside? (In Chrome it focuses just the iframe.)
+  //   b → focus the first <button> INSIDE the iframe: does focusing an inner
+  //       element from JS steal focus away from the parent marker? Same-origin
+  //       only (disabled under ?xorigin=1, where we can't reach the inner doc).
+  const xorigin = new URLSearchParams(location.search).get('xorigin') === '1';
+  document.querySelectorAll('a.endmark[id^="before-"]').forEach(a => {
+    const n = a.id.slice('before-'.length);
+    const iframe = document.getElementById('iframe-' + n);
+    if (!iframe) return;
+    a.addEventListener('keydown', e => {
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        iframe.focus();
+      } else if (!xorigin && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        const btn = iframe.contentDocument && iframe.contentDocument.querySelector('button');
+        if (btn) btn.focus();
+      }
+    });
   });
 
   document.addEventListener('focusin', update, true);
