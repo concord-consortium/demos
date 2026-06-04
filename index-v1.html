@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nor'easter Riley Simulation — Prototype (original stacked layout)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#047a99;
+    --ink:#3f3f3f;
+    --focus:#005FCC;
+    --panel-border:#555;
+    --panel-bg:#e8e8e8;
+    --dense:#1f5fbf;
+    --light:#c0392b;
+    --land:#8a6d3b;
+    --ocean:#2c7fb8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Barlow',sans-serif;
+    background:#e0e0e0;
+    color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;
+    padding:28px 12px;
+  }
+
+  /* review header above the AP container */
+  .page-header{
+    width:1046px;max-width:100%;margin:0 auto 6px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+  }
+  .page-header h1{font-family:'Lato',sans-serif;font-size:14px;font-weight:700;color:var(--ink);}
+  .page-header .meta{font-family:'Lato',sans-serif;font-size:10px;color:#555;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+  .page-header .meta .cc-logo{height:18px;width:auto;position:relative;top:-1px;}
+
+  /* AP Full Width chrome (matches masssims harness) */
+  .ap-container{
+    width:1044px;max-width:100%;
+    border:1px solid #979797;box-sizing:content-box;background:#fff;
+  }
+  .ap-header{background:var(--teal);height:36px;display:flex;align-items:center;}
+  .ap-header-label{
+    font-family:'Lato',sans-serif;color:#fff;font-weight:700;font-size:16px;margin-left:12px;line-height:1;
+  }
+
+  .content-area{
+    position:relative;width:1044px;max-width:100%;height:562px;background:#fff;
+    display:flex;flex-direction:column;overflow:hidden;font-family:'Lato',sans-serif;
+  }
+
+  /* sim title bar (50px) */
+  .sim-title-bar{
+    height:50px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;
+  }
+  .sim-title-left{display:flex;align-items:baseline;gap:10px;}
+  .sim-title-name{font-size:24px;font-weight:700;color:var(--ink);}
+  .sim-title-desc{font-size:16px;color:#666;}
+  .sim-title-right{display:flex;align-items:center;gap:14px;}
+  .sim-title-logo{display:block;}
+  .sim-info-btn{
+    margin-left:5px;font-family:'Lato',sans-serif;font-size:16px;line-height:20px;font-weight:bold;
+    padding:3px 12px 3px 8px;height:34px;box-sizing:border-box;border:2px solid #555;border-radius:6px;
+    background:#fff;color:#333;cursor:pointer;display:flex;align-items:center;gap:6px;position:relative;
+  }
+  .sim-info-btn::after{content:"";position:absolute;top:-7px;left:0;right:0;bottom:-7px;}
+  .sim-info-btn img{width:24px;height:24px;pointer-events:none;}
+  .sim-info-btn:hover,.sim-info-btn:focus-visible{background:#f0f0f0;}
+  .sim-info-btn:active{background:#d0d0d0;}
+  .sim-info-btn:focus-visible{outline:2px solid #005FCC;outline-offset:2px;}
+
+  /* sim body */
+  .sim-body{flex:1;display:flex;flex-direction:column;padding:6px 10px 10px;min-height:0;gap:6px;}
+  .panel-row{display:flex;gap:10px;min-height:0;}
+  .panel-row.map{height:260px;}
+  .panel-row.cross{height:168px;}
+
+  /* harness-style panel: gray box, 2px border, centered overlapping tab */
+  .panel-wrap{position:relative;flex:1;min-width:0;padding-top:16px;}
+  .sim-panel{
+    position:relative;width:100%;height:calc(100% - 16px);
+    border:2px solid var(--panel-border);border-radius:8px;background:var(--panel-bg);
+    overflow:hidden;
+  }
+  .sim-panel-tab{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    height:32px;padding:0 14px;background:var(--panel-bg);border:2px solid var(--panel-border);
+    border-radius:8px;display:flex;align-items:center;z-index:4;white-space:nowrap;
+  }
+  .sim-panel-tab-label{font-size:16px;font-weight:700;color:#333;}
+  .panel-credit{
+    position:absolute;bottom:4px;left:6px;z-index:3;font-size:9px;color:rgba(255,255,255,.9);
+    background:rgba(0,0,0,.4);padding:1px 5px;border-radius:3px;
+  }
+  .map-media{position:absolute;inset:0;
+    background:linear-gradient(165deg,#8b2fd9 0%,#2730d8 28%,#27d3e6 48%,#7ae33d 66%,#f5e62b 80%,#c81400 100%);}
+  .map-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block;}
+  .viz-overlay{position:absolute;inset:0;z-index:2;width:100%;height:100%;}
+
+  /* legend columns */
+  .legend-wrap{flex:0 0 250px;}
+  .legend-panel{
+    position:relative;width:100%;height:calc(100% - 16px);
+    border:2px solid var(--panel-border);border-radius:8px;background:var(--panel-bg);
+    overflow:auto;padding:24px 12px 10px;display:flex;flex-direction:column;
+  }
+  .legend-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;line-height:1.25;}
+  .legend-item .desc{color:#666;font-size:11px;}
+  .legend-center{justify-content:center;}
+  .swatch{width:18px;height:14px;border-radius:3px;flex-shrink:0;border:1px solid rgba(0,0,0,.2);}
+  .key-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+  .sst-bar{height:12px;border-radius:3px;margin:0 0 2px;
+    background:linear-gradient(90deg,#8b2fd9,#2730d8,#27d3e6,#7ae33d,#f5e62b,#ef8a1c,#c81400);}
+  .sst-scale{display:flex;justify-content:space-between;font-size:10px;color:#666;margin-bottom:8px;}
+
+  /* toolbar */
+  .toolbar{
+    height:54px;flex-shrink:0;border:1px solid #d6d6d6;border-radius:8px;background:#f4f4f4;
+    display:flex;align-items:center;gap:14px;padding:0 14px;
+  }
+  .tb-group{display:flex;align-items:center;gap:8px;}
+  .tb-label{font-family:'Barlow Condensed',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:#767676;font-weight:600;}
+  .tb-divider{width:1px;height:30px;background:#d6d6d6;}
+  select{font-family:'Lato',sans-serif;font-size:13px;padding:5px 8px;border:1px solid #c4c4c4;border-radius:5px;background:#fff;color:var(--ink);}
+
+  .icon-btn{
+    width:40px;height:40px;border-radius:50%;border:1px solid #c4c4c4;background:#fff;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;color:var(--ink);padding:0;
+  }
+  .icon-btn:hover{background:#ececec;}
+  .icon-btn.primary{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .icon-btn.primary:hover{background:#03657f;}
+  .icon-btn svg{display:block;}
+
+  .progress-wrap{flex:1;display:flex;align-items:center;gap:10px;}
+  .progress-track{flex:1;height:6px;border-radius:3px;background:#dcdcdc;overflow:hidden;}
+  .progress-fill{height:100%;width:0;background:var(--teal);border-radius:3px;}
+  .progress-time{font-family:'Barlow Condensed',sans-serif;font-size:13px;color:#767676;min-width:74px;text-align:right;}
+
+  button:focus-visible, select:focus-visible, [tabindex]:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}
+
+  .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+
+  /* Floating About panel (matches masssims harness v0.2) */
+  .info-modal{
+    position:absolute;top:50px;right:10px;width:400px;max-height:70%;background:#fff;
+    border:2px solid #555;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.25);
+    display:flex;flex-direction:column;z-index:101;overflow:hidden;
+  }
+  .info-modal-header{
+    display:flex;align-items:center;padding:3px 3px 3px 12px;height:52px;box-sizing:border-box;
+    border-bottom:1px solid #ccc;cursor:grab;flex-shrink:0;user-select:none;
+  }
+  .info-modal-header:active{cursor:grabbing;}
+  .info-modal-header-icon{width:24px;height:24px;flex-shrink:0;margin-right:10px;}
+  .info-modal-header-title{font-family:'Lato',sans-serif;font-size:18px;font-weight:700;color:#333;flex:1;}
+  .info-modal-close{
+    width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+    background:transparent;border:none;cursor:pointer;border-radius:4px;padding:0;flex-shrink:0;
+  }
+  .info-modal-close:hover,.info-modal-close:focus-visible{background:#f0f0f0;}
+  .info-modal-close:active{background:#d0d0d0;}
+  .info-modal-close:focus-visible{outline:2px solid #005FCC;outline-offset:-2px;}
+  .info-modal-close img{width:24px;height:24px;}
+  .info-modal-body-wrap{position:relative;flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;}
+  .info-modal-body{
+    padding:16px 20px 20px;overflow-y:auto;flex:1;min-height:0;
+    font-family:'Lato',sans-serif;font-size:16px;line-height:22px;color:#333;user-select:text;
+  }
+  .info-modal-body:focus-visible{outline:none;}
+  .scroll-focus-ring{display:none;position:absolute;inset:0;pointer-events:none;outline:2px solid #005FCC;outline-offset:-2px;}
+  .info-modal-body-wrap .scroll-focus-ring{border-radius:0 0 6px 6px;}
+  .info-modal-body:focus-visible ~ .scroll-focus-ring{display:block;}
+  .info-modal-body h3{font-size:17px;font-weight:700;margin:16px 0 6px;color:#333;}
+  .info-modal-body h3:first-child{margin-top:0;}
+  .info-modal-body p{margin:0 0 12px;}
+  .info-modal-body ul,.info-modal-body ol{margin:0 0 12px;padding-left:20px;}
+  .info-modal-body li{margin-bottom:4px;}
+
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>Nor'easter Riley Simulation &mdash; Interactive Prototype</h1>
+  <div class="meta">Prepared for MA DESE SPA Reviewers &middot; Prototype by
+    <img class="cc-logo" src="https://models-resources.concord.org/demos/branch/masssims/icons/CC%20Logo.svg" alt="The Concord Consortium">
+    &middot; Last updated <span id="lastUpdated"></span>
+  </div>
+</header>
+
+<div class="ap-container">
+  <div class="ap-header"><span class="ap-header-label">Nor'easter Riley Simulation (Prototype for DESE Review)</span></div>
+
+  <div class="content-area">
+    <!-- Sim title bar -->
+    <div class="sim-title-bar">
+      <div class="sim-title-left">
+        <span class="sim-title-name">Nor'easter Formation</span>
+        <span class="sim-title-desc">How and where nor'easters form along the U.S. East Coast</span>
+      </div>
+      <div class="sim-title-right">
+        <img class="sim-title-logo" height="22"
+             src="https://models-resources.concord.org/demos/branch/masssims/icons/DESE%20Logo.svg"
+             alt="Massachusetts Department of Elementary and Secondary Education">
+        <img class="sim-title-logo" height="30"
+             src="https://models-resources.concord.org/demos/branch/masssims/icons/CC%20Logo.svg"
+             alt="The Concord Consortium">
+        <button class="sim-info-btn" id="infoBtn" aria-haspopup="dialog"><img src="https://models-resources.concord.org/demos/branch/masssims/icons/Info%20ICON.svg" alt="" aria-hidden="true">About</button>
+      </div>
+    </div>
+
+    <main class="sim-body" aria-label="Nor'easter formation simulation">
+      <!-- live narration for screen readers -->
+      <p class="vh" id="srStatus" aria-live="polite"></p>
+
+      <!-- MAP PANEL -->
+      <div class="panel-row map">
+        <div class="panel-wrap">
+          <div class="sim-panel">
+            <section class="map-media" aria-label="Map: sea surface temperature and air masses">
+              <img id="sstImg"
+                   src="https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/0/681/gulf_stream_modis_lrg.gif"
+                   alt="Satellite sea surface temperature map of the U.S. East Coast from Massachusetts south past New Jersey. The warm Gulf Stream appears as a red band flowing north-eastward offshore; coastal and northern waters appear cyan, blue, and purple (coldest).">
+            </section>
+            <svg class="viz-overlay" id="mapSvg" viewBox="0 0 760 240" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <span class="panel-credit">Sea surface temperature — NASA Earth Observatory / MODIS</span>
+          </div>
+          <div class="sim-panel-tab"><span class="sim-panel-tab-label">Nor'easter Formation</span></div>
+        </div>
+
+        <div class="panel-wrap legend-wrap">
+          <div class="legend-panel" id="mapLegend" aria-label="Map legend"></div>
+          <div class="sim-panel-tab"><span class="sim-panel-tab-label" id="mapLegendTitle">Sea surface temperature</span></div>
+        </div>
+      </div>
+
+      <!-- CROSS-SECTION PANEL -->
+      <div class="panel-row cross">
+        <div class="panel-wrap">
+          <div class="sim-panel" style="background:#dff1fb;">
+            <svg class="viz-overlay" id="crossSvg" viewBox="0 0 760 148" preserveAspectRatio="none" aria-label="Cross-section of the formation zone showing more dense and less dense air"></svg>
+          </div>
+          <div class="sim-panel-tab"><span class="sim-panel-tab-label">Cross-Section &middot; Formation Zone</span></div>
+        </div>
+
+        <div class="panel-wrap legend-wrap">
+          <div class="legend-panel legend-center" aria-label="Cross-section legend">
+            <div style="display:flex;gap:8px;">
+              <div class="legend-item" style="flex:1;">
+                <span class="key-dot" style="background:var(--dense);"></span>
+                <span><strong>More dense air</strong></span>
+              </div>
+              <div class="legend-item" style="flex:1;">
+                <span class="key-dot" style="background:var(--light);"></span>
+                <span><strong>Less dense air</strong></span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <div class="legend-item" style="flex:1;">
+                <svg width="15" height="15" viewBox="-7.5 -7.5 15 15" style="flex-shrink:0" aria-hidden="true"><g stroke="#5b9bd5" stroke-width="1.6" stroke-linecap="round"><line x1="-5" y1="0" x2="5" y2="0"/><line x1="-5" y1="0" x2="5" y2="0" transform="rotate(60)"/><line x1="-5" y1="0" x2="5" y2="0" transform="rotate(120)"/></g></svg>
+                <span><strong>Snow</strong></span>
+              </div>
+              <div class="legend-item" style="flex:1;">
+                <svg width="15" height="15" viewBox="-7.5 -8.5 15 17" style="flex-shrink:0" aria-hidden="true"><path d="M0 -5 C 3.3 0, 3 2.5, 0 4.2 C -3 2.5, -3.3 0, 0 -5 Z" fill="#2e86c1"/></svg>
+                <span><strong>Rain</strong></span>
+              </div>
+            </div>
+            <div class="legend-item">
+              <span class="key-dot" style="background:#c0392b;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700;">L</span>
+              <span><strong>Low pressure system</strong></span>
+            </div>
+            <div class="legend-item">
+              <span class="swatch" style="background:var(--land);"></span>
+              <span><strong>Continental land</strong></span>
+            </div>
+            <div class="legend-item">
+              <span class="swatch" style="background:var(--ocean);"></span>
+              <span><strong>Atlantic Ocean (Gulf Stream)</strong></span>
+            </div>
+          </div>
+          <div class="sim-panel-tab"><span class="sim-panel-tab-label">Air &amp; surface</span></div>
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="tb-group">
+          <span class="tb-label">Time</span>
+          <select id="timeSelect" aria-label="Time period">
+            <option>March 2018 (Nor'easter Riley)</option>
+          </select>
+        </div>
+        <div class="tb-divider"></div>
+        <div class="tb-group">
+          <span class="tb-label">Map overlay</span>
+          <select id="overlaySelect" aria-label="Map overlay">
+            <option value="sst">Sea surface temperature</option>
+            <option value="currents">Ocean currents</option>
+          </select>
+        </div>
+        <div class="tb-divider"></div>
+        <button class="icon-btn" id="rewindBtn" aria-label="Rewind to start">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="3" width="2.4" height="12" fill="currentColor"/><path d="M16 3 L7 9 L16 15 Z" fill="currentColor"/></svg>
+        </button>
+        <button class="icon-btn primary" id="playBtn" aria-label="Play">
+          <svg id="playIcon" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 3 L15 9 L4 15 Z" fill="currentColor"/></svg>
+        </button>
+        <div class="progress-wrap">
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <span class="progress-time" id="progressTime">0:00 / 0:20</span>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- About panel content (rendered into the floating panel) -->
+<template id="infoContent">
+  <p>An interactive prototype that shows <strong>where</strong> nor'easters form (a sea surface temperature map) and <strong>why</strong> they form there (a particle-level cross-section of the air-mass collision).</p>
+  <h3>How It Works</h3>
+  <p>Press <em>Play</em> to watch the system evolve over time. The warm Gulf Stream and cooler coastal waters set up an energy contrast, and a low-pressure center &mdash; the nor'easter, drawn as its characteristic comma cloud &mdash; develops at the formation zone. In the cross-section, cool air and warm air sweep in from the sides and collide at the center. At the low (L), the cool air warms (turning red), is forced upward with the warm air, and cools again near the top (turning blue) &mdash; condensing its moisture into the cloud band, with snow falling on the cold side of the storm and rain on the warm side. As more air rises, more air rushes in from the sides to replace it and the precipitation intensifies. Use <em>Rewind</em> to return to the start.</p>
+  <h3>NGSS Alignment</h3>
+  <p>MS-ESS2-5, MS-ESS2-6, MS-ESS3-2 &middot; SEPs: Developing &amp; Using Models, Analyzing &amp; Interpreting Data &middot; CCCs: Cause &amp; Effect, Energy &amp; Matter, Systems &amp; System Models.</p>
+  <h3>Image Credit</h3>
+  <p>Sea surface temperature basemap: NASA Earth Observatory, derived from MODIS infrared measurements (public domain).</p>
+</template>
+
+<script>
+(function(){
+  "use strict";
+  var SVGNS="http://www.w3.org/2000/svg";
+  var reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function el(t,a){var e=document.createElementNS(SVGNS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+  function smooth(e0,e1,x){var t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);}
+  function mixCol(t){var r=Math.round(31+161*t),g=Math.round(95-38*t),b=Math.round(191-148*t);return "rgb("+r+","+g+","+b+")";}
+
+  var DUR=20000;            // ms full timeline
+  var COMMA_BODY="M 37 3 C 52 4, 61 15, 58 27 C 56 35, 50 41, 43 44 C 33 49, 18 56, 5 62 C 9 52, 18 45, 28 39 C 23 36, 19 31, 19 26 C 19 14, 26 3, 37 3 Z";
+  var elapsed=0, playing=false, lastTs=null, clock=0;
+
+  /* phases for screen-reader narration */
+  var PHASES=[
+    {p:0.00,label:"Stage 1 of 3: Sea surface temperature. The warm Gulf Stream contrasts with cooler coastal waters."},
+    {p:0.07,label:"Stage 2 of 3: Air-mass movement. Cool, more dense continental air and warm, less dense ocean air sweep in from the sides toward the center."},
+    {p:0.28,label:"Stage 3 of 3: Storm formation. The air masses collide and are forced upward at the low. Rising air cools and condenses into cloud. Snow falls over the cold air on the land side and rain falls over the warm ocean air, intensifying as more air rushes in."}
+  ];
+  var lastPhase=-1;
+
+  /* ---------- cross-section: continuous convergence flow (1:1 space, 760x148) ---------- */
+  var VW=760, VH=148, GROUND=120, CX=380;
+  var crossSvg=document.getElementById("crossSvg"),pGroup;
+  var cloudG,precipG,lBadgeG,snowParts=[],rainParts=[],precipOp=0,flowParts=[];
+  var SNOW_N=10, RAIN_N=13, COLD_N=16, WARM_N=14, CYCLE=9000;
+
+  function resetFlow(){
+    for(var i=0;i<flowParts.length;i++)flowParts[i].u=Math.random()*0.28;
+  }
+
+  function buildCross(){
+    crossSvg.innerHTML="";
+    crossSvg.appendChild(el("rect",{x:0,y:GROUND,width:VW,height:VH-GROUND,fill:"#2c7fb8"}));
+    crossSvg.appendChild(el("path",{d:"M0 "+GROUND+" L300 "+GROUND+" L300 "+VH+" L0 "+VH+" Z",fill:"#8a6d3b"}));
+    var ll=el("text",{x:150,y:138,"text-anchor":"middle",fill:"#fff","font-size":"11","font-weight":"700","font-family":"Lato, sans-serif"});ll.textContent="Continental Land";crossSvg.appendChild(ll);
+    var ol=el("text",{x:530,y:138,"text-anchor":"middle",fill:"#fff","font-size":"11","font-weight":"700","font-family":"Lato, sans-serif"});ol.textContent="Atlantic Ocean (Gulf Stream)";crossSvg.appendChild(ol);
+    /* cloud band (fades in with the low) */
+    var cdefs=el("defs",{});
+    var cf=el("filter",{id:"csBlur",x:"-30%",y:"-30%",width:"160%",height:"160%"});cf.appendChild(el("feGaussianBlur",{stdDeviation:"2.5"}));cdefs.appendChild(cf);
+    crossSvg.appendChild(cdefs);
+    cloudG=el("g",{opacity:"0"});
+    cloudG.appendChild(el("rect",{x:95,y:12,width:555,height:18,rx:"9",fill:"#fff",filter:"url(#csBlur)"}));
+    [[200,14,65,13],[330,8,75,15],[470,12,65,13],[590,16,48,11]].forEach(function(c){
+      cloudG.appendChild(el("ellipse",{cx:c[0],cy:c[1],rx:c[2],ry:c[3],fill:"#fff",filter:"url(#csBlur)"}));
+    });
+    crossSvg.appendChild(cloudG);
+    /* convergence flow particles: cold from the left, warm from the right */
+    pGroup=el("g",{});crossSvg.appendChild(pGroup);
+    flowParts=[];
+    var i,c;
+    for(i=0;i<COLD_N;i++){
+      c=el("circle",{r:5.5,fill:"#1f5fbf","fill-opacity":"0.92",stroke:"#fff","stroke-width":"0.8"});
+      pGroup.appendChild(c);
+      flowParts.push({node:c,s:1,x0:15+Math.random()*155,y0:45+Math.random()*60,u:0,ph:Math.random()*6.28,jsp:.6+Math.random()*.6,spd:.85+Math.random()*.3});
+    }
+    for(i=0;i<WARM_N;i++){
+      c=el("circle",{r:5,fill:"#c0392b","fill-opacity":"0.92",stroke:"#fff","stroke-width":"0.8"});
+      pGroup.appendChild(c);
+      flowParts.push({node:c,s:-1,x0:590+Math.random()*155,y0:45+Math.random()*60,u:0,ph:Math.random()*6.28,jsp:.6+Math.random()*.6,spd:.85+Math.random()*.3});
+    }
+    resetFlow();
+    /* precipitation: snow over the cold/land side, rain over the warm/ocean side */
+    precipG=el("g",{opacity:"0"});
+    snowParts=[];rainParts=[];
+    for(var si=0;si<SNOW_N;si++){
+      var fl=el("g",{stroke:"#5b9bd5","stroke-width":"1.6","stroke-linecap":"round"});
+      fl.appendChild(el("line",{x1:-4,y1:0,x2:4,y2:0}));
+      fl.appendChild(el("line",{x1:-4,y1:0,x2:4,y2:0,transform:"rotate(60)"}));
+      fl.appendChild(el("line",{x1:-4,y1:0,x2:4,y2:0,transform:"rotate(120)"}));
+      precipG.appendChild(fl);
+      snowParts.push({node:fl,x:75+Math.random()*200,off:Math.random()*78,sp:16+Math.random()*12,ph:Math.random()*6.28,onP:0.32+(si/(SNOW_N-1))*0.55});
+    }
+    for(var ri=0;ri<RAIN_N;ri++){
+      var dr=el("path",{d:"M0 -4 C 2.7 0, 2.4 2, 0 3.4 C -2.4 2, -2.7 0, 0 -4 Z",fill:"#2e86c1"});
+      precipG.appendChild(dr);
+      rainParts.push({node:dr,x:390+Math.random()*300,off:Math.random()*78,sp:70+Math.random()*30,onP:0.32+(ri/(RAIN_N-1))*0.55});
+    }
+    crossSvg.appendChild(precipG);
+    /* low-pressure badge at the convergence point */
+    lBadgeG=el("g",{opacity:"0"});
+    lBadgeG.appendChild(el("circle",{cx:CX,cy:108,r:8.5,fill:"#c0392b",stroke:"#fff","stroke-width":"1.6"}));
+    var lt=el("text",{x:CX,y:112,"text-anchor":"middle",fill:"#fff","font-size":"11","font-weight":"700","font-family":"Lato, sans-serif"});lt.textContent="L";lBadgeG.appendChild(lt);
+    crossSvg.appendChild(lBadgeG);
+  }
+
+  /* ---------- build map (760x240, image top-anchored) ---------- */
+  var mapSvg=document.getElementById("mapSvg"),gulfDash,gulfOutline,airMassG,lowG,zoneG;
+  function buildMap(){
+    mapSvg.innerHTML="";
+    zoneG=el("g",{});
+    zoneG.appendChild(el("rect",{x:180,y:112,width:150,height:110,fill:"rgba(255,255,255,0.10)",stroke:"#fff","stroke-width":"2","stroke-dasharray":"8 5",rx:"4"}));
+    var z1=el("text",{x:255,y:126,"text-anchor":"middle",fill:"#fff","font-size":"11","font-weight":"700","font-family":"Lato, sans-serif",stroke:"#0b2740","stroke-width":"2.6","stroke-linejoin":"round","paint-order":"stroke"});z1.textContent="NOR'EASTER";zoneG.appendChild(z1);
+    var z2=el("text",{x:255,y:139,"text-anchor":"middle",fill:"#fff","font-size":"11","font-weight":"700","font-family":"Lato, sans-serif",stroke:"#0b2740","stroke-width":"2.6","stroke-linejoin":"round","paint-order":"stroke"});z2.textContent="FORMATION ZONE";zoneG.appendChild(z2);
+    mapSvg.appendChild(zoneG);
+    var ma=el("g",{});
+    ma.appendChild(el("line",{x1:214,y1:18,x2:243,y2:21,stroke:"#fff","stroke-width":"1.5"}));
+    ma.appendChild(el("rect",{x:78,y:8,width:134,height:20,rx:"4",fill:"rgba(0,0,0,0.55)"}));
+    var mt=el("text",{x:86,y:22,fill:"#fff","font-size":"12","font-weight":"700","font-family":"Lato, sans-serif"});mt.textContent="Massachusetts";ma.appendChild(mt);
+    ma.appendChild(el("circle",{cx:247,cy:22,r:4.5,fill:"#fff",stroke:"#222","stroke-width":"1.5"}));
+    mapSvg.appendChild(ma);
+    var GD="M 250 228 C 380 212, 520 200, 635 192 S 735 184, 756 182";
+    gulfOutline=el("path",{d:GD,fill:"none",stroke:"#0b2740","stroke-width":"6.5","stroke-linecap":"round","stroke-dasharray":"26 18",opacity:"0.9"});
+    mapSvg.appendChild(gulfOutline);
+    gulfDash=el("path",{d:GD,fill:"none",stroke:"#ffffff","stroke-width":"4","stroke-linecap":"round","stroke-dasharray":"26 18",opacity:"0.95"});
+    mapSvg.appendChild(gulfDash);
+    airMassG=el("g",{opacity:"0"});
+    airMassG.appendChild(arrow(72,58,195,124,"#2a7bff",5));
+    var ca=el("text",{x:30,y:46,fill:"#eaf2ff","font-size":"11","font-weight":"700","font-family":"Lato, sans-serif",stroke:"#0b2740","stroke-width":"2.6","stroke-linejoin":"round","paint-order":"stroke"});ca.textContent="Cool, more dense air";airMassG.appendChild(ca);
+    airMassG.appendChild(arrow(575,222,350,184,"#ff5a45",5));
+    var wa=el("text",{x:455,y:232,fill:"#ffffff","font-size":"11","font-weight":"700","font-family":"Lato, sans-serif",stroke:"#5a0f06","stroke-width":"2.6","stroke-linejoin":"round","paint-order":"stroke"});wa.textContent="Warm, less dense air";airMassG.appendChild(wa);
+    mapSvg.appendChild(airMassG);
+    /* comma cloud (nor'easter) — hand-drawn SVG, fades in as the storm forms */
+    var defs=el("defs",{});
+    var f1=el("filter",{id:"nfBlur1",x:"-30%",y:"-30%",width:"160%",height:"160%"});f1.appendChild(el("feGaussianBlur",{stdDeviation:"0.9"}));defs.appendChild(f1);
+    var f2=el("filter",{id:"nfBlur2",x:"-40%",y:"-40%",width:"180%",height:"180%"});f2.appendChild(el("feGaussianBlur",{stdDeviation:"2.2"}));defs.appendChild(f2);
+    var mask=el("mask",{id:"nfCommaMask"});
+    mask.appendChild(el("path",{d:COMMA_BODY,fill:"#fff",filter:"url(#nfBlur1)"}));
+    mask.appendChild(el("path",{d:"M 62 34 C 54 46, 40 48, 31 41 C 23 35, 23 25, 29 19",fill:"none",stroke:"#000","stroke-width":"5","stroke-linecap":"round",filter:"url(#nfBlur1)"}));
+    mask.appendChild(el("circle",{cx:38,cy:27,r:3.5,fill:"#000",filter:"url(#nfBlur1)"}));
+    defs.appendChild(mask);
+    mapSvg.appendChild(defs);
+    lowG=el("g",{opacity:"0"});
+    var commaG=el("g",{transform:"translate(224,146) scale(0.95)"});
+    commaG.appendChild(el("path",{d:COMMA_BODY,fill:"#fff",opacity:"0.45",filter:"url(#nfBlur2)",stroke:"#fff","stroke-width":"2"}));
+    commaG.appendChild(el("rect",{x:0,y:0,width:64,height:64,fill:"#fff",mask:"url(#nfCommaMask)",filter:"url(#nfBlur1)"}));
+    lowG.appendChild(commaG);
+    mapSvg.appendChild(lowG);
+  }
+  function arrow(x1,y1,x2,y2,color,w){
+    var g=el("g",{});
+    g.appendChild(el("line",{x1:x1,y1:y1,x2:x2,y2:y2,stroke:color,"stroke-width":w,"stroke-linecap":"round"}));
+    var ang=Math.atan2(y2-y1,x2-x1),hl=10;
+    g.appendChild(el("path",{d:"M"+x2+" "+y2+" L"+(x2-hl*Math.cos(ang-.4))+" "+(y2-hl*Math.sin(ang-.4))+" L"+(x2-hl*Math.cos(ang+.4))+" "+(y2-hl*Math.sin(ang+.4))+" Z",fill:color}));
+    return g;
+  }
+
+  /* ---------- per-frame scene update ---------- */
+  function updateScene(p){
+    /* map overlays */
+    airMassG.setAttribute("opacity", smooth(0.04,0.10,p).toFixed(3));
+    lowG.setAttribute("opacity", smooth(0.28,0.37,p).toFixed(3));
+    zoneG.setAttribute("opacity", (0.7+0.3*smooth(0.27,0.39,p)).toFixed(3));
+    /* cloud + precipitation + low badge appear with the storm */
+    cloudG.setAttribute("opacity",(0.92*smooth(0.26,0.34,p)).toFixed(3));
+    precipOp=smooth(0.32,0.40,p);
+    precipG.setAttribute("opacity",precipOp.toFixed(3));
+    lBadgeG.setAttribute("opacity",smooth(0.27,0.35,p).toFixed(3));
+    /* narration */
+    var ph=0;for(var k=0;k<PHASES.length;k++){if(p>=PHASES[k].p)ph=k;}
+    if(ph!==lastPhase){lastPhase=ph;document.getElementById("srStatus").textContent=PHASES[ph].label;}
+    /* progress UI */
+    document.getElementById("progressFill").style.width=(p*100).toFixed(1)+"%";
+    var sec=Math.round(p*DUR/1000);
+    document.getElementById("progressTime").textContent="0:"+(sec<10?"0":"")+sec+" / 0:20";
+  }
+
+  /* ---------- animation loop ---------- */
+  function frame(ts){
+    if(lastTs===null)lastTs=ts;var dt=ts-lastTs;lastTs=ts;
+    if(playing){elapsed+=dt;if(elapsed>=DUR){elapsed=DUR;playing=false;updatePlayBtn();}}
+    var p=clamp(elapsed/DUR,0,1);
+    var finished=(elapsed>=DUR);
+    if(!finished)clock+=dt;   /* ambient animation freezes when the timeline ends */
+    updateScene(p);
+    /* convergence flow: in from the sides, collide at the center, rise, cool */
+    var flowSpd=smooth(0.02,0.08,p)*(1+1.5*smooth(0.35,0.95,p));
+    var amp=reduceMotion?0:1.6;
+    for(var i=0;i<flowParts.length;i++){
+      var fp=flowParts[i];
+      if(!reduceMotion && !finished){
+        fp.u+=dt/CYCLE*flowSpd*fp.spd;
+        if(p<0.26 && fp.u>0.53)fp.u=0.53;   /* masses meet and wait until the low forms */
+        if(fp.u>=1)fp.u-=1;
+      }
+      var u=fp.u,s=fp.s,x,y,warm,alpha=1;
+      if(u<0.55){var t1=u/0.55,te=smooth(0,1,t1);
+        x=lerp(fp.x0,CX-14*s,te);y=lerp(fp.y0,112,smooth(0,0.8,t1));}
+      else if(u<0.62){var t2=(u-0.55)/0.07;
+        x=lerp(CX-14*s,CX-5*s,t2);y=lerp(112,104,t2);}
+      else if(u<0.96){var t3=smooth(0,1,(u-0.62)/0.34);
+        y=lerp(104,32,t3);x=CX-5*s+4*Math.sin(u*38+fp.ph)*(1-0.5*t3);}
+      else{x=CX-5*s;y=30;alpha=1-(u-0.96)/0.04;}
+      if(u<0.04)alpha=Math.min(alpha,u/0.04);
+      warm=(s>0)?smooth(0.50,0.62,u):1;           /* cold air warms at the low */
+      warm=warm*(1-smooth(0.86,0.96,u));          /* rising air cools near the top */
+      var jx=amp*Math.sin(clock*0.001*fp.jsp+fp.ph), jy=amp*0.6*Math.cos(clock*0.0013*fp.jsp+fp.ph);
+      fp.node.setAttribute("cx",(x+jx).toFixed(1));
+      fp.node.setAttribute("cy",(y+jy).toFixed(1));
+      fp.node.setAttribute("fill",mixCol(warm));
+      fp.node.setAttribute("fill-opacity",(0.92*alpha).toFixed(2));
+      fp.node.setAttribute("stroke-opacity",alpha.toFixed(2));
+    }
+    /* falling snow (cold side) and rain (warm side), intensifying over time */
+    if(precipOp>0.01){
+      var n2,fy2,fx2,i2;
+      for(i2=0;i2<snowParts.length;i2++){n2=snowParts[i2];
+        fy2=30+((n2.off+(reduceMotion?0:clock*0.001*n2.sp))%78);
+        fx2=n2.x+(reduceMotion?0:5*Math.sin(clock*0.0012+n2.ph));
+        n2.node.setAttribute("transform","translate("+fx2.toFixed(1)+" "+fy2.toFixed(1)+")");
+        n2.node.setAttribute("opacity",p>=n2.onP?"1":"0");
+      }
+      for(i2=0;i2<rainParts.length;i2++){n2=rainParts[i2];
+        fy2=30+((n2.off+(reduceMotion?0:clock*0.001*n2.sp))%78);
+        n2.node.setAttribute("transform","translate("+n2.x.toFixed(1)+" "+fy2.toFixed(1)+")");
+        n2.node.setAttribute("opacity",p>=n2.onP?"1":"0");
+      }
+    }
+    if(!reduceMotion){var off=(-clock*0.04%44).toFixed(1);gulfDash.setAttribute("stroke-dashoffset",off);gulfOutline.setAttribute("stroke-dashoffset",off);}
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- dynamic map legend (tracks overlay) ---------- */
+  function lineSwatch(color,dashed,arrowHead){
+    var dash=dashed?' stroke-dasharray="7 4"':'';
+    var x2=arrowHead?21:27;
+    var s='<svg width="30" height="12" viewBox="0 0 30 12" style="flex-shrink:0" aria-hidden="true">'
+      +'<line x1="3" y1="6" x2="'+x2+'" y2="6" stroke="#0b2740" stroke-width="7" stroke-linecap="round"'+dash+'/>'
+      +'<line x1="3" y1="6" x2="'+x2+'" y2="6" stroke="'+color+'" stroke-width="4" stroke-linecap="round"'+dash+'/>';
+    if(arrowHead)s+='<path d="M 29 6 L 20 1.5 L 20 10.5 Z" fill="'+color+'" stroke="#0b2740" stroke-width="1"/>';
+    return s+'</svg>';
+  }
+  function renderMapLegend(mode){
+    var air='<div class="legend-item">'+lineSwatch("#2a7bff",false,true)+'<span><strong>Cool air flow</strong></span></div>'
+      +'<div class="legend-item">'+lineSwatch("#ff5a45",false,true)+'<span><strong>Warm air flow</strong></span></div>';
+    var html;
+    if(mode==="currents"){
+      document.getElementById("mapLegendTitle").textContent="Ocean currents";
+      html='<div class="legend-item">'+lineSwatch("#00e0ff",true,false)+'<span><strong>Gulf Stream current</strong></span></div>'
+        +air;
+    } else {
+      document.getElementById("mapLegendTitle").textContent="Sea surface temperature";
+      html='<div class="sst-bar"></div><div class="sst-scale"><span>7&deg;C cool</span><span>22&deg;C warm</span></div>'
+        +'<div class="legend-item">'+lineSwatch("#ffffff",true,false)+'<span><strong>Gulf Stream current</strong></span></div>'
+        +air;
+    }
+    document.getElementById("mapLegend").innerHTML=html;
+  }
+
+  /* ---------- controls ---------- */
+  function updatePlayBtn(){
+    var icon=document.getElementById("playIcon"),btn=document.getElementById("playBtn");
+    btn.setAttribute("aria-label",playing?"Pause":"Play");
+    icon.innerHTML = playing
+      ? '<rect x="4" y="3" width="3.6" height="12" fill="currentColor"/><rect x="10.4" y="3" width="3.6" height="12" fill="currentColor"/>'
+      : '<path d="M4 3 L15 9 L4 15 Z" fill="currentColor"/>';
+  }
+  document.getElementById("playBtn").addEventListener("click",function(){
+    if(!playing && elapsed>=DUR){elapsed=0;resetFlow();}
+    playing=!playing;updatePlayBtn();
+  });
+  document.getElementById("rewindBtn").addEventListener("click",function(){
+    elapsed=0;resetFlow();playing=false;lastPhase=-1;updatePlayBtn();
+  });
+  document.getElementById("overlaySelect").addEventListener("change",function(e){
+    var currents=e.target.value==="currents";
+    gulfDash.setAttribute("stroke",currents?"#00e0ff":"#ffffff");
+    gulfDash.setAttribute("stroke-width",currents?"5":"4");
+    gulfOutline.setAttribute("stroke-width",currents?"7.5":"6.5");
+    document.getElementById("sstImg").style.filter=currents?"grayscale(0.55) brightness(0.9)":"none";
+    renderMapLegend(e.target.value);
+  });
+
+  /* ---------- floating About panel (matches masssims harness v0.2) ---------- */
+  var INFO_ICON="https://models-resources.concord.org/demos/branch/masssims/icons/Info%20ICON.svg";
+  var CLOSE_ICON="https://models-resources.concord.org/demos/branch/masssims/icons/Close%20ICON.svg";
+  var infoBtn=document.getElementById("infoBtn");
+  infoBtn.addEventListener("click",function(){
+    var existing=document.querySelector(".info-modal");
+    if(existing){existing.remove();return;}
+    var modal=document.createElement("div");
+    modal.className="info-modal";
+    modal.setAttribute("role","dialog");
+    modal.setAttribute("aria-label","About the Nor'easter Riley Simulation");
+    var header=document.createElement("div");header.className="info-modal-header";
+    var hIcon=document.createElement("img");hIcon.className="info-modal-header-icon";hIcon.src=INFO_ICON;hIcon.alt="";hIcon.setAttribute("aria-hidden","true");
+    var hTitle=document.createElement("div");hTitle.className="info-modal-header-title";hTitle.textContent="About the Nor'easter Riley Simulation";
+    var closeBtn=document.createElement("button");closeBtn.className="info-modal-close";closeBtn.setAttribute("aria-label","Close");
+    var closeIcon=document.createElement("img");closeIcon.src=CLOSE_ICON;closeIcon.alt="";closeIcon.setAttribute("aria-hidden","true");
+    closeBtn.appendChild(closeIcon);
+    function closeModal(){modal.remove();document.removeEventListener("keydown",onEsc);infoBtn.focus();}
+    closeBtn.addEventListener("click",function(e){e.stopPropagation();closeModal();});
+    header.appendChild(hIcon);header.appendChild(hTitle);header.appendChild(closeBtn);
+    var body=document.createElement("div");body.className="info-modal-body";
+    body.innerHTML=document.getElementById("infoContent").innerHTML;
+    body.setAttribute("tabindex","0");body.setAttribute("role","region");body.setAttribute("aria-label","About content");
+    var bodyWrap=document.createElement("div");bodyWrap.className="info-modal-body-wrap";
+    bodyWrap.appendChild(body);
+    var ring=document.createElement("div");ring.className="scroll-focus-ring";bodyWrap.appendChild(ring);
+    modal.appendChild(header);modal.appendChild(bodyWrap);
+    document.querySelector(".content-area").appendChild(modal);
+    /* mouse dragging via the header */
+    var dragX=0,dragY=0,modalX=0,modalY=0,dragging=false;
+    header.addEventListener("mousedown",function(e){
+      if(e.target===closeBtn||closeBtn.contains(e.target))return;
+      dragging=true;dragX=e.clientX-modalX;dragY=e.clientY-modalY;e.preventDefault();
+    });
+    document.addEventListener("mousemove",function(e){
+      if(!dragging)return;
+      modalX=e.clientX-dragX;modalY=e.clientY-dragY;
+      modal.style.transform="translate("+modalX+"px, "+modalY+"px)";
+    });
+    document.addEventListener("mouseup",function(){dragging=false;});
+    /* keyboard dragging: Alt+Arrow (Shift+Alt for larger steps) */
+    modal.addEventListener("keydown",function(e){
+      if(!e.altKey)return;
+      var step=e.shiftKey?40:10,dx=0,dy=0;
+      if(e.key==="ArrowLeft")dx=-step;else if(e.key==="ArrowRight")dx=step;
+      else if(e.key==="ArrowUp")dy=-step;else if(e.key==="ArrowDown")dy=step;else return;
+      e.preventDefault();modalX+=dx;modalY+=dy;
+      modal.style.transform="translate("+modalX+"px, "+modalY+"px)";
+    });
+    function onEsc(e){if(e.key==="Escape")closeModal();}
+    document.addEventListener("keydown",onEsc);
+    closeBtn.focus();
+  });
+
+  /* last-updated stamp from the file's Last-Modified header (deploy time on the server) */
+  (function(){
+    var d=new Date(document.lastModified);
+    var elU=document.getElementById("lastUpdated");
+    if(elU && !isNaN(d.getTime())){
+      elU.textContent=d.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})
+        +", "+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+    }
+  })();
+
+  buildMap();buildCross();renderMapLegend("sst");updatePlayBtn();updateScene(0);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
