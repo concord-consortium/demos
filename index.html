@@ -490,7 +490,7 @@
 
   /* ---------- animation loop ---------- */
   function frame(ts){
-    if(lastTs===null)lastTs=ts;var dt=ts-lastTs;lastTs=ts;
+    if(lastTs===null)lastTs=ts;var dt=Math.min(ts-lastTs,100);lastTs=ts;  /* clamp: don't jump ahead after background-tab throttling */
     if(playing){elapsed+=dt;if(elapsed>=DUR){elapsed=DUR;playing=false;updatePlayBtn();}}
     var p=clamp(elapsed/DUR,0,1);
     var finished=(elapsed>=DUR);
