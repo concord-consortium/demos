@@ -6,7 +6,7 @@
 <title>MassSims</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@400;600;700&family=Lato:wght@400;700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@400;600;700&family=Lato:wght@400;700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Slackey&family=Frijole&family=Fontdiner+Swanky&family=Agbalumo&family=Vampiro+One&family=Coming+Soon&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -32,7 +32,8 @@
     flex-direction: column;
     gap: 6px;
     min-width: 120px;
-    padding-top: 24px;
+    flex-shrink: 0;
+    padding-top: 0;
   }
 
   .btn-column [role="group"] {
@@ -45,7 +46,7 @@
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 16px;
     font-weight: 600;
-    color: #767676;
+    color: #333;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
@@ -58,9 +59,9 @@
     font-size: 16px;
     line-height: 20px;
     font-weight: 600;
-    color: #555;
+    color: #333;
     background: #f0f0f0;
-    border: 1px solid #ccc;
+    border: 1px solid #b0b0b0;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -68,8 +69,9 @@
     white-space: nowrap;
   }
 
-  .toggle-btn:hover {
-    background: #e4e4e4;
+  .toggle-btn:hover,
+  .toggle-btn:focus-visible {
+    background: #d8d8d8;
     color: #333;
   }
 
@@ -90,20 +92,28 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    border-left: 1px solid #999;
+    align-self: stretch;
+    min-height: calc(100vh - 20px);
+    position: relative;
   }
 
   .viewport-info {
-    font-size: 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.3;
     color: #333;
     margin-bottom: 12px;
     text-align: center;
-    min-height: 18px;
+    min-height: 2.6em;
     position: relative;
     z-index: 1;
   }
 
   .viewport-info strong {
-    color: #222;
+    font-weight: 600;
+    color: #333;
   }
 
   /* Device frame */
@@ -176,7 +186,7 @@
   .chrome-bottom::after {
     content: attr(data-label);
     font-size: 16px;
-    color: #767676;
+    color: #9a9a9a;
   }
 
   .shelf-icon {
@@ -1507,19 +1517,16 @@
 <div class="main-layout">
   <!-- Left: Sims + Layout + Device buttons -->
   <div class="btn-column">
+    <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
+      <div style="font-weight: 600;">MassSims &bull; v0.4</div>
+      <div style="font-weight: 400;">Updated: 6/5/26</div>
+    </div>
     <div role="group" aria-labelledby="sims-label">
-      <div class="btn-column-label" id="sims-label" style="display: flex; justify-content: space-between; align-items: baseline;"><span>Sims</span><span style="font-weight: 400; text-transform: none;">v0.3</span></div>
+      <div class="btn-column-label" id="sims-label">Sims</div>
       <button class="toggle-btn active" data-sim="bananas" aria-pressed="true">Bananas</button>
       <button class="toggle-btn" data-sim="collapse" aria-pressed="false">Collapse!</button>
       <button class="toggle-btn" data-sim="noreaster" aria-pressed="false">Nor&rsquo;easter Riley</button>
-      <button class="toggle-btn" data-sim="tbd" aria-pressed="false">TBD</button>
-    </div>
-
-    <div role="group" aria-labelledby="layout-label" style="margin-top: 16px;">
-      <div class="btn-column-label" id="layout-label">Layout</div>
-      <button class="toggle-btn" data-layout="standalone" aria-pressed="false">Standalone</button>
-      <button class="toggle-btn active" data-layout="ap-full" aria-pressed="true">AP Full Width</button>
-      <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false">AP 2-Column</button>
+      <button class="toggle-btn" data-sim="tbd" aria-pressed="false">Coming Soon</button>
     </div>
 
     <div role="group" aria-labelledby="device-label" style="margin-top: 16px;">
@@ -1530,32 +1537,24 @@
       <button class="toggle-btn" data-device="ipad10" aria-pressed="false">iPad (10th gen)</button>
       <button class="toggle-btn" data-device="android" aria-pressed="false">Android Tablet</button>
     </div>
+
+    <div role="group" aria-labelledby="layout-label" style="margin-top: 16px;">
+      <div class="btn-column-label" id="layout-label">Layout</div>
+      <button class="toggle-btn" data-layout="standalone" aria-pressed="false">Standalone</button>
+      <button class="toggle-btn active" data-layout="ap-full" aria-pressed="true">AP Full Width</button>
+      <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false">AP 2-Column</button>
+    </div>
   </div>
 
   <!-- Center: Viewport -->
   <div class="viewport-wrapper">
+    <div id="browserWidthLabel" style="position: absolute; top: 0; left: 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; line-height: 1.3; color: #333; background: rgba(0,0,0,0.15); padding: 4px 8px; border-radius: 4px;">
+      <div style="font-weight: 600;">Browser Width: <span id="browserWidthValue" style="font-weight: 400;">0</span></div>
+    </div>
     <div class="viewport-info" id="viewportInfo" aria-live="polite"></div>
     <div id="viewportContainer"></div>
   </div>
 
-  <!-- Spacer to balance the left button column -->
-  <div class="btn-column" style="visibility: hidden;" aria-hidden="true">
-    <div class="btn-column-label">Sims</div>
-    <button class="toggle-btn">Bananas</button>
-    <button class="toggle-btn">Collapse!</button>
-    <button class="toggle-btn">Nor'easter Riley</button>
-    <button class="toggle-btn">TBD</button>
-    <div class="btn-column-label" style="margin-top: 16px;">Layout</div>
-    <button class="toggle-btn">Standalone</button>
-    <button class="toggle-btn">AP Full Width</button>
-    <button class="toggle-btn">AP 2-Column</button>
-    <div class="btn-column-label" style="margin-top: 16px;">Device</div>
-    <button class="toggle-btn">Teacher Desktop</button>
-    <button class="toggle-btn">Chromebook</button>
-    <button class="toggle-btn">iPad (&le; 9th gen)</button>
-    <button class="toggle-btn">iPad (10th gen)</button>
-    <button class="toggle-btn">Android Tablet</button>
-  </div>
 </div>
 
 <script>
@@ -1576,15 +1575,15 @@ const DEVICES = {
   ipad: {
     name: "iPad (\u2264 9th gen, landscape)",
     screenW: 1024, screenH: 768,
-    topChrome: 50, bottomChrome: 0,
-    topLabel: "Safari: 50px",
+    topChrome: 70, bottomChrome: 0,
+    topLabel: "Safari address + tab bar: 70px",
     bottomLabel: ""
   },
   ipad10: {
     name: "iPad (10th gen, landscape)",
     screenW: 1180, screenH: 820,
-    topChrome: 50, bottomChrome: 0,
-    topLabel: "Safari: 50px",
+    topChrome: 70, bottomChrome: 0,
+    topLabel: "Safari address + tab bar: 70px",
     bottomLabel: ""
   },
   android: {
@@ -1609,19 +1608,25 @@ const LAYOUTS = {
 const SIMS = {
   bananas: {
     name: "Bananas",
-    description: "An interactive genetics simulation"
+    description: "An interactive genetics simulation",
+    titleFont: "'Slackey', 'Lato', sans-serif"
   },
   collapse: {
     name: "Collapse!",
-    description: "Short description of the sim"
+    description: "Short description of the sim",
+    titleFont: "'Fontdiner Swanky', 'Lato', cursive",
+    titleLetterSpacing: "2px"
   },
   noreaster: {
     name: "Nor\u2019easter Riley",
-    description: "Short description of the sim"
+    description: "Short description of the sim",
+    titleFont: "'Vampiro One', 'Lato', cursive",
+    titleLetterSpacing: "-0.5px"
   },
   tbd: {
-    name: "TBD",
-    description: "Short description of the sim"
+    name: "Coming Soon",
+    description: "Short description of the sim",
+    titleFont: "'Coming Soon', 'Lato', cursive"
   }
 };
 
@@ -1633,6 +1638,35 @@ let sidebarExpanded = true;
 const SCALE = 1;
 function getScale() { return SCALE; }
 
+// Cached sim DOM elements — persist across layout switches
+let _simTitleBar = null;
+let _simContent = null;
+let _currentSim = null; // tracks which sim the cached elements belong to
+
+function getSimTitleBar() {
+  if (!_simTitleBar || _currentSim !== activeSim) {
+    _simTitleBar = buildSimTitleBar();
+    _simContent = buildSimContent();
+    _currentSim = activeSim;
+  }
+  return _simTitleBar;
+}
+
+function getSimContent() {
+  if (!_simContent || _currentSim !== activeSim) {
+    _simTitleBar = buildSimTitleBar();
+    _simContent = buildSimContent();
+    _currentSim = activeSim;
+  }
+  return _simContent;
+}
+
+function invalidateSimCache() {
+  _simTitleBar = null;
+  _simContent = null;
+  _currentSim = null;
+}
+
 function buildSimTitleBar() {
   const bar = document.createElement("div");
   bar.className = "sim-title-bar";
@@ -1641,7 +1675,15 @@ function buildSimTitleBar() {
   left.className = "sim-title-left";
   const name = document.createElement("span");
   name.className = "sim-title-name";
-  name.textContent = SIMS[activeSim].name;
+  name.textContent = SIMS[activeSim].name.toUpperCase();
+  if (SIMS[activeSim].titleFont) {
+    name.style.fontFamily = SIMS[activeSim].titleFont;
+    name.style.fontSynthesis = "none";
+    if (SIMS[activeSim].titleLetterSpacing) {
+      name.style.letterSpacing = SIMS[activeSim].titleLetterSpacing;
+    }
+  }
+
   const desc = document.createElement("span");
   desc.className = "sim-title-desc";
   desc.textContent = SIMS[activeSim].description;
@@ -1715,27 +1757,48 @@ function buildSimTitleBar() {
     // Body
     const body = document.createElement("div");
     body.className = "info-modal-body";
-    body.innerHTML =
-      '<p>Cross wild banana plants with Cavendish banana plants, then observe what happens when a fungus is introduced.</p>' +
-      '<h3>Overview</h3>' +
-      '<p>Cavendish bananas are vulnerable to a fungus called Fusarium Tropical Race 4. In this simulation, you select parent banana plants, cross them to produce offspring, and then introduce the fungus to find out which offspring are resistant and which are not.</p>' +
-      '<h3>About the Genetics</h3>' +
-      '<p>The simulation uses one gene with two alleles: R (resistant to the fungus, dominant) and r (not resistant to the fungus, recessive). Offspring inherit one allele from each parent, producing expected Mendelian ratios with natural variation.</p>' +
-      '<h3>How It Works</h3>' +
-      '<p>Follow the guided investigation across up to ten independent trials (A\u2013J):</p>' +
-      '<ol>' +
-      '<li><strong>Select parents:</strong> Choose two parent banana plants from the dropdown menus. Parent selections are locked once the first cross is made. Reset the trial to choose different parents.</li>' +
-      '<li><strong>Cross plants:</strong> Each cross produces 5\u201320 offspring. A maximum of 25 crosses (generations) are allowed per trial.</li>' +
-      '<li><strong>Introduce fungus:</strong> Fungus can be introduced at any time, even before the first cross. Plants that are not resistant will wilt and turn brown.</li>' +
-      '<li><strong>Continue crossing:</strong> Keep crossing after the fungus is introduced to observe how resistance changes across generations.</li>' +
-      '<li><strong>Analyze data:</strong> Use the Data panel to compare healthy and infected plants across generations.</li>' +
-      '</ol>' +
-      '<h3>Keep in Mind</h3>' +
-      '<ul>' +
-      '<li><strong>Irreversible fungus:</strong> Once introduced, the fungus cannot be removed within a trial \u2014 just like in real life.</li>' +
-      '<li><strong>Generation rows:</strong> Offspring are organized by generation (G1, G2, G3\u2026) in the grid, making it easy to compare with the data graphs.</li>' +
-      '<li><strong>Dual markers:</strong> Notice that a blue dashed line appears in both the offspring grid and the line graph at the generation when fungus is introduced.</li>' +
-      '</ul>';
+    const aboutContent = {
+      bananas:
+        '<p>Cross wild banana plants with Cavendish banana plants, then observe what happens when a fungus is introduced.</p>' +
+        '<h3>Overview</h3>' +
+        '<p>Cavendish bananas are vulnerable to a fungus called Fusarium Tropical Race 4. In this simulation, you select parent banana plants, cross them to produce offspring, and then introduce the fungus to find out which offspring are resistant and which are not.</p>' +
+        '<h3>About the Genetics</h3>' +
+        '<p>The simulation uses one gene with two alleles: R (resistant to the fungus, dominant) and r (not resistant to the fungus, recessive). Offspring inherit one allele from each parent, producing expected Mendelian ratios with natural variation.</p>' +
+        '<h3>How It Works</h3>' +
+        '<p>Follow the guided investigation across up to ten independent trials (A\u2013J):</p>' +
+        '<ol>' +
+        '<li><strong>Select parents:</strong> Choose two parent banana plants from the dropdown menus. Parent selections are locked once the first cross is made. Reset the trial to choose different parents.</li>' +
+        '<li><strong>Cross plants:</strong> Each cross produces 5\u201320 offspring. A maximum of 25 crosses (generations) are allowed per trial.</li>' +
+        '<li><strong>Introduce fungus:</strong> Fungus can be introduced at any time, even before the first cross. Plants that are not resistant will wilt and turn brown.</li>' +
+        '<li><strong>Continue crossing:</strong> Keep crossing after the fungus is introduced to observe how resistance changes across generations.</li>' +
+        '<li><strong>Analyze data:</strong> Use the Data panel to compare healthy and infected plants across generations.</li>' +
+        '</ol>' +
+        '<h3>Keep in Mind</h3>' +
+        '<ul>' +
+        '<li><strong>Irreversible fungus:</strong> Once introduced, the fungus cannot be removed within a trial \u2014 just like in real life.</li>' +
+        '<li><strong>Generation rows:</strong> Offspring are organized by generation (G1, G2, G3\u2026) in the grid, making it easy to compare with the data graphs.</li>' +
+        '<li><strong>Dual markers:</strong> Notice that a blue dashed line appears in both the offspring grid and the line graph at the generation when fungus is introduced.</li>' +
+        '</ul>',
+      collapse:
+        '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>' +
+        '<h3>Lorem Ipsum</h3>' +
+        '<p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>' +
+        '<h3>Dolor Sit Amet</h3>' +
+        '<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>',
+      noreaster:
+        '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>' +
+        '<h3>Lorem Ipsum</h3>' +
+        '<p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>' +
+        '<h3>Dolor Sit Amet</h3>' +
+        '<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>',
+      tbd:
+        '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>' +
+        '<h3>Lorem Ipsum</h3>' +
+        '<p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>' +
+        '<h3>Dolor Sit Amet</h3>' +
+        '<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>'
+    };
+    body.innerHTML = aboutContent[activeSim] || aboutContent.bananas;
 
     body.setAttribute("tabindex", "0");
     body.setAttribute("role", "region");
@@ -1810,15 +1873,20 @@ function buildSimContent() {
     wrap.className = "sim-content";
 
     const panels = [
-      { name: "Trials", width: 155, subtitle: null },
-      { name: "Simulation", width: 564, subtitle: "Select two parents to begin" },
-      { name: "Data", width: 285, subtitle: null, bg: "#fff" }
+      { name: "Trials", fixedWidth: 155, subtitle: null },
+      { name: "Simulation", flex: 564, subtitle: "Select two parents to begin" },
+      { name: "Data", flex: 285, subtitle: null, bg: "#fff" }
     ];
 
     panels.forEach(p => {
       const panelWrap = document.createElement("div");
-      panelWrap.style.width = p.width + "px";
-      panelWrap.style.flexShrink = "0";
+      if (p.fixedWidth) {
+        panelWrap.style.width = p.fixedWidth + "px";
+        panelWrap.style.flexShrink = "0";
+      } else {
+        panelWrap.style.flex = p.flex;
+        panelWrap.style.minWidth = "0";
+      }
       panelWrap.style.position = "relative";
 
       // Panel body (full height)
@@ -3098,11 +3166,32 @@ function buildViewport() {
   const layout = LAYOUTS[activeLayout];
   const container = document.getElementById("viewportContainer");
   const info = document.getElementById("viewportInfo");
+  // Detach cached sim elements before clearing container so they survive
+  if (_simTitleBar && _simTitleBar.parentNode) _simTitleBar.remove();
+  if (_simContent && _simContent.parentNode) _simContent.remove();
   container.innerHTML = "";
   container.style.paddingTop = "";
+  container.style.alignSelf = "";
+  container.style.maxWidth = "";
+  container.style.overflow = "";
   document.body.style.background = "";
   document.body.style.overflow = "";
+  document.body.style.paddingRight = "";
+  const wrapperEl = document.querySelector(".viewport-wrapper");
+  if (wrapperEl) { wrapperEl.style.overflow = ""; wrapperEl.style.borderColor = ""; }
+  const bwLabel = document.getElementById("browserWidthLabel");
+  if (bwLabel) { bwLabel.style.color = ""; bwLabel.style.zIndex = ""; bwLabel.style.background = "rgba(0,0,0,0.15)"; }
   document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "");
+  const msTitle = document.getElementById("masssims-title");
+  if (msTitle) msTitle.style.color = "";
+  info.style.textAlign = "";
+  info.style.alignSelf = "";
+  info.style.minWidth = "";
+
+  // Update browser width label
+  const bwEl = document.getElementById("browserWidthValue");
+  const bwWrapper = document.querySelector(".viewport-wrapper");
+  if (bwEl && bwWrapper) bwEl.textContent = Math.round(window.innerWidth - bwWrapper.getBoundingClientRect().left) + "px";
 
   const isNoLimit = activeDevice === "none";
   const availW = isNoLimit ? (layout.hasAP ? AP_WIDTH : 1200) : device.screenW;
@@ -3123,9 +3212,16 @@ function buildViewport() {
 
   // Info line
   if (isNoLimit) {
-    info.innerHTML = `<strong>Teacher Desktop</strong> — <strong>${layout.name}</strong> — Content: <strong>${contentW} x ${contentH}</strong>`;
+    info.innerHTML = `<strong>Teacher Desktop / ${layout.name}</strong><br><strong>Content:</strong> ${contentW}w × ${contentH}h`;
   } else {
-    info.innerHTML = `<strong>${device.name}</strong> — ${device.screenW}x${device.screenH} screen, <strong>${availW}x${availH}</strong> available — Content: <strong>${contentW} x ${contentH}</strong>`;
+    const wrapperClientW = document.querySelector(".viewport-wrapper").clientWidth;
+    const frameAvailW = (activeDevice === "chromebook") ? Math.min(device.screenW, wrapperClientW) : device.screenW;
+    info.innerHTML = `<strong>${device.name} / ${layout.name}</strong><br><strong>Screen:</strong> ${device.screenW}w × ${device.screenH}h • <strong>Available:</strong> ${frameAvailW}w × ${availH}h • <strong>Content:</strong> ${contentW}w × ${contentH}h`;
+    // Label freeze when frame is clipped
+    if (wrapperClientW < device.screenW) {
+      info.style.alignSelf = "flex-start";
+      info.style.minWidth = device.screenW + "px";
+    }
   }
 
   // Device frame
@@ -3136,6 +3232,12 @@ function buildViewport() {
     // Teacher Desktop + AP: white page, full height, no border
     document.body.style.background = "#0592af";
     document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "#fff");
+    const msTitle = document.getElementById("masssims-title");
+    if (msTitle) msTitle.style.color = "#fff";
+    const bwLabelAP = document.getElementById("browserWidthLabel");
+    if (bwLabelAP) { bwLabelAP.style.zIndex = "10"; bwLabelAP.style.background = "rgba(255,255,255,0.5)"; }
+    const wrapperAP = document.querySelector(".viewport-wrapper");
+    if (wrapperAP) wrapperAP.style.borderColor = "#fff";
     frame.classList.remove("no-limit");
     frame.style.width = (AP_WIDTH * scale) + "px";
     frame.style.border = "none";
@@ -3153,8 +3255,16 @@ function buildViewport() {
     frame.style.width = (frameW * scale) + "px";
     frame.style.height = (frameH * scale) + "px";
   } else {
-    frame.style.width = (device.screenW * scale) + "px";
+    const wrapperForOverflow = document.querySelector(".viewport-wrapper");
+    const deviceFrameW = (activeDevice === "chromebook")
+      ? Math.min(device.screenW, wrapperForOverflow ? wrapperForOverflow.clientWidth : device.screenW)
+      : device.screenW;
+    frame.style.width = (deviceFrameW * scale) + "px";
     frame.style.height = (device.screenH * scale) + "px";
+    frame.style.margin = "0 -2px";
+    document.body.style.paddingRight = "0";
+    container.style.maxWidth = "100%";
+    if (wrapperForOverflow) wrapperForOverflow.style.overflow = "hidden";
   }
 
   // Top chrome
@@ -3316,12 +3426,9 @@ function buildViewport() {
       content.className = "content-area";
       content.style.width = "100%";
       content.style.height = (AP_CONTENT_H * scale) + "px";
-      content.appendChild(buildSimTitleBar());
-
-      const cLabel = document.createElement("div");
-      cLabel.className = "content-label";
-      cLabel.textContent = `Content\n${contentW} x ${AP_CONTENT_H}`;
-      content.appendChild(cLabel);
+      content.appendChild(getSimTitleBar());
+      const sc2col = getSimContent();
+      if (sc2col) content.appendChild(sc2col);
 
       rightSide.appendChild(content);
       apBody.appendChild(rightSide);
@@ -3348,9 +3455,9 @@ function buildViewport() {
       content.className = "content-area";
       content.style.width = (contentW * scale) + "px";
       content.style.height = (AP_CONTENT_H * scale) + "px";
-      content.appendChild(buildSimTitleBar());
-      const simContent = buildSimContent();
-      if (simContent) content.appendChild(simContent);
+      content.appendChild(getSimTitleBar());
+      const scFull = getSimContent();
+      if (scFull) content.appendChild(scFull);
 
       apBody.appendChild(content);
       ap.appendChild(apBody);
@@ -3392,12 +3499,31 @@ function buildViewport() {
       page.appendChild(qRow);
     }
     viewport.appendChild(page);
+
+    // Chromebook + AP: when frame < 1100, pin page to left and clip right
+    if (activeDevice === "chromebook") {
+      const cbWrapperW = document.querySelector(".viewport-wrapper").clientWidth;
+      const cbFrameW = Math.min(device.screenW, cbWrapperW);
+      if (cbFrameW < 1100) {
+        viewport.style.justifyContent = "flex-start";
+      }
+    }
   } else if (activeLayout === "standalone" && isNoLimit) {
     // Standalone + Teacher Desktop — gray background, content centered
-    const standaloneW = 1024;
+    const standaloneMax = 1024;
+    const standaloneMin = 768;
+    const standaloneMargin = 20;
     const standaloneH = 562;
 
     document.body.style.background = "#e0e0e0";
+    document.body.style.paddingRight = "0";
+    container.style.alignSelf = "stretch";
+
+    // Measure AFTER stretch so container matches wrapper width
+    const fullW = container.clientWidth;
+    const standaloneBorder = 4; // 2px border each side, box-sizing: content-box
+    const standaloneW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, fullW - (standaloneMargin * 2) - standaloneBorder)));
+    const ml = standaloneW <= standaloneMin ? standaloneMargin : Math.floor((fullW - standaloneW - standaloneBorder) / 2);
 
     const topOffset = container.getBoundingClientRect().top;
     const verticalPad = Math.max(0, (window.innerHeight - topOffset - standaloneH) / 2);
@@ -3407,36 +3533,101 @@ function buildViewport() {
     content.className = "content-area standalone";
     content.style.width = (standaloneW * scale) + "px";
     content.style.height = (standaloneH * scale) + "px";
-    content.style.margin = "0 auto";
-    content.appendChild(buildSimTitleBar());
+    content.style.marginLeft = ml + "px";
+    content.appendChild(getSimTitleBar());
+    const scSA1 = getSimContent();
+    if (scSA1) content.appendChild(scSA1);
 
     const cLabel = document.createElement("div");
     cLabel.className = "content-label";
-    cLabel.textContent = `Content\n${standaloneW} x ${standaloneH}`;
+    cLabel.textContent = `Content\n${standaloneW}w x ${standaloneH}h`;
     content.appendChild(cLabel);
+
+    // Update info line with actual responsive width
+    info.innerHTML = `<strong>Teacher Desktop / ${layout.name}</strong><br><strong>Content:</strong> ${standaloneW}w × ${standaloneH}h`;
+    if (standaloneW <= standaloneMin) {
+      const clipW = standaloneMin + (standaloneMargin * 2) + standaloneBorder; // 812
+      info.style.alignSelf = "flex-start";
+      info.style.minWidth = clipW + "px";
+    }
 
     container.appendChild(content);
     return;
   } else {
     // Standalone with device frame
-    const standaloneW = 1024;
+    const standaloneMax = 1024;
+    const standaloneMin = 768;
+    const standaloneMargin = 20;
+    const contentBorder = 4; // 2px border each side on .content-area.standalone (content-box)
+    const wrapperClientW = document.querySelector(".viewport-wrapper").clientWidth;
     const standaloneH = 562;
+
+    let standaloneW, simMarginLeft, frameVisualW;
+
+    if (activeDevice === "chromebook") {
+      // Chromebook: frame shrinks with browser, content responsive
+      frameVisualW = Math.min(device.screenW, wrapperClientW);
+      frame.style.width = (frameVisualW * scale) + "px";
+
+      const shrinkStart = standaloneMax + contentBorder + (standaloneMargin * 2); // 1068
+      const clipStart = standaloneMin + contentBorder + (standaloneMargin * 2); // 812
+
+      if (frameVisualW >= shrinkStart) {
+        standaloneW = standaloneMax;
+        simMarginLeft = null;
+      } else if (frameVisualW >= clipStart) {
+        standaloneW = frameVisualW - (standaloneMargin * 2) - contentBorder;
+        simMarginLeft = standaloneMargin;
+      } else {
+        standaloneW = standaloneMin;
+        simMarginLeft = standaloneMargin;
+      }
+
+      // Label freeze when clipping
+      if (frameVisualW < clipStart) {
+        info.style.alignSelf = "flex-start";
+        info.style.minWidth = clipStart + "px";
+      }
+    } else {
+      // iPad/Android: fixed frame, fixed content, no responsiveness
+      frameVisualW = device.screenW;
+      standaloneW = standaloneMax;
+      simMarginLeft = null;
+
+      // Label freeze when frame is clipped by wrapper
+      if (wrapperClientW < device.screenW) {
+        info.style.alignSelf = "flex-start";
+        info.style.minWidth = device.screenW + "px";
+      }
+    }
+
     const content = document.createElement("div");
     content.className = "content-area standalone";
     content.style.width = (standaloneW * scale) + "px";
     content.style.height = (standaloneH * scale) + "px";
-    content.appendChild(buildSimTitleBar());
+    content.appendChild(getSimTitleBar());
+    const scSA2 = getSimContent();
+    if (scSA2) content.appendChild(scSA2);
 
-    const cLabel = document.createElement("div");
-    cLabel.className = "content-label";
-    cLabel.textContent = `Content\n${standaloneW} x ${standaloneH}`;
-    content.appendChild(cLabel);
+    const cLabel2 = document.createElement("div");
+    cLabel2.className = "content-label";
+    cLabel2.textContent = `Content\n${standaloneW} x ${standaloneH}`;
+    content.appendChild(cLabel2);
 
     viewport.style.display = "flex";
-    viewport.style.justifyContent = "center";
     viewport.style.alignItems = "center";
     viewport.style.background = "#e0e0e0";
+
+    if (simMarginLeft !== null) {
+      viewport.style.justifyContent = "flex-start";
+      content.style.marginLeft = simMarginLeft + "px";
+    } else {
+      viewport.style.justifyContent = "center";
+    }
     viewport.appendChild(content);
+
+    // Update info line
+    info.innerHTML = `<strong>${device.name} / ${layout.name}</strong><br><strong>Screen:</strong> ${device.screenW}w × ${device.screenH}h • <strong>Available:</strong> ${frameVisualW}w × ${availH}h • <strong>Content:</strong> ${standaloneW}w × ${standaloneH}h`;
   }
 
   frame.appendChild(viewport);
@@ -3470,7 +3661,7 @@ function wireToggleGroup(selector, stateKey, callback) {
   });
 }
 
-wireToggleGroup("[data-sim]", "activeSim", btn => { activeSim = btn.dataset.sim; });
+wireToggleGroup("[data-sim]", "activeSim", btn => { activeSim = btn.dataset.sim; invalidateSimCache(); });
 wireToggleGroup("[data-layout]", "activeLayout", btn => {
   activeLayout = btn.dataset.layout;
   if (activeLayout === "ap-2col") sidebarExpanded = true;
@@ -3478,6 +3669,136 @@ wireToggleGroup("[data-layout]", "activeLayout", btn => {
 wireToggleGroup("[data-device]", "activeDevice", btn => { activeDevice = btn.dataset.device; });
 
 buildViewport();
+
+// Resize handler
+let _resizeRafId = null;
+function updateStandaloneDeviceFrame() {
+  if (_resizeRafId) return; // already scheduled
+  _resizeRafId = requestAnimationFrame(() => {
+    _resizeRafId = null;
+    _updateStandaloneDeviceFrameNow();
+  });
+}
+function _updateStandaloneDeviceFrameNow() {
+  const wrapper = document.querySelector(".viewport-wrapper");
+  const contentEl = document.querySelector(".content-area.standalone");
+  if (!wrapper || !contentEl) return;
+
+  const device = DEVICES[activeDevice];
+  if (!device) return;
+
+  const wrapperClientW = wrapper.clientWidth;
+  const info = document.getElementById("viewportInfo");
+
+  if (activeDevice !== "chromebook") {
+    // iPad/Android: no responsive changes, only label freeze
+    if (info) {
+      const isClipping = wrapperClientW < device.screenW;
+      info.style.alignSelf = isClipping ? "flex-start" : "";
+      info.style.minWidth = isClipping ? device.screenW + "px" : "";
+    }
+    return;
+  }
+
+  // Chromebook: full responsive logic
+  const contentBorder = 4;
+  const margin = 20;
+  const standaloneMax = 1024;
+  const standaloneMin = 768;
+  const availH = device.screenH - device.topChrome - device.bottomChrome;
+
+  const frameVisualW = Math.min(device.screenW, wrapperClientW);
+  const frameEl = document.querySelector(".device-frame");
+  if (frameEl) {
+    frameEl.style.transition = "none";
+    frameEl.style.width = frameVisualW + "px";
+  }
+  contentEl.style.transition = "none";
+
+  const shrinkStart = standaloneMax + contentBorder + (margin * 2); // 1068
+  const clipStart = standaloneMin + contentBorder + (margin * 2); // 812
+
+  const viewport = contentEl.parentElement;
+
+  let w;
+  if (frameVisualW >= shrinkStart) {
+    w = standaloneMax;
+    contentEl.style.marginLeft = "";
+    if (viewport) viewport.style.justifyContent = "center";
+  } else if (frameVisualW >= clipStart) {
+    w = frameVisualW - (margin * 2) - contentBorder;
+    contentEl.style.marginLeft = margin + "px";
+    if (viewport) viewport.style.justifyContent = "flex-start";
+  } else {
+    w = standaloneMin;
+    contentEl.style.marginLeft = margin + "px";
+    if (viewport) viewport.style.justifyContent = "flex-start";
+  }
+
+  contentEl.style.width = w + "px";
+  const cLabel = contentEl.querySelector(".content-label");
+  if (cLabel) cLabel.textContent = "Content\n" + w + " x 562";
+  const layoutName = LAYOUTS[activeLayout] ? LAYOUTS[activeLayout].name : activeLayout;
+  if (info) {
+    info.innerHTML = '<strong>' + device.name + ' / ' + layoutName + '</strong><br><strong>Screen:</strong> ' + device.screenW + 'w \u00d7 ' + device.screenH + 'h \u2022 <strong>Available:</strong> ' + frameVisualW + 'w \u00d7 ' + availH + 'h \u2022 <strong>Content:</strong> ' + w + 'w \u00d7 562h';
+    const isClipping = frameVisualW < clipStart;
+    info.style.alignSelf = isClipping ? "flex-start" : "";
+    info.style.minWidth = isClipping ? clipStart + "px" : "";
+  }
+}
+
+window.addEventListener("resize", () => {
+  // Always update browser width label
+  const bwEl = document.getElementById("browserWidthValue");
+  const bwWrapper = document.querySelector(".viewport-wrapper");
+  if (bwEl && bwWrapper) bwEl.textContent = Math.round(window.innerWidth - bwWrapper.getBoundingClientRect().left) + "px";
+
+  if (activeLayout === "standalone" && activeDevice === "none") {
+    // Teacher Desktop — full rebuild (responsive content)
+    buildViewport();
+  } else if (activeLayout === "standalone" && activeDevice !== "none") {
+    // Device frame — lightweight update (no rebuild)
+    updateStandaloneDeviceFrame();
+  } else if (activeDevice === "chromebook" && activeLayout !== "standalone") {
+    // Chromebook + AP layouts — shrink frame, label freeze
+    const device = DEVICES[activeDevice];
+    const wrapper = document.querySelector(".viewport-wrapper");
+    if (device && wrapper) {
+      const wrapperW = wrapper.clientWidth;
+      const frameVisualW = Math.min(device.screenW, wrapperW);
+      const frameEl = document.querySelector(".device-frame");
+      if (frameEl) {
+        frameEl.style.transition = "none";
+        frameEl.style.width = frameVisualW + "px";
+      }
+      // Pin page to left when frame < 1100, restore centering when wider
+      const viewportArea = document.querySelector(".viewport-area");
+      if (viewportArea) {
+        viewportArea.style.justifyContent = frameVisualW < 1100 ? "flex-start" : "";
+      }
+      const info = document.getElementById("viewportInfo");
+      if (info) {
+        const availH = device.screenH - device.topChrome - device.bottomChrome;
+        const layoutName = LAYOUTS[activeLayout] ? LAYOUTS[activeLayout].name : activeLayout;
+        const contentW = activeLayout === "ap-2col" ? (sidebarExpanded ? 767 : (1100 - 28 - 45 - 10 - 2 - 26)) : 1044;
+        info.innerHTML = '<strong>' + device.name + ' / ' + layoutName + '</strong><br><strong>Screen:</strong> ' + device.screenW + 'w \u00d7 ' + device.screenH + 'h \u2022 <strong>Available:</strong> ' + frameVisualW + 'w \u00d7 ' + availH + 'h \u2022 <strong>Content:</strong> ' + contentW + 'w \u00d7 ' + AP_CONTENT_H + 'h';
+        const isClipping = wrapperW < device.screenW;
+        info.style.alignSelf = isClipping ? "flex-start" : "";
+        info.style.minWidth = isClipping ? device.screenW + "px" : "";
+      }
+    }
+  } else if (activeDevice !== "none" && activeDevice !== "chromebook") {
+    // iPad/Android + any layout — label freeze only
+    const info = document.getElementById("viewportInfo");
+    const device = DEVICES[activeDevice];
+    if (info && device) {
+      const wrapperW = document.querySelector(".viewport-wrapper").clientWidth;
+      const isClipping = wrapperW < device.screenW;
+      info.style.alignSelf = isClipping ? "flex-start" : "";
+      info.style.minWidth = isClipping ? device.screenW + "px" : "";
+    }
+  }
+});
 </script>
 </body>
 </html>
