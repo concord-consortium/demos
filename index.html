@@ -24,6 +24,17 @@
     text-decoration: none; color: #036; font-size: 0.85em; border-radius: 3px;
   }
   .endmark:focus { background: #ffe; }
+  .sentinel {
+    padding: 3px 8px; background: #fde; border: 1px dashed #c69;
+    color: #629; font-size: 0.85em; border-radius: 3px;
+  }
+  /* Screen-reader "sr-only": visually hidden but still focusable and in the
+     accessibility tree (clipped to a 1px box rather than removed from flow). */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    clip-path: inset(50%); clip: rect(0 0 0 0);
+    overflow: hidden; white-space: nowrap; margin: -1px; padding: 0; border: 0;
+  }
 
   /* Focus rings — applied universally so we can compare :focus vs :focus-visible
      on every focusable element (iframe, links, buttons, body, scroll container).
@@ -124,6 +135,62 @@
     <a class="endmark" href="#" id="before-7">BEFORE 7</a>
     <iframe id="iframe-7" src="./child-buttons.html" title="iframe 7"></iframe>
     <a class="endmark" href="#" id="after-7">AFTER 7</a>
+  </div>
+</div>
+
+<!-- 8: focus moved during a Tab keydown handler (wrapping loop) -->
+<div class="test">
+  <h2>8. focus moved during Tab handler · no <code>preventDefault</code> (wrapping loop)</h2>
+  <div class="meta">Click <code>AFTER 8</code> and press Tab. Its keydown handler focuses <code>SENTINEL 8</code> (a <code>tabindex="-1"</code> element placed <em>before</em> the iframe) and does <strong>not</strong> call <code>preventDefault</code>. Question: does the browser's default Tab continue from the newly-focused element or the original one?
+    <br>· <strong>From new</strong> (sentinel) → Tab descends into the iframe's <code>BUTTON 1</code> — the wrap-around works.
+    <br>· <strong>From original</strong> (AFTER 8) → focus moves to the next element after this row (END).
+    <br>· <strong>Default aborted</strong> → focus stays stuck on the sentinel.</div>
+  <div class="row">
+    <span class="sentinel" id="sentinel-8" tabindex="-1">SENTINEL 8 (tabindex=-1)</span>
+    <iframe id="iframe-8" tabindex="0" src="./child-buttons.html" title="iframe 8"></iframe>
+    <a class="endmark" href="#" id="after-8">AFTER 8</a>
+  </div>
+</div>
+
+<!-- 9: focus moved to the iframe element during a Tab handler (no sentinel) -->
+<div class="test">
+  <h2>9. focus moved to the iframe element during Tab handler · no <code>preventDefault</code></h2>
+  <div class="meta">Click <code>AFTER 9</code> and press Tab. Its handler focuses the <em>iframe element itself</em> (<code>iframe.focus()</code>) and does <strong>not</strong> call <code>preventDefault</code>. The <code>EXTRA 9</code> button between the iframe and <code>AFTER 9</code> makes the landing spot unambiguous.
+    <br>· <strong>Into the iframe</strong> → <code>BUTTON 1</code> inside (focus descended into the iframe content).
+    <br>· <strong>EXTRA 9</strong> → the iframe content was skipped; focus advanced to the next element after the iframe.
+    <br>· <strong>END</strong> → the browser continued from <code>AFTER 9</code> (the original element).
+    <br>· <strong>iframe element stuck</strong> → default Tab was aborted; focus stayed where JS put it.</div>
+  <div class="row">
+    <iframe id="iframe-9" tabindex="0" src="./child-buttons.html" title="iframe 9"></iframe>
+    <button id="extra-9">EXTRA 9</button>
+    <a class="endmark" href="#" id="after-9">AFTER 9</a>
+  </div>
+</div>
+
+<!-- 10: like test 8, but the sentinel is visually hidden (sr-only) yet focusable -->
+<div class="test">
+  <h2>10. hidden sentinel · <code>sr-only</code> (focusable, invisible) · no <code>preventDefault</code></h2>
+  <div class="meta">Same as test 8, but <code>SENTINEL 10</code> is hidden with the screen-reader "sr-only" pattern (clipped to 1px) — invisible but still focusable. Click <code>AFTER 10</code> and press Tab; the handler focuses the (invisible) sentinel without <code>preventDefault</code>. Does invisibility alone change the result vs test 8?
+    <br>· <strong>From new</strong> (sentinel) → Tab descends into the iframe's <code>BUTTON 1</code>.
+    <br>· <strong>From original</strong> (AFTER 10) → focus moves to the next element after this row (END).
+    <br>· <strong>Default aborted</strong> → focus stays stuck on the sentinel.</div>
+  <div class="row">
+    <span class="sr-only" id="sentinel-10" tabindex="-1">SENTINEL 10 (sr-only)</span>
+    <iframe id="iframe-10" tabindex="0" src="./child-buttons.html" title="iframe 10"></iframe>
+    <a class="endmark" href="#" id="after-10">AFTER 10</a>
+  </div>
+</div>
+
+<!-- 11: like test 8, but the sentinel is display:none (NOT focusable) -->
+<div class="test">
+  <h2>11. hidden sentinel · <code>display:none</code> (not focusable) · no <code>preventDefault</code></h2>
+  <div class="meta">Same as test 8, but <code>SENTINEL 11</code> is <code>display:none</code>, which makes it <strong>not focusable</strong> — so <code>sentinel.focus()</code> is a no-op. Click <code>AFTER 11</code> and press Tab.
+    <br>· <strong>Expected</strong> → <code>focus()</code> does nothing, focus stays on <code>AFTER 11</code>, default Tab moves to the next element (END). The wrap-around never happens because the focus call failed (a different cause than test 8's "continued from original").
+    <br>· If focus instead lands on the iframe's <code>BUTTON 1</code>, the browser focused the <code>display:none</code> element anyway — surprising.</div>
+  <div class="row">
+    <span id="sentinel-11" tabindex="-1" style="display:none">SENTINEL 11 (display:none)</span>
+    <iframe id="iframe-11" tabindex="0" src="./child-buttons.html" title="iframe 11"></iframe>
+    <a class="endmark" href="#" id="after-11">AFTER 11</a>
   </div>
 </div>
 
@@ -237,6 +304,55 @@
         e.preventDefault();
         const btn = iframe.contentDocument && iframe.contentDocument.querySelector('button');
         if (btn) btn.focus();
+      }
+    });
+  });
+
+  // Test 8: focus moved during a Tab keydown handler, with NO preventDefault.
+  // AFTER 8's handler moves focus to a sentinel placed BEFORE the iframe, then
+  // lets the browser's default Tab proceed. If the browser continues from the
+  // newly-focused element, focus wraps forward from the sentinel into the
+  // iframe's first button; if it continues from the original element (AFTER 8),
+  // focus leaves the row. The keydown drive keeps the modality "keyboard".
+  const after8 = document.getElementById('after-8');
+  const sentinel8 = document.getElementById('sentinel-8');
+  if (after8 && sentinel8) {
+    after8.addEventListener('keydown', e => {
+      if (e.key === 'Tab' && !e.shiftKey) {
+        sentinel8.focus();
+        // Intentionally NOT calling e.preventDefault() — that's the whole point:
+        // observe where the browser's default Tab navigation continues from.
+      }
+    });
+  }
+
+  // Test 9: like test 8 but the Tab handler focuses the IFRAME ELEMENT itself
+  // (no sentinel), without preventDefault. An EXTRA button sits between the
+  // iframe and AFTER 9 so we can tell "focus descended into the iframe" (BUTTON 1)
+  // apart from "iframe content skipped, advanced to the next element" (EXTRA 9).
+  const after9 = document.getElementById('after-9');
+  const iframe9 = document.getElementById('iframe-9');
+  if (after9 && iframe9) {
+    after9.addEventListener('keydown', e => {
+      if (e.key === 'Tab' && !e.shiftKey) {
+        iframe9.focus();
+        // No preventDefault — observe where the browser's default Tab continues from.
+      }
+    });
+  }
+
+  // Tests 10 & 11: same wrapping-loop setup as test 8, but with a hidden sentinel.
+  //   10 → sr-only (visually hidden but focusable): focus() should work.
+  //   11 → display:none (not focusable): focus() should be a no-op.
+  // Each AFTER N focuses its sentinel without preventDefault.
+  [['after-10', 'sentinel-10'], ['after-11', 'sentinel-11']].forEach(([afterId, sentinelId]) => {
+    const after = document.getElementById(afterId);
+    const sentinel = document.getElementById(sentinelId);
+    if (!after || !sentinel) return;
+    after.addEventListener('keydown', e => {
+      if (e.key === 'Tab' && !e.shiftKey) {
+        sentinel.focus();
+        // No preventDefault — observe where the browser's default Tab continues from.
       }
     });
   });

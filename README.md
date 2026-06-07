@@ -20,10 +20,24 @@ conditions:
   - `child-buttons.html` — three focusable buttons.
   - `child-empty.html` — no focusables, no scrollable content.
   - `child-scroll.html` — a scrollable container, no focusables.
-- **Cases (7 rows):** each child is embedded with `tabindex="0"`, `tabindex="-1"`,
+- **Cases (rows 1–7):** each child is embedded with `tabindex="0"`, `tabindex="-1"`,
   or no `tabindex` attribute, to compare whether and how focus descends into the
   iframe, lands on the iframe element, targets an inner scroll container, or is
   skipped entirely. Behavior varies by browser (Chrome, Firefox, Safari).
+- **Row 8 — focus moved during a Tab handler:** `AFTER 8` has a Tab keydown
+  handler that moves focus to a `tabindex="-1"` sentinel placed *before* the
+  iframe and does **not** call `preventDefault`. This tests whether the browser's
+  default Tab navigation continues from the newly-focused element (wrapping
+  forward into the iframe's first button) or from the original one.
+- **Row 9 — focus moved to the iframe element:** like row 8, but the `AFTER 9`
+  Tab handler focuses the iframe element itself (no sentinel) without
+  `preventDefault`. An `EXTRA 9` button between the iframe and `AFTER 9`
+  distinguishes "focus descended into the iframe" (its first button) from "the
+  iframe content was skipped" (the EXTRA button).
+- **Rows 10 & 11 — hidden sentinel:** repeat row 8 with a hidden sentinel, to see
+  whether the hiding method changes the behavior. Row 10 uses the screen-reader
+  `sr-only` pattern (visually hidden but still focusable); row 11 uses
+  `display:none` (not focusable, so `focus()` is a no-op).
 
 ### How to use it
 
@@ -31,6 +45,12 @@ For each row, click the `BEFORE N` marker and press **Tab** (forward), or click
 `AFTER N` and press **Shift+Tab** (reverse), then read the tracker bar. Safari
 requires Full Keyboard Access (System Settings → Keyboard → Keyboard navigation),
 or hold Option while pressing Tab.
+
+With a `BEFORE N` marker focused you can also press **f** to call `iframe.focus()`
+from JavaScript, or **b** to call `focus()` on the first button inside the iframe
+(same-origin only) — both reveal how scripted focus interacts with the iframe. For
+row 8, click `AFTER 8` and press **Tab** to run the wrapping-loop test described
+above.
 
 **Focus rings:** a red outline means `:focus` matches (the element is focused); an
 added blue ring with a white spacer means `:focus-visible` also matches (the
