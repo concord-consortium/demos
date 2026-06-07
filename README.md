@@ -34,10 +34,27 @@ conditions:
   `preventDefault`. An `EXTRA 9` button between the iframe and `AFTER 9`
   distinguishes "focus descended into the iframe" (its first button) from "the
   iframe content was skipped" (the EXTRA button).
-- **Rows 10 & 11 — hidden sentinel:** repeat row 8 with a hidden sentinel, to see
+- **Rows 10–12 — hidden sentinel:** repeat row 8 with a hidden sentinel, to see
   whether the hiding method changes the behavior. Row 10 uses the screen-reader
   `sr-only` pattern (visually hidden but still focusable); row 11 uses
-  `display:none` (not focusable, so `focus()` is a no-op).
+  `display:none` (not focusable, so `focus()` is a no-op); row 12 collapses the
+  sentinel to a zero-size box (`width:0; height:0; overflow:hidden;
+  position:absolute`), where focusability is browser-dependent.
+- **Row 13 — cross-origin focus-steal from an `<input>`:** typing in an input and
+  pressing Enter posts the focus-first-button message to the iframe. Per
+  [Mozilla bug 656026](https://bugzilla.mozilla.org/show_bug.cgi?id=656026),
+  Firefox blocks a cross-origin iframe from stealing focus away from an input
+  element (unlike the `m` key, whose focus source is a link). Run with
+  `?xorigin=1` to test the cross-origin case.
+- **Row 14 — cross-origin focus-steal triggered by a click:** clicking a button
+  with the mouse posts the same message, but in pointer modality instead of
+  keyboard. Compares against the keyboard-triggered cases (the `m` key and row
+  13's Enter) to see whether modality affects whether the steal is allowed.
+- **Row 15 — async focus-steal while typing:** clicking `ARM` starts a 2-second
+  `setTimeout`; when it fires it posts the message with no user gesture driving
+  the steal. Click `ARM`, then type in the input — the steal attempt lands
+  mid-typing, the real-world focus-stealing case browsers are most likely to
+  block. Run with `?xorigin=1` for the cross-origin case.
 
 ### How to use it
 
@@ -47,10 +64,11 @@ requires Full Keyboard Access (System Settings → Keyboard → Keyboard navigat
 or hold Option while pressing Tab.
 
 With a `BEFORE N` marker focused you can also press **f** to call `iframe.focus()`
-from JavaScript, or **b** to call `focus()` on the first button inside the iframe
-(same-origin only) — both reveal how scripted focus interacts with the iframe. For
-row 8, click `AFTER 8` and press **Tab** to run the wrapping-loop test described
-above.
+from JavaScript, **b** to call `focus()` on the first button inside the iframe
+(same-origin only), or **m** to `postMessage` the iframe asking it to focus its own
+first button (the cross-origin-safe version of **b** — works under `?xorigin=1`).
+These reveal how scripted focus interacts with the iframe. For row 8, click
+`AFTER 8` and press **Tab** to run the wrapping-loop test described above.
 
 **Focus rings:** a red outline means `:focus` matches (the element is focused); an
 added blue ring with a white spacer means `:focus-visible` also matches (the

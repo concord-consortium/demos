@@ -20,5 +20,16 @@
 <button id="btn-1">BUTTON 1</button>
 <button id="btn-2">BUTTON 2</button>
 <button id="btn-3">BUTTON 3</button>
+<script>
+  // Cross-origin focus test: the parent posts { type: 'focus-first-button' }
+  // (the "m" key) and this frame focuses its own first button. Works regardless
+  // of origin since the focus happens here, inside the iframe.
+  window.addEventListener('message', e => {
+    if (e.data && e.data.type === 'focus-first-button') {
+      const btn = document.querySelector('button');
+      if (btn) btn.focus();
+    }
+  });
+</script>
 </body>
 </html>

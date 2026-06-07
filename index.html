@@ -56,7 +56,7 @@
 <body>
 <h1>iframe <code>tabIndex</code> behavior tests</h1>
 <p class="legend">Click a <code>BEFORE N</code> marker, press Tab forward, and watch the tracker bar. For reverse, click <code>AFTER N</code> and press Shift+Tab. Try in each browser. Safari needs Full Keyboard Access on (System Settings → Keyboard → Keyboard navigation).</p>
-<p class="legend"><strong>Scripted focus:</strong> with a <code>BEFORE N</code> marker focused (driven by the keypress so the modality stays keyboard): press <kbd>f</kbd> to call <code>iframe.focus()</code> — watch whether focus lands on the iframe element itself or descends to the first focusable inside (in Chrome it focuses just the iframe element). Press <kbd>b</kbd> to call <code>focus()</code> on the first button <em>inside</em> the iframe, testing whether a scripted focus on an inner element steals focus from the parent marker (button rows only; disabled under <code>?xorigin=1</code>).</p>
+<p class="legend"><strong>Scripted focus:</strong> with a <code>BEFORE N</code> marker focused (driven by the keypress so the modality stays keyboard): press <kbd>f</kbd> to call <code>iframe.focus()</code> — watch whether focus lands on the iframe element itself or descends to the first focusable inside (in Chrome it focuses just the iframe element). Press <kbd>b</kbd> to call <code>focus()</code> on the first button <em>inside</em> the iframe, testing whether a scripted focus on an inner element steals focus from the parent marker (button rows only; disabled under <code>?xorigin=1</code>). Press <kbd>m</kbd> to <code>postMessage</code> the iframe asking it to focus its own first button — the cross-origin-safe version of <kbd>b</kbd>, so it works even under <code>?xorigin=1</code>.</p>
 <p class="legend"><strong>Focus rings:</strong> red outline = <code>:focus</code> matches (element is focused). Blue ring with white spacer = <code>:focus-visible</code> matches additionally (browser deems focus should be visible — keyboard-driven). So <em>red only</em> = mouse-focused, <em>red + blue</em> = keyboard-focused.</p>
 
 <div class="tracker" id="tracker">tracker initializing…</div>
@@ -194,6 +194,60 @@
   </div>
 </div>
 
+<!-- 12: like test 8, but the sentinel is zero-size (width/height 0, absolute) -->
+<div class="test">
+  <h2>12. hidden sentinel · zero-size (<code>width:0;height:0</code>, absolute) · no <code>preventDefault</code></h2>
+  <div class="meta">Same as test 8, but <code>SENTINEL 12</code> is hidden by collapsing it to a zero-size box (<code>width:0; height:0; overflow:hidden; position:absolute</code>). It is not <code>display:none</code> or <code>visibility:hidden</code>, so it may still be programmatically focusable — the open question. Click <code>AFTER 12</code> and press Tab.
+    <br>· <strong>From new</strong> (sentinel) → Tab descends into the iframe's <code>BUTTON 1</code> (zero-size element was focusable, like sr-only).
+    <br>· <strong>From original / focus failed</strong> (AFTER 12) → focus moves to the next element (END), e.g. if the browser treats the zero-size box as non-focusable.
+    <br>· <strong>Default aborted</strong> → focus stays stuck on the sentinel.</div>
+  <div class="row">
+    <span id="sentinel-12" tabindex="-1" style="width:0;height:0;overflow:hidden;position:absolute">SENTINEL 12 (zero-size)</span>
+    <iframe id="iframe-12" tabindex="0" src="./child-buttons.html" title="iframe 12"></iframe>
+    <a class="endmark" href="#" id="after-12">AFTER 12</a>
+  </div>
+</div>
+
+<!-- 13: cross-origin focus-steal from an <input> via postMessage on Enter -->
+<div class="test">
+  <h2>13. cross-origin focus-steal from an <code>&lt;input&gt;</code> · <code>postMessage</code> on Enter</h2>
+  <div class="meta">Type in the input and press Enter — that posts the focus-first-button message to the iframe (same as the <kbd>m</kbd> key, but the focus source is an <code>&lt;input&gt;</code>). Per <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=656026">Mozilla bug 656026</a>, Firefox blocks a cross-origin iframe from stealing focus away from an input element (the <kbd>m</kbd>-key test parked focus on a link, which was <em>not</em> blocked). Run with <code>?xorigin=1</code> to test the cross-origin case.
+    <br>· <strong>Focus moves to the iframe</strong> (<code>BUTTON 1</code> inside, or the iframe element cross-origin) → the steal succeeded.
+    <br>· <strong>Focus stays in the input</strong> → the browser blocked the cross-origin focus steal.</div>
+  <div class="row">
+    <input id="input-13" type="text" placeholder="type here, press Enter">
+    <iframe id="iframe-13" tabindex="0" src="./child-buttons.html" title="iframe 13"></iframe>
+    <a class="endmark" href="#" id="after-13">AFTER 13</a>
+  </div>
+</div>
+
+<!-- 14: cross-origin focus-steal triggered by a click (pointer modality) -->
+<div class="test">
+  <h2>14. cross-origin focus-steal triggered by a <em>click</em> (pointer modality)</h2>
+  <div class="meta">Click the button below <strong>with the mouse</strong> — its click handler posts the focus-first-button message to the iframe. A mouse click sets the modality to pointer, so this checks whether the cross-origin focus-steal behaves differently than the keyboard-triggered cases (the <kbd>m</kbd> key and test 13's Enter, which both worked in Firefox). Run with <code>?xorigin=1</code> for the cross-origin case.
+    <br>· <strong>Focus moves to the iframe</strong> (<code>BUTTON 1</code> inside, or the iframe element cross-origin) → the steal succeeded.
+    <br>· <strong>Focus stays on the clicked button</strong> → the browser blocked the focus steal.</div>
+  <div class="row">
+    <button id="trigger-14">SEND MESSAGE (click)</button>
+    <iframe id="iframe-14" tabindex="0" src="./child-buttons.html" title="iframe 14"></iframe>
+    <a class="endmark" href="#" id="after-14">AFTER 14</a>
+  </div>
+</div>
+
+<!-- 15: async focus-steal via setTimeout while typing in an input -->
+<div class="test">
+  <h2>15. async focus-steal via <code>setTimeout</code> while typing in an input</h2>
+  <div class="meta">Click <code>ARM</code>, then immediately click the input and start typing. Two seconds after the click, a timeout fires and posts the focus-first-button message to the iframe — attempting to steal focus while you're actively typing, with <strong>no user gesture driving the steal itself</strong>. This is the real-world focus-stealing scenario. Run with <code>?xorigin=1</code> for the cross-origin case.
+    <br>· <strong>Focus jumps to the iframe</strong> mid-typing → the steal succeeded.
+    <br>· <strong>Focus stays in the input</strong> → the browser blocked the async cross-origin steal.</div>
+  <div class="row">
+    <button id="trigger-15">ARM (steal focus in 2s)</button>
+    <input id="input-15" type="text" placeholder="click ARM, then type here">
+    <iframe id="iframe-15" tabindex="0" src="./child-buttons.html" title="iframe 15"></iframe>
+    <a class="endmark" href="#" id="after-15">AFTER 15</a>
+  </div>
+</div>
+
 <p><a class="endmark" href="#" id="end-marker">END</a></p>
 
 <details>
@@ -202,7 +256,7 @@
     <li>From this folder, serve over HTTP: <code>python3 -m http.server 8000</code></li>
     <li>Open <code>http://localhost:8000/index.html</code> in each browser.</li>
     <li>For each test row: click <code>BEFORE N</code>, press Tab, note what the tracker shows. Then click <code>AFTER N</code> and press Shift+Tab.</li>
-    <li><strong>Scripted focus:</strong> with <code>BEFORE N</code> focused, press <kbd>f</kbd> to call <code>iframe.focus()</code> from JS (does focus land on the iframe or descend inside?), or <kbd>b</kbd> to call <code>focus()</code> on the first button inside the iframe (does it steal focus from the marker? — button rows only, same-origin only).</li>
+    <li><strong>Scripted focus:</strong> with <code>BEFORE N</code> focused, press <kbd>f</kbd> to call <code>iframe.focus()</code> from JS (does focus land on the iframe or descend inside?), <kbd>b</kbd> to call <code>focus()</code> on the first button inside the iframe (does it steal focus from the marker? — button rows only, same-origin only), or <kbd>m</kbd> to <code>postMessage</code> the iframe to focus its own first button (cross-origin-safe; works under <code>?xorigin=1</code>).</li>
     <li>Safari: enable Full Keyboard Access (System Settings → Keyboard → Keyboard navigation) or hold Option while pressing Tab.</li>
     <li><strong>Cross-origin variant:</strong> append <code>?xorigin=1</code> to load the iframes from a second origin that serves the same files, so the parent can't read into them. Locally, <code>localhost</code> and <code>127.0.0.1</code> are different origins — open <code>http://localhost:8000/index.html?xorigin=1</code> and the iframe srcs are rewritten to <code>http://127.0.0.1:8000/...</code>. When deployed, the swap is between <code>models-resources.concord.org</code> and <code>models-resources.s3.amazonaws.com</code> (the demo is published to both). The tracker's inner-element readout will then show "(cross-origin — cannot read inner)" instead of the inner activeElement, matching the AP scenario.</li>
   </ol>
@@ -291,6 +345,9 @@
   //   b → focus the first <button> INSIDE the iframe: does focusing an inner
   //       element from JS steal focus away from the parent marker? Same-origin
   //       only (disabled under ?xorigin=1, where we can't reach the inner doc).
+  //   m → postMessage the iframe asking IT to focus its own first button. This is
+  //       the cross-origin-safe version of b: it works in both modes, since the
+  //       focusing happens inside the iframe rather than reaching into it.
   const xorigin = new URLSearchParams(location.search).get('xorigin') === '1';
   document.querySelectorAll('a.endmark[id^="before-"]').forEach(a => {
     const n = a.id.slice('before-'.length);
@@ -304,6 +361,9 @@
         e.preventDefault();
         const btn = iframe.contentDocument && iframe.contentDocument.querySelector('button');
         if (btn) btn.focus();
+      } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        iframe.contentWindow.postMessage({ type: 'focus-first-button' }, '*');
       }
     });
   });
@@ -341,11 +401,12 @@
     });
   }
 
-  // Tests 10 & 11: same wrapping-loop setup as test 8, but with a hidden sentinel.
+  // Tests 10, 11 & 12: same wrapping-loop setup as test 8, but with a hidden sentinel.
   //   10 → sr-only (visually hidden but focusable): focus() should work.
   //   11 → display:none (not focusable): focus() should be a no-op.
+  //   12 → zero-size box (width/height 0, absolute): focusability is the question.
   // Each AFTER N focuses its sentinel without preventDefault.
-  [['after-10', 'sentinel-10'], ['after-11', 'sentinel-11']].forEach(([afterId, sentinelId]) => {
+  [['after-10', 'sentinel-10'], ['after-11', 'sentinel-11'], ['after-12', 'sentinel-12']].forEach(([afterId, sentinelId]) => {
     const after = document.getElementById(afterId);
     const sentinel = document.getElementById(sentinelId);
     if (!after || !sentinel) return;
@@ -356,6 +417,50 @@
       }
     });
   });
+
+  // Test 13: cross-origin focus-steal from an <input>. Pressing Enter in the
+  // input posts focus-first-button to the iframe. Mozilla bug 656026 suggests
+  // Firefox blocks a cross-origin iframe from stealing focus from an input
+  // element (the m-key test parked focus on a link, which was not blocked).
+  const input13 = document.getElementById('input-13');
+  const iframe13 = document.getElementById('iframe-13');
+  if (input13 && iframe13) {
+    input13.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        iframe13.contentWindow.postMessage({ type: 'focus-first-button' }, '*');
+      }
+    });
+  }
+
+  // Test 14: cross-origin focus-steal triggered by a CLICK (pointer modality)
+  // rather than a keypress. Posts focus-first-button to the iframe on click, to
+  // compare against the keyboard-triggered tests (m key / test 13's Enter).
+  const trigger14 = document.getElementById('trigger-14');
+  const iframe14 = document.getElementById('iframe-14');
+  if (trigger14 && iframe14) {
+    trigger14.addEventListener('click', () => {
+      iframe14.contentWindow.postMessage({ type: 'focus-first-button' }, '*');
+    });
+  }
+
+  // Test 15: async focus-steal via setTimeout while the user types in an input.
+  // Click ARM, then type; 2s later the timeout posts focus-first-button to the
+  // iframe with no user gesture driving the steal — the real-world focus-stealing
+  // case. Reveals whether the browser blocks an async cross-origin steal from an
+  // actively-used input.
+  const trigger15 = document.getElementById('trigger-15');
+  const iframe15 = document.getElementById('iframe-15');
+  if (trigger15 && iframe15) {
+    trigger15.addEventListener('click', () => {
+      const label = trigger15.textContent;
+      trigger15.textContent = 'armed — type now…';
+      setTimeout(() => {
+        trigger15.textContent = label;
+        iframe15.contentWindow.postMessage({ type: 'focus-first-button' }, '*');
+      }, 2000);
+    });
+  }
 
   document.addEventListener('focusin', update, true);
   document.addEventListener('focusout', () => setTimeout(update, 0), true);
