@@ -4,16 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MassSims</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@400;600;700&family=Lato:wght@400;700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Slackey&family=Frijole&family=Fontdiner+Swanky&family=Agbalumo&family=Vampiro+One&family=Coming+Soon&display=swap" rel="stylesheet">
 <style>
+/* Self-hosted fonts */
+/* Barlow 400 */ @font-face { font-family: 'Barlow'; font-style: normal; font-weight: 400; src: url('fonts/17ef8a066a33.woff2') format('woff2'); }
+/* Barlow Condensed 400 */ @font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 400; src: url('fonts/343e6c738440.woff2') format('woff2'); }
+/* Barlow Condensed 600 */ @font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; src: url('fonts/07c3c732a90e.woff2') format('woff2'); }
+/* Lato 400 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 400; src: url('fonts/d5b18a30a456.woff2') format('woff2'); }
+/* Lato 400i */ @font-face { font-family: 'Lato'; font-style: italic; font-weight: 400; src: url('fonts/lato-italic-400.woff2') format('woff2'); }
+/* Lato 700 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 700; src: url('fonts/a658a6a6ab26.woff2') format('woff2'); }
+/* Roboto Condensed */ @font-face { font-family: 'Roboto Condensed'; font-style: normal; font-weight: 100 900; src: url('fonts/d2466d84dfac.woff2') format('woff2'); }
+/* Slackey */ @font-face { font-family: 'Slackey'; font-style: normal; font-weight: 400; src: url('fonts/b9e0133fed40.woff2') format('woff2'); }
+/* Fontdiner Swanky */ @font-face { font-family: 'Fontdiner Swanky'; font-style: normal; font-weight: 400; src: url('fonts/ab612a511c9f.woff2') format('woff2'); }
+/* Vampiro One */ @font-face { font-family: 'Vampiro One'; font-style: normal; font-weight: 400; src: url('fonts/51ccc1196225.woff2') format('woff2'); }
+/* Coming Soon */ @font-face { font-family: 'Coming Soon'; font-style: normal; font-weight: 400; src: url('fonts/f6db7f9cd556.woff2') format('woff2'); }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
   body {
     font-family: 'Barlow', sans-serif;
     font-size: 16px;
-    background: #fff;
+    background: #e0e0e0;
     color: #333;
     letter-spacing: 0.02em;
     padding: 20px;
@@ -31,7 +41,7 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    min-width: 120px;
+    width: 150px;
     flex-shrink: 0;
     padding-top: 0;
   }
@@ -61,7 +71,7 @@
     font-weight: 600;
     color: #333;
     background: #f0f0f0;
-    border: 1px solid #b0b0b0;
+    border: 1px solid #858585;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -80,6 +90,10 @@
     outline-offset: 2px;
   }
 
+  .toggle-btn:active:not(.active) {
+    background: #c0c0c0;
+  }
+
   .toggle-btn.active {
     background: #333;
     color: #fff;
@@ -92,9 +106,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-left: 1px solid #999;
+    border-left: 1px solid #858585;
     align-self: stretch;
-    min-height: calc(100vh - 20px);
+    min-height: calc(100vh - 40px);
     position: relative;
   }
 
@@ -145,33 +159,16 @@
 
   .chrome-top::after {
     content: attr(data-label);
-    font-size: 16px;
-    color: #9a9a9a;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    color: #b0b0b0;
     position: absolute;
-    left: 50%;
+    left: 0;
+    right: 0;
     top: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  .chrome-dots {
-    display: flex;
-    gap: 4px;
-    padding: 6px 0;
-  }
-
-  .chrome-dots span {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #444;
-  }
-
-  .chrome-address {
-    background: #2a2a2a;
-    border-radius: 3px;
-    height: 12px;
-    flex: 1;
-    margin-left: 8px;
+    transform: translateY(-50%);
+    text-align: center;
+    white-space: nowrap;
   }
 
   .chrome-bottom {
@@ -185,15 +182,11 @@
 
   .chrome-bottom::after {
     content: attr(data-label);
-    font-size: 16px;
-    color: #9a9a9a;
-  }
-
-  .shelf-icon {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    background: #333;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    color: #b0b0b0;
+    text-align: center;
+    white-space: nowrap;
   }
 
   /* Available viewport area */
@@ -221,7 +214,7 @@
     flex-direction: column;
     width: 767px;
     box-sizing: content-box;
-    border: 1px solid #979797;
+    border: 1px solid #858585;
     margin-right: 26px;
   }
 
@@ -270,6 +263,10 @@
 
   .ap-left-toggle:hover {
     background: #4a4a4a;
+  }
+
+  .ap-left-toggle:active {
+    background: #3a3a3a;
   }
 
   .ap-left-toggle-label {
@@ -380,16 +377,21 @@
 
   .sim-title-left {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
   }
 
   .sim-title-name {
     font-family: 'Lato', sans-serif;
     font-size: 24px;
-    line-height: 28px;
+    line-height: 1;
     font-weight: 700;
     color: #333;
+    margin: 0;
+    font-synthesis: none;
+    display: flex;
+    align-items: center;
+    height: 28px;
   }
 
   .sim-title-desc {
@@ -409,12 +411,58 @@
     display: block;
   }
 
+  .sim-title-logo:first-child {
+    margin-right: 3px;
+  }
+
+  .data-show-all-btn {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 700;
+    padding: 3px 12px;
+    height: 34px;
+    box-sizing: border-box;
+    border: 2px solid #555;
+    border-radius: 6px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .data-show-all-btn::after {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 0;
+    right: 0;
+    bottom: -7px;
+  }
+
+  .data-show-all-btn:hover,
+  .data-show-all-btn:focus-visible {
+    background: #f0f0f0;
+  }
+
+  .data-show-all-btn:active {
+    background: #d0d0d0;
+  }
+
+  .data-show-all-btn:focus-visible {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+
   .sim-info-btn {
     margin-left: 5px;
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
-    font-weight: bold;
+    font-weight: 700;
     padding: 3px 12px 3px 8px;
     height: 34px;
     box-sizing: border-box;
@@ -436,6 +484,11 @@
     left: 0;
     right: 0;
     bottom: -7px;
+  }
+
+  .sim-info-btn.compact-hit::after {
+    top: 0;
+    bottom: 0;
   }
 
   .sim-info-btn img {
@@ -504,6 +557,7 @@
     font-weight: 700;
     color: #333;
     flex: 1;
+    margin: 0;
   }
 
   .info-modal-close {
@@ -611,7 +665,7 @@
     width: 517px;
     display: flex;
     flex-direction: column;
-    border: 1px solid #979797;
+    border: 1px solid #858585;
     box-sizing: content-box;
   }
 
@@ -673,19 +727,7 @@
     display: flex;
     flex-direction: column;
     user-select: none;
-  }
-
-  .content-label {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 16px;
-    font-weight: 600;
-    color: #707070;
-    text-align: center;
-    white-space: pre-line;
-    pointer-events: none;
+    overflow: hidden;
   }
 
   /* Sim content containers */
@@ -720,14 +762,28 @@
   .sim-panel-tab-label {
     font-size: 18px;
     line-height: 22px;
-    font-weight: bold;
+    font-weight: 700;
     color: #333;
+    margin: 0;
   }
 
   .sim-panel-tab-subtitle {
     font-size: 16px;
     font-weight: 400;
     color: #333;
+  }
+
+  .sim-tab-wrap {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: stretch;
+    height: 36px;
+    z-index: 11;
+    box-sizing: border-box;
+    white-space: nowrap;
   }
 
   .sim-panel {
@@ -797,7 +853,7 @@
     left: 4px;
     font-family: 'Lato', sans-serif;
     font-size: 18px;
-    font-weight: bold;
+    font-weight: 700;
     color: #333;
     background: #e0e0e0;
     width: 28px;
@@ -826,7 +882,7 @@
   .trial-card.selected {
     background: #f0f0f0;
     border-color: #333;
-    box-shadow: 0 0 0 1px #333;
+    box-shadow: inset 0 0 0 1px #333;
   }
 
   .trial-card.new-card {
@@ -856,7 +912,7 @@
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
-    font-weight: bold;
+    font-weight: 700;
     color: #333;
     text-align: center;
   }
@@ -948,7 +1004,7 @@
     font-family: 'Lato', sans-serif;
     font-size: 18px;
     line-height: 22px;
-    font-weight: bold;
+    font-weight: 700;
     color: #fff;
     background: #000;
     width: 28px;
@@ -969,12 +1025,16 @@
   }
 
   .sim-parents {
-    padding: 2px 10px 30px 10px;
+    padding: 2px 10px 10px 10px;
     display: flex;
     gap: 10px;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+  }
+
+  .sim-parents.has-stats {
+    padding-bottom: 30px;
   }
 
   .sim-stats-wrap {
@@ -994,7 +1054,7 @@
     line-height: 20px;
     color: #333;
     text-align: center;
-    padding: 6px 15px;
+    padding: 6px 12px;
     background: #fff;
     border: 2px solid #555;
     border-radius: 999px;
@@ -1029,7 +1089,7 @@
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
-    font-weight: bold;
+    font-weight: 700;
     color: #333;
   }
 
@@ -1052,7 +1112,7 @@
     cursor: pointer;
     white-space: nowrap;
     box-sizing: border-box;
-    font-weight: bold;
+    font-weight: 700;
   }
 
   .sim-dropdown-trigger:hover,
@@ -1085,7 +1145,7 @@
     cursor: default;
     justify-content: center;
     border-radius: 999px;
-    padding: 6px 15px;
+    padding: 6px 12px;
     min-height: auto;
   }
 
@@ -1146,13 +1206,17 @@
     cursor: pointer;
     white-space: nowrap;
     color: #333;
-    font-family: 'Lato', sans-serif;
+    font-family: inherit;
     font-size: 16px;
     line-height: 20px;
   }
 
   .sim-dropdown-item:hover {
     background: #f0f0f0;
+  }
+
+  .sim-dropdown-item:active {
+    background: #d0d0d0;
   }
 
   .sim-dropdown-item.focused {
@@ -1164,7 +1228,7 @@
   .sim-dropdown-item.selected {
     background: #d0d0d0;
     color: #333;
-    font-weight: bold;
+    font-weight: 700;
   }
 
   .sim-parent-circle {
@@ -1181,15 +1245,15 @@
   }
 
   .sim-parent-circle svg {
-    width: 60px;
-    height: 60px;
+    width: 75%;
+    height: 75%;
   }
 
   .sim-cross-symbol {
     font-family: 'Lato', sans-serif;
     font-size: 24px;
     line-height: 28px;
-    font-weight: bold;
+    font-weight: 700;
     color: #333;
     flex-shrink: 0;
   }
@@ -1211,13 +1275,13 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 30px 0 7px 15px;
+    padding: 30px 17px 7px 17px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
     min-height: 0;
-    background: #fcfcfd;
+    background: #fff;
   }
 
   .sim-offspring:focus-visible {
@@ -1245,7 +1309,7 @@
     color: #333;
     font-style: italic;
     text-align: center;
-    width: 530px;
+    width: 100%;
   }
 
   .gen-row {
@@ -1253,11 +1317,11 @@
     align-items: center;
     gap: 4px;
     margin: 3px 0;
-    width: 530px;
+    width: 100%;
     padding: 4px 4px 4px 4px;
     border-radius: 6px;
     cursor: pointer;
-    border: 1px solid #919191;
+    border: 1px solid #858585;
   }
 
   .gen-row:hover,
@@ -1318,6 +1382,7 @@
     align-items: center;
     justify-content: center;
     color: #4CAF50;
+    position: relative;
   }
 
   .offspring-plant svg {
@@ -1363,7 +1428,7 @@
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
-    font-weight: 600;
+    font-weight: 700;
     color: #1565C0;
     background: #e3eef8;
     padding: 2px 8px;
@@ -1383,7 +1448,7 @@
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
-    font-weight: bold;
+    font-weight: 700;
     padding: 8px 12px 8px 8px;
     min-height: 44px;
     border: 2px solid #555;
@@ -1391,6 +1456,15 @@
     background: #fff;
     color: #333;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .sim-btn img {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
   }
 
   .sim-btn:focus-visible {
@@ -1439,6 +1513,7 @@
     padding-top: 10px;
     padding-bottom: 10px;
     justify-content: flex-start;
+    align-items: stretch;
     overflow: hidden;
   }
 
@@ -1461,6 +1536,7 @@
     text-align: center;
     padding: 0 8px 4px 8px;
     color: #333;
+    white-space: nowrap;
   }
 
   .data-chart-body {
@@ -1502,13 +1578,21 @@
   }
 
   .data-legend-swatch {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     border-radius: 2px;
     flex-shrink: 0;
     border: 1px solid #333;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 
 </style>
 </head>
@@ -1518,8 +1602,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <div class="btn-column">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v0.4</div>
-      <div style="font-weight: 400;">Updated: 6/5/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v0.5</div>
+      <div style="font-weight: 400;">Updated: 6/8/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -1531,8 +1615,8 @@
 
     <div role="group" aria-labelledby="device-label" style="margin-top: 16px;">
       <div class="btn-column-label" id="device-label">Device</div>
-      <button class="toggle-btn" data-device="none" aria-pressed="false">Teacher Desktop</button>
-      <button class="toggle-btn active" data-device="chromebook" aria-pressed="true">Chromebook</button>
+      <button class="toggle-btn active" data-device="none" aria-pressed="true">Teacher Desktop</button>
+      <button class="toggle-btn" data-device="chromebook" aria-pressed="false">Chromebook</button>
       <button class="toggle-btn" data-device="ipad" aria-pressed="false">iPad (&le; 9th gen)</button>
       <button class="toggle-btn" data-device="ipad10" aria-pressed="false">iPad (10th gen)</button>
       <button class="toggle-btn" data-device="android" aria-pressed="false">Android Tablet</button>
@@ -1540,8 +1624,8 @@
 
     <div role="group" aria-labelledby="layout-label" style="margin-top: 16px;">
       <div class="btn-column-label" id="layout-label">Layout</div>
-      <button class="toggle-btn" data-layout="standalone" aria-pressed="false">Standalone</button>
-      <button class="toggle-btn active" data-layout="ap-full" aria-pressed="true">AP Full Width</button>
+      <button class="toggle-btn active" data-layout="standalone" aria-pressed="true">Standalone</button>
+      <button class="toggle-btn" data-layout="ap-full" aria-pressed="false">AP Full Width</button>
       <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false">AP 2-Column</button>
     </div>
   </div>
@@ -1596,6 +1680,8 @@ const DEVICES = {
 };
 
 const AP_WIDTH = 1100;
+const AP_CONTENT_W_EXPANDED = 767;
+const AP_CONTENT_W_COLLAPSED = AP_WIDTH - 28 - 45 - 10 - 2 - 26;
 const AP_HEADER_H = 36;
 const AP_CONTENT_H = 562;
 
@@ -1631,14 +1717,12 @@ const SIMS = {
 };
 
 let activeSim = "bananas";
-let activeDevice = "chromebook";
-let activeLayout = "ap-full";
+let activeDevice = "none";
+let activeLayout = "standalone";
 let sidebarExpanded = true;
 
-const SCALE = 1;
-function getScale() { return SCALE; }
-
 // Cached sim DOM elements — persist across layout switches
+const SIM = {};
 let _simTitleBar = null;
 let _simContent = null;
 let _currentSim = null; // tracks which sim the cached elements belong to
@@ -1673,12 +1757,11 @@ function buildSimTitleBar() {
 
   const left = document.createElement("div");
   left.className = "sim-title-left";
-  const name = document.createElement("span");
+  const name = document.createElement("h1");
   name.className = "sim-title-name";
   name.textContent = SIMS[activeSim].name.toUpperCase();
   if (SIMS[activeSim].titleFont) {
     name.style.fontFamily = SIMS[activeSim].titleFont;
-    name.style.fontSynthesis = "none";
     if (SIMS[activeSim].titleLetterSpacing) {
       name.style.letterSpacing = SIMS[activeSim].titleLetterSpacing;
     }
@@ -1696,7 +1779,6 @@ function buildSimTitleBar() {
   deseLogo.src = "icons/DESE Logo.svg";
   deseLogo.alt = "DESE";
   deseLogo.className = "sim-title-logo";
-  deseLogo.style.marginRight = "3px";
   const ccLogo = document.createElement("img");
   ccLogo.src = "icons/CC Logo.svg";
   ccLogo.alt = "Concord Consortium";
@@ -1712,7 +1794,7 @@ function buildSimTitleBar() {
   infoBtn.addEventListener("click", () => {
     // Remove existing modal if any
     const existing = document.querySelector(".info-modal");
-    if (existing) { existing.remove(); return; }
+    if (existing) { existing._closeModal(); return; }
 
     // Create modal
     const modal = document.createElement("div");
@@ -1728,7 +1810,7 @@ function buildSimTitleBar() {
     hIcon.src = "icons/Info ICON.svg";
     hIcon.alt = "";
     hIcon.setAttribute("aria-hidden", "true");
-    const hTitle = document.createElement("div");
+    const hTitle = document.createElement("h2");
     hTitle.className = "info-modal-header-title";
     hTitle.textContent = "About the " + SIMS[activeSim].name + " Simulation";
     const closeBtn = document.createElement("button");
@@ -1738,14 +1820,15 @@ function buildSimTitleBar() {
     closeIcon.src = "icons/Close ICON.svg";
     closeIcon.alt = "";
     closeIcon.setAttribute("aria-hidden", "true");
-    closeIcon.style.width = "24px";
-    closeIcon.style.height = "24px";
     closeBtn.appendChild(closeIcon);
     function closeModal() {
       modal.remove();
-      document.removeEventListener("keydown", onEsc);
+      document.removeEventListener("keydown", onModalKeydown);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
       infoBtn.focus();
     }
+    modal._closeModal = closeModal;
     closeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       closeModal();
@@ -1824,13 +1907,15 @@ function buildSimTitleBar() {
       dragY = e.clientY - modalY;
       e.preventDefault();
     });
-    document.addEventListener("mousemove", (e) => {
+    function onMouseMove(e) {
       if (!dragging) return;
       modalX = e.clientX - dragX;
       modalY = e.clientY - dragY;
       modal.style.transform = "translate(" + modalX + "px, " + modalY + "px)";
-    });
-    document.addEventListener("mouseup", () => { dragging = false; });
+    }
+    function onMouseUp() { dragging = false; }
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
 
     // Keyboard dragging (Alt+Arrow)
     modal.addEventListener("keydown", (e) => {
@@ -1849,10 +1934,10 @@ function buildSimTitleBar() {
     });
 
     // Escape to close
-    function onEsc(e) {
+    function onModalKeydown(e) {
       if (e.key === "Escape") closeModal();
     }
-    document.addEventListener("keydown", onEsc);
+    document.addEventListener("keydown", onModalKeydown);
 
     // Focus close button
     closeBtn.focus();
@@ -1869,8 +1954,24 @@ function buildSimTitleBar() {
 
 function buildSimContent() {
   if (activeSim === "bananas") {
+    const MAX_TRIALS = 10;
+    const MAX_GENERATIONS = 25;
+    const OFFSPRING_MIN = 5;
+    const OFFSPRING_MAX = 20;
+    const CIRCLE_MIN = 42;
+    const CIRCLE_MAX = 80;
+
     const wrap = document.createElement("div");
     wrap.className = "sim-content";
+
+    const liveAnnounce = document.createElement("div");
+    liveAnnounce.className = "sr-only";
+    liveAnnounce.setAttribute("aria-live", "polite");
+    wrap.appendChild(liveAnnounce);
+    SIM.announce = function(msg) {
+      liveAnnounce.textContent = "";
+      requestAnimationFrame(() => { liveAnnounce.textContent = msg; });
+    };
 
     const panels = [
       { name: "Trials", fixedWidth: 155, subtitle: null },
@@ -1903,6 +2004,8 @@ function buildSimContent() {
         panel.classList.add("has-scroll");
         const scrollWrap = document.createElement("div");
         scrollWrap.className = "trials-scroll";
+        scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("aria-label", "Trials");
         function updateTrialsTabindex() {
           if (scrollWrap.scrollHeight > scrollWrap.clientHeight) {
             scrollWrap.setAttribute("tabindex", "0");
@@ -1912,9 +2015,9 @@ function buildSimContent() {
         }
         const allLabels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
         const trialState = {};
-        window._trialState = trialState;
-        window._trialCards = {};
-        window._selectedTrial = "A";
+        SIM.trialState = trialState;
+        SIM.trialCards = {};
+        SIM.selectedTrial = "A";
         let activeTrialCount = 1; // Start with just A
 
         // Abbreviate parent names for trial cards: "Wild W1" → "W1", "Cavendish C1" → "C1"
@@ -1925,7 +2028,7 @@ function buildSimContent() {
         }
 
         function updateTrialCardLabel(letter) {
-          const cardEl = window._trialCards[letter];
+          const cardEl = SIM.trialCards[letter];
           if (!cardEl) return;
           const st = trialState[letter];
 
@@ -1941,7 +2044,7 @@ function buildSimContent() {
           let html = "";
           // Line 1: cross label — × always centered
           function crossRow(left, right) {
-            return '<span style="display:flex;align-items:center;justify-content:center;gap:4px;font-weight:500;font-size:18px;width:100%">' +
+            return '<span style="display:flex;align-items:center;justify-content:center;gap:4px;font-weight:500;font-size:16px;width:100%">' +
               '<span style="flex:1;text-align:right">' + left + '</span>' +
               '<span>\u00d7</span>' +
               '<span style="flex:1;text-align:left">' + right + '</span>' +
@@ -1968,54 +2071,69 @@ function buildSimContent() {
               '<span style="width:1px"></span>' +
               '<span style="width:14px;height:14px;border-radius:2px;background:#444;border:1px solid #333;flex-shrink:0"></span>' + iPct + '%' +
               '</span>';
+          } else if (st.fungusAfterGen !== null) {
+            html += '<span aria-hidden="true">&nbsp;</span>';
+            html += '<span aria-hidden="true">&nbsp;</span>';
           }
 
           // Line 4: fungus status — shows first affected generation
           if (st.fungusAfterGen !== null) {
             const fGen = st.fungusAfterGen + 1;
-            html += '<span>Fungus: G' + fGen + (fGen < 25 ? '+' : '') + '</span>';
+            html += '<span>Fungus: G' + fGen + (fGen < MAX_GENERATIONS ? '+' : '') + '</span>';
           }
 
           statsEl.innerHTML = html;
+
+          // Enrich aria-label with trial state summary
+          let ariaParts = ["Trial " + letter];
+          if (st.p1 && st.p2) ariaParts.push(abbrev(st.p1) + " crossed with " + abbrev(st.p2));
+          else if (st.p1) ariaParts.push(abbrev(st.p1) + ", second parent not selected");
+          else if (st.p2) ariaParts.push(abbrev(st.p2) + ", first parent not selected");
+          if (allPlants.length > 0) {
+            const inf = allPlants.filter(p => p.infected).length;
+            const h = allPlants.length - inf;
+            ariaParts.push(allPlants.length + " offspring, " + h + " healthy, " + inf + " infected");
+          }
+          cardEl.setAttribute("aria-label", ariaParts.join(". "));
 
           const resetBtn = cardEl.querySelector(".trial-card-reset");
           if (resetBtn) {
             resetBtn.setAttribute("aria-disabled", (st.p1 || st.p2 || st.locked) ? "false" : "true");
           }
         }
-        window._updateTrialCardLabel = updateTrialCardLabel;
+        SIM.updateTrialCardLabel = updateTrialCardLabel;
 
         function buildTrialCard(letter) {
           trialState[letter] = { p1: null, p2: null, locked: false, generations: [], fungusAfterGen: null };
           const card = document.createElement("div");
           card.className = "trial-card";
-          card.setAttribute("role", "button");
+          card.setAttribute("role", "tab");
           card.setAttribute("tabindex", "0");
           card.setAttribute("aria-label", "Trial " + letter);
           card.style.cursor = "pointer";
-          window._trialCards[letter] = card;
+          SIM.trialCards[letter] = card;
           function selectTrial() {
             scrollWrap.querySelectorAll(".trial-card").forEach(c => {
               c.classList.remove("selected");
-              c.setAttribute("aria-pressed", "false");
+              c.setAttribute("aria-selected", "false");
             });
             card.classList.add("selected");
-            card.setAttribute("aria-pressed", "true");
-            window._selectedTrial = letter;
+            card.setAttribute("aria-selected", "true");
+            SIM.selectedTrial = letter;
             const indicator = document.querySelector(".sim-trial-indicator");
             if (indicator) indicator.textContent = letter;
-            if (window._syncDropdownsToTrial) window._syncDropdownsToTrial(letter);
-            if (window._renderOffspring) window._renderOffspring(letter);
-            if (window._updateSimButtons) window._updateSimButtons();
+            if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(letter);
+            if (SIM.renderOffspring) SIM.renderOffspring(letter);
+            if (SIM.updateSimButtons) SIM.updateSimButtons();
           }
           card.addEventListener("click", selectTrial);
           card.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
+            if ((e.key === "Enter" || e.key === " ") && e.target === card) {
               e.preventDefault();
               selectTrial();
             }
           });
-          card.setAttribute("aria-pressed", "false");
+          card.setAttribute("aria-selected", "false");
           const lbl = document.createElement("span");
           lbl.className = "trial-card-label";
           lbl.textContent = letter;
@@ -2035,9 +2153,9 @@ function buildSimContent() {
             trialState[letter] = { p1: null, p2: null, locked: false, generations: [], fungusAfterGen: null };
             updateTrialCardLabel(letter);
             resetBtn.setAttribute("aria-disabled", "true");
-            if (window._syncDropdownsToTrial) window._syncDropdownsToTrial(letter);
-            if (window._renderOffspring) window._renderOffspring(letter);
-            if (window._updateSimButtons) window._updateSimButtons();
+            if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(letter);
+            if (SIM.renderOffspring) SIM.renderOffspring(letter);
+            if (SIM.updateSimButtons) SIM.updateSimButtons();
           }
           resetBtn.addEventListener("click", resetTrial);
           card.appendChild(resetBtn);
@@ -2062,7 +2180,7 @@ function buildSimContent() {
           lbl.textContent = "New";
           card.appendChild(lbl);
           card.addEventListener("click", () => {
-            if (activeTrialCount >= 10) return;
+            if (activeTrialCount >= MAX_TRIALS) return;
             const letter = allLabels[activeTrialCount];
             activeTrialCount++;
             // Replace this card with a real trial card
@@ -2071,20 +2189,20 @@ function buildSimContent() {
             // Select the new card
             scrollWrap.querySelectorAll(".trial-card").forEach(c => {
               c.classList.remove("selected");
-              c.setAttribute("aria-pressed", "false");
+              c.setAttribute("aria-selected", "false");
             });
             realCard.classList.add("selected");
-            realCard.setAttribute("aria-pressed", "true");
-            window._selectedTrial = letter;
+            realCard.setAttribute("aria-selected", "true");
+            SIM.selectedTrial = letter;
             const indicator = document.querySelector(".sim-trial-indicator");
             if (indicator) indicator.textContent = letter;
-            if (window._syncDropdownsToTrial) window._syncDropdownsToTrial(letter);
-            if (window._renderOffspring) window._renderOffspring(letter);
-            if (window._updateSimButtons) window._updateSimButtons();
+            if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(letter);
+            if (SIM.renderOffspring) SIM.renderOffspring(letter);
+            if (SIM.updateSimButtons) SIM.updateSimButtons();
             // Focus the newly created card
             realCard.focus();
             // Hide "+ New" if we've hit the max
-            if (activeTrialCount >= 10) {
+            if (activeTrialCount >= MAX_TRIALS) {
               card.style.display = "none";
             }
           });
@@ -2100,7 +2218,7 @@ function buildSimContent() {
         // Build initial cards: A (real, selected) + New card
         const cardA = buildTrialCard("A");
         cardA.classList.add("selected");
-        cardA.setAttribute("aria-pressed", "true");
+        cardA.setAttribute("aria-selected", "true");
         scrollWrap.appendChild(cardA);
         scrollWrap.appendChild(buildNewCard());
 
@@ -2109,8 +2227,9 @@ function buildSimContent() {
         focusRing.className = "scroll-focus-ring";
         panel.appendChild(focusRing);
         requestAnimationFrame(updateTrialsTabindex);
-        const trialsObserver = new MutationObserver(updateTrialsTabindex);
-        trialsObserver.observe(scrollWrap, { childList: true });
+        if (SIM.trialsObserver) SIM.trialsObserver.disconnect();
+        SIM.trialsObserver = new MutationObserver(updateTrialsTabindex);
+        SIM.trialsObserver.observe(scrollWrap, { childList: true });
       }
 
       // Simulation panel content
@@ -2123,6 +2242,7 @@ function buildSimContent() {
         const indicator = document.createElement("div");
         indicator.className = "sim-trial-indicator";
         indicator.textContent = "A";
+        indicator.setAttribute("aria-hidden", "true");
         panel.appendChild(indicator);
 
         // Top: Parents section
@@ -2147,7 +2267,7 @@ function buildSimContent() {
           const dropdown = document.createElement("div");
           dropdown.className = "sim-dropdown";
 
-          // Measure longest option to set fixed width
+          // Measure longest option in both Lato and Roboto Condensed (for responsive)
           const measurer = document.createElement("span");
           measurer.style.cssText = "font-family:'Lato',sans-serif;font-size:16px;visibility:hidden;position:absolute;white-space:nowrap;";
           document.body.appendChild(measurer);
@@ -2156,13 +2276,24 @@ function buildSimContent() {
             measurer.textContent = opt;
             maxW = Math.max(maxW, measurer.offsetWidth);
           });
+          measurer.style.fontFamily = "'Roboto Condensed',sans-serif";
+          let maxWCondensed = 0;
+          parentOptions.forEach(opt => {
+            measurer.textContent = opt;
+            maxWCondensed = Math.max(maxWCondensed, measurer.offsetWidth);
+          });
           document.body.removeChild(measurer);
           // width = text + gap(6) + caret(24) + padding(10+10) + border(2+2)
           const triggerW = maxW + 6 + 24 + 20 + 4;
+          // condensed: gap(0) + caret(18) + padding(7+5) + border(2+2)
+          const triggerWCondensed = maxWCondensed + 0 + 18 + 12 + 4;
 
           const trigger = document.createElement("div");
           trigger.className = "sim-dropdown-trigger";
           trigger.style.width = triggerW + "px";
+          trigger._defaultW = triggerW;
+          trigger._latoW = triggerW;
+          trigger._condensedW = triggerWCondensed;
           trigger.setAttribute("tabindex", "0");
           trigger.setAttribute("role", "combobox");
           trigger.setAttribute("aria-expanded", "false");
@@ -2209,8 +2340,8 @@ function buildSimContent() {
 
           function selectItem(i) {
             // Don't allow changes if trial is locked
-            const trial = window._selectedTrial;
-            if (window._trialState && window._trialState[trial] && window._trialState[trial].locked) {
+            const trial = SIM.selectedTrial;
+            if (SIM.trialState && SIM.trialState[trial] && SIM.trialState[trial].locked) {
               closeDropdown();
               return;
             }
@@ -2219,6 +2350,7 @@ function buildSimContent() {
             items.forEach(it => {
               it.classList.remove("selected");
               it.setAttribute("aria-selected", "false");
+              it.style.fontWeight = "";
             });
             items[i].classList.add("selected");
             items[i].setAttribute("aria-selected", "true");
@@ -2231,11 +2363,11 @@ function buildSimContent() {
               circleEl.style.color = parentColors[parentOptions[i]] || "#4CAF50";
             }
             // Update trial state
-            if (window._trialState && trial) {
+            if (SIM.trialState && trial) {
               const parentNum = label === "Parent 1" ? "p1" : "p2";
-              window._trialState[trial][parentNum] = parentOptions[i];
-              if (window._updateTrialCardLabel) window._updateTrialCardLabel(trial);
-              if (window._updateSimButtons) window._updateSimButtons();
+              SIM.trialState[trial][parentNum] = parentOptions[i];
+              if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
+              if (SIM.updateSimButtons) SIM.updateSimButtons();
             }
           }
 
@@ -2247,6 +2379,7 @@ function buildSimContent() {
               items.forEach(it => {
                 it.classList.remove("selected");
                 it.setAttribute("aria-selected", "false");
+                it.style.fontWeight = "";
               });
               if (circleEl) {
                 circleEl.innerHTML = "";
@@ -2260,6 +2393,7 @@ function buildSimContent() {
                 items.forEach(it => {
                   it.classList.remove("selected");
                   it.setAttribute("aria-selected", "false");
+                  it.style.fontWeight = "";
                 });
                 items[idx].classList.add("selected");
                 items[idx].setAttribute("aria-selected", "true");
@@ -2281,9 +2415,11 @@ function buildSimContent() {
             trigger.removeAttribute("aria-controls");
             trigger.removeAttribute("aria-activedescendant");
             trigger.style.width = "";
+            trigger.style.padding = "";
+            trigger.style.gap = "";
+            trigger.style.fontWeight = "";
+            dropdown.style.fontFamily = "";
             dropdown.insertBefore(lbl, trigger);
-            var t = triggerText.textContent;
-            if (t && t.match(/^Wild W/)) triggerText.textContent = t.replace("Wild W", "Wild Banana W");
           };
           dropdown._unlock = function() {
             dropdown.classList.remove("locked");
@@ -2295,8 +2431,6 @@ function buildSimContent() {
             trigger.setAttribute("aria-controls", id + "-list");
             trigger.style.width = triggerW + "px";
             group.insertBefore(lbl, dropdown);
-            var t = triggerText.textContent;
-            if (t && t.match(/^Wild Banana W/)) triggerText.textContent = t.replace("Wild Banana W", "Wild W");
           };
 
           function openDropdown(fromKeyboard) {
@@ -2319,6 +2453,7 @@ function buildSimContent() {
           function closeDropdown() {
             dropdown.classList.remove("open");
             trigger.setAttribute("aria-expanded", "false");
+            trigger.removeAttribute("aria-activedescendant");
             items.forEach(it => it.classList.remove("focused"));
             focusedIndex = -1;
           }
@@ -2392,16 +2527,21 @@ function buildSimContent() {
         }
 
         // Close dropdowns when clicking outside
-        document.addEventListener("click", () => {
+        if (SIM.closeDropdownsHandler) document.removeEventListener("click", SIM.closeDropdownsHandler);
+        SIM.closeDropdownsHandler = () => {
           document.querySelectorAll(".sim-dropdown.open").forEach(d => {
             d.classList.remove("open");
-            d.querySelector(".sim-dropdown-trigger").setAttribute("aria-expanded", "false");
+            const trig = d.querySelector(".sim-dropdown-trigger");
+            trig.setAttribute("aria-expanded", "false");
+            trig.removeAttribute("aria-activedescendant");
           });
-        });
+        };
+        document.addEventListener("click", SIM.closeDropdownsHandler);
 
         // Left circle
         const circle1 = document.createElement("div");
         circle1.className = "sim-parent-circle";
+        circle1.setAttribute("aria-hidden", "true");
 
         // Left dropdown
         parents.appendChild(buildParentGroup("Parent 1", circle1));
@@ -2412,11 +2552,13 @@ function buildSimContent() {
         const cross = document.createElement("span");
         cross.className = "sim-cross-symbol";
         cross.textContent = "\u00d7";
+        cross.setAttribute("aria-hidden", "true");
         parents.appendChild(cross);
 
         // Right circle
         const circle2 = document.createElement("div");
         circle2.className = "sim-parent-circle";
+        circle2.setAttribute("aria-hidden", "true");
         parents.appendChild(circle2);
 
         // Right dropdown
@@ -2424,8 +2566,8 @@ function buildSimContent() {
         parents.appendChild(parent2Group);
 
         // Sync dropdowns when switching trials
-        window._syncDropdownsToTrial = function(letter) {
-          const st = window._trialState[letter];
+        SIM.syncDropdownsToTrial = function(letter) {
+          const st = SIM.trialState[letter];
           parents.querySelectorAll(".sim-dropdown").forEach(d => {
             if (d._parentLabel === "Parent 1") {
               d._setSelection(st.p1);
@@ -2434,7 +2576,86 @@ function buildSimContent() {
             }
             if (st.locked) d._lock(); else d._unlock();
           });
+          updateCircleSize();
         };
+
+        function updateCircleSize() {
+          const pw = parents.clientWidth;
+          const triggers = parents.querySelectorAll(".sim-dropdown-trigger");
+          const t0 = triggers[0];
+          if (!t0) return;
+          const latoW = t0._latoW;
+          const condensedW = t0._condensedW;
+          const crossW = 24;
+          const minGap = 5;
+          const fullGap = 10;
+
+          // Phase 1: try Lato-width dropdowns, shrink circles
+          const availLato = pw - (latoW * 2) - crossW - (fullGap * 4);
+          const szLato = Math.max(CIRCLE_MIN, Math.min(CIRCLE_MAX, Math.floor(availLato / 2)));
+
+          if (szLato > CIRCLE_MIN) {
+            const t = (szLato - CIRCLE_MIN) / (CIRCLE_MAX - CIRCLE_MIN);
+            const gap = Math.max(minGap, Math.round(minGap + t * (fullGap - minGap)));
+            const crossFontSize = Math.round(20 + t * (24 - 20));
+            parents.style.gap = gap + "px";
+            cross.style.fontSize = crossFontSize + "px";
+            parents.querySelectorAll(".sim-parent-group").forEach(g => { g.style.flex = ""; });
+            triggers.forEach(tr => {
+              const dd = tr.closest(".sim-dropdown");
+              if (dd.classList.contains("locked")) return;
+              tr.style.width = tr._defaultW + "px";
+              tr.style.padding = "";
+              tr.style.gap = "";
+              const caret = tr.querySelector(".sim-dropdown-caret");
+              if (caret) { caret.style.width = ""; caret.style.height = ""; }
+              tr.style.fontWeight = "";
+              dd.style.fontFamily = "";
+              const selItem = dd.querySelector(".sim-dropdown-item.selected");
+              if (selItem) selItem.style.fontWeight = "";
+            });
+            circle1.style.width = szLato + "px"; circle1.style.height = szLato + "px";
+            circle2.style.width = szLato + "px"; circle2.style.height = szLato + "px";
+            return;
+          }
+
+          // Phase 2: circles at minimum (42px) — switch to Roboto Condensed, use min gap
+          parents.style.gap = minGap + "px";
+          cross.style.fontSize = "20px";
+          parents.querySelectorAll(".sim-parent-group").forEach(g => {
+            g.style.flex = g.classList.contains("locked") ? "" : "none";
+          });
+          circle1.style.width = CIRCLE_MIN + "px"; circle1.style.height = CIRCLE_MIN + "px";
+          circle2.style.width = CIRCLE_MIN + "px"; circle2.style.height = CIRCLE_MIN + "px";
+
+          // Space available for the two dropdowns after circles, cross, and gaps are placed
+          const fixedSpace = CIRCLE_MIN * 2 + crossW + (minGap * 4);
+          const ddBudget = Math.floor((pw - fixedSpace) / 2);
+          const ddW = Math.max(condensedW, Math.min(latoW, ddBudget));
+
+          const useCondensed = ddW < latoW;
+          const ddT = latoW > condensedW ? (ddW - condensedW) / (latoW - condensedW) : 0;
+          triggers.forEach(t => {
+            const dd = t.closest(".sim-dropdown");
+            if (dd.classList.contains("locked")) {
+              return;
+            }
+            const ddPadL = Math.round(7 + ddT * (10 - 7));
+            const ddPadR = Math.round(5 + ddT * (10 - 5));
+            const ddGap = Math.round(0 + ddT * (6 - 0));
+            const caretSize = Math.round(18 + ddT * (24 - 18));
+            t.style.width = ddW + "px";
+            t.style.padding = "8px " + ddPadR + "px 8px " + ddPadL + "px";
+            t.style.gap = ddGap + "px";
+            const caret = t.querySelector(".sim-dropdown-caret");
+            if (caret) { caret.style.width = caretSize + "px"; caret.style.height = caretSize + "px"; }
+            t.style.fontWeight = useCondensed ? "500" : "";
+            dd.style.fontFamily = useCondensed ? "'Roboto Condensed',sans-serif" : "";
+            const selItem = dd.querySelector(".sim-dropdown-item.selected");
+            if (selItem) selItem.style.fontWeight = useCondensed ? "500" : "";
+          });
+        }
+        SIM.updateCircleSize = updateCircleSize;
 
         inner.appendChild(parents);
 
@@ -2443,36 +2664,10 @@ function buildSimContent() {
         statsWrap.className = "sim-stats-wrap";
         const statsLabel = document.createElement("div");
         statsLabel.className = "sim-stats";
-        statsLabel.setAttribute("aria-live", "polite");
-        statsLabel.textContent = "Select two parents to begin";
+        statsLabel.innerHTML = "Select two parents to begin";
         statsWrap.style.display = "none";
         statsWrap.appendChild(statsLabel);
         inner.appendChild(statsWrap);
-
-        function updateStatsLabel() {
-          const trial = window._selectedTrial;
-          const st = window._trialState[trial];
-          if (!st || !st.p1 || !st.p2) {
-            statsWrap.style.display = "none";
-            return;
-          }
-          statsWrap.style.display = "";
-          if (st.p1 && st.p2 && st.generations.length === 0) {
-            let text = "Click <b>Cross Plants</b> to see their offspring";
-            if (st.fungusAfterGen !== null) text += " \u00b7 Fungus active";
-            statsLabel.innerHTML = text;
-            var ph = offspring.querySelector(".sim-offspring-placeholder");
-            if (ph) ph.style.display = "";
-            return;
-          }
-          const crosses = st.generations.length;
-          const total = st.generations.reduce((sum, gen) => sum + gen.length, 0);
-          let text = "Crosses: " + crosses + " \u00b7 Offspring: " + total;
-          if (st.fungusAfterGen !== null) text += " \u00b7 Fungus active";
-          if (crosses >= 25) text += " \u00b7 Max reached";
-          statsLabel.textContent = text;
-        }
-        window._updateStatsLabel = updateStatsLabel;
 
         // Middle: Offspring section (scrollable)
         const offspring = document.createElement("div");
@@ -2492,6 +2687,32 @@ function buildSimContent() {
         placeholder.style.display = "none";
         offspring.appendChild(placeholder);
 
+        function updateStatsLabel() {
+          const trial = SIM.selectedTrial;
+          const st = SIM.trialState[trial];
+          if (!st || !st.p1 || !st.p2) {
+            statsWrap.style.display = "none";
+            parents.classList.remove("has-stats");
+            return;
+          }
+          statsWrap.style.display = "";
+          parents.classList.add("has-stats");
+          if (st.p1 && st.p2 && st.generations.length === 0) {
+            let text = "Click <b>Cross Plants</b> to see their offspring";
+            if (st.fungusAfterGen !== null) text += " · Fungus active";
+            statsLabel.innerHTML = text;
+            const ph = offspring.querySelector(".sim-offspring-placeholder");
+            if (ph) ph.style.display = "";
+            return;
+          }
+          const crosses = st.generations.length;
+          const total = st.generations.reduce((sum, gen) => sum + gen.length, 0);
+          let text = "Crosses: " + crosses + " · Offspring: " + total;
+          if (st.fungusAfterGen !== null) text += " · Fungus active";
+          statsLabel.innerHTML = text;
+        }
+        SIM.updateStatsLabel = updateStatsLabel;
+
         const offspringWrap = document.createElement("div");
         offspringWrap.className = "sim-offspring-wrap";
         offspringWrap.appendChild(offspring);
@@ -2502,22 +2723,22 @@ function buildSimContent() {
         requestAnimationFrame(updateOffspringTabindex);
 
         // Track selected generation per trial
-        window._selectedGen = {};
+        SIM.selectedGen = {};
 
         // Render offspring for a given trial
         function updateGenRowTabindex() {
           const rows = Array.from(offspring.querySelectorAll(".gen-row"));
           if (rows.length === 0) return;
-          const trial = window._selectedTrial;
-          const selIdx = window._selectedGen[trial];
+          const trial = SIM.selectedTrial;
+          const selIdx = SIM.selectedGen[trial];
           // If a row is selected, it gets tabindex="0"; otherwise first row does
           const activeIdx = (selIdx !== null && selIdx >= 0 && selIdx < rows.length) ? selIdx : 0;
           rows.forEach((r, i) => r.setAttribute("tabindex", i === activeIdx ? "0" : "-1"));
         }
 
         function renderOffspring(trial) {
-          const st = window._trialState[trial];
-          if (trial !== window._selectedTrial) return;
+          const st = SIM.trialState[trial];
+          if (trial !== SIM.selectedTrial) return;
           offspring.innerHTML = "";
           if (!st || (st.generations.length === 0 && st.fungusAfterGen === null)) {
             offspring.classList.remove("has-plants");
@@ -2527,7 +2748,7 @@ function buildSimContent() {
             if (st && st.p1 && st.p2) ph.style.display = "";
             else ph.style.display = "none";
             offspring.appendChild(ph);
-            window._selectedGen[trial] = null;
+            SIM.selectedGen[trial] = null;
             requestAnimationFrame(updateOffspringTabindex);
             return;
           }
@@ -2559,25 +2780,27 @@ function buildSimContent() {
             const row = document.createElement("div");
             row.className = "gen-row";
             row.setAttribute("role", "button");
-            row.setAttribute("aria-label", "Generation " + (gi + 1) + ", " + genPlants.length + " offspring");
+            const genInf = genPlants.filter(p => p.infected).length;
+            const genH = genPlants.length - genInf;
+            row.setAttribute("aria-label", "Generation " + (gi + 1) + ", " + genPlants.length + " offspring, " + genH + " healthy, " + genInf + " infected");
             // Roving tabindex: only selected row (or first row) gets tabindex="0"
-            const isSelected = window._selectedGen[trial] === gi;
+            const isSelected = SIM.selectedGen[trial] === gi;
             if (isSelected) row.classList.add("selected");
             row.setAttribute("tabindex", "-1");
             row.addEventListener("click", () => {
-              if (window._selectedGen[trial] === gi) {
-                window._selectedGen[trial] = null;
+              if (SIM.selectedGen[trial] === gi) {
+                SIM.selectedGen[trial] = null;
               } else {
-                window._selectedGen[trial] = gi;
+                SIM.selectedGen[trial] = gi;
               }
               const rows = offspring.querySelectorAll(".gen-row");
               rows.forEach((r, ri) => {
-                r.classList.toggle("selected", window._selectedGen[trial] === ri);
-                r.setAttribute("aria-pressed", window._selectedGen[trial] === ri ? "true" : "false");
+                r.classList.toggle("selected", SIM.selectedGen[trial] === ri);
+                r.setAttribute("aria-pressed", SIM.selectedGen[trial] === ri ? "true" : "false");
               });
               // Update roving tabindex
               updateGenRowTabindex();
-              if (window._updateDataPanel) window._updateDataPanel();
+              if (SIM.updateDataPanel) SIM.updateDataPanel();
             });
             row.addEventListener("keydown", (e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -2617,7 +2840,7 @@ function buildSimContent() {
             genPlants.forEach(pl => {
               const cell = document.createElement("div");
               cell.className = "offspring-plant";
-              cell.style.position = "relative";
+              cell.setAttribute("aria-hidden", "true");
               cell.innerHTML = bananaTreeSVG;
               if (pl.infected) {
                 cell.classList.add("infected");
@@ -2631,6 +2854,16 @@ function buildSimContent() {
           // Set initial roving tabindex
           updateGenRowTabindex();
 
+          // Max crosses label after G25
+          if (st.generations.length >= MAX_GENERATIONS) {
+            const maxLabel = document.createElement("div");
+            maxLabel.className = "sim-offspring-placeholder";
+            maxLabel.textContent = "Max crosses reached";
+            maxLabel.style.margin = "6px 0";
+            maxLabel.style.padding = "2px 0";
+            offspring.appendChild(maxLabel);
+          }
+
           // Fungus divider at the end if introduced after last generation
           if (st.fungusAfterGen !== null && st.fungusAfterGen === st.generations.length && st.generations.length > 0) {
             const divider = document.createElement("div");
@@ -2642,10 +2875,10 @@ function buildSimContent() {
             offspring.appendChild(divider);
           }
 
-          offspring.scrollTop = offspring.scrollHeight;
+          // Scroll position set by caller when needed
           requestAnimationFrame(updateOffspringTabindex);
         }
-        window._renderOffspring = renderOffspring;
+        SIM.renderOffspring = renderOffspring;
 
         // Bottom: Buttons
         const buttons = document.createElement("div");
@@ -2662,8 +2895,6 @@ function buildSimContent() {
             const icon = document.createElement("img");
             icon.src = iconMap[label];
             icon.alt = "";
-            icon.style.cssText = "height:24px;flex-shrink:0;";
-            btn.style.cssText += "display:flex;align-items:center;gap:4px;";
             icon.setAttribute("aria-hidden", "true");
             btn.appendChild(icon);
             const span = document.createElement("span");
@@ -2675,16 +2906,16 @@ function buildSimContent() {
           }
           if (label === "Cross Plants") {
             btn.setAttribute("aria-disabled", "true");
-            window._crossBtn = btn;
+            SIM.crossBtn = btn;
             btn.addEventListener("click", () => {
               if (btn.getAttribute("aria-disabled") === "true") return;
-              const trial = window._selectedTrial;
-              const st = window._trialState[trial];
-              if (st && st.p1 && st.p2 && st.generations.length < 25) {
+              const trial = SIM.selectedTrial;
+              const st = SIM.trialState[trial];
+              if (st && st.p1 && st.p2 && st.generations.length < MAX_GENERATIONS) {
                 st.locked = true;
                 // Lock dropdowns
                 parents.querySelectorAll(".sim-dropdown").forEach(d => d._lock());
-                const count = 5 + Math.floor(Math.random() * 16);
+                const count = OFFSPRING_MIN + Math.floor(Math.random() * (OFFSPRING_MAX - OFFSPRING_MIN + 1));
                 const isFungusActive = st.fungusAfterGen !== null && st.generations.length >= st.fungusAfterGen;
                 // Mendelian genetics: R = resistant (dominant), r = susceptible (recessive)
                 const genotypes = {
@@ -2704,38 +2935,45 @@ function buildSimContent() {
                   plants.push({ infected: isFungusActive && !isResistant });
                 }
                 st.generations.push(plants);
-                if (window._updateTrialCardLabel) window._updateTrialCardLabel(trial);
+                const healthy = plants.filter(p => !p.infected).length;
+                const infected = plants.filter(p => p.infected).length;
+                if (SIM.announce) SIM.announce("Generation " + st.generations.length + ": " + plants.length + " offspring, " + healthy + " healthy, " + infected + " infected.");
+                if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
                 renderOffspring(trial);
-                window._updateSimButtons();
+                offspring.scrollTop = offspring.scrollHeight;
+                SIM.updateSimButtons();
               }
             });
           }
           if (label === "Introduce Fungus") {
             btn.setAttribute("aria-disabled", "true");
-            window._fungusBtn = btn;
+            SIM.fungusBtn = btn;
             btn.addEventListener("click", () => {
               if (btn.getAttribute("aria-disabled") === "true") return;
-              const trial = window._selectedTrial;
-              const st = window._trialState[trial];
+              const trial = SIM.selectedTrial;
+              const st = SIM.trialState[trial];
               if (st && st.fungusAfterGen === null) {
                 st.fungusAfterGen = st.generations.length;
+                if (SIM.announce) SIM.announce("Fungus introduced.");
+                if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
                 renderOffspring(trial);
-                window._updateSimButtons();
+                SIM.updateSimButtons();
+                if (SIM.updateDataPanel) SIM.updateDataPanel();
               }
             });
           }
           if (label === "Reset Trial") {
             btn.setAttribute("aria-disabled", "true");
-            window._resetBtn = btn;
+            SIM.resetBtn = btn;
             btn.addEventListener("click", () => {
               if (btn.getAttribute("aria-disabled") === "true") return;
-              const trial = window._selectedTrial;
-              if (window._trialState[trial]) {
-                window._trialState[trial] = { p1: null, p2: null, locked: false, generations: [], fungusAfterGen: null };
-                if (window._updateTrialCardLabel) window._updateTrialCardLabel(trial);
-                if (window._syncDropdownsToTrial) window._syncDropdownsToTrial(trial);
+              const trial = SIM.selectedTrial;
+              if (SIM.trialState[trial]) {
+                SIM.trialState[trial] = { p1: null, p2: null, locked: false, generations: [], fungusAfterGen: null };
+                if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
+                if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(trial);
                 renderOffspring(trial);
-                window._updateSimButtons();
+                SIM.updateSimButtons();
               }
             });
           }
@@ -2744,25 +2982,25 @@ function buildSimContent() {
         inner.appendChild(buttons);
 
         // Update button disabled states based on current trial
-        window._updateSimButtons = function() {
-          const trial = window._selectedTrial;
-          const st = window._trialState[trial];
+        SIM.updateSimButtons = function() {
+          const trial = SIM.selectedTrial;
+          const st = SIM.trialState[trial];
           if (!st) return;
           // Cross Plants: enabled only when both parents selected
-          if (window._crossBtn) window._crossBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.generations.length >= 25) ? "true" : "false");
+          if (SIM.crossBtn) SIM.crossBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.generations.length >= MAX_GENERATIONS) ? "true" : "false");
           // Introduce Fungus: enabled when both parents selected and not already introduced
-          if (window._fungusBtn) {
+          if (SIM.fungusBtn) {
             if (st.fungusAfterGen !== null) {
-              window._fungusBtn.setAttribute("aria-disabled", "true");
+              SIM.fungusBtn.setAttribute("aria-disabled", "true");
             } else {
-              window._fungusBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.generations.length >= 25) ? "true" : "false");
+              SIM.fungusBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.generations.length >= MAX_GENERATIONS) ? "true" : "false");
             }
           }
           // Reset Trial: enabled when at least one parent selected
-          if (window._resetBtn) window._resetBtn.setAttribute("aria-disabled", (!(st.p1 || st.p2 || st.generations.length > 0)) ? "true" : "false");
+          if (SIM.resetBtn) SIM.resetBtn.setAttribute("aria-disabled", (!(st.p1 || st.p2 || st.generations.length > 0)) ? "true" : "false");
           // Update stats label and data panel
           updateStatsLabel();
-          if (window._updateDataPanel) window._updateDataPanel();
+          if (SIM.updateDataPanel) SIM.updateDataPanel();
         };
 
         panel.appendChild(inner);
@@ -2785,9 +3023,9 @@ function buildSimContent() {
         const dpr = window.devicePixelRatio || 1;
         const pieCanvas = document.createElement("canvas");
         pieCanvas.width = 160 * dpr;
-        pieCanvas.height = 105 * dpr;
+        pieCanvas.height = 103 * dpr;
         pieCanvas.style.width = "160px";
-        pieCanvas.style.height = "105px";
+        pieCanvas.style.height = "103px";
         pieCanvas.setAttribute("role", "img");
         pieCanvas.setAttribute("aria-label", "Pie chart showing offspring phenotype percentages");
         pieChartBody.appendChild(pieCanvas);
@@ -2816,14 +3054,12 @@ function buildSimContent() {
         bottomHalf.className = "data-half line-graph";
         const lineTitle = document.createElement("div");
         lineTitle.className = "data-chart-title";
-        lineTitle.textContent = "Fungus Resistance over Generations";
+        lineTitle.innerHTML = "<span style='white-space:nowrap'>Fungus Resistance</span> over<br>All Generations";
         bottomHalf.appendChild(lineTitle);
         const lineChartBody = document.createElement("div");
         lineChartBody.className = "data-chart-body";
         const lineCanvas = document.createElement("canvas");
-        lineCanvas.width = 260 * dpr;
-        lineCanvas.height = 148 * dpr;
-        lineCanvas.style.width = "260px";
+        lineCanvas.style.width = "100%";
         lineCanvas.style.height = "148px";
         lineCanvas.setAttribute("role", "img");
         lineCanvas.setAttribute("aria-label", "Line graph showing fungus resistance over generations");
@@ -2832,25 +3068,62 @@ function buildSimContent() {
         const lineLegend = document.createElement("div");
         lineLegend.className = "data-chart-legend";
         lineLegend.innerHTML =
-          '<span class="data-legend-item" style="flex-direction:row;gap:6px"><svg width="38" height="13" style="flex-shrink:0" aria-hidden="true"><line x1="0" y1="6.5" x2="38" y2="6.5" stroke="#949494" stroke-width="2"/><circle cx="19" cy="6.5" r="5" fill="#949494"/></svg>Healthy</span>' +
-          '<span class="data-legend-item" style="flex-direction:row;gap:6px"><svg width="38" height="13" style="flex-shrink:0" aria-hidden="true"><line x1="0" y1="6.5" x2="38" y2="6.5" stroke="#444" stroke-width="2" stroke-dasharray="2,4"/><circle cx="19" cy="6.5" r="5" fill="#444"/></svg>Infected</span>';
+          '<span class="data-legend-item">' +
+            '<span class="data-legend-label">' +
+              '<span class="line-legend-icon" style="display:inline-flex;align-items:center;justify-content:center;width:39px;height:16px;position:relative;flex-shrink:0;overflow:hidden">' +
+                '<span style="position:absolute;left:0;right:0;top:50%;height:3px;margin-top:-1.5px;background:#808080"></span>' +
+                '<span style="width:16px;height:16px;border-radius:50%;background:#808080;position:relative;flex-shrink:0"></span>' +
+              '</span>Healthy</span>' +
+          '</span>' +
+          '<span class="data-legend-item">' +
+            '<span class="data-legend-label">' +
+              '<span class="line-legend-icon" style="display:inline-flex;align-items:center;justify-content:center;width:39px;height:16px;position:relative;flex-shrink:0;overflow:hidden">' +
+                '<span style="position:absolute;left:0;right:0;top:50%;height:3px;margin-top:-1.5px;background:repeating-linear-gradient(to right,#444 0,#444 3px,transparent 3px,transparent 6px)"></span>' +
+                '<span style="width:16px;height:16px;border-radius:50%;background:#444;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="width:6px;height:6px;border-radius:50%;background:#fff"></span></span>' +
+              '</span>Infected</span>' +
+          '</span>';
         bottomHalf.appendChild(lineLegend);
         dataInner.appendChild(bottomHalf);
 
         panel.appendChild(dataInner);
 
         // --- Data update function ---
-        window._updateDataPanel = function() {
-          const trial = window._selectedTrial;
-          const st = window._trialState[trial];
+        SIM.updateDataPanel = function() {
+          if (SIM.updateCircleSize) SIM.updateCircleSize();
+          // Adjust legend gaps and line icon width based on panel width
+          const panelW = panel.clientWidth;
+          const gapVal = Math.max(4, Math.min(20, Math.round((panelW - 150) * (20 - 4) / (285 - 150) + 4)));
+          pieLegend.style.gap = gapVal + "px";
+          lineLegend.style.gap = gapVal + "px";
+          let iconW = 39;
+          if (panelW < 250) {
+            iconW = Math.max(16, Math.round((panelW - 190) * (39 - 16) / (250 - 190) + 16));
+          }
+          lineLegend.querySelectorAll(".line-legend-icon").forEach(el => { el.style.width = iconW + "px"; });
+          if (panelW < 230) {
+            lineTitle.innerHTML = "Fungus Resistance<br>over All Generations";
+          } else {
+            lineTitle.innerHTML = "Fungus Resistance over<br>All Generations";
+          }
+
+          const trial = SIM.selectedTrial;
+          const st = SIM.trialState[trial];
           if (!st) return;
-          const selGen = window._selectedGen ? window._selectedGen[trial] : null;
+          const selGen = SIM.selectedGen ? SIM.selectedGen[trial] : null;
+          const hasSelection = selGen !== null && selGen !== undefined && st.generations[selGen];
+          if (SIM.dataShowAllBtn) {
+            SIM.dataShowAllBtn.style.display = hasSelection ? "flex" : "none";
+          }
+          const aboutBtn = document.querySelector(".sim-info-btn");
+          if (aboutBtn) {
+            aboutBtn.classList.toggle("compact-hit", !!hasSelection);
+          }
 
           // Compute stats
           let plants = [];
-          if (selGen !== null && selGen !== undefined && st.generations[selGen]) {
+          if (hasSelection) {
             plants = st.generations[selGen];
-            pieTitle.innerHTML = "Offspring Phenotypes:<br>G" + (selGen + 1);
+            pieTitle.innerHTML = "Offspring Phenotypes:<br>G" + (selGen + 1) + " <span style=\"font-weight:400\">(" + plants.length + " offspring)</span>";
           } else if (st.generations.length > 0) {
             plants = st.generations.flat();
             pieTitle.innerHTML = "Offspring Phenotypes:<br>All Generations";
@@ -2880,7 +3153,7 @@ function buildSimContent() {
           pCtx.setTransform(1, 0, 0, 1, 0, 0);
           pCtx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
           pCtx.scale(dpr, dpr);
-          const pw = 160, ph = 105;
+          const pw = 160, ph = 103;
           const cx = pw / 2, cy = ph / 2, r = Math.min(pw, ph) / 2 - 10;
 
           if (total === 0) {
@@ -2939,17 +3212,19 @@ function buildSimContent() {
 
           // --- Draw Line Graph ---
           const lCtx = lineCanvas.getContext("2d");
+          const lw = lineChartBody.clientWidth || 260, lh = 148;
+          lineCanvas.width = lw * dpr;
+          lineCanvas.height = lh * dpr;
           lCtx.setTransform(1, 0, 0, 1, 0, 0);
           lCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
           lCtx.scale(dpr, dpr);
-          const lw = 260, lh = 148;
 
-          const margin = { top: 22, right: 20, bottom: 32, left: 44 };
+          const margin = { top: 25, right: 14, bottom: 32, left: 46 };
           const gw = lw - margin.left - margin.right;
           const gh = lh - margin.top - margin.bottom;
 
           // Y-axis gridlines & labels (always visible)
-          lCtx.strokeStyle = "#e0e0e0";
+          lCtx.strokeStyle = "#949494";
           lCtx.lineWidth = 1;
           lCtx.fillStyle = "#333";
           lCtx.font = "16px 'Roboto Condensed', sans-serif";
@@ -2961,16 +3236,47 @@ function buildSimContent() {
             lCtx.moveTo(margin.left, y);
             lCtx.lineTo(margin.left + gw, y);
             lCtx.stroke();
-            lCtx.fillText((i * 25) + "%", margin.left - 9, y);
+            lCtx.fillText((i * 25) + "%", margin.left - 11, y);
           }
 
           const gens = st.generations;
           if (gens.length === 0) {
-            lCtx.fillStyle = "#333";
-            lCtx.font = "16px Lato, sans-serif";
-            lCtx.textAlign = "center";
-            lCtx.textBaseline = "middle";
-            lCtx.fillText("No data", margin.left + gw / 2, margin.top + gh / 2);
+            if (st.fungusAfterGen !== null) {
+              const fx = margin.left;
+              lCtx.strokeStyle = "#1565C0";
+              lCtx.lineWidth = 2;
+              lCtx.setLineDash([6, 4]);
+              lCtx.beginPath();
+              lCtx.moveTo(fx, margin.top);
+              lCtx.lineTo(fx, margin.top + gh);
+              lCtx.stroke();
+              lCtx.setLineDash([]);
+              lCtx.font = "bold 16px 'Roboto Condensed', sans-serif";
+              const flagText = "Fungus";
+              const tw = lCtx.measureText(flagText).width;
+              const flagH = 22, flagPad = 4;
+              const flagW = tw + flagPad * 2;
+              const flagX = fx;
+              const flagY = 22 - flagH;
+              lCtx.fillStyle = "#1565C0";
+              lCtx.beginPath();
+              lCtx.moveTo(flagX, flagY);
+              lCtx.lineTo(flagX + flagW, flagY);
+              lCtx.lineTo(flagX + flagW, flagY + flagH);
+              lCtx.lineTo(flagX, flagY + flagH);
+              lCtx.closePath();
+              lCtx.fill();
+              lCtx.fillStyle = "#fff";
+              lCtx.textAlign = "left";
+              lCtx.textBaseline = "middle";
+              lCtx.fillText(flagText, flagX + flagPad, flagY + flagH / 2);
+            } else {
+              lCtx.fillStyle = "#333";
+              lCtx.font = "16px Lato, sans-serif";
+              lCtx.textAlign = "center";
+              lCtx.textBaseline = "middle";
+              lCtx.fillText("No data", margin.left + gw / 2, margin.top + gh / 2);
+            }
             return;
           }
 
@@ -2988,7 +3294,7 @@ function buildSimContent() {
             if (gi % labelStep !== 0 && gi !== gens.length - 1) return;
             const x = margin.left + (gens.length > 1 ? gi * xStep : gw / 2);
             lCtx.fillStyle = "#333";
-            lCtx.fillText("G" + (gi + 1), x, margin.top + gh + 11);
+            lCtx.fillText("G" + (gi + 1), x, margin.top + gh + 13);
           });
 
           // Compute healthy % per generation
@@ -3020,13 +3326,13 @@ function buildSimContent() {
             lCtx.setLineDash([]);
 
             // Flag label
-            lCtx.font = "bold 14px 'Roboto Condensed', sans-serif";
+            lCtx.font = "bold 16px 'Roboto Condensed', sans-serif";
             const flagText = "Fungus";
             const tw = lCtx.measureText(flagText).width;
-            const flagH = 20, flagPad = 4;
+            const flagH = 22, flagPad = 4;
             const flagW = tw + flagPad * 2;
             const flagX = fx;
-            const flagY = margin.top - flagH;
+            const flagY = 22 - flagH;
             lCtx.fillStyle = "#1565C0";
             lCtx.beginPath();
             lCtx.moveTo(flagX, flagY);
@@ -3043,8 +3349,9 @@ function buildSimContent() {
 
           function drawLine(data, color, dashed, marker) {
             lCtx.strokeStyle = color;
-            lCtx.lineWidth = 2;
-            lCtx.setLineDash(dashed ? [2, 4] : []);
+            lCtx.lineWidth = 3;
+            lCtx.setLineDash(dashed ? [3, 3] : []);
+            lCtx.lineJoin = "round";
             lCtx.beginPath();
             data.forEach((val, i) => {
               const x = margin.left + (gens.length > 1 ? i * xStep : gw / 2);
@@ -3059,7 +3366,8 @@ function buildSimContent() {
             data.forEach((val, i) => {
               const x = margin.left + (gens.length > 1 ? i * xStep : gw / 2);
               const y = margin.top + gh - (val / 100) * gh;
-              const s = selGen === i ? 7 : 5;
+              const baseR = Math.max(4, Math.min(8, xStep > 0 ? xStep * 0.35 : 8));
+              const s = selGen === i ? baseR * 1.25 : baseR;
               lCtx.fillStyle = color;
               if (marker === "triangle") {
                 lCtx.beginPath();
@@ -3072,11 +3380,18 @@ function buildSimContent() {
                 lCtx.beginPath();
                 lCtx.arc(x, y, s, 0, Math.PI * 2);
                 lCtx.fill();
+                if (dashed) {
+                  lCtx.fillStyle = "#fff";
+                  lCtx.beginPath();
+                  lCtx.arc(x, y, s * 0.4, 0, Math.PI * 2);
+                  lCtx.fill();
+                  lCtx.fillStyle = color;
+                }
               }
             });
           }
 
-          drawLine(healthyPcts, "#949494", false, "circle");
+          drawLine(healthyPcts, "#808080", false, "circle");
           drawLine(infectedPcts, "#444", true, "circle");
 
           // Highlight selected generation
@@ -3108,35 +3423,84 @@ function buildSimContent() {
       // Title tab (overlays top of panel)
       const tab = document.createElement("div");
       tab.className = "sim-panel-tab";
-      const tabLabel = document.createElement("span");
+      const tabLabel = document.createElement("h2");
       tabLabel.className = "sim-panel-tab-label";
       tabLabel.textContent = p.name;
       tab.appendChild(tabLabel);
       if (p.subtitle) {
-        const pipe = document.createElement("span");
-        pipe.style.margin = "0 6px";
-        pipe.style.fontSize = "16px";
-        pipe.style.fontWeight = "400";
-        pipe.style.color = "#333";
-        pipe.textContent = "\u2022";
-        tab.appendChild(pipe);
-        const tabSub = document.createElement("span");
-        tabSub.className = "sim-panel-tab-subtitle";
-        tabSub.textContent = p.subtitle;
-        tab.appendChild(tabSub);
+        tab.style.border = "2px solid #555";
+        tab.style.borderRight = "none";
+        tab.style.borderRadius = "8px 0 0 8px";
+        tab.style.position = "static";
+        tab.style.transform = "none";
+        tab.style.left = "";
+        tab.style.height = "100%";
+        const tabSub = document.createElement("div");
+        tabSub.style.cssText = "display:flex;align-items:center;padding:0 12px 0 10px;background:#fff;height:100%;box-sizing:border-box;border:2px solid #555;border-left:none;border-radius:0 999px 999px 0;";
+        const tabSubLabel = document.createElement("span");
+        tabSubLabel.className = "sim-panel-tab-subtitle";
+        tabSubLabel.textContent = p.subtitle;
+        tabSub.appendChild(tabSubLabel);
+        const tabWrap = document.createElement("div");
+        tabWrap.className = "sim-tab-wrap";
+        tabWrap.appendChild(tab);
+        tabWrap.appendChild(tabSub);
+        panelWrap.appendChild(tabWrap);
+      } else
+      if (p.name === "Data") {
+        tab.style.position = "static";
+        tab.style.transform = "none";
+        tab.style.left = "";
+        const tabWrap = document.createElement("div");
+        tabWrap.style.cssText = "position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;height:36px;z-index:11;";
+        tabWrap.appendChild(tab);
+        const showAllBtn = document.createElement("button");
+        showAllBtn.className = "data-show-all-btn";
+        showAllBtn.textContent = "Show All";
+        showAllBtn.addEventListener("click", () => {
+          const trial = SIM.selectedTrial;
+          const prevIdx = SIM.selectedGen ? SIM.selectedGen[trial] : null;
+          if (SIM.selectedGen) SIM.selectedGen[trial] = null;
+          if (SIM.renderOffspring) SIM.renderOffspring(trial);
+          if (SIM.updateDataPanel) SIM.updateDataPanel();
+          if (prevIdx !== null && prevIdx !== undefined) {
+            const rows = document.querySelectorAll(".gen-row");
+            const target = rows[prevIdx] || rows[0];
+            if (target) target.focus();
+          }
+        });
+        tabWrap.appendChild(showAllBtn);
+        SIM.dataShowAllBtn = showAllBtn;
+        panelWrap.appendChild(tabWrap);
+      } else {
+        panelWrap.appendChild(tab);
       }
-      panelWrap.appendChild(tab);
 
       wrap.appendChild(panelWrap);
     });
 
     // Initial data panel render
-    if (window._updateDataPanel) window._updateDataPanel();
-    document.fonts.ready.then(() => { if (window._updateDataPanel) window._updateDataPanel(); });
+    if (SIM.updateDataPanel) SIM.updateDataPanel();
+    document.fonts.ready.then(() => {
+      // Re-measure condensed dropdown width now that fonts are loaded
+      const triggers = document.querySelectorAll(".sim-dropdown-trigger");
+      if (triggers.length) {
+        const m = document.createElement("span");
+        m.style.cssText = "font-family:'Roboto Condensed',sans-serif;font-size:16px;visibility:hidden;position:absolute;white-space:nowrap;";
+        document.body.appendChild(m);
+        const opts = ["Wild W1", "Wild W2", "Wild W3", "Cavendish C1", "Cavendish C2"];
+        let mxC = 0;
+        opts.forEach(o => { m.textContent = o; mxC = Math.max(mxC, m.offsetWidth); });
+        document.body.removeChild(m);
+        triggers.forEach(t => { t._condensedW = mxC + 0 + 18 + 12 + 4; });
+      }
+      if (SIM.updateDataPanel) SIM.updateDataPanel();
+    });
 
     // Ctrl+Arrow: navigate between panels
     const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
-    document.addEventListener("keydown", (e) => {
+    if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
+    SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
       e.preventDefault();
       const panelArr = Array.from(panelEls);
@@ -3144,7 +3508,6 @@ function buildSimContent() {
       let curIdx = -1;
       panelArr.forEach((p, i) => { if (p.contains(active)) curIdx = i; });
       const dir = e.key === "ArrowRight" ? 1 : -1;
-      // Move in direction, skip panels with no focusable elements
       for (let i = 1; i <= panelArr.length; i++) {
         const nextIdx = (curIdx + dir * i + panelArr.length * panelArr.length) % panelArr.length;
         const focusable = nextIdx === curIdx ? null : panelArr[nextIdx].querySelectorAll('[tabindex="0"], button:not([tabindex="-1"]), a, input, select, textarea');
@@ -3153,7 +3516,8 @@ function buildSimContent() {
           break;
         }
       }
-    });
+    };
+    document.addEventListener("keydown", SIM.panelNavHandler);
 
     return wrap;
   }
@@ -3161,7 +3525,6 @@ function buildSimContent() {
 }
 
 function buildViewport() {
-  const scale = getScale();
   const device = DEVICES[activeDevice];
   const layout = LAYOUTS[activeLayout];
   const container = document.getElementById("viewportContainer");
@@ -3176,7 +3539,7 @@ function buildViewport() {
   container.style.overflow = "";
   document.body.style.background = "";
   document.body.style.overflow = "";
-  document.body.style.paddingRight = "";
+  document.body.style.paddingRight = "0";
   const wrapperEl = document.querySelector(".viewport-wrapper");
   if (wrapperEl) { wrapperEl.style.overflow = ""; wrapperEl.style.borderColor = ""; }
   const bwLabel = document.getElementById("browserWidthLabel");
@@ -3201,7 +3564,7 @@ function buildViewport() {
   let contentW;
   if (activeLayout === "ap-2col") {
     // 28 left margin + sidebar + 10 right margin + 1 border + content + 1 border + 26 right margin = 1100
-    contentW = sidebarExpanded ? 767 : (AP_WIDTH - 28 - 45 - 10 - 2 - 26);
+    contentW = sidebarExpanded ? AP_CONTENT_W_EXPANDED : AP_CONTENT_W_COLLAPSED;
   } else if (activeLayout === "ap-full") {
     contentW = 1044;
   } else {
@@ -3220,7 +3583,8 @@ function buildViewport() {
     // Label freeze when frame is clipped
     if (wrapperClientW < device.screenW) {
       info.style.alignSelf = "flex-start";
-      info.style.minWidth = device.screenW + "px";
+      const infoMinW = (activeDevice === "chromebook") ? Math.max(frameAvailW, 1100) : device.screenW;
+      info.style.minWidth = infoMinW + "px";
     }
   }
 
@@ -3239,7 +3603,7 @@ function buildViewport() {
     const wrapperAP = document.querySelector(".viewport-wrapper");
     if (wrapperAP) wrapperAP.style.borderColor = "#fff";
     frame.classList.remove("no-limit");
-    frame.style.width = (AP_WIDTH * scale) + "px";
+    frame.style.width = AP_WIDTH + "px";
     frame.style.border = "none";
     frame.style.background = "#fff";
     frame.style.borderRadius = "0";
@@ -3252,18 +3616,17 @@ function buildViewport() {
   } else if (isNoLimit) {
     const frameW = 1200;
     const frameH = 700;
-    frame.style.width = (frameW * scale) + "px";
-    frame.style.height = (frameH * scale) + "px";
+    frame.style.width = frameW + "px";
+    frame.style.height = frameH + "px";
   } else {
+    container.style.maxWidth = "100%";
     const wrapperForOverflow = document.querySelector(".viewport-wrapper");
     const deviceFrameW = (activeDevice === "chromebook")
       ? Math.min(device.screenW, wrapperForOverflow ? wrapperForOverflow.clientWidth : device.screenW)
       : device.screenW;
-    frame.style.width = (deviceFrameW * scale) + "px";
-    frame.style.height = (device.screenH * scale) + "px";
+    frame.style.width = deviceFrameW + "px";
+    frame.style.height = device.screenH + "px";
     frame.style.margin = "0 -2px";
-    document.body.style.paddingRight = "0";
-    container.style.maxWidth = "100%";
     if (wrapperForOverflow) wrapperForOverflow.style.overflow = "hidden";
   }
 
@@ -3271,7 +3634,7 @@ function buildViewport() {
   if (!isNoLimit && device.topChrome > 0) {
     const top = document.createElement("div");
     top.className = "chrome-top";
-    top.style.height = (device.topChrome * scale) + "px";
+    top.style.height = device.topChrome + "px";
     top.setAttribute("data-label", device.topLabel);
 
     frame.appendChild(top);
@@ -3286,14 +3649,14 @@ function buildViewport() {
     viewport.style.minHeight = "100%";
     viewport.style.background = "#fff";
   } else {
-    viewport.style.height = (availH * scale) + "px";
+    viewport.style.height = availH + "px";
   }
 
   if (layout.hasAP) {
     // Page container — 1100 x availH, centered, flush with chrome
     const page = document.createElement("div");
-    page.style.width = (1100 * scale) + "px";
-    page.style.minHeight = (isNoLimit ? "100%" : (availH * scale) + "px");
+    page.style.width = "1100px";
+    page.style.minHeight = isNoLimit ? "100%" : availH + "px";
     page.style.background = "#fff";
     page.style.display = "flex";
     page.style.flexDirection = "column";
@@ -3305,7 +3668,7 @@ function buildViewport() {
     ap.className = "ap-container";
     ap.style.marginTop = "4px";
     const apW = activeLayout === "ap-2col" ? AP_WIDTH : contentW;
-    ap.style.width = (apW * scale) + "px";
+    ap.style.width = apW + "px";
 
     if (activeLayout === "ap-2col") {
       // 2-column: left column + right side (header above content only)
@@ -3316,7 +3679,7 @@ function buildViewport() {
       const sidebarW = sidebarExpanded ? 267 : 45;
       const leftCol = document.createElement("div");
       leftCol.className = "ap-left-column";
-      leftCol.style.width = (sidebarW * scale) + "px";
+      leftCol.style.width = sidebarW + "px";
 
       // Toggle button
       const toggleBtn = document.createElement("div");
@@ -3328,7 +3691,7 @@ function buildViewport() {
       toggleBtn.setAttribute("aria-label", sidebarExpanded ? "Collapse left column" : "Expand left column");
 
       if (sidebarExpanded) {
-        toggleBtn.style.height = (40 * scale) + "px";
+        toggleBtn.style.height = "40px";
 
         const toggleLabel = document.createElement("span");
         toggleLabel.className = "ap-left-toggle-label";
@@ -3341,7 +3704,7 @@ function buildViewport() {
         toggleIcon.alt = "Collapse";
         toggleBtn.appendChild(toggleIcon);
       } else {
-        toggleBtn.style.height = (350 * scale) + "px";
+        toggleBtn.style.height = (350) + "px";
         toggleBtn.style.flexDirection = "column";
         toggleBtn.style.alignItems = "center";
         toggleBtn.style.justifyContent = "flex-start";
@@ -3409,12 +3772,12 @@ function buildViewport() {
       // Right side: header + content (with border)
       const rightSide = document.createElement("div");
       rightSide.className = "ap-right-column";
-      rightSide.style.width = (contentW * scale) + "px";
+      rightSide.style.width = (contentW) + "px";
 
       // AP header (above content only)
       const apHeader = document.createElement("div");
       apHeader.className = "ap-header";
-      apHeader.style.height = (AP_HEADER_H * scale) + "px";
+      apHeader.style.height = (AP_HEADER_H) + "px";
       const apLabel = document.createElement("span");
       apLabel.className = "ap-header-label";
       apLabel.textContent = SIMS[activeSim].name + " Simulation";
@@ -3424,8 +3787,9 @@ function buildViewport() {
       // Content area
       const content = document.createElement("div");
       content.className = "content-area";
+      content.setAttribute("role", "main");
       content.style.width = "100%";
-      content.style.height = (AP_CONTENT_H * scale) + "px";
+      content.style.height = (AP_CONTENT_H) + "px";
       content.appendChild(getSimTitleBar());
       const sc2col = getSimContent();
       if (sc2col) content.appendChild(sc2col);
@@ -3435,12 +3799,12 @@ function buildViewport() {
       ap.appendChild(apBody);
     } else {
       // Full-width: border on whole AP container
-      ap.style.border = "1px solid #979797";
+      ap.style.border = "1px solid #858585";
       ap.style.boxSizing = "content-box";
 
       const apHeader = document.createElement("div");
       apHeader.className = "ap-header";
-      apHeader.style.height = (AP_HEADER_H * scale) + "px";
+      apHeader.style.height = (AP_HEADER_H) + "px";
       const apLabel = document.createElement("span");
       apLabel.className = "ap-header-label";
       apLabel.textContent = SIMS[activeSim].name + " Simulation";
@@ -3453,8 +3817,9 @@ function buildViewport() {
       // Content area
       const content = document.createElement("div");
       content.className = "content-area";
-      content.style.width = (contentW * scale) + "px";
-      content.style.height = (AP_CONTENT_H * scale) + "px";
+      content.setAttribute("role", "main");
+      content.style.width = (contentW) + "px";
+      content.style.height = (AP_CONTENT_H) + "px";
       content.appendChild(getSimTitleBar());
       const scFull = getSimContent();
       if (scFull) content.appendChild(scFull);
@@ -3500,10 +3865,11 @@ function buildViewport() {
     }
     viewport.appendChild(page);
 
-    // Chromebook + AP: when frame < 1100, pin page to left and clip right
+    // Chromebook + AP: re-measure wrapper and override frame width (matches Standalone logic)
     if (activeDevice === "chromebook") {
       const cbWrapperW = document.querySelector(".viewport-wrapper").clientWidth;
       const cbFrameW = Math.min(device.screenW, cbWrapperW);
+      frame.style.width = (cbFrameW) + "px";
       if (cbFrameW < 1100) {
         viewport.style.justifyContent = "flex-start";
       }
@@ -3531,17 +3897,13 @@ function buildViewport() {
 
     const content = document.createElement("div");
     content.className = "content-area standalone";
-    content.style.width = (standaloneW * scale) + "px";
-    content.style.height = (standaloneH * scale) + "px";
+    content.setAttribute("role", "main");
+    content.style.width = (standaloneW) + "px";
+    content.style.height = (standaloneH) + "px";
     content.style.marginLeft = ml + "px";
     content.appendChild(getSimTitleBar());
     const scSA1 = getSimContent();
     if (scSA1) content.appendChild(scSA1);
-
-    const cLabel = document.createElement("div");
-    cLabel.className = "content-label";
-    cLabel.textContent = `Content\n${standaloneW}w x ${standaloneH}h`;
-    content.appendChild(cLabel);
 
     // Update info line with actual responsive width
     info.innerHTML = `<strong>Teacher Desktop / ${layout.name}</strong><br><strong>Content:</strong> ${standaloneW}w × ${standaloneH}h`;
@@ -3552,6 +3914,8 @@ function buildViewport() {
     }
 
     container.appendChild(content);
+    if (SIM.updateDataPanel) SIM.updateDataPanel();
+
     return;
   } else {
     // Standalone with device frame
@@ -3567,7 +3931,7 @@ function buildViewport() {
     if (activeDevice === "chromebook") {
       // Chromebook: frame shrinks with browser, content responsive
       frameVisualW = Math.min(device.screenW, wrapperClientW);
-      frame.style.width = (frameVisualW * scale) + "px";
+      frame.style.width = (frameVisualW) + "px";
 
       const shrinkStart = standaloneMax + contentBorder + (standaloneMargin * 2); // 1068
       const clipStart = standaloneMin + contentBorder + (standaloneMargin * 2); // 812
@@ -3603,16 +3967,12 @@ function buildViewport() {
 
     const content = document.createElement("div");
     content.className = "content-area standalone";
-    content.style.width = (standaloneW * scale) + "px";
-    content.style.height = (standaloneH * scale) + "px";
+    content.setAttribute("role", "main");
+    content.style.width = (standaloneW) + "px";
+    content.style.height = (standaloneH) + "px";
     content.appendChild(getSimTitleBar());
     const scSA2 = getSimContent();
     if (scSA2) content.appendChild(scSA2);
-
-    const cLabel2 = document.createElement("div");
-    cLabel2.className = "content-label";
-    cLabel2.textContent = `Content\n${standaloneW} x ${standaloneH}`;
-    content.appendChild(cLabel2);
 
     viewport.style.display = "flex";
     viewport.style.alignItems = "center";
@@ -3636,17 +3996,18 @@ function buildViewport() {
   if (!isNoLimit && device.bottomChrome > 0) {
     const bottom = document.createElement("div");
     bottom.className = "chrome-bottom";
-    bottom.style.height = (device.bottomChrome * scale) + "px";
+    bottom.style.height = (device.bottomChrome) + "px";
     bottom.setAttribute("data-label", device.bottomLabel);
 
     frame.appendChild(bottom);
   }
 
   container.appendChild(frame);
+  if (SIM.updateDataPanel) SIM.updateDataPanel();
 }
 
 // Button wiring
-function wireToggleGroup(selector, stateKey, callback) {
+function wireToggleGroup(selector, callback) {
   document.querySelectorAll(selector).forEach(btn => {
     btn.addEventListener("click", () => {
       if (callback) callback(btn);
@@ -3661,12 +4022,12 @@ function wireToggleGroup(selector, stateKey, callback) {
   });
 }
 
-wireToggleGroup("[data-sim]", "activeSim", btn => { activeSim = btn.dataset.sim; invalidateSimCache(); });
-wireToggleGroup("[data-layout]", "activeLayout", btn => {
+wireToggleGroup("[data-sim]", btn => { activeSim = btn.dataset.sim; invalidateSimCache(); });
+wireToggleGroup("[data-layout]", btn => {
   activeLayout = btn.dataset.layout;
   if (activeLayout === "ap-2col") sidebarExpanded = true;
 });
-wireToggleGroup("[data-device]", "activeDevice", btn => { activeDevice = btn.dataset.device; });
+wireToggleGroup("[data-device]", btn => { activeDevice = btn.dataset.device; });
 
 buildViewport();
 
@@ -3736,8 +4097,6 @@ function _updateStandaloneDeviceFrameNow() {
   }
 
   contentEl.style.width = w + "px";
-  const cLabel = contentEl.querySelector(".content-label");
-  if (cLabel) cLabel.textContent = "Content\n" + w + " x 562";
   const layoutName = LAYOUTS[activeLayout] ? LAYOUTS[activeLayout].name : activeLayout;
   if (info) {
     info.innerHTML = '<strong>' + device.name + ' / ' + layoutName + '</strong><br><strong>Screen:</strong> ' + device.screenW + 'w \u00d7 ' + device.screenH + 'h \u2022 <strong>Available:</strong> ' + frameVisualW + 'w \u00d7 ' + availH + 'h \u2022 <strong>Content:</strong> ' + w + 'w \u00d7 562h';
@@ -3780,11 +4139,11 @@ window.addEventListener("resize", () => {
       if (info) {
         const availH = device.screenH - device.topChrome - device.bottomChrome;
         const layoutName = LAYOUTS[activeLayout] ? LAYOUTS[activeLayout].name : activeLayout;
-        const contentW = activeLayout === "ap-2col" ? (sidebarExpanded ? 767 : (1100 - 28 - 45 - 10 - 2 - 26)) : 1044;
+        const contentW = activeLayout === "ap-2col" ? (sidebarExpanded ? AP_CONTENT_W_EXPANDED : AP_CONTENT_W_COLLAPSED) : 1044;
         info.innerHTML = '<strong>' + device.name + ' / ' + layoutName + '</strong><br><strong>Screen:</strong> ' + device.screenW + 'w \u00d7 ' + device.screenH + 'h \u2022 <strong>Available:</strong> ' + frameVisualW + 'w \u00d7 ' + availH + 'h \u2022 <strong>Content:</strong> ' + contentW + 'w \u00d7 ' + AP_CONTENT_H + 'h';
         const isClipping = wrapperW < device.screenW;
         info.style.alignSelf = isClipping ? "flex-start" : "";
-        info.style.minWidth = isClipping ? device.screenW + "px" : "";
+        info.style.minWidth = isClipping ? Math.max(frameVisualW, 1100) + "px" : "";
       }
     }
   } else if (activeDevice !== "none" && activeDevice !== "chromebook") {
@@ -3798,6 +4157,8 @@ window.addEventListener("resize", () => {
       info.style.minWidth = isClipping ? device.screenW + "px" : "";
     }
   }
+  // Redraw charts at new size
+  if (SIM.updateDataPanel) SIM.updateDataPanel();
 });
 </script>
 </body>
