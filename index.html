@@ -1544,7 +1544,7 @@
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
-    font-weight: 700;
+    font-weight: 400;
     color: #1A3C8F;
     background: #C8D8FC;
     padding: 5px 10px 5px 6px;
@@ -1865,7 +1865,7 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <div class="btn-column">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v0.6</div>
+      <div style="font-weight: 600;">MassSims &bull; v0.7</div>
       <div style="font-weight: 400;">Updated: 6/10/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
@@ -2462,7 +2462,7 @@ function buildSimContent() {
           // Line 4: fungus status — shows first affected cross
           if (st.fungusAfterCross !== null) {
             const fCross = st.fungusAfterCross + 1;
-            html += '<span style="display:inline-flex;align-items:center;gap:2px;color:#333"><svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;flex-shrink:0;color:#1A3C8F"><path fill="currentColor" d="M12,2 C6.47,2 2,6.47 2,12 C2,17.53 6.47,22 12,22 C17.53,22 22,17.53 22,12 C22,6.47 17.53,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M15.6264648,6.97851562 L15.6264648,8.67382813 L10.7797852,8.67382813 L10.7797852,11.0458984 L14.9633789,11.0458984 L14.9633789,12.7412109 L10.7797852,12.7412109 L10.7797852,17 L8.75634766,17 L8.75634766,6.97851562 L15.6264648,6.97851562 Z" fill-rule="nonzero"/></svg>Fungus: C' + fCross + (fCross < MAX_CROSSES ? '+' : '') + '</span>';
+            html += '<span style="display:inline-flex;align-items:center;gap:2px;color:#333"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#C8D8FC;flex-shrink:0"><svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;color:#1A3C8F"><path fill="currentColor" d="M12,2 C6.47,2 2,6.47 2,12 C2,17.53 6.47,22 12,22 C17.53,22 22,17.53 22,12 C22,6.47 17.53,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M15.6264648,6.97851562 L15.6264648,8.67382813 L10.7797852,8.67382813 L10.7797852,11.0458984 L14.9633789,11.0458984 L14.9633789,12.7412109 L10.7797852,12.7412109 L10.7797852,17 L8.75634766,17 L8.75634766,6.97851562 L15.6264648,6.97851562 Z" fill-rule="nonzero"/></svg></span>Fungus: ' + SIM.selectedTrial + fCross + (fCross < MAX_CROSSES ? '+' : '') + '</span>';
           }
 
           statsEl.innerHTML = html;
@@ -3132,10 +3132,11 @@ function buildSimContent() {
             const selItem = dd.querySelector(".sim-dropdown-item.selected");
             if (selItem) selItem.style.fontWeight = useCondensed ? "500" : "";
           });
-          const fungusLabel = statsLabel ? statsLabel.querySelector(".fungus-active-label") : null;
-          if (fungusLabel) { fungusLabel.style.fontFamily = useCondensed ? "'Roboto Condensed',sans-serif" : ""; fungusLabel.style.fontWeight = useCondensed ? "500" : ""; }
+          const hasFungus = statsLabel && statsLabel.querySelector(".fungus-active-label");
+          const preCross = hasFungus && SIM.trialState[SIM.selectedTrial] && SIM.trialState[SIM.selectedTrial].crosses.length === 0;
+          if (preCross) { statsLabel.style.fontFamily = useCondensed ? "'Roboto Condensed',sans-serif" : ""; } else if (statsLabel) { statsLabel.style.fontFamily = ""; }
           const condensedFont = useCondensed ? "'Roboto Condensed',sans-serif" : "";
-          document.querySelectorAll(".fungus-divider-label").forEach(el => { el.style.fontFamily = condensedFont; el.style.fontWeight = useCondensed ? "500" : ""; });
+          document.querySelectorAll(".fungus-divider-label").forEach(el => { el.style.fontFamily = condensedFont; });
         }
         SIM.updateCircleSize = updateCircleSize;
 
@@ -3182,7 +3183,7 @@ function buildSimContent() {
           if (st.p1 && st.p2 && st.crosses.length === 0) {
             let text;
             if (st.fungusAfterCross !== null) {
-              text = "Cross plants to see their offspring · <b class='fungus-active-label' style='color:#1A3C8F'>Fungus active</b>";
+              text = "Cross plants to see their offspring · <span class='fungus-active-label'>Fungus active</span>";
             } else {
               text = "Click <b>Cross Plants</b> to see their offspring";
             }
@@ -3194,7 +3195,7 @@ function buildSimContent() {
           const crosses = st.crosses.length;
           const total = st.crosses.reduce((sum, gen) => sum + gen.length, 0);
           let text = "Crosses: <b>" + crosses + "</b> · Offspring: <b>" + total + "</b>";
-          if (st.fungusAfterCross !== null) text += " · <b class='fungus-active-label' style='color:#1A3C8F'>Fungus active</b>";
+          if (st.fungusAfterCross !== null) text += " · <span class='fungus-active-label'>Fungus active</span>";
           statsLabel.innerHTML = text;
         }
         SIM.updateStatsLabel = updateStatsLabel;
@@ -3258,7 +3259,7 @@ function buildSimContent() {
               divider.className = "fungus-divider";
               const dlbl = document.createElement("span");
               dlbl.className = "fungus-divider-label";
-              dlbl.innerHTML = fungusAddedSVG + "Fungus introduced after C" + st.fungusAfterCross;
+              dlbl.innerHTML = fungusAddedSVG + "Fungus introduced after " + SIM.selectedTrial + st.fungusAfterCross;
               divider.appendChild(dlbl);
               offspring.appendChild(divider);
             }
@@ -3337,7 +3338,7 @@ function buildSimContent() {
             const lbl = document.createElement("div");
             lbl.className = "cross-label";
             lbl.setAttribute("aria-hidden", "true");
-            lbl.innerHTML = "C" + (gi + 1) + "<br><span style='font-weight:400'>(" + crossPlants.length + ")</span>";
+            lbl.innerHTML = SIM.selectedTrial + (gi + 1) + "<br><span style='font-weight:400'>(" + crossPlants.length + ")</span>";
             row.appendChild(lbl);
             const plantsWrap = document.createElement("div");
             plantsWrap.className = "cross-plants";
@@ -3376,7 +3377,7 @@ function buildSimContent() {
             divider.className = "fungus-divider";
             const dlbl = document.createElement("span");
             dlbl.className = "fungus-divider-label";
-            dlbl.innerHTML = fungusAddedSVG + "Fungus introduced after C" + st.fungusAfterCross;
+            dlbl.innerHTML = fungusAddedSVG + "Fungus introduced after " + SIM.selectedTrial + st.fungusAfterCross;
             divider.appendChild(dlbl);
             offspring.appendChild(divider);
           }
@@ -3661,7 +3662,7 @@ function buildSimContent() {
           let plants = [];
           if (hasSelection) {
             plants = st.crosses[selCross];
-            piePill.innerHTML = "C" + (selCross + 1) + "&nbsp;<span style='font-weight:400'>(" + plants.length + " offspring)</span>";
+            piePill.innerHTML = SIM.selectedTrial + (selCross + 1) + "&nbsp;<span style='font-weight:400'>(" + plants.length + " offspring)</span>";
             piePill.appendChild(pillClose);
             piePill.classList.add("active");
           } else if (st.crosses.length > 0) {
@@ -3801,7 +3802,7 @@ function buildSimContent() {
               bCtx.lineTo(fx, margin.top + gh);
               bCtx.stroke();
               bCtx.setLineDash([]);
-              bCtx.font = "500 16px 'Roboto Condensed', sans-serif";
+              bCtx.font = "400 16px 'Roboto Condensed', sans-serif";
               const flagText = "Fungus";
               const tw = bCtx.measureText(flagText).width;
               const iconSz = 20, iconGap = 3;
@@ -3875,7 +3876,7 @@ function buildSimContent() {
             }
             const groupX = margin.left + gi * groupW + groupW / 2;
             bCtx.fillStyle = "#333";
-            bCtx.fillText("C" + (gi + 1), groupX, margin.top + gh + 9);
+            bCtx.fillText(SIM.selectedTrial + (gi + 1), groupX, margin.top + gh + 9);
           });
 
           // Fungus introduction marker
@@ -3898,7 +3899,7 @@ function buildSimContent() {
             bCtx.stroke();
             bCtx.setLineDash([]);
 
-            bCtx.font = "500 16px 'Roboto Condensed', sans-serif";
+            bCtx.font = "400 16px 'Roboto Condensed', sans-serif";
             const flagText = "Fungus";
             const tw = bCtx.measureText(flagText).width;
             const iconSz = 20, iconGap = 3;
@@ -3945,8 +3946,10 @@ function buildSimContent() {
           // Highlight selected cross
           if (selCross !== null && selCross !== undefined && selCross < gens.length) {
             const groupX = margin.left + selCross * groupW;
+            bCtx.globalAlpha = 0.8;
             bCtx.fillStyle = (SIMS[activeSim].theme && SIMS[activeSim].theme.crossLabelBg) || "#FFE680";
             bCtx.fillRect(groupX, margin.top, groupW, gh);
+            bCtx.globalAlpha = 1;
           }
 
           // Draw bars
