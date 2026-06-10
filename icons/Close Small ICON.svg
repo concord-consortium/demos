@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Close Small ICON</title>
+    <defs>
+        <path d="M20,0 L20,20 L0,20 L0,0 L20,0 Z" id="path-1"></path>
+    </defs>
+    <g id="Close-Small-ICON" stroke="none" fill="none" xlink:href="#path-1">
+        <polygon id="Path" points="0 0 20 0 20 20 0 20"></polygon>
+        <polygon id="Path" fill="#000000" fill-rule="nonzero" points="16.0104076 5.40380592 11.4142136 10 16.0104076 14.5961941 14.5961941 16.0104076 10 11.4142136 5.40380592 16.0104076 3.98959236 14.5961941 8.58578644 10 3.98959236 5.40380592 5.40380592 3.98959236 10 8.58578644 14.5961941 3.98959236"></polygon>
+    </g>
+</svg>

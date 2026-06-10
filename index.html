@@ -49,12 +49,12 @@
   .btn-column [role="group"] {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
 
   .btn-column-label {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: #333;
     text-transform: uppercase;
@@ -66,12 +66,12 @@
     font-family: 'Barlow Condensed', sans-serif;
     padding: 8px 14px;
     min-height: 44px;
-    font-size: 16px;
+    font-size: 18px;
     line-height: 20px;
     font-weight: 600;
     color: #333;
     background: #f0f0f0;
-    border: 1px solid #858585;
+    border: 1px solid #333;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -85,9 +85,35 @@
     color: #333;
   }
 
+  .toggle-btn:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .toggle-btn:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
   .toggle-btn:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
+    box-shadow: 0 0 0 2px #fff;
+  }
+
+  body.teal-bg .toggle-btn {
+    border-color: #fff;
+  }
+
+  body.teal-bg .toggle-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px #fff, 0 0 0 3px #005FCC, 0 0 0 4px #fff;
+  }
+  body.teal-bg .toggle-btn:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
+  body.teal-bg .toggle-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1px #fff, 0 0 0 3px #005FCC, 0 0 0 4px #fff;
   }
 
   .toggle-btn:active:not(.active) {
@@ -98,6 +124,10 @@
     background: #333;
     color: #fff;
     border-color: #333;
+  }
+
+  body.teal-bg .toggle-btn.active {
+    border-color: #fff;
   }
 
   /* Viewport display area */
@@ -191,7 +221,7 @@
 
   /* Available viewport area */
   .viewport-area {
-    background: #0592af;
+    background: #0481A0;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -261,7 +291,8 @@
     cursor: pointer;
   }
 
-  .ap-left-toggle:hover {
+  .ap-left-toggle:hover,
+  .ap-left-toggle:focus-visible {
     background: #4a4a4a;
   }
 
@@ -304,9 +335,16 @@
     white-space: nowrap;
   }
 
+  .ap-left-toggle:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px #005FCC, inset 0 0 0 4px #fff;
+  }
+  .ap-left-toggle:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
   .ap-left-toggle:focus-visible {
-    outline: 2px solid #005FCC;
-    outline-offset: -2px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px #005FCC, inset 0 0 0 4px #fff;
   }
 
   .ap-left-resources {
@@ -367,12 +405,23 @@
   /* Sim title bar */
   .sim-title-bar {
     height: 50px;
-    background: #fff;
+    background: var(--sim-title-bar-bg, #fff);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 10px 0 20px;
     flex-shrink: 0;
+    position: relative;
+  }
+
+  .sim-title-bar::after {
+    content: "";
+    position: absolute;
+    bottom: calc(-1 * var(--sim-title-accent, 0px));
+    left: 0;
+    right: 0;
+    height: var(--sim-title-accent, 0px);
+    background: inherit;
   }
 
   .sim-title-left {
@@ -386,7 +435,7 @@
     font-size: 24px;
     line-height: 1;
     font-weight: 700;
-    color: #333;
+    color: var(--sim-title-text, #333);
     margin: 0;
     font-synthesis: none;
     display: flex;
@@ -398,7 +447,7 @@
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
-    color: #333;
+    color: var(--sim-title-desc, #333);
   }
 
   .sim-title-right {
@@ -415,48 +464,6 @@
     margin-right: 3px;
   }
 
-  .data-show-all-btn {
-    font-family: 'Lato', sans-serif;
-    font-size: 16px;
-    line-height: 20px;
-    font-weight: 700;
-    padding: 3px 12px;
-    height: 34px;
-    box-sizing: border-box;
-    border: 2px solid #555;
-    border-radius: 6px;
-    background: #fff;
-    color: #333;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    white-space: nowrap;
-    position: relative;
-  }
-
-  .data-show-all-btn::after {
-    content: "";
-    position: absolute;
-    top: -7px;
-    left: 0;
-    right: 0;
-    bottom: -7px;
-  }
-
-  .data-show-all-btn:hover,
-  .data-show-all-btn:focus-visible {
-    background: #f0f0f0;
-  }
-
-  .data-show-all-btn:active {
-    background: #d0d0d0;
-  }
-
-  .data-show-all-btn:focus-visible {
-    outline: 2px solid #005FCC;
-    outline-offset: 2px;
-  }
-
   .sim-info-btn {
     margin-left: 5px;
     font-family: 'Lato', sans-serif;
@@ -466,10 +473,10 @@
     padding: 3px 12px 3px 8px;
     height: 34px;
     box-sizing: border-box;
-    border: 2px solid #555;
+    border: 2px solid var(--sim-about-border, #555);
     border-radius: 6px;
-    background: #fff;
-    color: #333;
+    background: #FFFDF2;
+    color: var(--sim-about-text, #333);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -491,7 +498,7 @@
     bottom: 0;
   }
 
-  .sim-info-btn img {
+  .sim-info-btn svg {
     width: 24px;
     height: 24px;
     pointer-events: none;
@@ -499,13 +506,20 @@
 
   .sim-info-btn:hover,
   .sim-info-btn:focus-visible {
-    background: #f0f0f0;
+    background: var(--sim-btn-hover, #f0f0f0);
   }
 
   .sim-info-btn:active {
-    background: #d0d0d0;
+    background: var(--sim-btn-active, #d0d0d0);
   }
 
+  .sim-info-btn:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .sim-info-btn:focus:not(:focus-visible) {
+    outline: none;
+  }
   .sim-info-btn:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
@@ -519,7 +533,7 @@
     width: 400px;
     max-height: 70%;
     background: #fff;
-    border: 2px solid #555;
+    border: 2px solid var(--sim-about-border, #555);
     border-radius: 8px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     display: flex;
@@ -534,10 +548,11 @@
     padding: 3px 3px 3px 12px;
     height: 52px;
     box-sizing: border-box;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #9E8540;
     cursor: grab;
     flex-shrink: 0;
     user-select: none;
+    background: #FFFDF2;
   }
 
   .info-modal-header:active {
@@ -566,7 +581,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: #FFFDF2;
     border: none;
     cursor: pointer;
     border-radius: 4px;
@@ -576,19 +591,26 @@
 
   .info-modal-close:hover,
   .info-modal-close:focus-visible {
-    background: #f0f0f0;
+    background: var(--sim-btn-hover, #f0f0f0);
   }
 
   .info-modal-close:active {
-    background: #d0d0d0;
+    background: var(--sim-btn-active, #d0d0d0);
   }
 
+  .info-modal-close:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: -2px;
+  }
+  .info-modal-close:focus:not(:focus-visible) {
+    outline: none;
+  }
   .info-modal-close:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: -2px;
   }
 
-  .info-modal-close img {
+  .info-modal-close svg {
     width: 24px;
     height: 24px;
   }
@@ -614,6 +636,9 @@
     flex-direction: column;
   }
 
+  .info-modal-body:focus {
+    outline: none;
+  }
   .info-modal-body:focus-visible {
     outline: none;
   }
@@ -622,12 +647,18 @@
     border-radius: 0 0 6px 6px;
   }
 
+  .info-modal-body:focus ~ .scroll-focus-ring {
+    display: block;
+  }
+  .info-modal-body:focus:not(:focus-visible) ~ .scroll-focus-ring {
+    display: none;
+  }
   .info-modal-body:focus-visible ~ .scroll-focus-ring {
     display: block;
   }
 
   .info-modal-body h3 {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     margin: 16px 0 6px;
     color: #333;
@@ -711,7 +742,7 @@
   }
 
   .content-area.standalone {
-    border: 2px solid #555;
+    border: 2px solid var(--sim-panel-border, #555);
     border-radius: 10px;
     box-sizing: content-box;
     overflow: hidden;
@@ -720,7 +751,7 @@
   /* Content area */
   .content-area {
     font-family: 'Lato', sans-serif;
-    background: #fff;
+    background: var(--sim-content-bg, #fff);
     position: relative;
     flex-shrink: 0;
     transition: width 0.25s ease;
@@ -745,10 +776,10 @@
     left: 50%;
     transform: translateX(-50%);
     height: 36px;
-    padding: 0 10px;
-    background: #e8e8e8;
-    border: 2px solid #555;
-    border-radius: 8px;
+    padding: 0 14px;
+    background: var(--sim-panel-tab-bg, #e8e8e8);
+    border: 2px solid var(--sim-panel-border, #555);
+    border-radius: 999px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -763,7 +794,7 @@
     font-size: 18px;
     line-height: 22px;
     font-weight: 700;
-    color: #333;
+    color: var(--sim-panel-tab-text, #333);
     margin: 0;
   }
 
@@ -787,9 +818,9 @@
   }
 
   .sim-panel {
-    border: 2px solid #555;
+    border: 2px solid var(--sim-panel-border, #555);
     border-radius: 8px;
-    background: #e8e8e8;
+    background: var(--sim-panel-bg, #e8e8e8);
     margin-top: 17px;
     box-sizing: border-box;
     flex: 1;
@@ -814,10 +845,19 @@
     padding: 31px 0 12px 15px;
   }
 
+  .trials-scroll:focus {
+    outline: none;
+  }
   .trials-scroll:focus-visible {
     outline: none;
   }
 
+  .trials-scroll:focus ~ .scroll-focus-ring {
+    display: block;
+  }
+  .trials-scroll:focus:not(:focus-visible) ~ .scroll-focus-ring {
+    display: none;
+  }
   .trials-scroll:focus-visible ~ .scroll-focus-ring {
     display: block;
   }
@@ -838,13 +878,14 @@
   .trial-card {
     width: 120px;
     height: 136px;
-    border: 2px solid #555;
+    border: 2px solid var(--sim-panel-border, #555);
     border-radius: 6px;
-    background: #fff;
+    background: #FFFDF2;
     box-sizing: border-box;
     position: relative;
     flex-shrink: 0;
     font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 400;
   }
 
   .trial-card-label {
@@ -855,7 +896,7 @@
     font-size: 18px;
     font-weight: 700;
     color: #333;
-    background: #e0e0e0;
+    background: var(--sim-trial-label-bg, #e0e0e0);
     width: 28px;
     height: 28px;
     border-radius: 4px;
@@ -865,28 +906,39 @@
     line-height: 1;
   }
 
+  .trial-card:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .trial-card:focus:not(:focus-visible) {
+    outline: none;
+  }
   .trial-card:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
   }
 
-  .trial-card:hover,
-  .trial-card:focus-visible {
-    background: #f0f0f0;
+  .trial-card:not(.selected):hover,
+  .trial-card:not(.selected):focus-visible {
+    background: var(--sim-btn-hover, #f0f0f0);
   }
 
-  .trial-card:active {
-    background: #d0d0d0;
+  .trial-card:not(.selected):active {
+    background: var(--sim-btn-active, #d0d0d0);
+  }
+
+  .trial-card:not(.selected):active .trial-card-label {
+    background: var(--sim-btn-active, #d0d0d0);
   }
 
   .trial-card.selected {
-    background: #f0f0f0;
-    border-color: #333;
-    box-shadow: inset 0 0 0 1px #333;
+    background: var(--sim-trial-selected-bg, #f0f0f0);
+    border-color: var(--sim-trial-selected-border, #333);
+    box-shadow: inset 0 0 0 1px var(--sim-trial-selected-border, #333);
   }
 
   .trial-card.new-card {
-    border-style: dashed;
+    border-style: solid;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -901,11 +953,11 @@
 
   .trial-card.new-card:hover,
   .trial-card.new-card:focus-visible {
-    background: #f0f0f0;
+    background: var(--sim-btn-hover, #f0f0f0);
   }
 
   .trial-card.new-card:active {
-    background: #d0d0d0;
+    background: var(--sim-btn-active, #d0d0d0);
   }
 
   .trial-card-new-label {
@@ -918,8 +970,8 @@
   }
 
   .trial-card.selected .trial-card-label {
-    color: #fff;
-    background: #000;
+    color: var(--sim-trial-label-selected-text, #fff);
+    background: var(--sim-trial-label-selected-bg, #000);
   }
 
   .trial-card-reset {
@@ -937,10 +989,34 @@
     padding: 0;
   }
 
+  .trial-card-reset:focus {
+    outline: none;
+  }
   .trial-card-reset:focus-visible {
     outline: none;
   }
 
+  .trial-card-reset::before {
+    content: "";
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: #FFFDF2;
+  }
+
+  .trial-card-reset:focus::after {
+    content: "";
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    outline: 2px solid #005FCC;
+    outline-offset: 0px;
+  }
+  .trial-card-reset:focus:not(:focus-visible)::after {
+    outline: none;
+  }
   .trial-card-reset:focus-visible::after {
     content: "";
     position: absolute;
@@ -951,32 +1027,33 @@
     outline-offset: 0px;
   }
 
-  .trial-card-reset img {
+  .trial-card-reset svg {
     width: 28px;
     height: 28px;
     padding: 2px;
     border-radius: 4px;
-    background: #fff;
+    background: transparent;
     box-sizing: border-box;
+    position: relative;
   }
 
   .trial-card.selected .trial-card-reset {
     display: flex;
   }
 
-  .trial-card-reset:hover:not([aria-disabled="true"]) img,
-  .trial-card-reset:focus-visible:not([aria-disabled="true"]) img {
-    background: #f0f0f0;
+  .trial-card-reset:hover:not([aria-disabled="true"])::before,
+  .trial-card-reset:focus-visible:not([aria-disabled="true"])::before {
+    background: var(--sim-btn-hover, #f0f0f0);
   }
 
-  .trial-card-reset:active:not([aria-disabled="true"]) img {
-    background: #d0d0d0;
+  .trial-card-reset:active:not([aria-disabled="true"])::before {
+    background: var(--sim-btn-active, #d0d0d0);
   }
 
   .trial-card-reset[aria-disabled="true"] {
     cursor: default;
   }
-  .trial-card-reset[aria-disabled="true"] img {
+  .trial-card-reset[aria-disabled="true"] svg {
     opacity: 0.35;
   }
 
@@ -1005,8 +1082,8 @@
     font-size: 18px;
     line-height: 22px;
     font-weight: 700;
-    color: #fff;
-    background: #000;
+    color: var(--sim-trial-label-selected-text, #fff);
+    background: var(--sim-trial-label-selected-bg, #000);
     width: 28px;
     height: 28px;
     border-radius: 4px;
@@ -1055,8 +1132,8 @@
     color: #333;
     text-align: center;
     padding: 6px 12px;
-    background: #fff;
-    border: 2px solid #555;
+    background: #FFFDF2;
+    border: 2px solid var(--sim-panel-border, #555);
     border-radius: 999px;
     white-space: nowrap;
   }
@@ -1106,9 +1183,9 @@
     gap: 6px;
     padding: 8px 10px;
     min-height: 44px;
-    border: 2px solid #555;
+    border: 2px solid var(--sim-btn-border, #555);
     border-radius: 6px;
-    background: #fff;
+    background: #FFFDF2;
     cursor: pointer;
     white-space: nowrap;
     box-sizing: border-box;
@@ -1117,13 +1194,20 @@
 
   .sim-dropdown-trigger:hover,
   .sim-dropdown-trigger:focus-visible {
-    background: #f0f0f0;
+    background: var(--sim-btn-hover, #f0f0f0);
   }
 
   .sim-dropdown-trigger:active {
-    background: #d0d0d0;
+    background: var(--sim-btn-active, #d0d0d0);
   }
 
+  .sim-dropdown-trigger:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .sim-dropdown-trigger:focus:not(:focus-visible) {
+    outline: none;
+  }
   .sim-dropdown-trigger:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
@@ -1147,10 +1231,11 @@
     border-radius: 999px;
     padding: 6px 12px;
     min-height: auto;
+    background: #FFFDF2;
   }
 
   .sim-dropdown.locked .sim-dropdown-trigger:hover {
-    background: #fff;
+    background: #FFFDF2;
   }
 
   .sim-dropdown.locked .sim-dropdown-caret {
@@ -1184,10 +1269,10 @@
     left: 0;
     right: 0;
     margin-top: 0;
-    border: 2px solid #555;
+    border: 2px solid var(--sim-btn-border, #555);
     border-top: none;
     border-radius: 0 0 6px 6px;
-    background: #fff;
+    background: #FFFDF2;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     z-index: 12;
     overflow: hidden;
@@ -1212,21 +1297,21 @@
   }
 
   .sim-dropdown-item:hover {
-    background: #f0f0f0;
+    background: var(--sim-btn-hover, #f0f0f0);
   }
 
   .sim-dropdown-item:active {
-    background: #d0d0d0;
+    background: var(--sim-btn-active, #d0d0d0);
   }
 
   .sim-dropdown-item.focused {
-    background: #f0f0f0;
+    background: var(--sim-btn-hover, #f0f0f0);
     outline: 2px solid #005FCC;
     outline-offset: -2px;
   }
 
   .sim-dropdown-item.selected {
-    background: #d0d0d0;
+    background: var(--sim-btn-active, #d0d0d0);
     color: #333;
     font-weight: 700;
   }
@@ -1236,7 +1321,7 @@
     height: 80px;
     border-radius: 50%;
     border: none;
-    background: #fff;
+    background: #FFFDF2;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -1245,8 +1330,8 @@
   }
 
   .sim-parent-circle svg {
-    width: 75%;
-    height: 75%;
+    width: 80%;
+    height: 80%;
   }
 
   .sim-cross-symbol {
@@ -1284,10 +1369,19 @@
     background: #fff;
   }
 
+  .sim-offspring:focus {
+    outline: none;
+  }
   .sim-offspring:focus-visible {
     outline: none;
   }
 
+  .sim-offspring:focus ~ .scroll-focus-ring {
+    display: block;
+  }
+  .sim-offspring:focus:not(:focus-visible) ~ .scroll-focus-ring {
+    display: none;
+  }
   .sim-offspring:focus-visible ~ .scroll-focus-ring {
     display: block;
   }
@@ -1312,53 +1406,68 @@
     width: 100%;
   }
 
-  .gen-row {
+  .cross-row {
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin: 3px 0;
+    gap: 8px;
+    margin: 5px 0;
     width: 100%;
-    padding: 4px 4px 4px 4px;
+    padding: 5px 8px 5px 5px;
     border-radius: 6px;
     cursor: pointer;
-    border: 1px solid #858585;
+    border: 2px solid var(--sim-cross-row-border, #858585);
+    background: #FFFDF2;
   }
 
-  .gen-row:hover,
-  .gen-row:focus-visible {
-    background: #eef2f7;
+  .cross-row:hover,
+  .cross-row:focus-visible {
+    background: var(--sim-cross-row-hover, #eef2f7);
   }
 
-  .gen-row:active {
-    background: #dce8f5;
+  .cross-row:active {
+    background: var(--sim-cross-row-active, #dce8f5);
   }
 
-  .gen-row:focus-visible {
+  .cross-row:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .cross-row:focus:not(:focus-visible) {
+    outline: none;
+  }
+  .cross-row:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
   }
 
-  .gen-row.selected {
-    background: #dce8f5;
-    outline: 2px solid #4080b8;
-    outline-offset: -1px;
+  .cross-row.selected {
+    background: var(--sim-cross-row-selected, #dce8f5);
+    border-color: var(--sim-cross-row-selected-outline, #4080b8);
+    box-shadow: inset 0 0 0 1px var(--sim-cross-row-selected-outline, #4080b8);
   }
 
-  .gen-row.selected:focus-visible {
+  .cross-row.selected:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .cross-row.selected:focus:not(:focus-visible) {
+    outline: none;
+  }
+  .cross-row.selected:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
   }
 
-  .gen-label {
+  .cross-label {
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
     font-weight: 700;
-    color: #333;
+    color: var(--sim-cross-label-text, #333);
     width: 52px;
     flex-shrink: 0;
     padding: 8px 0;
-    background: #e8e8e8;
+    background: var(--sim-cross-label-bg, #e8e8e8);
     border-radius: 4px;
     align-self: stretch;
     display: flex;
@@ -1369,42 +1478,46 @@
     box-sizing: border-box;
   }
 
-  .gen-plants {
+  .cross-plants {
     display: flex;
     flex-wrap: wrap;
-    gap: 1px;
+    gap: 5px;
+    margin-left: 0;
+    padding: 3px 0;
   }
 
   .offspring-plant {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4CAF50;
+    color: #45A54A;
     position: relative;
+    background: #FFFDF2;
+    border-radius: 50%;
   }
 
   .offspring-plant svg {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
   }
 
   .offspring-plant.infected {
-    color: #9C6B3A;
+    color: #502600;
+    background: #FFFDF2;
   }
 
   .offspring-plant.infected svg {
-    opacity: 0.65;
-    transform: scaleX(0.85) scaleY(0.78) rotate(12deg);
+    opacity: 1;
   }
 
   .offspring-plant.infected::after {
     content: "";
     position: absolute;
-    inset: 4px;
-    border: 2px dashed #d32f2f;
-    border-radius: 4px;
+    top: 0; right: 0; bottom: 0; left: 0;
+    border: 2px dashed #502600;
+    border-radius: 50%;
     pointer-events: none;
   }
 
@@ -1421,19 +1534,27 @@
     content: "";
     flex: 1;
     height: 2px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='2'%3E%3Cline x1='0' y1='1' x2='6' y2='1' stroke='%231565C0' stroke-width='2'/%3E%3C/svg%3E") repeat-x;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='2'%3E%3Cline x1='0' y1='1' x2='5' y2='1' stroke='%233060C0' stroke-width='2'/%3E%3C/svg%3E") repeat-x;
   }
 
   .fungus-divider-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-family: 'Lato', sans-serif;
     font-size: 16px;
     line-height: 20px;
     font-weight: 700;
-    color: #1565C0;
-    background: #e3eef8;
-    padding: 2px 8px;
+    color: #1A3C8F;
+    background: #C8D8FC;
+    padding: 5px 10px 5px 6px;
     border-radius: 4px;
     white-space: nowrap;
+  }
+  .fungus-divider-label svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
   }
 
   .sim-buttons {
@@ -1451,22 +1572,29 @@
     font-weight: 700;
     padding: 8px 12px 8px 8px;
     min-height: 44px;
-    border: 2px solid #555;
+    border: 2px solid var(--sim-btn-border, #555);
     border-radius: 6px;
-    background: #fff;
-    color: #333;
+    background: #FFFDF2;
+    color: var(--sim-btn-text, #333);
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 4px;
   }
 
-  .sim-btn img {
+  .sim-btn svg {
     width: 24px;
     height: 24px;
     flex-shrink: 0;
   }
 
+  .sim-btn:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .sim-btn:focus:not(:focus-visible) {
+    outline: none;
+  }
   .sim-btn:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
@@ -1474,21 +1602,22 @@
 
   .sim-btn:hover:not([aria-disabled="true"]),
   .sim-btn:focus-visible:not([aria-disabled="true"]) {
-    background: #f0f0f0;
+    background: var(--sim-btn-hover, #f0f0f0);
   }
 
   .sim-btn:active:not([aria-disabled="true"]) {
-    background: #d0d0d0;
+    background: var(--sim-btn-active, #d0d0d0);
   }
 
   .sim-btn[aria-disabled="true"] {
     color: rgba(51, 51, 51, 0.35);
-    border-color: rgba(85, 85, 85, 0.35);
+    border-color: var(--sim-btn-border-disabled, rgba(85, 85, 85, 0.35));
     cursor: default;
   }
-  .sim-btn[aria-disabled="true"] img {
+  .sim-btn[aria-disabled="true"] svg {
     opacity: 0.35;
   }
+
 
   /* Data panel */
   .data-panel-inner {
@@ -1508,10 +1637,10 @@
     box-sizing: border-box;
   }
 
-  .data-half.line-graph {
+  .data-half.bar-chart {
     height: calc(50% + 10px);
     padding-top: 10px;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
     justify-content: flex-start;
     align-items: stretch;
     overflow: hidden;
@@ -1519,14 +1648,15 @@
 
   .data-half.pie-chart {
     height: calc(50% - 10px);
-    padding-top: 27px;
-    padding-bottom: 10px;
+    padding-top: 25px;
+    padding-bottom: 8px;
+    justify-content: flex-start;
   }
 
   .data-divider {
     width: 100%;
     height: 0;
-    border-top: 1px solid #555;
+    border-top: 1px solid var(--sim-data-divider, #555);
   }
 
   .data-chart-title {
@@ -1539,11 +1669,104 @@
     white-space: nowrap;
   }
 
+  .data-chart-pill {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    background: #fff;
+    border-radius: 999px;
+    padding: 6px 12px;
+    white-space: nowrap;
+  }
+
+  .data-chart-pill.active {
+    background: var(--sim-cross-row-selected, #dce8f5);
+    color: var(--sim-cross-label-text, #333);
+    padding-right: 4px;
+    cursor: pointer;
+    position: relative;
+  }
+  .data-chart-pill.active::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 44px;
+    right: 22px;
+  }
+
+  .data-chart-pill .pill-close {
+    display: none;
+    background: #FFFDF2;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    color: #5C4813;
+    cursor: pointer;
+    padding: 2px;
+    margin-left: 6px;
+    margin-top: -2px;
+    margin-bottom: -2px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  .data-chart-pill .pill-close::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+  }
+
+  .data-chart-pill .pill-close:hover,
+  .data-chart-pill .pill-close:focus-visible {
+    background: var(--sim-cross-row-hover, #eef2f7);
+  }
+
+  .data-chart-pill .pill-close:active {
+    background: var(--sim-cross-row-active, #dce8f5);
+  }
+
+  .data-chart-pill .pill-close:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .data-chart-pill .pill-close:focus:not(:focus-visible) {
+    outline: none;
+  }
+  .data-chart-pill .pill-close:focus-visible {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+
+  .data-chart-pill .pill-close svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .data-chart-pill.active .pill-close {
+    display: inline;
+  }
+
   .data-chart-body {
     flex: 1;
+    min-height: 0;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    overflow: visible;
+    padding-top: 0;
   }
 
   .data-chart-legend {
@@ -1551,7 +1774,7 @@
     justify-content: center;
     align-items: center;
     gap: 20px;
-    padding: 4px 8px 4px 8px;
+    padding: 10px 8px 0 8px;
     flex-shrink: 0;
     font-size: 16px;
     line-height: 20px;
@@ -1585,6 +1808,16 @@
     border: 1px solid #333;
   }
 
+  .sim-btn svg,
+  .sim-info-btn svg,
+  .sim-dropdown-caret,
+  .trial-card-reset svg,
+  .trial-card-new-icon,
+  .info-modal-close svg,
+  .info-modal-header-icon {
+    color: var(--sim-icon-color, #000);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -1592,6 +1825,36 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  /* Suppress focus rings on mouse interaction (body.using-mouse set via JS) */
+  body.using-mouse .toggle-btn:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  body.using-mouse .sim-info-btn:focus,
+  body.using-mouse .info-modal-close:focus,
+  body.using-mouse .trial-card:focus,
+  body.using-mouse .sim-dropdown-trigger:focus,
+  body.using-mouse .cross-row:focus,
+  body.using-mouse .cross-row.selected:focus,
+  body.using-mouse .sim-btn:focus,
+  body.using-mouse .data-chart-pill .pill-close:focus {
+    outline: none;
+  }
+  body.using-mouse .ap-left-toggle:focus {
+    box-shadow: none;
+  }
+  body.using-mouse.teal-bg .toggle-btn:focus {
+    box-shadow: none;
+  }
+  body.using-mouse .trial-card-reset:focus::after {
+    outline: none;
+  }
+  body.using-mouse .info-modal-body:focus ~ .scroll-focus-ring,
+  body.using-mouse .trials-scroll:focus ~ .scroll-focus-ring,
+  body.using-mouse .sim-offspring:focus ~ .scroll-focus-ring {
+    display: none;
   }
 
 </style>
@@ -1602,8 +1865,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <div class="btn-column">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v0.5</div>
-      <div style="font-weight: 400;">Updated: 6/8/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v0.6</div>
+      <div style="font-weight: 400;">Updated: 6/10/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -1695,7 +1958,41 @@ const SIMS = {
   bananas: {
     name: "Bananas",
     description: "An interactive genetics simulation",
-    titleFont: "'Slackey', 'Lato', sans-serif"
+    titleFont: "'Slackey', 'Lato', sans-serif",
+    theme: {
+      titleBarBg: "#FFF3C4",
+      titleText: "#5C4813",
+      titleDesc: "#333",
+      panelBg: "#FFFDF2",
+      panelBorder: "#9E8540",
+      panelTabBg: "#FFECA0",
+      panelTabText: "#5C4813",
+      crossLabelBg: "#FFE680",
+      crossLabelText: "#5C4813",
+      crossRowHover: "#FFF3C4",
+      crossRowActive: "#FFE680",
+      crossRowSelected: "#FFE680",
+      crossRowBorder: "#9E8540",
+      crossRowSelectedOutline: "#5C4813",
+      trialLabelBg: "#FFF3C4",
+      trialLabelSelectedBg: "#5C4813",
+      trialLabelSelectedText: "#FFF3C4",
+      trialSelectedBg: "#FFF3C4",
+      trialSelectedBorder: "#5C4813",
+      btnBorder: "#9E8540",
+      btnText: "#333",
+      btnHover: "#FFF3C4",
+      btnActive: "#FFE680",
+      btnBorderDisabled: "rgba(158, 133, 64, 0.35)",
+      aboutBorder: "#9E8540",
+      aboutText: "#333",
+      aboutIconBg: "#5C4813",
+      aboutIconText: "#FFF3C4",
+      dataDivider: "#9E8540",
+      iconColor: "#5C4813",
+      contentBg: "#FFFDF2",
+      titleAccent: "7px"
+    }
   },
   collapse: {
     name: "Collapse!",
@@ -1751,6 +2048,61 @@ function invalidateSimCache() {
   _currentSim = null;
 }
 
+function applySimTheme(contentEl) {
+  const theme = SIMS[activeSim].theme;
+  const props = {
+    "--sim-title-bar-bg": theme ? theme.titleBarBg : "",
+    "--sim-title-text": theme ? theme.titleText : "",
+    "--sim-title-desc": theme ? theme.titleDesc : "",
+    "--sim-panel-bg": theme ? theme.panelBg : "",
+    "--sim-panel-border": theme ? theme.panelBorder : "",
+    "--sim-panel-tab-bg": theme ? theme.panelTabBg : "",
+    "--sim-panel-tab-text": theme ? theme.panelTabText : "",
+    "--sim-cross-label-bg": theme ? theme.crossLabelBg : "",
+    "--sim-cross-label-text": theme ? theme.crossLabelText : "",
+    "--sim-cross-row-hover": theme ? theme.crossRowHover : "",
+    "--sim-cross-row-active": theme ? theme.crossRowActive : "",
+    "--sim-cross-row-selected": theme ? theme.crossRowSelected : "",
+    "--sim-cross-row-border": theme ? theme.crossRowBorder : "",
+    "--sim-cross-row-selected-outline": theme ? theme.crossRowSelectedOutline : "",
+    "--sim-trial-label-bg": theme ? theme.trialLabelBg : "",
+    "--sim-trial-label-selected-bg": theme ? theme.trialLabelSelectedBg : "",
+    "--sim-trial-label-selected-text": theme ? theme.trialLabelSelectedText : "",
+    "--sim-trial-selected-bg": theme ? theme.trialSelectedBg : "",
+    "--sim-trial-selected-border": theme ? theme.trialSelectedBorder : "",
+    "--sim-btn-border": theme ? theme.btnBorder : "",
+    "--sim-btn-text": theme ? theme.btnText : "",
+    "--sim-btn-hover": theme ? theme.btnHover : "",
+    "--sim-btn-active": theme ? theme.btnActive : "",
+    "--sim-btn-border-disabled": theme ? theme.btnBorderDisabled || "rgba(85, 85, 85, 0.35)" : "",
+    "--sim-about-border": theme ? theme.aboutBorder : "",
+    "--sim-about-text": theme ? theme.aboutText : "",
+    "--sim-data-divider": theme ? theme.dataDivider : "",
+    "--sim-content-bg": theme ? theme.contentBg : "",
+    "--sim-title-accent": theme ? theme.titleAccent : "",
+    "--sim-icon-color": theme ? theme.iconColor : ""
+  };
+  for (const [k, v] of Object.entries(props)) {
+    if (v) contentEl.style.setProperty(k, v);
+    else contentEl.style.removeProperty(k);
+  }
+}
+
+const infoIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M11,7 L13,7 L13,9 L11,9 L11,7 Z M11,11 L13,11 L13,17 L11,17 L11,11 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z"/></svg>';
+const closeIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" points="19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12"/></svg>';
+const resetIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M6.36,6.35 C7.81,4.9 9.8,4 12.01,4 C16.43,4 20,7.58 20,12 C20,16.42 16.43,20 12.01,20 C8.28,20 5.17,17.45 4.28,14 L6.36,14 C7.18,16.33 9.4,18 12.01,18 C15.32,18 18.01,15.31 18.01,12 C18.01,8.69 15.32,6 12.01,6 C10.35,6 8.87,6.69 7.79,7.78 L11.01,11 L4.01,11 L4.01,4 L6.36,6.35 Z"/></svg>';
+const addIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M13,7 L11,7 L11,11 L7,11 L7,13 L11,13 L11,17 L13,17 L13,13 L17,13 L17,11 L13,11 L13,7 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z"/></svg>';
+const expandIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" points="16.59 8.59 12 13.17 7.41 8.59 6 10 12 16 18 10"/></svg>';
+const crossIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M12,2 C6.47,2 2,6.47 2,12 C2,17.53 6.47,22 12,22 C17.53,22 22,17.53 22,12 C22,6.47 17.53,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M15.59,7 L12,10.59 L8.41,7 L7,8.41 L10.59,12 L7,15.59 L8.41,17 L12,13.41 L15.59,17 L17,15.59 L13.41,12 L17,8.41 L15.59,7 Z"/></svg>';
+const doubleArrowIconSVG = '<svg aria-hidden="true" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path fill="#FFFFFF" fill-rule="evenodd" d="M16.2,8.25 C16.3346077,8.25 16.4536688,8.30176503 16.5572144,8.40531062 L17.3337675,9.18186373 C17.4373131,9.28540932 17.4890782,9.40447044 17.4890782,9.53907816 C17.4890782,9.67368587 17.4373131,9.79274699 17.3337675,9.89629259 L11.2300601,16 L17.3337675,22.1037074 C17.4373131,22.207253 17.4890782,22.3263141 17.4890782,22.4609218 C17.4890782,22.5955296 17.4373131,22.7145907 17.3337675,22.8181363 L16.5572144,23.5946894 C16.4536688,23.698235 16.3346077,23.75 16.2,23.75 C16.0653923,23.75 15.9463312,23.698235 15.8427856,23.5946894 L8.60531062,16.3572144 C8.50176503,16.2536688 8.45,16.1346077 8.45,16 C8.45,15.8653923 8.50176503,15.7463312 8.60531062,15.6427856 L15.8427856,8.40531062 C15.9463312,8.30176503 16.0653923,8.25 16.2,8.25 Z M22.2,8.25 C22.3346077,8.25 22.4536688,8.30176503 22.5572144,8.40531062 L23.3337675,9.18186373 C23.4373131,9.28540932 23.4890782,9.40447044 23.4890782,9.53907816 C23.4890782,9.67368587 23.4373131,9.79274699 23.3337675,9.89629259 L17.2300601,16 L23.3337675,22.1037074 C23.4373131,22.207253 23.4890782,22.3263141 23.4890782,22.4609218 C23.4890782,22.5955296 23.4373131,22.7145907 23.3337675,22.8181363 L22.5572144,23.5946894 C22.4536688,23.698235 22.3346077,23.75 22.2,23.75 C22.0653923,23.75 21.9463312,23.698235 21.8427856,23.5946894 L14.6053106,16.3572144 C14.501765,16.2536688 14.45,16.1346077 14.45,16 C14.45,15.8653923 14.501765,15.7463312 14.6053106,15.6427856 L21.8427856,8.40531062 C21.9463312,8.30176503 22.0653923,8.25 22.2,8.25 Z"/></svg>';
+const addFungusIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M12,2 C17.53,2 22,6.47 22,12 C22,12.7158759 21.9250912,13.4139882 21.7826713,14.0869393 C21.229219,13.6744665 20.5966891,13.3642508 19.9117497,13.1828692 C19.9701437,12.7975201 20,12.4021698 20,12 C20,7.59 16.41,4 12,4 C7.59,4 4,7.59 4,12 C4,16.41 7.59,20 12,20 C12.4021698,20 12.7975201,19.9701437 13.18395,19.9125319 C13.3642508,20.5966891 13.6744665,21.229219 14.0860091,21.7818322 C13.4139882,21.9250912 12.7158759,22 12,22 C6.47,22 2,17.53 2,12 C2,6.47 6.47,2 12,2 Z M19.5,15 L19.5,17.5 L22,17.5 L22,19.5 L19.5,19.5 L19.5,22 L17.5,22 L17.5,19.5 L15,19.5 L15,17.5 L17.5,17.5 L17.5,15 L19.5,15 Z M15.6264648,6.97851562 L15.6264648,8.67382812 L10.7797852,8.67382812 L10.7797852,11.0458984 L14.9633789,11.0458984 L14.9633789,12.7412109 L10.7797852,12.7412109 L10.7797852,17 L8.75634766,17 L8.75634766,6.97851562 L15.6264648,6.97851562 Z"/></svg>';
+
+function createSVGIcon(svgString) {
+  const temp = document.createElement("div");
+  temp.innerHTML = svgString;
+  return temp.firstChild;
+}
+
 function buildSimTitleBar() {
   const bar = document.createElement("div");
   bar.className = "sim-title-bar";
@@ -1785,10 +2137,7 @@ function buildSimTitleBar() {
   ccLogo.className = "sim-title-logo";
   const infoBtn = document.createElement("button");
   infoBtn.className = "sim-info-btn";
-  const infoBtnIcon = document.createElement("img");
-  infoBtnIcon.src = "icons/Info ICON.svg";
-  infoBtnIcon.alt = "";
-  infoBtnIcon.setAttribute("aria-hidden", "true");
+  const infoBtnIcon = createSVGIcon(infoIconSVG);
   infoBtn.appendChild(infoBtnIcon);
   infoBtn.appendChild(document.createTextNode("About"));
   infoBtn.addEventListener("click", () => {
@@ -1799,27 +2148,21 @@ function buildSimTitleBar() {
     // Create modal
     const modal = document.createElement("div");
     modal.className = "info-modal";
-    modal.setAttribute("role", "dialog");
+    modal.setAttribute("role", "complementary");
     modal.setAttribute("aria-label", "About the " + SIMS[activeSim].name + " Simulation");
 
     // Header
     const header = document.createElement("div");
     header.className = "info-modal-header";
-    const hIcon = document.createElement("img");
-    hIcon.className = "info-modal-header-icon";
-    hIcon.src = "icons/Info ICON.svg";
-    hIcon.alt = "";
-    hIcon.setAttribute("aria-hidden", "true");
+    const hIcon = createSVGIcon(infoIconSVG);
+    hIcon.classList.add("info-modal-header-icon");
     const hTitle = document.createElement("h2");
     hTitle.className = "info-modal-header-title";
     hTitle.textContent = "About the " + SIMS[activeSim].name + " Simulation";
     const closeBtn = document.createElement("button");
     closeBtn.className = "info-modal-close";
     closeBtn.setAttribute("aria-label", "Close");
-    const closeIcon = document.createElement("img");
-    closeIcon.src = "icons/Close ICON.svg";
-    closeIcon.alt = "";
-    closeIcon.setAttribute("aria-hidden", "true");
+    const closeIcon = createSVGIcon(closeIconSVG);
     closeBtn.appendChild(closeIcon);
     function closeModal() {
       modal.remove();
@@ -1851,16 +2194,16 @@ function buildSimTitleBar() {
         '<p>Follow the guided investigation across up to ten independent trials (A\u2013J):</p>' +
         '<ol>' +
         '<li><strong>Select parents:</strong> Choose two parent banana plants from the dropdown menus. Parent selections are locked once the first cross is made. Reset the trial to choose different parents.</li>' +
-        '<li><strong>Cross plants:</strong> Each cross produces 5\u201320 offspring. A maximum of 25 crosses (generations) are allowed per trial.</li>' +
+        '<li><strong>Cross plants:</strong> Each cross produces 5\u201320 offspring. A maximum of 10 crosses are allowed per trial.</li>' +
         '<li><strong>Introduce fungus:</strong> Fungus can be introduced at any time, even before the first cross. Plants that are not resistant will wilt and turn brown.</li>' +
-        '<li><strong>Continue crossing:</strong> Keep crossing after the fungus is introduced to observe how resistance changes across generations.</li>' +
-        '<li><strong>Analyze data:</strong> Use the Data panel to compare healthy and infected plants across generations.</li>' +
+        '<li><strong>Continue crossing:</strong> Keep crossing after the fungus is introduced to observe how resistance changes across crosses.</li>' +
+        '<li><strong>Analyze data:</strong> Use the Data panel to compare healthy and infected plants across crosses.</li>' +
         '</ol>' +
         '<h3>Keep in Mind</h3>' +
         '<ul>' +
         '<li><strong>Irreversible fungus:</strong> Once introduced, the fungus cannot be removed within a trial \u2014 just like in real life.</li>' +
-        '<li><strong>Generation rows:</strong> Offspring are organized by generation (G1, G2, G3\u2026) in the grid, making it easy to compare with the data graphs.</li>' +
-        '<li><strong>Dual markers:</strong> Notice that a blue dashed line appears in both the offspring grid and the line graph at the generation when fungus is introduced.</li>' +
+        '<li><strong>Cross rows:</strong> Offspring are organized by cross (C1, C2, C3\u2026) in the grid, making it easy to compare with the data charts.</li>' +
+        '<li><strong>Dual markers:</strong> Notice that a blue dashed line appears in both the offspring grid and the bar chart at the cross when fungus is introduced.</li>' +
         '</ul>',
       collapse:
         '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>' +
@@ -1939,8 +2282,9 @@ function buildSimTitleBar() {
     }
     document.addEventListener("keydown", onModalKeydown);
 
-    // Focus close button
-    closeBtn.focus();
+    if (!document.body.classList.contains("using-mouse")) {
+      closeBtn.focus();
+    }
   });
 
   right.appendChild(deseLogo);
@@ -1955,7 +2299,7 @@ function buildSimTitleBar() {
 function buildSimContent() {
   if (activeSim === "bananas") {
     const MAX_TRIALS = 10;
-    const MAX_GENERATIONS = 25;
+    const MAX_CROSSES = 10;
     const OFFSPRING_MIN = 5;
     const OFFSPRING_MAX = 20;
     const CIRCLE_MIN = 42;
@@ -1972,6 +2316,43 @@ function buildSimContent() {
       liveAnnounce.textContent = "";
       requestAnimationFrame(() => { liveAnnounce.textContent = msg; });
     };
+
+    // Build the fungus "F-in-circle" icon path using canvas API calls
+    // instead of new Path2D(svgString), which crashes Safari < 14.1.
+    function buildFungusIconPath() {
+      const p = new Path2D();
+      // Outer circle (clockwise)
+      p.arc(12, 12, 10, 0, Math.PI * 2);
+      // Inner circle cutout (counter-clockwise)
+      p.moveTo(20, 12);
+      p.arc(12, 12, 8, 0, Math.PI * 2, true);
+      // Letter "F"
+      p.moveTo(15.6264648, 6.97851562);
+      p.lineTo(15.6264648, 8.67382813);
+      p.lineTo(10.7797852, 8.67382813);
+      p.lineTo(10.7797852, 11.0458984);
+      p.lineTo(14.9633789, 11.0458984);
+      p.lineTo(14.9633789, 12.7412109);
+      p.lineTo(10.7797852, 12.7412109);
+      p.lineTo(10.7797852, 17);
+      p.lineTo(8.75634766, 17);
+      p.lineTo(8.75634766, 6.97851562);
+      p.closePath();
+      return p;
+    }
+
+    function scrollItemIntoView(el, container) {
+      const cs = getComputedStyle(container);
+      const padTop = parseFloat(cs.paddingTop);
+      const padBottom = parseFloat(cs.paddingBottom);
+      const cRect = container.getBoundingClientRect();
+      const eRect = el.getBoundingClientRect();
+      if (eRect.top < cRect.top + padTop) {
+        container.scrollBy({ top: eRect.top - cRect.top - padTop });
+      } else if (eRect.bottom > cRect.bottom - padBottom) {
+        container.scrollBy({ top: eRect.bottom - cRect.bottom + padBottom });
+      }
+    }
 
     const panels = [
       { name: "Trials", fixedWidth: 155, subtitle: null },
@@ -2005,6 +2386,7 @@ function buildSimContent() {
         const scrollWrap = document.createElement("div");
         scrollWrap.className = "trials-scroll";
         scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("aria-orientation", "vertical");
         scrollWrap.setAttribute("aria-label", "Trials");
         function updateTrialsTabindex() {
           if (scrollWrap.scrollHeight > scrollWrap.clientHeight) {
@@ -2037,6 +2419,7 @@ function buildSimContent() {
           if (!statsEl) {
             statsEl = document.createElement("div");
             statsEl.className = "trial-card-stats";
+            statsEl.setAttribute("aria-hidden", "true");
             cardEl.appendChild(statsEl);
           }
 
@@ -2058,7 +2441,7 @@ function buildSimContent() {
             html += crossRow('\u2026', abbrev(st.p2));
           }
 
-          const allPlants = st.generations.flat();
+          const allPlants = st.crosses.flat();
           if (allPlants.length > 0) {
             // Line 2: offspring count
             html += '<span>Offspring: ' + allPlants.length + '</span>';
@@ -2067,22 +2450,28 @@ function buildSimContent() {
             const hPct = Math.round(((allPlants.length - inf) / allPlants.length) * 100);
             const iPct = 100 - hPct;
             html += '<span style="display:flex;align-items:center;gap:4px;justify-content:center">' +
-              '<span style="width:14px;height:14px;border-radius:2px;background:#C2C2C2;border:1px solid #333;flex-shrink:0"></span>' + hPct + '%' +
+              '<span style="width:14px;height:14px;border-radius:2px;background:#3D9441;border:1px solid #333;flex-shrink:0"></span>' + hPct + '%' +
               '<span style="width:1px"></span>' +
-              '<span style="width:14px;height:14px;border-radius:2px;background:#444;border:1px solid #333;flex-shrink:0"></span>' + iPct + '%' +
+              '<span style="width:14px;height:14px;border-radius:2px;background:#502600;border:1px solid #333;flex-shrink:0"></span>' + iPct + '%' +
               '</span>';
-          } else if (st.fungusAfterGen !== null) {
+          } else if (st.fungusAfterCross !== null) {
             html += '<span aria-hidden="true">&nbsp;</span>';
             html += '<span aria-hidden="true">&nbsp;</span>';
           }
 
-          // Line 4: fungus status — shows first affected generation
-          if (st.fungusAfterGen !== null) {
-            const fGen = st.fungusAfterGen + 1;
-            html += '<span>Fungus: G' + fGen + (fGen < MAX_GENERATIONS ? '+' : '') + '</span>';
+          // Line 4: fungus status — shows first affected cross
+          if (st.fungusAfterCross !== null) {
+            const fCross = st.fungusAfterCross + 1;
+            html += '<span style="display:inline-flex;align-items:center;gap:2px;color:#333"><svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;flex-shrink:0;color:#1A3C8F"><path fill="currentColor" d="M12,2 C6.47,2 2,6.47 2,12 C2,17.53 6.47,22 12,22 C17.53,22 22,17.53 22,12 C22,6.47 17.53,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M15.6264648,6.97851562 L15.6264648,8.67382813 L10.7797852,8.67382813 L10.7797852,11.0458984 L14.9633789,11.0458984 L14.9633789,12.7412109 L10.7797852,12.7412109 L10.7797852,17 L8.75634766,17 L8.75634766,6.97851562 L15.6264648,6.97851562 Z" fill-rule="nonzero"/></svg>Fungus: C' + fCross + (fCross < MAX_CROSSES ? '+' : '') + '</span>';
           }
 
           statsEl.innerHTML = html;
+
+          if (st.p1 || st.p2 || st.crosses.length > 0 || st.fungusAfterCross !== null) {
+            cardEl.classList.add("has-data");
+          } else {
+            cardEl.classList.remove("has-data");
+          }
 
           // Enrich aria-label with trial state summary
           let ariaParts = ["Trial " + letter];
@@ -2098,39 +2487,76 @@ function buildSimContent() {
 
           const resetBtn = cardEl.querySelector(".trial-card-reset");
           if (resetBtn) {
-            resetBtn.setAttribute("aria-disabled", (st.p1 || st.p2 || st.locked) ? "false" : "true");
+            const canReset = !!(st.p1 || st.p2 || st.locked);
+            resetBtn.setAttribute("aria-disabled", canReset ? "false" : "true");
+            const isSelected = cardEl.classList.contains("selected");
+            resetBtn.setAttribute("tabindex", (isSelected && canReset) ? "0" : "-1");
           }
         }
         SIM.updateTrialCardLabel = updateTrialCardLabel;
 
         function buildTrialCard(letter) {
-          trialState[letter] = { p1: null, p2: null, locked: false, generations: [], fungusAfterGen: null };
+          trialState[letter] = { p1: null, p2: null, locked: false, crosses: [], fungusAfterCross: null };
           const card = document.createElement("div");
           card.className = "trial-card";
           card.setAttribute("role", "tab");
-          card.setAttribute("tabindex", "0");
+          card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Trial " + letter);
           card.style.cursor = "pointer";
           SIM.trialCards[letter] = card;
           function selectTrial() {
-            scrollWrap.querySelectorAll(".trial-card").forEach(c => {
+            scrollWrap.querySelectorAll(".trial-card:not(.new-card)").forEach(c => {
               c.classList.remove("selected");
               c.setAttribute("aria-selected", "false");
+              c.style.cursor = "pointer";
+              const rb = c.querySelector(".trial-card-reset");
+              if (rb) rb.setAttribute("tabindex", "-1");
             });
             card.classList.add("selected");
             card.setAttribute("aria-selected", "true");
+            card.style.cursor = "default";
+            resetBtn.setAttribute("tabindex", resetBtn.getAttribute("aria-disabled") === "true" ? "-1" : "0");
             SIM.selectedTrial = letter;
             const indicator = document.querySelector(".sim-trial-indicator");
             if (indicator) indicator.textContent = letter;
             if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(letter);
             if (SIM.renderOffspring) SIM.renderOffspring(letter);
             if (SIM.updateSimButtons) SIM.updateSimButtons();
+            updateTrialCardTabindex();
           }
           card.addEventListener("click", selectTrial);
           card.addEventListener("keydown", (e) => {
             if ((e.key === "Enter" || e.key === " ") && e.target === card) {
               e.preventDefault();
               selectTrial();
+              return;
+            }
+            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+              e.preventDefault();
+              const cards = getTrialNavCards();
+              const cur = cards.indexOf(card);
+              if (cur < 0) return;
+              const next = e.key === "ArrowDown"
+                ? (cur + 1) % cards.length
+                : (cur - 1 + cards.length) % cards.length;
+              cards[cur].setAttribute("tabindex", "-1");
+              cards[next].setAttribute("tabindex", "0");
+              cards[next].focus({ preventScroll: true });
+              scrollItemIntoView(cards[next], scrollWrap);
+            } else if (e.key === "Home") {
+              e.preventDefault();
+              const cards = getTrialNavCards();
+              cards.forEach(c => c.setAttribute("tabindex", "-1"));
+              cards[0].setAttribute("tabindex", "0");
+              cards[0].focus({ preventScroll: true });
+              scrollItemIntoView(cards[0], scrollWrap);
+            } else if (e.key === "End") {
+              e.preventDefault();
+              const cards = getTrialNavCards();
+              cards.forEach(c => c.setAttribute("tabindex", "-1"));
+              cards[cards.length - 1].setAttribute("tabindex", "0");
+              cards[cards.length - 1].focus({ preventScroll: true });
+              scrollItemIntoView(cards[cards.length - 1], scrollWrap);
             }
           });
           card.setAttribute("aria-selected", "false");
@@ -2142,38 +2568,46 @@ function buildSimContent() {
           resetBtn.className = "trial-card-reset";
           resetBtn.setAttribute("aria-label", "Reset trial " + letter);
           resetBtn.setAttribute("aria-disabled", "true");
-          const resetIcon = document.createElement("img");
-          resetIcon.src = "icons/Reset ICON.svg";
-          resetIcon.alt = "";
-          resetIcon.setAttribute("aria-hidden", "true");
+          resetBtn.setAttribute("tabindex", "-1");
+          const resetIcon = createSVGIcon(resetIconSVG);
           resetBtn.appendChild(resetIcon);
           function resetTrial(e) {
             e.stopPropagation();
             if (resetBtn.getAttribute("aria-disabled") === "true") return;
-            trialState[letter] = { p1: null, p2: null, locked: false, generations: [], fungusAfterGen: null };
+            trialState[letter] = { p1: null, p2: null, locked: false, crosses: [], fungusAfterCross: null };
             updateTrialCardLabel(letter);
             resetBtn.setAttribute("aria-disabled", "true");
+            resetBtn.setAttribute("tabindex", "-1");
             if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(letter);
             if (SIM.renderOffspring) SIM.renderOffspring(letter);
             if (SIM.updateSimButtons) SIM.updateSimButtons();
+            if (SIM.announce) SIM.announce("Trial " + letter + " reset.");
           }
           resetBtn.addEventListener("click", resetTrial);
           card.appendChild(resetBtn);
           return card;
         }
 
+        function getTrialNavCards() {
+          return Array.from(scrollWrap.querySelectorAll(".trial-card")).filter(c => c.style.display !== "none");
+        }
+
+        function updateTrialCardTabindex() {
+          const cards = getTrialNavCards();
+          const selIdx = cards.findIndex(c => c.classList.contains("selected"));
+          const activeIdx = selIdx >= 0 ? selIdx : 0;
+          cards.forEach((c, i) => c.setAttribute("tabindex", i === activeIdx ? "0" : "-1"));
+        }
+
         function buildNewCard() {
           const card = document.createElement("div");
           card.className = "trial-card new-card";
           card.setAttribute("role", "button");
-          card.setAttribute("tabindex", "0");
+          card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Add new trial");
           card.style.cursor = "pointer";
-          const addIcon = document.createElement("img");
-          addIcon.src = "icons/Add ICON.svg";
-          addIcon.alt = "";
-          addIcon.setAttribute("aria-hidden", "true");
-          addIcon.className = "trial-card-new-icon";
+          const addIcon = createSVGIcon(addIconSVG);
+          addIcon.classList.add("trial-card-new-icon");
           card.appendChild(addIcon);
           const lbl = document.createElement("span");
           lbl.className = "trial-card-new-label";
@@ -2183,33 +2617,71 @@ function buildSimContent() {
             if (activeTrialCount >= MAX_TRIALS) return;
             const letter = allLabels[activeTrialCount];
             activeTrialCount++;
-            // Replace this card with a real trial card
             const realCard = buildTrialCard(letter);
             scrollWrap.insertBefore(realCard, card);
-            // Select the new card
-            scrollWrap.querySelectorAll(".trial-card").forEach(c => {
+            scrollWrap.querySelectorAll(".trial-card:not(.new-card)").forEach(c => {
               c.classList.remove("selected");
               c.setAttribute("aria-selected", "false");
+              c.style.cursor = "pointer";
+              const rb = c.querySelector(".trial-card-reset");
+              if (rb) rb.setAttribute("tabindex", "-1");
             });
             realCard.classList.add("selected");
             realCard.setAttribute("aria-selected", "true");
+            realCard.style.cursor = "default";
             SIM.selectedTrial = letter;
             const indicator = document.querySelector(".sim-trial-indicator");
             if (indicator) indicator.textContent = letter;
             if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(letter);
             if (SIM.renderOffspring) SIM.renderOffspring(letter);
             if (SIM.updateSimButtons) SIM.updateSimButtons();
-            // Focus the newly created card
-            realCard.focus();
-            // Hide "+ New" if we've hit the max
+            realCard.focus({ preventScroll: true });
+            scrollItemIntoView(realCard, scrollWrap);
             if (activeTrialCount >= MAX_TRIALS) {
               card.style.display = "none";
+              const maxLabel = document.createElement("div");
+              maxLabel.className = "sim-offspring-placeholder";
+              maxLabel.textContent = "Max number of trials reached";
+              maxLabel.style.margin = "1px 0 1px 0";
+              maxLabel.style.padding = "2px 0";
+              maxLabel.style.textAlign = "center";
+              maxLabel.style.width = "calc(100% - 15px)";
+              scrollWrap.appendChild(maxLabel);
+              requestAnimationFrame(() => { scrollWrap.scrollTop = scrollWrap.scrollHeight; });
+              if (SIM.announce) SIM.announce("Maximum of " + MAX_TRIALS + " trials reached.");
             }
+            updateTrialCardTabindex();
           });
           card.addEventListener("keydown", (e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               card.click();
+            } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+              e.preventDefault();
+              const cards = getTrialNavCards();
+              const cur = cards.indexOf(card);
+              if (cur < 0) return;
+              const next = e.key === "ArrowDown"
+                ? (cur + 1) % cards.length
+                : (cur - 1 + cards.length) % cards.length;
+              cards[cur].setAttribute("tabindex", "-1");
+              cards[next].setAttribute("tabindex", "0");
+              cards[next].focus({ preventScroll: true });
+              scrollItemIntoView(cards[next], scrollWrap);
+            } else if (e.key === "Home") {
+              e.preventDefault();
+              const cards = getTrialNavCards();
+              cards.forEach(c => c.setAttribute("tabindex", "-1"));
+              cards[0].setAttribute("tabindex", "0");
+              cards[0].focus({ preventScroll: true });
+              scrollItemIntoView(cards[0], scrollWrap);
+            } else if (e.key === "End") {
+              e.preventDefault();
+              const cards = getTrialNavCards();
+              cards.forEach(c => c.setAttribute("tabindex", "-1"));
+              cards[cards.length - 1].setAttribute("tabindex", "0");
+              cards[cards.length - 1].focus({ preventScroll: true });
+              scrollItemIntoView(cards[cards.length - 1], scrollWrap);
             }
           });
           return card;
@@ -2219,6 +2691,8 @@ function buildSimContent() {
         const cardA = buildTrialCard("A");
         cardA.classList.add("selected");
         cardA.setAttribute("aria-selected", "true");
+        cardA.setAttribute("tabindex", "0");
+        cardA.style.cursor = "default";
         scrollWrap.appendChild(cardA);
         scrollWrap.appendChild(buildNewCard());
 
@@ -2234,6 +2708,8 @@ function buildSimContent() {
 
       // Simulation panel content
       if (p.name === "Simulation") {
+        const theme = SIMS[activeSim].theme;
+        if (theme && theme.titleBarBg) panel.style.background = theme.titleBarBg;
         panel.style.overflow = "hidden";
         const inner = document.createElement("div");
         inner.className = "sim-panel-inner";
@@ -2250,8 +2726,11 @@ function buildSimContent() {
         parents.className = "sim-parents";
 
         const parentOptions = ["Wild W1", "Wild W2", "Wild W3", "Cavendish C1", "Cavendish C2"];
-        const parentColors = { "Wild W1": "#4CAF50", "Wild W2": "#4CAF50", "Wild W3": "#4CAF50", "Cavendish C1": "#388E3C", "Cavendish C2": "#388E3C" };
-        const bananaTreeSVG = '<svg viewBox="0 0 983.538 1420.338" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M802.422,612.904c-62.295,6.717-123.977,25.754-176.656,60.205-39.523,26.312-75.841,58.894-101.4,99.226,1.979-23.719,8.863-46.658,13.992-69.821,5.686-21.517,12.738-42.812,22.911-62.684,1.087-4.321,6.216-3.122,9.476-4.209,38.018-5.769,75.535-18.535,107.253-40.638,5.017-4.265,14.271-9.923,9.532-17.532-6.718-12.236-16.473-22.577-26.395-32.221,15.608,2.063,31.022,5.463,46.574,8.028,6.216,1.115,13.881.557,17.643-5.324,4.07-5.964-1.31-12.543-5.24-16.835-12.375-12.905-26.813-23.58-39.328-36.346,22.298,4.627,43.509,13.073,65.64,18.312,8.585,2.759,17.56-.864,23.915-6.745,23.106-20.459,45.237-42.116,65.137-65.724,2.983-3.762,6.94-8.947,3.261-13.685-7.971-14.438-20.681-25.476-29.545-39.3,14.299,5.436,28.402,11.874,43.397,15.274,11.539,2.007,19.427-8.807,25.977-16.584,14.215-20.821,23.357-46.965,19.539-72.301-21.489,2.007-42.338,8.39-62.573,15.664-94.042,36.318-172.586,105.498-230.533,186.997-27.482,39.467-49.892,82.363-67.675,127.043-6.94,18.005-15.414,35.481-20.347,54.184-2.397-28.04-.753-56.246-1.254-84.37.474-25.531-.334-51.174,1.449-76.621,5.909-8.641,12.292-17.058,16.389-26.758,16.584-36.792,25.726-76.51,32.221-116.172,3.4-23.134,7.832-46.882,3.54-70.183-4.404-19.929-21.295-33.698-37.293-44.708-4.655-3.596-11.651-6.355-11.568-13.267-8.919-77.179-16.054-155.389-40.638-229.529-4.822-12.32-8.668-26.925-20.792-34.117-9.979-4.013-23.636-2.759-30.409,6.439-11.316,13.908-17.978,30.939-24.611,47.439-1.506,4.961-5.24,12.487.696,15.971,15.19,10.285,31.078,19.734,44.234,32.722-18.925,4.432-39.133-.222-57.557,6.076-7.721,41.781-8.027,84.621-4.599,126.904,1.812,16.779,2.564,34.032,8.278,50.086,2.174,7.135,9.115,10.759,15.916,12.431,20.542,5.519,41.558,9.143,62.211,14.188-17.141,8.333-34.952,15.274-51.564,24.667-6.494,3.595-12.932,8.167-16.277,15.023-1.477,13.268,3.4,26.256,6.606,38.994,15.525,52.79,39.942,105.163,82.001,142.038,1.143,50.588-.919,101.204-2.954,151.766-2.899-17.309-10.285-33.363-16.389-49.669-33.391-90.53-90.53-172.001-164.224-234.268-44.122-36.596-94.153-67.201-149.48-83.283-18.73-5.184-37.99-9.755-57.557-9.086-1.533,22.66,9.086,43.704,19.901,62.88,27.009,44.122,65.389,79.437,102.097,115.308,4.738,4.906,10.591,8.473,16.64,11.568,23.134-6.188,41.419-22.717,63.075-32.249-8.529,21.155-24.166,39.273-28.736,61.932,4.125,4.906,9.393,8.752,16.166,8.39,20.626.223,41.39-2.035,61.514-6.634-10.814,11.568-24.026,21.964-29.712,37.238,9.672,8.306,21.685,12.905,33.307,17.783,25.977,10.73,53.655,16.556,81.555,19.232,19.009,39.802,31.329,82.893,36.123,126.736-15.859-17.057-29.684-36.039-47.021-51.731-55.94-51.62-127.182-86.6-202.41-98.752-63.075-10.703-129.133-8.697-190.341,10.814-12.236,4.655-25.893,7.804-35.51,17.253,12.459,23.135,34.088,40.081,57.39,51.425,6.773,3.122,15.803,6.968,22.493,1.588,20.041-15.803,33.419-38.269,52.54-55.104-7.08,20.319-17.002,39.83-21.016,61.069-1.644,8.975,9.143,10.675,15.302,13.016,13.129,3.568,26.368,9.811,40.276,7.888,17.476-6.912,25.894-24.584,36.903-38.436,1.533,13.686-2.313,28.569,3.846,41.419,7.526,11.344,23.302,8.724,34.116,4.181,25.308-9.031,44.067-28.765,63.354-46.52-5.1,16.807-15.525,31.663-19.064,48.972-1.199,9.142,9.894,12.794,17.197,11.344,33.754-3.986,66.309-14.995,97.832-27.343,19.511,14.521,34.478,34.172,47.439,54.575,11.707,18.033,20.347,38.018,25.782,58.811-15.832-16.25-35.565-29.099-57.835-34.311-36.876-10.341-75.674-3.679-112.02,5.407-48.219,13.769-92.843,39.439-129.663,73.388-22.8,21.684-43.788,46.798-54.602,76.732,34.98,10.871,73.807,5.603,106.501-10.201,5.908-3.54,15.19-7.358,14.103-15.748-1.031-18.814-5.156-37.294-8.64-55.745,9.086,15.636,19.789,30.66,33.224,42.923,7.387,6.773,17.392-.028,24.863-3.4,40.443-23.496,75.618-57.696,95.797-100.285,17.114,1.254,34.2,6.048,48.387,15.999,17.782,11.456,30.074,29.823,37.544,49.334,6.299,16.278,4.933,34.005,5.491,51.118-15.636-15.107-38.77-22.187-59.981-16.278.334,1.004.975,3.01,1.31,3.986,11.372,9.727,24.946,17.085,34.534,28.875,8.027,10.173,16.417,20.709,20.43,33.252,1.394,21.406.112,42.896-.027,64.358-2.174,36.15-.725,72.496-4.125,108.591-.781,47.411-3.094,94.739-5.77,142.066-17.699-31.914-54.296-55.382-91.617-48.609,2.481,2.955,5.937,4.544,9.504,5.937,18.229,7.135,34.451,19.65,45.46,35.899,17.17,25.225,24.221,56.302,22.66,86.599-21.295-30.687-58.281-53.041-96.522-48.163-5.435,1.532-14.187-1.032-16.835,5.351,35.008,6.522,67.898,25.922,88.244,55.495-17.17-7.47-35.76-11.679-54.49-11.178-16.11.419-33.893,3.568-46.213,14.606,25.949.557,53.069,2.007,76.51,14.382-30.241.641-66.587,1.143-87.854,26.2,18.284-1.589,36.625-4.794,55.048-2.898,4.989.808,10.787.25,14.828,3.902-20.458.446-40.583,4.766-60.372,9.783-12.236,3.762-25.169,6.856-35.51,14.8,63.131,1.533,126.345.614,189.505.892,70.573-.613,141.174.557,211.747-.725-4.878-5.742-11.539-9.421-18.284-12.459-25.615-11.288-53.822-18.201-81.917-15.72,22.437-15.107,50.839-17.894,77.123-14.745-20.793-19.928-53.153-19.984-79.854-15.33,9.114-8.501,21.127-12.849,33.335-14.354,12.319-1.171,25.587-3.457,37.432,1.142l-1.059-1.7c1.031-.474,3.094-1.421,4.125-1.895-9.727-5.491-19.817-10.62-30.854-12.765-22.633-4.098-45.628,1.756-66.169,11.232,15.162-22.382,33.781-42.422,55.271-58.81,6.745-5.352,15.023-8.919,20.375-15.887-29.851-.836-56.999,15.915-76.761,37.07,3.066-31.551,14.968-61.319,19.678-92.509-7.163,3.428-10.062,11.261-14.159,17.532-13.044,22.967-24.054,47.16-32.862,72.051-3.01-57.697-2.648-115.532-4.822-173.256.808-11.149-3.233-23.58,3.568-33.447,11.567-19.287,25.447-37.154,40.526-53.822,6.41-7.135,14.605-12.932,18.73-21.824-23.246-6.104-49.948,1.087-65.807,19.456-.028-44.401-.613-88.774-1.003-133.147-.195-12.961-1.505-26.814,5.017-38.576,14.159-27.287,44.903-43.508,75.033-44.708,18.368,24.5,35.481,51.286,60.539,69.876,4.237,2.564,10.285,7.135,14.94,2.815,6.578-5.491,11.846-12.319,17.95-18.312-.864,11.595-.975,23.218.139,34.785,5.547,5.185,15.246,11.4,21.629,3.93,13.825-14.745,25.253-31.635,39.551-45.962-4.431,19.901-13.1,38.631-17.114,58.588-1.645,6.215,5.881,8.334,9.923,10.982,30.464,14.438,65.5,19.761,98.78,14.187,4.125-1.532,13.519-2.257,11.037-8.807-11.623-30.464-34.283-55.132-58.309-76.482-42.952-35.593-96.188-59.313-151.849-64.999-31.524-3.93-64.442-.641-93.763,11.93-12.877,5.24-23.496,14.41-35.621,20.96,11.01-43.815,35.315-84.314,69.626-113.804,24.249,9.477,47.857,21.629,73.667,26.395,6.494,1.533,13.044-3.54,12.96-10.285-.028-13.407-6.243-25.81-8.473-38.882,17.309,14.438,32.193,33.669,54.184,41.084,17.643,6.104,32.444-8.557,48.805-12.236,10.508-3.289,21.434,1.143,32.081-.919,5.073-1.004,10.982-5.185,9.17-11.093-3.205-16.389-8.5-32.304-12.347-48.526,13.407,12.96,22.995,29.6,37.879,41.112,4.794,5.044,15.441,1.115,13.295-6.383-3.4-19.594-12.32-37.572-18.675-56.275,16.891,17.616,30.66,39.328,52.902,50.895,12.348,4.627,25.503-.808,37.07-5.323,24.054-10.48,47.913-26.73,58.895-51.397-10.759-6.94-22.939-11.149-35.008-15.163-47.021-15.245-97.191-17.056-146.108-12.904Z"/></svg>';
+        const parentColors = { "Wild W1": "#45A54A", "Wild W2": "#45A54A", "Wild W3": "#45A54A", "Cavendish C1": "#45A54A", "Cavendish C2": "#45A54A" };
+
+        const fungusAddedSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12,2 C6.47,2 2,6.47 2,12 C2,17.53 6.47,22 12,22 C17.53,22 22,17.53 22,12 C22,6.47 17.53,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M15.6264648,6.97851562 L15.6264648,8.67382813 L10.7797852,8.67382813 L10.7797852,11.0458984 L14.9633789,11.0458984 L14.9633789,12.7412109 L10.7797852,12.7412109 L10.7797852,17 L8.75634766,17 L8.75634766,6.97851562 L15.6264648,6.97851562 Z" fill-rule="nonzero"/></svg>';
+        const bananaTreeSVG = '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="evenodd" d="M57.4961175,34.521576 C53.987375,34.8999085 50.5131596,35.9721604 47.5460347,37.9126 C45.3199166,39.3946135 43.2743189,41.2297824 41.8347178,43.5014671 C41.9461843,42.1655034 42.333923,40.8734728 42.622812,39.5688256 C42.9430738,38.3568886 43.340275,37.1574557 43.9132654,36.0381728 C43.9744903,35.7947941 44.2633793,35.8623273 44.4469976,35.8011025 C46.5883471,35.4761657 48.7014781,34.7571256 50.4879825,33.5121824 C50.7705631,33.2719579 51.2917912,32.9532732 51.0248688,32.5246991 C50.64648,31.835511 50.0970333,31.2530581 49.5381803,30.7098634 C50.4172951,30.8260611 51.2854828,31.0175648 52.1614434,31.1620375 C52.5115572,31.2248394 52.9432855,31.1934103 53.1551787,30.8621652 C53.3844199,30.5262451 53.0813935,30.1556854 52.8600377,29.9139401 C52.1630205,29.1870708 51.3498056,28.5858055 50.6449029,27.8667653 C51.9008293,28.1273794 53.0955309,28.6030971 54.3420512,28.8981818 C54.8255981,29.0535815 55.3311116,28.8495174 55.6890546,28.5182723 C56.9904914,27.3659268 58.2370116,26.1461044 59.3578716,24.8163927 C59.525888,24.6044994 59.7487645,24.3124563 59.5415462,24.0455902 C59.0925826,23.2323753 58.3766967,22.6106641 57.8774352,21.8320325 C58.682821,22.1382131 59.4771672,22.500831 60.3217549,22.6923348 C60.9716848,22.8053783 61.4159734,22.1962838 61.7848997,21.7582472 C62.5855542,20.5855122 63.1004739,19.1129612 62.8854265,17.6859206 C61.6750667,17.7989641 60.5007546,18.1584842 59.3610258,18.5681895 C54.0641455,20.6137872 49.6401842,24.5103247 46.3763412,29.1007252 C44.8284279,31.3236891 43.5661931,33.7397902 42.5645723,36.2563744 C42.1736794,37.2704993 41.6963846,38.2548284 41.4185352,39.3082678 C41.2835251,37.7289254 41.3761227,36.140233 41.3479041,34.5561593 C41.374602,33.1181353 41.3290917,31.673803 41.4295185,30.2405103 C41.7623407,29.7538092 42.1218608,29.2797249 42.3526227,28.733376 C43.2867103,26.6610804 43.80163,24.423979 44.1674585,22.1900318 C44.3589622,20.8870179 44.6085929,19.5494207 44.3668476,18.2370007 C44.118794,17.1145072 43.1674148,16.3389735 42.2663334,15.7188394 C42.0041423,15.516296 41.6100952,15.3608964 41.6147702,14.9715806 C41.1124109,10.6245024 40.7105347,6.21935358 39.3258501,2.04344595 C39.0542528,1.34952659 38.8376283,0.526905452 38.1547485,0.121818755 C37.5926851,-0.104211961 36.8234597,-0.0335808827 36.441973,0.48449301 C35.8046036,1.26785588 35.4293689,2.22712055 35.0557677,3.15647685 C34.9709428,3.43590331 34.7606267,3.85980243 35.0949696,4.05603742 C35.9505407,4.63533618 36.8454263,5.16754755 37.5864331,5.89909177 C36.5204895,6.14872251 35.3822815,5.88658771 34.3445567,6.24132019 C33.9096742,8.59461931 33.8924389,11.0075662 34.0855197,13.3891403 C34.1875799,14.3342111 34.2299361,15.3059799 34.551775,16.2102154 C34.6742247,16.6120916 35.0651739,16.816212 35.4482377,16.9103868 C36.6052581,17.2212424 37.7889764,17.4253628 38.9522489,17.7095206 C37.9867885,18.1788737 36.9835906,18.5698229 36.047926,19.0988801 C35.6821538,19.3013671 35.3195359,19.5588833 35.13113,19.9450449 C35.0479386,20.69236 35.3226338,21.4239042 35.5032105,22.1413673 C36.3776503,25.1147442 37.7529286,28.0646337 40.121886,30.1416042 C40.1862651,32.9909543 40.0701237,35.8418815 39.9555031,38.6897671 C39.792218,37.7148442 39.3762043,36.8106087 39.0323988,35.8921794 C37.1516633,30.7931112 33.9333306,26.2042877 29.7825437,22.6971224 C27.2973887,20.6358664 24.4794114,18.9120513 21.3631389,18.0062387 C20.3081787,17.7142518 19.2233665,17.456792 18.1212625,17.4944732 C18.0349169,18.7707891 18.6330281,19.9560845 19.2421789,21.0361655 C20.7634507,23.5213206 22.9251897,25.5104247 24.992754,27.5308453 C25.2596201,27.8071739 25.5892881,28.0080838 25.9299958,28.1824085 C27.2330096,27.8338718 28.2629054,26.902882 29.4826714,26.3659957 C29.0022787,27.5575431 28.1215306,28.5780327 27.864127,29.8542923 C28.0964661,30.1306209 28.3931842,30.3472455 28.7746709,30.3268559 C29.9364226,30.3394163 31.1059471,30.2122353 32.2394238,29.9531984 C31.6303294,30.6047616 30.8861684,31.1903124 30.5659066,32.0506147 C31.1106784,32.5184471 31.7873061,32.777484 32.4419109,33.0522355 C33.9050556,33.6565987 35.4640086,33.984746 37.0354656,34.1354707 C38.1061404,36.3773034 38.8000597,38.8043878 39.07008,41.2738283 C38.1768278,40.3130991 37.3981398,39.2439451 36.4216398,38.3600991 C33.2708404,35.452622 29.2581615,33.4823867 25.0209727,32.7979298 C21.468297,32.1950874 17.747605,32.3080746 14.3000874,33.4070243 C13.6108993,33.6692155 12.8416739,33.8465817 12.3,34.3787931 C13.0017485,35.6818632 14.2199938,36.6363403 15.5324702,37.2752869 C15.9139569,37.4511323 16.4225682,37.6677568 16.7993799,37.3647304 C17.9281817,36.4746323 18.6816926,35.2092433 19.7586757,34.2610183 C19.3598974,35.4054783 18.8010444,36.5044281 18.5749574,37.7007067 C18.4823597,38.2062202 19.0899334,38.3019721 19.4368368,38.4338281 C20.1763228,38.6347943 20.9220045,38.9864289 21.7053674,38.8781167 C22.6896965,38.4888009 23.1638372,37.4934321 23.783915,36.7132234 C23.8702606,37.4840822 23.6536361,38.3223616 24.0005395,39.046133 C24.4244386,39.6850796 25.3130158,39.5375091 25.9221103,39.2816263 C27.3475739,38.7729586 28.4041675,37.6614485 29.4905006,36.6614048 C29.203245,37.6080527 28.6160608,38.4448114 28.4167279,39.4197343 C28.3491947,39.934654 28.9740038,40.1403515 29.3853425,40.0586808 C31.2865239,39.8341709 33.120172,39.2140931 34.8956931,38.5185966 C35.9946429,39.3364865 36.8376535,40.4433217 37.567677,41.592513 C38.2270693,42.6082149 38.7137141,43.7338625 39.0198384,44.9050204 C38.128107,43.9897453 37.0166532,43.2660302 35.7623038,42.9724663 C33.6852769,42.3900133 31.4999942,42.765248 29.4528194,43.2770135 C26.7369023,44.0525473 24.2234723,45.4984004 22.1495997,47.410565 C20.8653982,48.6319082 19.683257,50.0464448 19.0741625,51.7324661 C21.0443979,52.3447711 23.2313141,52.0480529 25.0727913,51.1578986 C25.4055572,50.9585094 25.9283624,50.743462 25.8671375,50.2708984 C25.8090668,49.2112069 25.5767277,48.1703279 25.3804927,47.1310822 C25.8922583,48.0117741 26.4951007,48.8579952 27.2518221,49.5487041 C27.6678921,49.9301908 28.2314199,49.547127 28.6522212,49.3572004 C30.930158,48.033797 32.9113766,46.1074948 34.0479512,43.7086854 C35.0118908,43.7793165 35.9742533,44.0493368 36.7733308,44.6098231 C37.7748953,45.255078 38.4672375,46.2895923 38.8879825,47.3885421 C39.2427713,48.3053943 39.1658318,49.3038609 39.197261,50.2677442 C38.3165692,49.4168481 37.0135553,49.0180698 35.8188537,49.350892 C35.8376661,49.4074419 35.8737702,49.5204291 35.892639,49.5754019 C36.5331626,50.1232716 37.297713,50.5377081 37.8377535,51.2017755 C38.2898713,51.7747659 38.7624349,52.3682021 38.9884656,53.0746819 C39.0669821,54.2803668 38.994774,55.4907829 38.9869448,56.699622 C38.8644951,58.7357572 38.9461095,60.782932 38.7546058,62.8159693 C38.7106162,65.486376 38.5803374,68.1521078 38.4296127,70.8177833 C37.4327232,69.0202393 35.3714109,67.698413 33.2693196,68.0798997 C33.409061,68.2463389 33.6037189,68.3358388 33.8046288,68.414299 C34.8313704,68.8161752 35.7450684,69.5210778 36.3651462,70.4362966 C37.33224,71.8570853 37.729385,73.6074856 37.6414622,75.3139528 C36.4420293,73.585519 34.3588068,72.3264384 32.2048969,72.6011899 C31.8987725,72.6874792 31.4058194,72.5430629 31.2566718,72.902583 C33.2284842,73.2699322 35.0810011,74.3626299 36.2269819,76.028318 C35.2598881,75.607573 34.2128134,75.3705027 33.1578532,75.3987213 C32.2504635,75.4223213 31.2488427,75.5996876 30.5549233,76.2213988 C32.016491,76.2527716 33.5440148,76.3344423 34.8643203,77.0314595 C33.1610073,77.0675636 31.1138326,77.0958386 29.9159768,78.5071647 C30.9458162,78.4176648 31.9788661,78.2371444 33.0165347,78.3439359 C33.2975382,78.3894462 33.6241084,78.3580171 33.8517162,78.5637146 C32.6994271,78.5888354 31.565894,78.8321578 30.451286,79.1147384 C29.7620979,79.3266316 29.0336515,79.5009 28.4511986,79.9483428 C32.0070284,80.0346885 35.5675332,79.9829262 39.1249965,79.9985844 C43.0999942,79.9640574 47.076569,80.0299572 51.0515667,79.957749 C50.7768152,79.6343331 50.4016368,79.4271148 50.0217272,79.2560006 C48.578972,78.6202082 46.9902233,78.2308361 45.407783,78.3705775 C46.6715386,77.5196814 48.2712706,77.3627046 49.751707,77.5400709 C48.5805491,76.4176338 46.7578842,76.4144796 45.2539605,76.6766144 C45.7673031,76.1977988 46.4439308,75.9528993 47.1315418,75.8681307 C47.8254048,75.8021746 48.57272,75.6734165 49.2398851,75.9324535 L49.1802374,75.8367016 C49.238308,75.8100037 49.3545057,75.7566643 49.4125764,75.7299664 C48.8647068,75.4206879 48.2963914,75.1317989 47.6747365,75.0109826 C46.3999413,74.7801643 45.1047565,75.1098886 43.9477924,75.6436208 C44.8017864,74.3829631 45.8504946,73.2542176 47.0609107,72.3311696 C47.4408203,72.0297203 47.9070756,71.8288103 48.2085249,71.4363403 C46.5271786,71.389253 44.9980777,72.3327467 43.8849905,73.5242942 C44.0576818,71.7471959 44.7280574,70.0705245 44.9933464,68.3137595 C44.5898931,68.5068403 44.4266081,68.9480311 44.1958461,69.3012428 C43.4611477,70.5948505 42.8410136,71.9575121 42.3449063,73.3594883 C42.1753692,70.1097265 42.1957587,66.8521918 42.0733089,63.6009092 C42.1188192,62.972946 41.8912114,62.2727746 42.2742752,61.7170195 C42.9257821,60.6306865 43.7075679,59.6243345 44.5568869,58.6855156 C44.9179278,58.2836394 45.379508,57.9571256 45.6118471,57.456287 C44.3025249,57.1124815 42.7985448,57.5175119 41.9052926,58.5521389 C41.9037155,56.0512693 41.8707656,53.5519767 41.848799,51.0526842 C41.8378157,50.3226607 41.7640304,49.5423957 42.1313796,48.8799055 C42.92888,47.3429755 44.6605242,46.4293337 46.3575851,46.3617442 C47.3921558,47.7416975 48.3560391,49.2504089 49.7674216,50.2974836 C50.006069,50.4419 50.3467203,50.6993598 50.6089114,50.4560374 C50.9794148,50.1467589 51.2761329,49.7621744 51.6199384,49.4246209 C51.571274,50.0777049 51.5650219,50.732366 51.6277676,51.383873 C51.9402003,51.6759162 52.4864928,52.0259737 52.8460129,51.6052287 C53.6247008,50.7747222 54.2683786,49.8233993 55.0737081,49.0164364 C54.8241337,50.1373527 54.3358555,51.1923129 54.1097685,52.3163835 C54.0171144,52.666441 54.4410136,52.7857929 54.6686777,52.9349405 C56.384551,53.7481554 58.3579406,54.0479714 60.2324241,53.7340179 C60.4647631,53.6477286 60.9938767,53.6068932 60.8540789,53.237967 C60.1994178,51.5220936 58.9231019,50.1326778 57.5698464,48.9301471 C55.1505912,46.9253847 52.1520935,45.5893646 49.0170086,45.2691028 C47.2414311,45.047747 45.3873372,45.2329987 43.7358429,45.9410556 C43.0105507,46.2361966 42.4124395,46.7526934 41.7295034,47.1216197 C42.3496375,44.6537563 43.7186075,42.3726653 45.6511617,40.7116522 C47.0169775,41.2454406 48.3466892,41.9298975 49.8004278,42.1983406 C50.1661999,42.2846863 50.5351262,41.9989515 50.5303949,41.6190419 C50.5288178,40.8638976 50.1787603,40.1653033 50.0531564,39.4290278 C51.0280793,40.2422428 51.866415,41.3254216 53.1050498,41.7430687 C54.0987852,42.0868742 54.9324459,41.2610989 55.8539731,41.0538806 C56.4458322,40.8686289 57.0612351,41.1182596 57.6609234,41.0021183 C57.9466582,40.9455683 58.2794804,40.7100751 58.1774202,40.3773092 C57.9968997,39.4542049 57.6986609,38.5577986 57.48198,37.6441005 C58.2371243,38.3740676 58.7771648,39.3113094 59.6155005,39.9597184 C59.8855207,40.2438199 60.485209,40.0225204 60.3643363,39.6001984 C60.1728326,38.4965737 59.670417,37.4839696 59.312474,36.4305302 C60.2638532,37.4227447 61.039387,38.645665 62.2921592,39.2971719 C62.9876557,39.5577859 63.7286061,39.2516616 64.3801131,38.9973559 C65.7349456,38.4070739 67.0787948,37.4917987 67.6973518,36.1024392 C67.0913552,35.7115463 66.4053212,35.474476 65.7255394,35.2483889 C63.0770992,34.38972 60.2512928,34.2877162 57.4960612,34.521576 L57.4961175,34.521576 Z"/></svg>';
+        const bananaTreeInfectedSVG = '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="evenodd" d="M47.5460347,37.9126 C45.3199166,39.3946135 43.2743189,41.2297824 41.8347178,43.5014671 C41.9461843,42.1655034 42.333923,40.8734728 42.622812,39.5688256 C42.9430738,38.3568886 43.340275,37.1574557 43.9132654,36.0381728 C43.9744903,35.7947941 44.2633793,35.8623273 44.4469976,35.8011025 C46.5883471,35.4761657 48.7014781,34.7571256 50.4879825,33.5121824 C50.7705631,33.2719579 51.2917912,32.9532732 51.0248688,32.5246991 C50.64648,31.835511 50.0970333,31.2530581 49.5381803,30.7098634 C50.4172951,30.8260611 51.2854828,31.0175648 52.1614434,31.1620375 C52.5115572,31.2248394 52.9432855,31.1934103 53.1551787,30.8621652 C53.3844199,30.5262451 53.0813935,30.1556854 52.8600377,29.9139401 C52.1630205,29.1870708 51.3498056,28.5858055 50.6449029,27.8667653 C51.9008293,28.1273794 53.0955309,28.6030971 54.3420512,28.8981818 C54.8255981,29.0535815 55.3311116,28.8495174 55.6890546,28.5182723 C56.9904914,27.3659268 58.2370116,26.1461044 59.3578716,24.8163927 C59.525888,24.6044994 59.7487645,24.3124563 59.5415462,24.0455902 C59.0925826,23.2323753 58.3766967,22.6106641 57.8774352,21.8320325 C58.682821,22.1382131 59.4771672,22.500831 60.3217549,22.6923348 C60.9716848,22.8053783 61.4159734,22.1962838 61.7848997,21.7582472 C62.5855542,20.5855122 63.1004739,19.1129612 62.8854265,17.6859206 C61.6750667,17.7989641 60.5007546,18.1584842 59.3610258,18.5681895 C54.0641455,20.6137872 49.6401842,24.5103247 46.3763412,29.1007252 C44.8284279,31.3236891 43.5661931,33.7397902 42.5645723,36.2563744 C42.1736794,37.2704993 41.6963846,38.2548284 41.4185352,39.3082678 C41.2835251,37.7289254 41.3761227,36.140233 41.3479041,34.5561593 C41.374602,33.1181353 41.3290917,31.673803 41.4295185,30.2405103 C41.7623407,29.7538092 42.1218608,29.2797249 42.3526227,28.733376 C43.2867103,26.6610804 43.80163,24.423979 44.1674585,22.1900318 C44.3589622,20.8870179 44.6085929,19.5494207 44.3668476,18.2370007 C44.118794,17.1145072 43.1674148,16.3389735 42.2663334,15.7188394 C42.0041423,15.516296 41.6100952,15.3608964 41.6147702,14.9715806 C41.1124109,10.6245024 33.8924389,11.0075662 34.0855197,13.3891403 C34.1875799,14.3342111 34.2299361,15.3059799 34.551775,16.2102154 C34.6742247,16.6120916 35.0651739,16.816212 35.4482377,16.9103868 C36.6052581,17.2212424 37.7889764,17.4253628 38.9522489,17.7095206 C37.9867885,18.1788737 36.9835906,18.5698229 36.047926,19.0988801 C35.6821538,19.3013671 35.3195359,19.5588833 35.13113,19.9450449 C35.0479386,20.69236 35.3226338,21.4239042 35.5032105,22.1413673 C36.3776503,25.1147442 37.7529286,28.0646337 40.121886,30.1416042 C40.1862651,32.9909543 40.0701237,35.8418815 39.9555031,38.6897671 C39.792218,37.7148442 39.3762043,36.8106087 39.0323988,35.8921794 C37.1516633,30.7931112 33.9333306,26.2042877 29.7825437,22.6971224 C27.2973887,20.6358664 24.4794114,18.9120513 21.3631389,18.0062387 C20.3081787,17.7142518 19.2233665,17.456792 18.1212625,17.4944732 C18.0349169,18.7707891 11.6408492,21.169919 12.25,22.25 C13.7712718,24.7351551 22.9251897,25.5104247 24.992754,27.5308453 C25.2596201,27.8071739 25.5892881,28.0080838 25.9299958,28.1824085 C27.2330096,27.8338718 28.2629054,26.902882 29.4826714,26.3659957 C29.0022787,27.5575431 28.1215306,28.5780327 27.864127,29.8542923 C28.0964661,30.1306209 28.3931842,30.3472455 28.7746709,30.3268559 C29.9364226,30.3394163 31.1059471,30.2122353 32.2394238,29.9531984 C31.6303294,30.6047616 30.8861684,31.1903124 30.5659066,32.0506147 C31.1106784,32.5184471 31.7873061,32.777484 32.4419109,33.0522355 C33.9050556,33.6565987 35.4640086,33.984746 37.0354656,34.1354707 C38.1061404,36.3773034 38.8000597,38.8043878 39.07008,41.2738283 C38.1768278,40.3130991 37.3981398,39.2439451 36.4216398,38.3600991 C33.2708404,35.452622 29.2581615,33.4823867 25.0209727,32.7979298 C21.468297,32.1950874 17.747605,32.3080746 14.3000874,33.4070243 C13.6108993,33.6692155 12.8416739,33.8465817 12.3,34.3787931 C13.0017485,35.6818632 14.2199938,36.6363403 15.5324702,37.2752869 C15.9139569,37.4511323 16.4225682,37.6677568 16.7993799,37.3647304 C17.9281817,36.4746323 18.6816926,35.2092433 19.7586757,34.2610183 C19.3598974,35.4054783 18.8010444,36.5044281 18.5749574,37.7007067 C18.4823597,38.2062202 19.0899334,38.3019721 19.4368368,38.4338281 C20.1763228,38.6347943 20.9220045,38.9864289 21.7053674,38.8781167 C22.6896965,38.4888009 23.1638372,37.4934321 23.783915,36.7132234 C23.8702606,37.4840822 23.6536361,38.3223616 24.0005395,39.046133 C24.4244386,39.6850796 25.3130158,39.5375091 25.9221103,39.2816263 C27.3475739,38.7729586 28.4041675,37.6614485 29.4905006,36.6614048 C29.203245,37.6080527 28.6160608,38.4448114 28.4167279,39.4197343 C28.3491947,39.934654 28.9740038,40.1403515 29.3853425,40.0586808 C31.2865239,39.8341709 33.120172,39.2140931 34.8956931,38.5185966 C35.9946429,39.3364865 36.8376535,40.4433217 37.567677,41.592513 C38.2270693,42.6082149 38.7137141,43.7338625 39.0198384,44.9050204 C38.128107,43.9897453 37.0166532,43.2660302 35.7623038,42.9724663 C33.6852769,42.3900133 31.4999942,42.765248 29.4528194,43.2770135 C26.7369023,44.0525473 24.2234723,45.4984004 22.1495997,47.410565 C20.8653982,48.6319082 19.683257,50.0464448 19.0741625,51.7324661 C21.0443979,52.3447711 24.1585227,58.3901544 26,57.5 C26.3327659,57.3006108 25.9283624,50.743462 25.8671375,50.2708984 C25.8090668,49.2112069 25.5767277,48.1703279 25.3804927,47.1310822 C25.8922583,48.0117741 26.4951007,48.8579952 27.2518221,49.5487041 C27.6678921,49.9301908 28.2314199,49.547127 28.6522212,49.3572004 C30.930158,48.033797 32.9113766,46.1074948 34.0479512,43.7086854 C35.0118908,43.7793165 35.9742533,44.0493368 36.7733308,44.6098231 C37.7748953,45.255078 38.4672375,46.2895923 38.8879825,47.3885421 C39.2427713,48.3053943 39.1658318,49.3038609 39.197261,50.2677442 C38.3165692,49.4168481 37.0135553,49.0180698 35.8188537,49.350892 C35.8376661,49.4074419 35.8737702,49.5204291 35.892639,49.5754019 C36.5331626,50.1232716 37.297713,50.5377081 37.8377535,51.2017755 C38.2898713,51.7747659 38.7624349,52.3682021 38.9884656,53.0746819 C39.0669821,54.2803668 38.994774,55.4907829 38.9869448,56.699622 C38.8644951,58.7357572 38.9461095,60.782932 38.7546058,62.8159693 C38.7106162,65.486376 38.5803374,68.1521078 38.4296127,70.8177833 C37.4327232,69.0202393 35.3714109,67.698413 33.2693196,68.0798997 C33.409061,68.2463389 33.6037189,68.3358388 33.8046288,68.414299 C34.8313704,68.8161752 35.7450684,69.5210778 36.3651462,70.4362966 C37.33224,71.8570853 37.729385,73.6074856 37.6414622,75.3139528 C36.4420293,73.585519 34.3588068,72.3264384 32.2048969,72.6011899 C31.8987725,72.6874792 31.4058194,72.5430629 31.2566718,72.902583 C33.2284842,73.2699322 35.0810011,74.3626299 36.2269819,76.028318 C35.2598881,75.607573 34.2128134,75.3705027 33.1578532,75.3987213 C32.2504635,75.4223213 31.2488427,75.5996876 30.5549233,76.2213988 C32.016491,76.2527716 33.5440148,76.3344423 34.8643203,77.0314595 C33.1610073,77.0675636 31.1138326,77.0958386 29.9159768,78.5071647 C30.9458162,78.4176648 31.9788661,78.2371444 33.0165347,78.3439359 C33.2975382,78.3894462 33.6241084,78.3580171 33.8517162,78.5637146 C32.6994271,78.5888354 31.565894,78.8321578 30.451286,79.1147384 C29.7620979,79.3266316 29.0336515,79.5009 28.4511986,79.9483428 C32.0070284,80.0346885 35.5675332,79.9829262 39.1249965,79.9985844 C43.0999942,79.9640574 47.076569,80.0299572 51.0515667,79.957749 C50.7768152,79.6343331 50.4016368,79.4271148 50.0217272,79.2560006 C48.578972,78.6202082 46.9902233,78.2308361 45.407783,78.3705775 C46.6715386,77.5196814 48.2712706,77.3627046 49.751707,77.5400709 C48.5805491,76.4176338 46.7578842,76.4144796 45.2539605,76.6766144 C45.7673031,76.1977988 46.4439308,75.9528993 47.1315418,75.8681307 C47.8254048,75.8021746 48.57272,75.6734165 49.2398851,75.9324535 L49.1802374,75.8367016 C49.238308,75.8100037 49.3545057,75.7566643 49.4125764,75.7299664 C48.8647068,75.4206879 48.2963914,75.1317989 47.6747365,75.0109826 C46.3999413,74.7801643 45.1047565,75.1098886 43.9477924,75.6436208 C44.8017864,74.3829631 45.8504946,73.2542176 47.0609107,72.3311696 C47.4408203,72.0297203 47.9070756,71.8288103 48.2085249,71.4363403 C46.5271786,71.389253 44.9980777,72.3327467 43.8849905,73.5242942 C44.0576818,71.7471959 44.7280574,70.0705245 44.9933464,68.3137595 C44.5898931,68.5068403 44.4266081,68.9480311 44.1958461,69.3012428 C43.4611477,70.5948505 42.8410136,71.9575121 42.3449063,73.3594883 C42.1753692,70.1097265 42.1957587,66.8521918 42.0733089,63.6009092 C42.1188192,62.972946 41.8912114,62.2727746 42.2742752,61.7170195 C42.9257821,60.6306865 43.7075679,59.6243345 44.5568869,58.6855156 C44.9179278,58.2836394 45.379508,57.9571256 45.6118471,57.456287 C44.3025249,57.1124815 42.7985448,57.5175119 41.9052926,58.5521389 C41.9037155,56.0512693 41.8707656,53.5519767 41.848799,51.0526842 C41.8378157,50.3226607 41.7640304,49.5423957 42.1313796,48.8799055 C42.92888,47.3429755 44.6605242,46.4293337 46.3575851,46.3617442 C47.3921558,47.7416975 48.3560391,49.2504089 49.7674216,50.2974836 C50.006069,50.4419 50.3467203,50.6993598 50.6089114,50.4560374 C50.9794148,50.1467589 51.2761329,49.7621744 51.6199384,49.4246209 C51.571274,50.0777049 51.5650219,50.732366 51.6277676,51.383873 C51.9402003,51.6759162 52.4864928,52.0259737 52.8460129,51.6052287 C53.6247008,50.7747222 54.2683786,49.8233993 55.0737081,49.0164364 C54.8241337,50.1373527 54.3358555,51.1923129 54.1097685,52.3163835 C54.0171144,52.666441 54.4410136,52.7857929 54.6686777,52.9349405 C56.384551,53.7481554 58.3755165,66.5639535 60.25,66.25 C60.4823391,66.1637107 66.8897977,53.3689263 66.75,53 C66.0953389,51.2841267 58.9231019,50.1326778 57.5698464,48.9301471 C55.1505912,46.9253847 52.1520935,45.5893646 49.0170086,45.2691028 C47.2414311,45.047747 45.3873372,45.2329987 43.7358429,45.9410556 C43.0105507,46.2361966 42.4124395,46.7526934 41.7295034,47.1216197 C42.3496375,44.6537563 43.7186075,42.3726653 45.6511617,40.7116522 C47.0169775,41.2454406 48.3466892,41.9298975 49.8004278,42.1983406 C50.1661999,42.2846863 50.5351262,41.9989515 50.5303949,41.6190419 C50.5288178,40.8638976 50.1787603,40.1653033 50.0531564,39.4290278 C51.0280793,40.2422428 51.866415,41.3254216 53.1050498,41.7430687 C54.0987852,42.0868742 54.9324459,41.2610989 55.8539731,41.0538806 C56.4458322,40.8686289 57.0612351,41.1182596 57.6609234,41.0021183 C57.9466582,40.9455683 58.2794804,40.7100751 58.1774202,40.3773092 C57.9968997,39.4542049 57.6986609,38.5577986 57.48198,37.6441005 C58.2371243,38.3740676 58.7771648,39.3113094 59.6155005,39.9597184 C59.8855207,40.2438199 60.485209,40.0225204 60.3643363,39.6001984 C60.1728326,38.4965737 59.670417,37.4839696 59.312474,36.4305302 C60.2638532,37.4227447 61.039387,38.645665 62.2921592,39.2971719 C62.9876557,39.5577859 63.7286061,39.2516616 64.3801131,38.9973559 C65.75,43.75 69.631443,44.3893595 70.25,43 C69.6440034,42.6091071 66.4053212,35.474476 65.7255394,35.2483889 C63.0770992,34.38972 60.2512928,34.2877162 57.4960612,34.521576 C53.987375,34.8999085 50.5131596,35.9721604 47.5460347,37.9126 Z"/></svg>';
 
         let dropdownIdCounter = 0;
         function buildParentGroup(label, circleEl) {
@@ -2277,6 +2756,7 @@ function buildSimContent() {
             maxW = Math.max(maxW, measurer.offsetWidth);
           });
           measurer.style.fontFamily = "'Roboto Condensed',sans-serif";
+          measurer.style.fontWeight = "400";
           let maxWCondensed = 0;
           parentOptions.forEach(opt => {
             measurer.textContent = opt;
@@ -2305,10 +2785,8 @@ function buildSimContent() {
           triggerText.className = "sim-dropdown-text placeholder";
           triggerText.textContent = "Select\u2026";
           trigger.appendChild(triggerText);
-          const caret = document.createElement("img");
-          caret.src = "icons/Expand ICON.svg";
-          caret.className = "sim-dropdown-caret";
-          caret.setAttribute("aria-hidden", "true");
+          const caret = createSVGIcon(expandIconSVG);
+          caret.classList.add("sim-dropdown-caret");
           trigger.appendChild(caret);
           dropdown.appendChild(trigger);
 
@@ -2360,7 +2838,7 @@ function buildSimContent() {
             // Update associated circle with banana tree
             if (circleEl) {
               circleEl.innerHTML = bananaTreeSVG;
-              circleEl.style.color = parentColors[parentOptions[i]] || "#4CAF50";
+              circleEl.style.color = parentColors[parentOptions[i]] || "#45A54A";
             }
             // Update trial state
             if (SIM.trialState && trial) {
@@ -2399,7 +2877,7 @@ function buildSimContent() {
                 items[idx].setAttribute("aria-selected", "true");
                 if (circleEl) {
                   circleEl.innerHTML = bananaTreeSVG;
-                  circleEl.style.color = parentColors[parentOptions[idx]] || "#4CAF50";
+                  circleEl.style.color = parentColors[parentOptions[idx]] || "#45A54A";
                 }
               }
             }
@@ -2654,6 +3132,10 @@ function buildSimContent() {
             const selItem = dd.querySelector(".sim-dropdown-item.selected");
             if (selItem) selItem.style.fontWeight = useCondensed ? "500" : "";
           });
+          const fungusLabel = statsLabel ? statsLabel.querySelector(".fungus-active-label") : null;
+          if (fungusLabel) { fungusLabel.style.fontFamily = useCondensed ? "'Roboto Condensed',sans-serif" : ""; fungusLabel.style.fontWeight = useCondensed ? "500" : ""; }
+          const condensedFont = useCondensed ? "'Roboto Condensed',sans-serif" : "";
+          document.querySelectorAll(".fungus-divider-label").forEach(el => { el.style.fontFamily = condensedFont; el.style.fontWeight = useCondensed ? "500" : ""; });
         }
         SIM.updateCircleSize = updateCircleSize;
 
@@ -2697,18 +3179,22 @@ function buildSimContent() {
           }
           statsWrap.style.display = "";
           parents.classList.add("has-stats");
-          if (st.p1 && st.p2 && st.generations.length === 0) {
-            let text = "Click <b>Cross Plants</b> to see their offspring";
-            if (st.fungusAfterGen !== null) text += " · Fungus active";
+          if (st.p1 && st.p2 && st.crosses.length === 0) {
+            let text;
+            if (st.fungusAfterCross !== null) {
+              text = "Cross plants to see their offspring · <b class='fungus-active-label' style='color:#1A3C8F'>Fungus active</b>";
+            } else {
+              text = "Click <b>Cross Plants</b> to see their offspring";
+            }
             statsLabel.innerHTML = text;
             const ph = offspring.querySelector(".sim-offspring-placeholder");
             if (ph) ph.style.display = "";
             return;
           }
-          const crosses = st.generations.length;
-          const total = st.generations.reduce((sum, gen) => sum + gen.length, 0);
-          let text = "Crosses: " + crosses + " · Offspring: " + total;
-          if (st.fungusAfterGen !== null) text += " · Fungus active";
+          const crosses = st.crosses.length;
+          const total = st.crosses.reduce((sum, gen) => sum + gen.length, 0);
+          let text = "Crosses: <b>" + crosses + "</b> · Offspring: <b>" + total + "</b>";
+          if (st.fungusAfterCross !== null) text += " · <b class='fungus-active-label' style='color:#1A3C8F'>Fungus active</b>";
           statsLabel.innerHTML = text;
         }
         SIM.updateStatsLabel = updateStatsLabel;
@@ -2722,15 +3208,15 @@ function buildSimContent() {
         inner.appendChild(offspringWrap);
         requestAnimationFrame(updateOffspringTabindex);
 
-        // Track selected generation per trial
-        SIM.selectedGen = {};
+        // Track selected cross per trial
+        SIM.selectedCross = {};
 
         // Render offspring for a given trial
-        function updateGenRowTabindex() {
-          const rows = Array.from(offspring.querySelectorAll(".gen-row"));
+        function updateCrossRowTabindex() {
+          const rows = Array.from(offspring.querySelectorAll(".cross-row"));
           if (rows.length === 0) return;
           const trial = SIM.selectedTrial;
-          const selIdx = SIM.selectedGen[trial];
+          const selIdx = SIM.selectedCross[trial];
           // If a row is selected, it gets tabindex="0"; otherwise first row does
           const activeIdx = (selIdx !== null && selIdx >= 0 && selIdx < rows.length) ? selIdx : 0;
           rows.forEach((r, i) => r.setAttribute("tabindex", i === activeIdx ? "0" : "-1"));
@@ -2740,7 +3226,7 @@ function buildSimContent() {
           const st = SIM.trialState[trial];
           if (trial !== SIM.selectedTrial) return;
           offspring.innerHTML = "";
-          if (!st || (st.generations.length === 0 && st.fungusAfterGen === null)) {
+          if (!st || (st.crosses.length === 0 && st.fungusAfterCross === null)) {
             offspring.classList.remove("has-plants");
             const ph = document.createElement("div");
             ph.className = "sim-offspring-placeholder";
@@ -2748,59 +3234,73 @@ function buildSimContent() {
             if (st && st.p1 && st.p2) ph.style.display = "";
             else ph.style.display = "none";
             offspring.appendChild(ph);
-            SIM.selectedGen[trial] = null;
+            SIM.selectedCross[trial] = null;
             requestAnimationFrame(updateOffspringTabindex);
             return;
           }
           offspring.classList.add("has-plants");
 
           // Fungus introduced before any crosses
-          if (st.fungusAfterGen === 0) {
+          if (st.fungusAfterCross === 0) {
             const divider = document.createElement("div");
             divider.className = "fungus-divider";
             const dlbl = document.createElement("span");
             dlbl.className = "fungus-divider-label";
-            dlbl.textContent = "Fungus introduced before crossing";
+            dlbl.innerHTML = fungusAddedSVG + "Fungus introduced before crossing";
             divider.appendChild(dlbl);
             offspring.appendChild(divider);
           }
 
-          st.generations.forEach((genPlants, gi) => {
-            // Insert fungus divider after the generation it was introduced
-            if (st.fungusAfterGen !== null && st.fungusAfterGen > 0 && gi === st.fungusAfterGen) {
+          st.crosses.forEach((crossPlants, gi) => {
+            // Insert fungus divider after the cross it was introduced
+            if (st.fungusAfterCross !== null && st.fungusAfterCross > 0 && gi === st.fungusAfterCross) {
               const divider = document.createElement("div");
               divider.className = "fungus-divider";
               const dlbl = document.createElement("span");
               dlbl.className = "fungus-divider-label";
-              dlbl.textContent = "Fungus introduced after G" + st.fungusAfterGen;
+              dlbl.innerHTML = fungusAddedSVG + "Fungus introduced after C" + st.fungusAfterCross;
               divider.appendChild(dlbl);
               offspring.appendChild(divider);
             }
 
             const row = document.createElement("div");
-            row.className = "gen-row";
+            row.className = "cross-row";
             row.setAttribute("role", "button");
-            const genInf = genPlants.filter(p => p.infected).length;
-            const genH = genPlants.length - genInf;
-            row.setAttribute("aria-label", "Generation " + (gi + 1) + ", " + genPlants.length + " offspring, " + genH + " healthy, " + genInf + " infected");
+            const crossInf = crossPlants.filter(p => p.infected).length;
+            const crossH = crossPlants.length - crossInf;
+            row.setAttribute("aria-label", "Cross " + (gi + 1) + ", " + crossPlants.length + " offspring, " + crossH + " healthy, " + crossInf + " infected");
             // Roving tabindex: only selected row (or first row) gets tabindex="0"
-            const isSelected = SIM.selectedGen[trial] === gi;
+            const isSelected = SIM.selectedCross[trial] === gi;
             if (isSelected) row.classList.add("selected");
             row.setAttribute("tabindex", "-1");
             row.addEventListener("click", () => {
-              if (SIM.selectedGen[trial] === gi) {
-                SIM.selectedGen[trial] = null;
+              if (SIM.selectedCross[trial] === gi) {
+                SIM.selectedCross[trial] = null;
               } else {
-                SIM.selectedGen[trial] = gi;
+                SIM.selectedCross[trial] = gi;
               }
-              const rows = offspring.querySelectorAll(".gen-row");
+              const rows = offspring.querySelectorAll(".cross-row");
               rows.forEach((r, ri) => {
-                r.classList.toggle("selected", SIM.selectedGen[trial] === ri);
-                r.setAttribute("aria-pressed", SIM.selectedGen[trial] === ri ? "true" : "false");
+                r.classList.toggle("selected", SIM.selectedCross[trial] === ri);
+                r.setAttribute("aria-pressed", SIM.selectedCross[trial] === ri ? "true" : "false");
               });
               // Update roving tabindex
-              updateGenRowTabindex();
+              updateCrossRowTabindex();
               if (SIM.updateDataPanel) SIM.updateDataPanel();
+              // Announce chart data to screen readers
+              if (SIM.announce) {
+                const sel = SIM.selectedCross[trial];
+                if (sel !== null && sel !== undefined) {
+                  const cp = st.crosses[sel];
+                  const inf = cp.filter(p => p.infected).length;
+                  const h = cp.length - inf;
+                  const hP = Math.round((h / cp.length) * 100);
+                  const iP = 100 - hP;
+                  SIM.announce("Cross " + (sel + 1) + ": " + hP + "% healthy, " + iP + "% infected");
+                } else {
+                  SIM.announce("All crosses selected");
+                }
+              }
             });
             row.addEventListener("keydown", (e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -2808,42 +3308,48 @@ function buildSimContent() {
                 row.click();
               } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
                 e.preventDefault();
-                const rows = Array.from(offspring.querySelectorAll(".gen-row"));
+                const rows = Array.from(offspring.querySelectorAll(".cross-row"));
                 const cur = rows.indexOf(row);
                 const next = e.key === "ArrowDown"
                   ? (cur + 1) % rows.length
                   : (cur - 1 + rows.length) % rows.length;
                 rows[cur].setAttribute("tabindex", "-1");
                 rows[next].setAttribute("tabindex", "0");
-                rows[next].focus();
+                rows[next].focus({ preventScroll: true });
+                scrollItemIntoView(rows[next], offspring);
               } else if (e.key === "Home") {
                 e.preventDefault();
-                const rows = Array.from(offspring.querySelectorAll(".gen-row"));
+                const rows = Array.from(offspring.querySelectorAll(".cross-row"));
                 rows.forEach(r => r.setAttribute("tabindex", "-1"));
                 rows[0].setAttribute("tabindex", "0");
-                rows[0].focus();
+                rows[0].focus({ preventScroll: true });
+                scrollItemIntoView(rows[0], offspring);
               } else if (e.key === "End") {
                 e.preventDefault();
-                const rows = Array.from(offspring.querySelectorAll(".gen-row"));
+                const rows = Array.from(offspring.querySelectorAll(".cross-row"));
                 rows.forEach(r => r.setAttribute("tabindex", "-1"));
                 rows[rows.length - 1].setAttribute("tabindex", "0");
-                rows[rows.length - 1].focus();
+                rows[rows.length - 1].focus({ preventScroll: true });
+                scrollItemIntoView(rows[rows.length - 1], offspring);
               }
             });
             row.setAttribute("aria-pressed", isSelected ? "true" : "false");
             const lbl = document.createElement("div");
-            lbl.className = "gen-label";
-            lbl.innerHTML = "G" + (gi + 1) + "<br><span style='font-weight:400'>(" + genPlants.length + ")</span>";
+            lbl.className = "cross-label";
+            lbl.setAttribute("aria-hidden", "true");
+            lbl.innerHTML = "C" + (gi + 1) + "<br><span style='font-weight:400'>(" + crossPlants.length + ")</span>";
             row.appendChild(lbl);
             const plantsWrap = document.createElement("div");
-            plantsWrap.className = "gen-plants";
-            genPlants.forEach(pl => {
+            plantsWrap.className = "cross-plants";
+            crossPlants.forEach(pl => {
               const cell = document.createElement("div");
               cell.className = "offspring-plant";
               cell.setAttribute("aria-hidden", "true");
-              cell.innerHTML = bananaTreeSVG;
               if (pl.infected) {
                 cell.classList.add("infected");
+                cell.innerHTML = bananaTreeInfectedSVG;
+              } else {
+                cell.innerHTML = bananaTreeSVG;
               }
               plantsWrap.appendChild(cell);
             });
@@ -2852,25 +3358,25 @@ function buildSimContent() {
           });
 
           // Set initial roving tabindex
-          updateGenRowTabindex();
+          updateCrossRowTabindex();
 
-          // Max crosses label after G25
-          if (st.generations.length >= MAX_GENERATIONS) {
+          // Max crosses label after C10
+          if (st.crosses.length >= MAX_CROSSES) {
             const maxLabel = document.createElement("div");
             maxLabel.className = "sim-offspring-placeholder";
-            maxLabel.textContent = "Max crosses reached";
+            maxLabel.textContent = "Max number of crosses reached";
             maxLabel.style.margin = "6px 0";
             maxLabel.style.padding = "2px 0";
             offspring.appendChild(maxLabel);
           }
 
-          // Fungus divider at the end if introduced after last generation
-          if (st.fungusAfterGen !== null && st.fungusAfterGen === st.generations.length && st.generations.length > 0) {
+          // Fungus divider at the end if introduced after last cross
+          if (st.fungusAfterCross !== null && st.fungusAfterCross === st.crosses.length && st.crosses.length > 0) {
             const divider = document.createElement("div");
             divider.className = "fungus-divider";
             const dlbl = document.createElement("span");
             dlbl.className = "fungus-divider-label";
-            dlbl.textContent = "Fungus introduced after G" + st.fungusAfterGen;
+            dlbl.innerHTML = fungusAddedSVG + "Fungus introduced after C" + st.fungusAfterCross;
             divider.appendChild(dlbl);
             offspring.appendChild(divider);
           }
@@ -2887,15 +3393,12 @@ function buildSimContent() {
           const btn = document.createElement("button");
           btn.className = "sim-btn";
           const iconMap = {
-            "Cross Plants": "icons/Cross ICON.svg",
-            "Introduce Fungus": "icons/Add Fungus ICON.svg",
-            "Reset Trial": "icons/Reset ICON.svg"
+            "Cross Plants": crossIconSVG,
+            "Introduce Fungus": addFungusIconSVG,
+            "Reset Trial": resetIconSVG
           };
           if (iconMap[label]) {
-            const icon = document.createElement("img");
-            icon.src = iconMap[label];
-            icon.alt = "";
-            icon.setAttribute("aria-hidden", "true");
+            const icon = createSVGIcon(iconMap[label]);
             btn.appendChild(icon);
             const span = document.createElement("span");
             span.className = "sim-btn-label";
@@ -2911,16 +3414,17 @@ function buildSimContent() {
               if (btn.getAttribute("aria-disabled") === "true") return;
               const trial = SIM.selectedTrial;
               const st = SIM.trialState[trial];
-              if (st && st.p1 && st.p2 && st.generations.length < MAX_GENERATIONS) {
+              if (st && st.p1 && st.p2 && st.crosses.length < MAX_CROSSES) {
+                const wasUnlocked = !st.locked;
                 st.locked = true;
                 // Lock dropdowns
                 parents.querySelectorAll(".sim-dropdown").forEach(d => d._lock());
                 const count = OFFSPRING_MIN + Math.floor(Math.random() * (OFFSPRING_MAX - OFFSPRING_MIN + 1));
-                const isFungusActive = st.fungusAfterGen !== null && st.generations.length >= st.fungusAfterGen;
+                const isFungusActive = st.fungusAfterCross !== null && st.crosses.length >= st.fungusAfterCross;
                 // Mendelian genetics: R = resistant (dominant), r = susceptible (recessive)
                 const genotypes = {
-                  "Wild W1": ["R", "R"],
-                  "Wild W2": ["R", "r"],
+                  "Wild W1": ["R", "r"],
+                  "Wild W2": ["R", "R"],
                   "Wild W3": ["R", "r"],
                   "Cavendish C1": ["r", "r"],
                   "Cavendish C2": ["r", "r"]
@@ -2932,12 +3436,14 @@ function buildSimContent() {
                   const a1 = g1[Math.floor(Math.random() * 2)];
                   const a2 = g2[Math.floor(Math.random() * 2)];
                   const isResistant = a1 === "R" || a2 === "R";
-                  plants.push({ infected: isFungusActive && !isResistant });
+                  plants.push({ infected: isFungusActive && !isResistant, genotype: a1 + a2 });
                 }
-                st.generations.push(plants);
+                st.crosses.push(plants);
                 const healthy = plants.filter(p => !p.infected).length;
                 const infected = plants.filter(p => p.infected).length;
-                if (SIM.announce) SIM.announce("Generation " + st.generations.length + ": " + plants.length + " offspring, " + healthy + " healthy, " + infected + " infected.");
+                let crossMsg = "Cross " + st.crosses.length + ": " + plants.length + " offspring, " + healthy + " healthy, " + infected + " infected.";
+                if (wasUnlocked) crossMsg += " Parents locked.";
+                if (SIM.announce) SIM.announce(crossMsg);
                 if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
                 renderOffspring(trial);
                 offspring.scrollTop = offspring.scrollHeight;
@@ -2946,17 +3452,19 @@ function buildSimContent() {
             });
           }
           if (label === "Introduce Fungus") {
+            btn.classList.add("sim-btn-fungus");
             btn.setAttribute("aria-disabled", "true");
             SIM.fungusBtn = btn;
             btn.addEventListener("click", () => {
               if (btn.getAttribute("aria-disabled") === "true") return;
               const trial = SIM.selectedTrial;
               const st = SIM.trialState[trial];
-              if (st && st.fungusAfterGen === null) {
-                st.fungusAfterGen = st.generations.length;
+              if (st && st.fungusAfterCross === null) {
+                st.fungusAfterCross = st.crosses.length;
                 if (SIM.announce) SIM.announce("Fungus introduced.");
                 if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
                 renderOffspring(trial);
+                offspring.scrollTop = offspring.scrollHeight;
                 SIM.updateSimButtons();
                 if (SIM.updateDataPanel) SIM.updateDataPanel();
               }
@@ -2969,11 +3477,12 @@ function buildSimContent() {
               if (btn.getAttribute("aria-disabled") === "true") return;
               const trial = SIM.selectedTrial;
               if (SIM.trialState[trial]) {
-                SIM.trialState[trial] = { p1: null, p2: null, locked: false, generations: [], fungusAfterGen: null };
+                SIM.trialState[trial] = { p1: null, p2: null, locked: false, crosses: [], fungusAfterCross: null };
                 if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
                 if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(trial);
                 renderOffspring(trial);
                 SIM.updateSimButtons();
+                if (SIM.announce) SIM.announce("Trial " + trial + " reset.");
               }
             });
           }
@@ -2987,17 +3496,17 @@ function buildSimContent() {
           const st = SIM.trialState[trial];
           if (!st) return;
           // Cross Plants: enabled only when both parents selected
-          if (SIM.crossBtn) SIM.crossBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.generations.length >= MAX_GENERATIONS) ? "true" : "false");
-          // Introduce Fungus: enabled when both parents selected and not already introduced
+          if (SIM.crossBtn) SIM.crossBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.crosses.length >= MAX_CROSSES) ? "true" : "false");
+          // Introduce Fungus: enabled when both parents selected, not already introduced, and under MAX_CROSSES (by design)
           if (SIM.fungusBtn) {
-            if (st.fungusAfterGen !== null) {
+            if (st.fungusAfterCross !== null) {
               SIM.fungusBtn.setAttribute("aria-disabled", "true");
             } else {
-              SIM.fungusBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.generations.length >= MAX_GENERATIONS) ? "true" : "false");
+              SIM.fungusBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.crosses.length >= MAX_CROSSES) ? "true" : "false");
             }
           }
           // Reset Trial: enabled when at least one parent selected
-          if (SIM.resetBtn) SIM.resetBtn.setAttribute("aria-disabled", (!(st.p1 || st.p2 || st.generations.length > 0)) ? "true" : "false");
+          if (SIM.resetBtn) SIM.resetBtn.setAttribute("aria-disabled", (!(st.p1 || st.p2 || st.crosses.length > 0)) ? "true" : "false");
           // Update stats label and data panel
           updateStatsLabel();
           if (SIM.updateDataPanel) SIM.updateDataPanel();
@@ -3016,16 +3525,57 @@ function buildSimContent() {
         topHalf.className = "data-half pie-chart";
         const pieTitle = document.createElement("div");
         pieTitle.className = "data-chart-title";
-        pieTitle.innerHTML = "Offspring Phenotypes:<br>All Generations";
+        pieTitle.textContent = "Offspring Phenotypes:";
         topHalf.appendChild(pieTitle);
+        const piePill = document.createElement("span");
+        piePill.className = "data-chart-pill";
+        piePill.textContent = "All Crosses";
+        const pillClose = document.createElement("button");
+        pillClose.className = "pill-close";
+        pillClose.innerHTML = '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" fill-rule="nonzero" points="16.0104076 5.40380592 11.4142136 10 16.0104076 14.5961941 14.5961941 16.0104076 10 11.4142136 5.40380592 16.0104076 3.98959236 14.5961941 8.58578644 10 3.98959236 5.40380592 5.40380592 3.98959236 10 8.58578644 14.5961941 3.98959236"/></svg>';
+        pillClose.setAttribute("aria-label", "Deselect cross, show all crosses");
+        pillClose.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const trial = SIM.selectedTrial;
+          const prevIdx = SIM.selectedCross ? SIM.selectedCross[trial] : null;
+          if (SIM.selectedCross) SIM.selectedCross[trial] = null;
+          if (SIM.renderOffspring) SIM.renderOffspring(trial);
+          if (SIM.updateDataPanel) SIM.updateDataPanel();
+          if (prevIdx !== null && prevIdx !== undefined) {
+            const rows = document.querySelectorAll(".cross-row");
+            const target = rows[prevIdx] || rows[0];
+            if (target) target.focus();
+          }
+        });
+        piePill.appendChild(pillClose);
+        piePill.addEventListener("click", () => {
+          const trial = SIM.selectedTrial;
+          const selCross = SIM.selectedCross ? SIM.selectedCross[trial] : null;
+          if (selCross === null || selCross === undefined) return;
+          const rows = document.querySelectorAll(".cross-row");
+          const target = rows[selCross];
+          if (!target) return;
+          const container = target.closest(".sim-offspring");
+          if (!container) return;
+          const cs = getComputedStyle(container);
+          const padTop = parseFloat(cs.paddingTop);
+          const padBottom = parseFloat(cs.paddingBottom);
+          const cRect = container.getBoundingClientRect();
+          const tRect = target.getBoundingClientRect();
+          if (tRect.top < cRect.top + padTop) {
+            container.scrollBy({ top: tRect.top - cRect.top - padTop, behavior: "smooth" });
+          } else if (tRect.bottom > cRect.bottom - padBottom) {
+            container.scrollBy({ top: tRect.bottom - cRect.bottom + padBottom, behavior: "smooth" });
+          }
+        });
+        topHalf.appendChild(piePill);
         const pieChartBody = document.createElement("div");
         pieChartBody.className = "data-chart-body";
-        const dpr = window.devicePixelRatio || 1;
         const pieCanvas = document.createElement("canvas");
-        pieCanvas.width = 160 * dpr;
-        pieCanvas.height = 103 * dpr;
+        pieCanvas.width = 160 * (window.devicePixelRatio || 1);
+        pieCanvas.height = 100 * (window.devicePixelRatio || 1);
         pieCanvas.style.width = "160px";
-        pieCanvas.style.height = "103px";
+        pieCanvas.style.height = "100px";
         pieCanvas.setAttribute("role", "img");
         pieCanvas.setAttribute("aria-label", "Pie chart showing offspring phenotype percentages");
         pieChartBody.appendChild(pieCanvas);
@@ -3034,11 +3584,11 @@ function buildSimContent() {
         pieLegend.className = "data-chart-legend";
         pieLegend.innerHTML =
           '<span class="data-legend-item">' +
-            '<span class="data-legend-label"><span class="data-legend-swatch" style="background:#C2C2C2"></span>Healthy</span>' +
+            '<span class="data-legend-label"><span class="data-legend-swatch" style="background:#3D9441"></span>Healthy</span>' +
             '<span class="data-legend-pct" id="pie-pct-healthy">\u2013</span>' +
           '</span>' +
           '<span class="data-legend-item">' +
-            '<span class="data-legend-label"><span class="data-legend-swatch" style="background:#444"></span>Infected</span>' +
+            '<span class="data-legend-label"><span class="data-legend-swatch" style="background:#502600"></span>Infected</span>' +
             '<span class="data-legend-pct" id="pie-pct-infected">\u2013</span>' +
           '</span>';
         topHalf.appendChild(pieLegend);
@@ -3049,40 +3599,36 @@ function buildSimContent() {
         divider.className = "data-divider";
         dataInner.appendChild(divider);
 
-        // --- Bottom half: Line Graph ---
+        // --- Bottom half: Bar Chart ---
         const bottomHalf = document.createElement("div");
-        bottomHalf.className = "data-half line-graph";
-        const lineTitle = document.createElement("div");
-        lineTitle.className = "data-chart-title";
-        lineTitle.innerHTML = "<span style='white-space:nowrap'>Fungus Resistance</span> over<br>All Generations";
-        bottomHalf.appendChild(lineTitle);
-        const lineChartBody = document.createElement("div");
-        lineChartBody.className = "data-chart-body";
-        const lineCanvas = document.createElement("canvas");
-        lineCanvas.style.width = "100%";
-        lineCanvas.style.height = "148px";
-        lineCanvas.setAttribute("role", "img");
-        lineCanvas.setAttribute("aria-label", "Line graph showing fungus resistance over generations");
-        lineChartBody.appendChild(lineCanvas);
-        bottomHalf.appendChild(lineChartBody);
-        const lineLegend = document.createElement("div");
-        lineLegend.className = "data-chart-legend";
-        lineLegend.innerHTML =
+        bottomHalf.className = "data-half bar-chart";
+        const barTitle = document.createElement("div");
+        barTitle.className = "data-chart-title";
+        barTitle.innerHTML = "<span style='white-space:nowrap'>Fungus Resistance</span> over<br>All Crosses";
+        bottomHalf.appendChild(barTitle);
+        const barChartBody = document.createElement("div");
+        barChartBody.className = "data-chart-body";
+        const barCanvas = document.createElement("canvas");
+        barCanvas.style.width = "100%";
+        barCanvas.style.height = "158px";
+        barCanvas.setAttribute("role", "img");
+        barCanvas.setAttribute("aria-label", "Bar chart showing fungus resistance over crosses");
+        barChartBody.appendChild(barCanvas);
+        const barTable = document.createElement("table");
+        barTable.className = "sr-only";
+        barTable.setAttribute("aria-label", "Fungus resistance data by cross");
+        barChartBody.appendChild(barTable);
+        bottomHalf.appendChild(barChartBody);
+        const barLegend = document.createElement("div");
+        barLegend.className = "data-chart-legend";
+        barLegend.innerHTML =
           '<span class="data-legend-item">' +
-            '<span class="data-legend-label">' +
-              '<span class="line-legend-icon" style="display:inline-flex;align-items:center;justify-content:center;width:39px;height:16px;position:relative;flex-shrink:0;overflow:hidden">' +
-                '<span style="position:absolute;left:0;right:0;top:50%;height:3px;margin-top:-1.5px;background:#808080"></span>' +
-                '<span style="width:16px;height:16px;border-radius:50%;background:#808080;position:relative;flex-shrink:0"></span>' +
-              '</span>Healthy</span>' +
+            '<span class="data-legend-label"><span class="data-legend-swatch" style="background:#3D9441"></span>Healthy</span>' +
           '</span>' +
           '<span class="data-legend-item">' +
-            '<span class="data-legend-label">' +
-              '<span class="line-legend-icon" style="display:inline-flex;align-items:center;justify-content:center;width:39px;height:16px;position:relative;flex-shrink:0;overflow:hidden">' +
-                '<span style="position:absolute;left:0;right:0;top:50%;height:3px;margin-top:-1.5px;background:repeating-linear-gradient(to right,#444 0,#444 3px,transparent 3px,transparent 6px)"></span>' +
-                '<span style="width:16px;height:16px;border-radius:50%;background:#444;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="width:6px;height:6px;border-radius:50%;background:#fff"></span></span>' +
-              '</span>Infected</span>' +
+            '<span class="data-legend-label"><span class="data-legend-swatch" style="background:#502600"></span>Infected</span>' +
           '</span>';
-        bottomHalf.appendChild(lineLegend);
+        bottomHalf.appendChild(barLegend);
         dataInner.appendChild(bottomHalf);
 
         panel.appendChild(dataInner);
@@ -3090,30 +3636,22 @@ function buildSimContent() {
         // --- Data update function ---
         SIM.updateDataPanel = function() {
           if (SIM.updateCircleSize) SIM.updateCircleSize();
-          // Adjust legend gaps and line icon width based on panel width
+          // Adjust legend gaps based on panel width
           const panelW = panel.clientWidth;
           const gapVal = Math.max(4, Math.min(20, Math.round((panelW - 150) * (20 - 4) / (285 - 150) + 4)));
           pieLegend.style.gap = gapVal + "px";
-          lineLegend.style.gap = gapVal + "px";
-          let iconW = 39;
-          if (panelW < 250) {
-            iconW = Math.max(16, Math.round((panelW - 190) * (39 - 16) / (250 - 190) + 16));
-          }
-          lineLegend.querySelectorAll(".line-legend-icon").forEach(el => { el.style.width = iconW + "px"; });
+          barLegend.style.gap = gapVal + "px";
           if (panelW < 230) {
-            lineTitle.innerHTML = "Fungus Resistance<br>over All Generations";
+            barTitle.innerHTML = "Fungus Resistance<br>over All Crosses";
           } else {
-            lineTitle.innerHTML = "Fungus Resistance over<br>All Generations";
+            barTitle.innerHTML = "Fungus Resistance over<br>All Crosses";
           }
 
           const trial = SIM.selectedTrial;
           const st = SIM.trialState[trial];
           if (!st) return;
-          const selGen = SIM.selectedGen ? SIM.selectedGen[trial] : null;
-          const hasSelection = selGen !== null && selGen !== undefined && st.generations[selGen];
-          if (SIM.dataShowAllBtn) {
-            SIM.dataShowAllBtn.style.display = hasSelection ? "flex" : "none";
-          }
+          const selCross = SIM.selectedCross ? SIM.selectedCross[trial] : null;
+          const hasSelection = selCross !== null && selCross !== undefined && st.crosses[selCross];
           const aboutBtn = document.querySelector(".sim-info-btn");
           if (aboutBtn) {
             aboutBtn.classList.toggle("compact-hit", !!hasSelection);
@@ -3122,13 +3660,19 @@ function buildSimContent() {
           // Compute stats
           let plants = [];
           if (hasSelection) {
-            plants = st.generations[selGen];
-            pieTitle.innerHTML = "Offspring Phenotypes:<br>G" + (selGen + 1) + " <span style=\"font-weight:400\">(" + plants.length + " offspring)</span>";
-          } else if (st.generations.length > 0) {
-            plants = st.generations.flat();
-            pieTitle.innerHTML = "Offspring Phenotypes:<br>All Generations";
+            plants = st.crosses[selCross];
+            piePill.innerHTML = "C" + (selCross + 1) + "&nbsp;<span style='font-weight:400'>(" + plants.length + " offspring)</span>";
+            piePill.appendChild(pillClose);
+            piePill.classList.add("active");
+          } else if (st.crosses.length > 0) {
+            plants = st.crosses.flat();
+            piePill.textContent = "All Crosses";
+            piePill.appendChild(pillClose);
+            piePill.classList.remove("active");
           } else {
-            pieTitle.innerHTML = "Offspring Phenotypes:<br>All Generations";
+            piePill.textContent = "All Crosses";
+            piePill.appendChild(pillClose);
+            piePill.classList.remove("active");
           }
 
           const total = plants.length;
@@ -3149,18 +3693,21 @@ function buildSimContent() {
           }
 
           // --- Draw Pie ---
+          const dprPie = window.devicePixelRatio || 1;
+          pieCanvas.width = 160 * dprPie;
+          pieCanvas.height = 100 * dprPie;
           const pCtx = pieCanvas.getContext("2d");
           pCtx.setTransform(1, 0, 0, 1, 0, 0);
           pCtx.clearRect(0, 0, pieCanvas.width, pieCanvas.height);
-          pCtx.scale(dpr, dpr);
-          const pw = 160, ph = 103;
-          const cx = pw / 2, cy = ph / 2, r = Math.min(pw, ph) / 2 - 10;
+          pCtx.scale(dprPie, dprPie);
+          const pw = 160, ph = 100;
+          const cx = pw / 2, cy = 49, r = Math.min(pw, ph) / 2 - 10;
 
           if (total === 0) {
             // Gray empty pie with "No data" label
             pCtx.beginPath();
             pCtx.arc(cx, cy, r, 0, Math.PI * 2);
-            pCtx.fillStyle = "#e0e3e7";
+            pCtx.fillStyle = "#FFF3C4";
             pCtx.fill();
             pCtx.fillStyle = "#333";
             pCtx.font = "16px Lato, sans-serif";
@@ -3171,8 +3718,8 @@ function buildSimContent() {
             const hPct = Math.round((healthy / total) * 100);
             const iPct = 100 - hPct;
             const slices = [];
-            if (healthy > 0) slices.push({ pct: healthy / total, color: "#C2C2C2", labelColor: "#333", label: hPct + "%" });
-            if (infected > 0) slices.push({ pct: infected / total, color: "#444", labelColor: "#fff", label: iPct + "%" });
+            if (infected > 0) slices.push({ pct: infected / total, color: "#502600", labelColor: "#fff", label: iPct + "%" });
+            if (healthy > 0) slices.push({ pct: healthy / total, color: "#45A54A", labelColor: "#000", label: hPct + "%" });
 
             let startAngle = -Math.PI / 2;
             slices.forEach(s => {
@@ -3183,15 +3730,17 @@ function buildSimContent() {
               pCtx.closePath();
               pCtx.fillStyle = s.color;
               pCtx.fill();
-
-              // Label on slice
-              const mid = startAngle + sweep / 2;
+              s._mid = startAngle + sweep / 2;
+              startAngle += sweep;
+            });
+            slices.forEach(s => {
+              const mid = s._mid;
               let lx, ly;
               if (s.pct >= 1) {
                 lx = cx;
                 ly = cy;
               } else if (s.pct > 0.25) {
-                const d = r * 0.45;
+                const d = r * 0.55;
                 lx = cx + d * Math.cos(mid);
                 ly = cy + d * Math.sin(mid);
               } else {
@@ -3206,98 +3755,95 @@ function buildSimContent() {
                 pCtx.textBaseline = "middle";
                 pCtx.fillText(s.label, lx, ly);
               }
-              startAngle += sweep;
             });
           }
 
-          // --- Draw Line Graph ---
-          const lCtx = lineCanvas.getContext("2d");
-          const lw = lineChartBody.clientWidth || 260, lh = 148;
-          lineCanvas.width = lw * dpr;
-          lineCanvas.height = lh * dpr;
-          lCtx.setTransform(1, 0, 0, 1, 0, 0);
-          lCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
-          lCtx.scale(dpr, dpr);
+          // --- Draw Bar Chart ---
+          const dprBar = window.devicePixelRatio || 1;
+          const bCtx = barCanvas.getContext("2d");
+          const lw = barChartBody.clientWidth || 260, lh = 158;
+          barCanvas.width = lw * dprBar;
+          barCanvas.height = lh * dprBar;
+          bCtx.setTransform(1, 0, 0, 1, 0, 0);
+          bCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
+          bCtx.scale(dprBar, dprBar);
 
-          const margin = { top: 25, right: 14, bottom: 32, left: 46 };
+          const hasFungus = st.fungusAfterCross !== null;
+          const margin = { top: hasFungus ? 35 : 15, right: 8, bottom: 28, left: 44 };
           const gw = lw - margin.left - margin.right;
           const gh = lh - margin.top - margin.bottom;
 
           // Y-axis gridlines & labels (always visible)
-          lCtx.strokeStyle = "#949494";
-          lCtx.lineWidth = 1;
-          lCtx.fillStyle = "#333";
-          lCtx.font = "16px 'Roboto Condensed', sans-serif";
-          lCtx.textAlign = "right";
-          lCtx.textBaseline = "middle";
+          bCtx.strokeStyle = "#949494";
+          bCtx.lineWidth = 1;
+          bCtx.fillStyle = "#333";
+          bCtx.font = "400 16px 'Roboto Condensed', sans-serif";
+          bCtx.textAlign = "right";
+          bCtx.textBaseline = "middle";
           for (let i = 0; i <= 4; i++) {
             const y = margin.top + gh - (i / 4) * gh;
-            lCtx.beginPath();
-            lCtx.moveTo(margin.left, y);
-            lCtx.lineTo(margin.left + gw, y);
-            lCtx.stroke();
-            lCtx.fillText((i * 25) + "%", margin.left - 11, y);
+            bCtx.beginPath();
+            bCtx.moveTo(margin.left, y);
+            bCtx.lineTo(margin.left + gw, y);
+            bCtx.stroke();
+            bCtx.fillText((i * 25) + "%", margin.left - 6, y);
           }
 
-          const gens = st.generations;
+          const gens = st.crosses;
           if (gens.length === 0) {
-            if (st.fungusAfterGen !== null) {
+            if (st.fungusAfterCross !== null) {
               const fx = margin.left;
-              lCtx.strokeStyle = "#1565C0";
-              lCtx.lineWidth = 2;
-              lCtx.setLineDash([6, 4]);
-              lCtx.beginPath();
-              lCtx.moveTo(fx, margin.top);
-              lCtx.lineTo(fx, margin.top + gh);
-              lCtx.stroke();
-              lCtx.setLineDash([]);
-              lCtx.font = "bold 16px 'Roboto Condensed', sans-serif";
+              bCtx.strokeStyle = "#1A3C8F";
+              bCtx.lineWidth = 2;
+              bCtx.setLineDash([6, 4]);
+              bCtx.beginPath();
+              bCtx.moveTo(fx, margin.top);
+              bCtx.lineTo(fx, margin.top + gh);
+              bCtx.stroke();
+              bCtx.setLineDash([]);
+              bCtx.font = "500 16px 'Roboto Condensed', sans-serif";
               const flagText = "Fungus";
-              const tw = lCtx.measureText(flagText).width;
-              const flagH = 22, flagPad = 4;
-              const flagW = tw + flagPad * 2;
+              const tw = bCtx.measureText(flagText).width;
+              const iconSz = 20, iconGap = 3;
+              const flagH = 28, flagPadL = 4, flagPadR = 6;
+              const flagW = flagPadL + iconSz + iconGap + tw + flagPadR;
               const flagX = fx;
-              const flagY = 22 - flagH;
-              lCtx.fillStyle = "#1565C0";
-              lCtx.beginPath();
-              lCtx.moveTo(flagX, flagY);
-              lCtx.lineTo(flagX + flagW, flagY);
-              lCtx.lineTo(flagX + flagW, flagY + flagH);
-              lCtx.lineTo(flagX, flagY + flagH);
-              lCtx.closePath();
-              lCtx.fill();
-              lCtx.fillStyle = "#fff";
-              lCtx.textAlign = "left";
-              lCtx.textBaseline = "middle";
-              lCtx.fillText(flagText, flagX + flagPad, flagY + flagH / 2);
+              const flagY = 32 - flagH;
+              const flagR = 4;
+              bCtx.fillStyle = "#C8D8FC";
+              bCtx.beginPath();
+              bCtx.moveTo(flagX, flagY);
+              bCtx.lineTo(flagX + flagW - flagR, flagY);
+              bCtx.arcTo(flagX + flagW, flagY, flagX + flagW, flagY + flagR, flagR);
+              bCtx.lineTo(flagX + flagW, flagY + flagH - flagR);
+              bCtx.arcTo(flagX + flagW, flagY + flagH, flagX + flagW - flagR, flagY + flagH, flagR);
+              bCtx.lineTo(flagX, flagY + flagH);
+              bCtx.closePath();
+              bCtx.fill();
+              bCtx.fillStyle = "#1A3C8F";
+              bCtx.textAlign = "left";
+              bCtx.textBaseline = "middle";
+              const iconX = flagX + flagPadL;
+              const iconY = flagY + (flagH - iconSz) / 2;
+              bCtx.save();
+              bCtx.translate(iconX, iconY);
+              bCtx.scale(iconSz / 24, iconSz / 24);
+              const fp = buildFungusIconPath();
+              bCtx.fill(fp);
+              bCtx.restore();
+              bCtx.fillText(flagText, iconX + iconSz + iconGap, flagY + flagH / 2 + 1.5);
             } else {
-              lCtx.fillStyle = "#333";
-              lCtx.font = "16px Lato, sans-serif";
-              lCtx.textAlign = "center";
-              lCtx.textBaseline = "middle";
-              lCtx.fillText("No data", margin.left + gw / 2, margin.top + gh / 2);
+              bCtx.fillStyle = "#333";
+              bCtx.font = "16px Lato, sans-serif";
+              bCtx.textAlign = "center";
+              bCtx.textBaseline = "middle";
+              bCtx.fillText("No data", margin.left + gw / 2, margin.top + gh / 2);
             }
+            barTable.innerHTML = "";
             return;
           }
 
-          // X-axis labels
-          lCtx.textAlign = "center";
-          lCtx.textBaseline = "top";
-          const xStep = gens.length > 1 ? gw / (gens.length - 1) : 0;
-
-          // Show every Nth label to avoid overlap
-          lCtx.font = "16px 'Roboto Condensed', sans-serif";
-          const labelW = lCtx.measureText("G00").width + 4;
-          const maxLabels = Math.max(1, Math.floor(gw / labelW));
-          const labelStep = Math.ceil(gens.length / maxLabels);
-          gens.forEach((_, gi) => {
-            if (gi % labelStep !== 0 && gi !== gens.length - 1) return;
-            const x = margin.left + (gens.length > 1 ? gi * xStep : gw / 2);
-            lCtx.fillStyle = "#333";
-            lCtx.fillText("G" + (gi + 1), x, margin.top + gh + 13);
-          });
-
-          // Compute healthy % per generation
+          // Compute healthy % per cross
           const healthyPcts = gens.map(g => {
             const t = g.length;
             const inf = g.filter(p => p.infected).length;
@@ -3305,115 +3851,142 @@ function buildSimContent() {
           });
           const infectedPcts = healthyPcts.map(h => 100 - h);
 
+          // Bar chart layout
+          const groupGap = 4;
+          const barGap = 2;
+          const groupW = gw / gens.length;
+          const barW = (groupW - groupGap - barGap) / 2;
+
+          // X-axis labels
+          bCtx.textAlign = "center";
+          bCtx.textBaseline = "top";
+          bCtx.font = "400 16px 'Roboto Condensed', sans-serif";
+          const labelW = bCtx.measureText("C00").width + 4;
+          const maxLabels = Math.max(1, Math.floor(gw / labelW));
+          const labelStep = Math.ceil(gens.length / maxLabels);
+          gens.forEach((_, gi) => {
+            const isLast = gi === gens.length - 1;
+            if (gi % labelStep !== 0 && !isLast) return;
+            if (!isLast && gens.length > 1) {
+              const nextShown = isLast ? gi : gens.length - 1;
+              const thisX = margin.left + gi * groupW + groupW / 2;
+              const lastX = margin.left + (gens.length - 1) * groupW + groupW / 2;
+              if (lastX - thisX < labelW) return;
+            }
+            const groupX = margin.left + gi * groupW + groupW / 2;
+            bCtx.fillStyle = "#333";
+            bCtx.fillText("C" + (gi + 1), groupX, margin.top + gh + 9);
+          });
+
           // Fungus introduction marker
-          if (st.fungusAfterGen !== null) {
-            const fgi = st.fungusAfterGen;
+          if (st.fungusAfterCross !== null) {
+            const fgi = st.fungusAfterCross;
             let fx;
             if (fgi === 0) {
               fx = margin.left;
             } else if (fgi >= gens.length) {
               fx = margin.left + gw;
             } else {
-              fx = margin.left + (gens.length > 1 ? (fgi - 0.5) * xStep : gw / 2);
+              fx = margin.left + fgi * groupW;
             }
-            lCtx.strokeStyle = "#1565C0";
-            lCtx.lineWidth = 2;
-            lCtx.setLineDash([6, 4]);
-            lCtx.beginPath();
-            lCtx.moveTo(fx, margin.top);
-            lCtx.lineTo(fx, margin.top + gh);
-            lCtx.stroke();
-            lCtx.setLineDash([]);
+            bCtx.strokeStyle = "#1A3C8F";
+            bCtx.lineWidth = 2;
+            bCtx.setLineDash([6, 4]);
+            bCtx.beginPath();
+            bCtx.moveTo(fx, margin.top);
+            bCtx.lineTo(fx, margin.top + gh);
+            bCtx.stroke();
+            bCtx.setLineDash([]);
 
-            // Flag label
-            lCtx.font = "bold 16px 'Roboto Condensed', sans-serif";
+            bCtx.font = "500 16px 'Roboto Condensed', sans-serif";
             const flagText = "Fungus";
-            const tw = lCtx.measureText(flagText).width;
-            const flagH = 22, flagPad = 4;
-            const flagW = tw + flagPad * 2;
-            const flagX = fx;
-            const flagY = 22 - flagH;
-            lCtx.fillStyle = "#1565C0";
-            lCtx.beginPath();
-            lCtx.moveTo(flagX, flagY);
-            lCtx.lineTo(flagX + flagW, flagY);
-            lCtx.lineTo(flagX + flagW, flagY + flagH);
-            lCtx.lineTo(flagX, flagY + flagH);
-            lCtx.closePath();
-            lCtx.fill();
-            lCtx.fillStyle = "#fff";
-            lCtx.textAlign = "left";
-            lCtx.textBaseline = "middle";
-            lCtx.fillText(flagText, flagX + flagPad, flagY + flagH / 2);
+            const tw = bCtx.measureText(flagText).width;
+            const iconSz = 20, iconGap = 3;
+            const flagH = 28, flagPadL = 4, flagPadR = 6;
+            const flagW = flagPadL + iconSz + iconGap + tw + flagPadR;
+            const flipLeft = fx + flagW > lw - margin.right;
+            const flagX = flipLeft ? fx - flagW : fx;
+            const flagY = 32 - flagH;
+            const flagR = 4;
+            bCtx.fillStyle = "#C8D8FC";
+            bCtx.beginPath();
+            if (flipLeft) {
+              bCtx.moveTo(flagX + flagR, flagY);
+              bCtx.lineTo(flagX + flagW, flagY);
+              bCtx.lineTo(flagX + flagW, flagY + flagH);
+              bCtx.lineTo(flagX + flagR, flagY + flagH);
+              bCtx.arcTo(flagX, flagY + flagH, flagX, flagY + flagH - flagR, flagR);
+              bCtx.lineTo(flagX, flagY + flagR);
+              bCtx.arcTo(flagX, flagY, flagX + flagR, flagY, flagR);
+            } else {
+              bCtx.moveTo(flagX, flagY);
+              bCtx.lineTo(flagX + flagW - flagR, flagY);
+              bCtx.arcTo(flagX + flagW, flagY, flagX + flagW, flagY + flagR, flagR);
+              bCtx.lineTo(flagX + flagW, flagY + flagH - flagR);
+              bCtx.arcTo(flagX + flagW, flagY + flagH, flagX + flagW - flagR, flagY + flagH, flagR);
+              bCtx.lineTo(flagX, flagY + flagH);
+            }
+            bCtx.closePath();
+            bCtx.fill();
+            bCtx.fillStyle = "#1A3C8F";
+            bCtx.textAlign = "left";
+            bCtx.textBaseline = "middle";
+            const iconX = flagX + flagPadL;
+            const iconY = flagY + (flagH - iconSz) / 2;
+            bCtx.save();
+            bCtx.translate(iconX, iconY);
+            bCtx.scale(iconSz / 24, iconSz / 24);
+            const fp = buildFungusIconPath();
+            bCtx.fill(fp);
+            bCtx.restore();
+            bCtx.fillText(flagText, iconX + iconSz + iconGap, flagY + flagH / 2 + 1.5);
           }
 
-          function drawLine(data, color, dashed, marker) {
-            lCtx.strokeStyle = color;
-            lCtx.lineWidth = 3;
-            lCtx.setLineDash(dashed ? [3, 3] : []);
-            lCtx.lineJoin = "round";
-            lCtx.beginPath();
-            data.forEach((val, i) => {
-              const x = margin.left + (gens.length > 1 ? i * xStep : gw / 2);
-              const y = margin.top + gh - (val / 100) * gh;
-              if (i === 0) lCtx.moveTo(x, y);
-              else lCtx.lineTo(x, y);
-            });
-            lCtx.stroke();
-            lCtx.setLineDash([]);
-
-            // Markers
-            data.forEach((val, i) => {
-              const x = margin.left + (gens.length > 1 ? i * xStep : gw / 2);
-              const y = margin.top + gh - (val / 100) * gh;
-              const baseR = Math.max(4, Math.min(8, xStep > 0 ? xStep * 0.35 : 8));
-              const s = selGen === i ? baseR * 1.25 : baseR;
-              lCtx.fillStyle = color;
-              if (marker === "triangle") {
-                lCtx.beginPath();
-                lCtx.moveTo(x, y - s);
-                lCtx.lineTo(x + s, y + s);
-                lCtx.lineTo(x - s, y + s);
-                lCtx.closePath();
-                lCtx.fill();
-              } else {
-                lCtx.beginPath();
-                lCtx.arc(x, y, s, 0, Math.PI * 2);
-                lCtx.fill();
-                if (dashed) {
-                  lCtx.fillStyle = "#fff";
-                  lCtx.beginPath();
-                  lCtx.arc(x, y, s * 0.4, 0, Math.PI * 2);
-                  lCtx.fill();
-                  lCtx.fillStyle = color;
-                }
-              }
-            });
+          // Highlight selected cross
+          if (selCross !== null && selCross !== undefined && selCross < gens.length) {
+            const groupX = margin.left + selCross * groupW;
+            bCtx.fillStyle = (SIMS[activeSim].theme && SIMS[activeSim].theme.crossLabelBg) || "#FFE680";
+            bCtx.fillRect(groupX, margin.top, groupW, gh);
           }
 
-          drawLine(healthyPcts, "#808080", false, "circle");
-          drawLine(infectedPcts, "#444", true, "circle");
+          // Draw bars
+          gens.forEach((_, gi) => {
+            const groupX = margin.left + gi * groupW + groupGap / 2;
+            const hH = Math.max(2, (healthyPcts[gi] / 100) * gh);
+            const iH = Math.max(2, (infectedPcts[gi] / 100) * gh);
+            const hX = groupX;
+            const iX = groupX + barW + barGap;
 
-          // Highlight selected generation
-          if (selGen !== null && selGen !== undefined && selGen < gens.length) {
-            const x = margin.left + (gens.length > 1 ? selGen * xStep : gw / 2);
-            lCtx.fillStyle = "rgba(91, 155, 213, 0.15)";
-            const bandW = gens.length > 1 ? Math.max(xStep * 0.6, 12) : 24;
-            lCtx.fillRect(x - bandW / 2, margin.top, bandW, gh);
-          }
+            bCtx.fillStyle = "#3D9441";
+            bCtx.fillRect(hX, margin.top + gh - hH, barW, hH);
+            bCtx.fillStyle = "#502600";
+            bCtx.fillRect(iX, margin.top + gh - iH, barW, iH);
+          });
 
           // Dynamic aria-labels for charts
           if (total === 0) {
             pieCanvas.setAttribute("aria-label", "Pie chart: no data");
-            lineCanvas.setAttribute("aria-label", "Line graph: no data");
+            barCanvas.setAttribute("aria-label", "Bar chart: no data");
+            barTable.innerHTML = "";
           } else {
             const hPctLabel = Math.round((healthy / total) * 100);
             const iPctLabel = 100 - hPctLabel;
-            const genLabel = (selGen !== null && selGen !== undefined) ? "generation " + (selGen + 1) : "all generations";
-            pieCanvas.setAttribute("aria-label", "Pie chart showing offspring phenotypes for " + genLabel + ": " + hPctLabel + "% healthy, " + iPctLabel + "% infected");
+            const crossLabel = (selCross !== null && selCross !== undefined) ? "cross " + (selCross + 1) : "all crosses";
+            pieCanvas.setAttribute("aria-label", "Pie chart showing offspring phenotypes for " + crossLabel + ": " + hPctLabel + "% healthy, " + iPctLabel + "% infected");
             const lastHealthy = Math.round(healthyPcts[healthyPcts.length - 1]);
             const lastInfected = 100 - lastHealthy;
-            lineCanvas.setAttribute("aria-label", "Line graph showing fungus resistance over " + gens.length + " generation" + (gens.length > 1 ? "s" : "") + ". Latest: " + lastHealthy + "% healthy, " + lastInfected + "% infected");
+            barCanvas.setAttribute("aria-label", "Bar chart showing fungus resistance over " + gens.length + " cross" + (gens.length > 1 ? "es" : "") + ". Latest: " + lastHealthy + "% healthy, " + lastInfected + "% infected");
+
+            // Hidden data table for SR exploration of bar chart
+            let tableHTML = "<thead><tr><th>Cross</th><th>Healthy</th><th>Infected</th></tr></thead><tbody>";
+            gens.forEach((g, gi) => {
+              const hP = Math.round(healthyPcts[gi]);
+              const iP = 100 - hP;
+              const fungusMarker = (st.fungusAfterCross !== null && gi === st.fungusAfterCross) ? " (fungus introduced)" : "";
+              tableHTML += "<tr><td>C" + (gi + 1) + fungusMarker + "</td><td>" + hP + "%</td><td>" + iP + "%</td></tr>";
+            });
+            tableHTML += "</tbody>";
+            barTable.innerHTML = tableHTML;
           }
         };
       }
@@ -3428,15 +4001,16 @@ function buildSimContent() {
       tabLabel.textContent = p.name;
       tab.appendChild(tabLabel);
       if (p.subtitle) {
-        tab.style.border = "2px solid #555";
+        const bc = (SIMS[activeSim].theme && SIMS[activeSim].theme.panelBorder) || "#555";
+        tab.style.border = "2px solid " + bc;
         tab.style.borderRight = "none";
-        tab.style.borderRadius = "8px 0 0 8px";
+        tab.style.borderRadius = "999px 0 0 999px";
         tab.style.position = "static";
         tab.style.transform = "none";
         tab.style.left = "";
         tab.style.height = "100%";
         const tabSub = document.createElement("div");
-        tabSub.style.cssText = "display:flex;align-items:center;padding:0 12px 0 10px;background:#fff;height:100%;box-sizing:border-box;border:2px solid #555;border-left:none;border-radius:0 999px 999px 0;";
+        tabSub.style.cssText = "display:flex;align-items:center;padding:0 12px 0 10px;background:#FFFDF2;height:100%;box-sizing:border-box;border:2px solid " + bc + ";border-left:none;border-radius:0 999px 999px 0;";
         const tabSubLabel = document.createElement("span");
         tabSubLabel.className = "sim-panel-tab-subtitle";
         tabSubLabel.textContent = p.subtitle;
@@ -3454,23 +4028,6 @@ function buildSimContent() {
         const tabWrap = document.createElement("div");
         tabWrap.style.cssText = "position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;height:36px;z-index:11;";
         tabWrap.appendChild(tab);
-        const showAllBtn = document.createElement("button");
-        showAllBtn.className = "data-show-all-btn";
-        showAllBtn.textContent = "Show All";
-        showAllBtn.addEventListener("click", () => {
-          const trial = SIM.selectedTrial;
-          const prevIdx = SIM.selectedGen ? SIM.selectedGen[trial] : null;
-          if (SIM.selectedGen) SIM.selectedGen[trial] = null;
-          if (SIM.renderOffspring) SIM.renderOffspring(trial);
-          if (SIM.updateDataPanel) SIM.updateDataPanel();
-          if (prevIdx !== null && prevIdx !== undefined) {
-            const rows = document.querySelectorAll(".gen-row");
-            const target = rows[prevIdx] || rows[0];
-            if (target) target.focus();
-          }
-        });
-        tabWrap.appendChild(showAllBtn);
-        SIM.dataShowAllBtn = showAllBtn;
         panelWrap.appendChild(tabWrap);
       } else {
         panelWrap.appendChild(tab);
@@ -3486,7 +4043,7 @@ function buildSimContent() {
       const triggers = document.querySelectorAll(".sim-dropdown-trigger");
       if (triggers.length) {
         const m = document.createElement("span");
-        m.style.cssText = "font-family:'Roboto Condensed',sans-serif;font-size:16px;visibility:hidden;position:absolute;white-space:nowrap;";
+        m.style.cssText = "font-family:'Roboto Condensed',sans-serif;font-weight:400;font-size:16px;visibility:hidden;position:absolute;white-space:nowrap;";
         document.body.appendChild(m);
         const opts = ["Wild W1", "Wild W2", "Wild W3", "Cavendish C1", "Cavendish C2"];
         let mxC = 0;
@@ -3538,6 +4095,7 @@ function buildViewport() {
   container.style.maxWidth = "";
   container.style.overflow = "";
   document.body.style.background = "";
+  document.body.classList.remove("teal-bg");
   document.body.style.overflow = "";
   document.body.style.paddingRight = "0";
   const wrapperEl = document.querySelector(".viewport-wrapper");
@@ -3594,7 +4152,8 @@ function buildViewport() {
 
   if (isNoLimit && layout.hasAP) {
     // Teacher Desktop + AP: white page, full height, no border
-    document.body.style.background = "#0592af";
+    document.body.style.background = "#0481A0";
+    document.body.classList.add("teal-bg");
     document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "#fff");
     const msTitle = document.getElementById("masssims-title");
     if (msTitle) msTitle.style.color = "#fff";
@@ -3628,6 +4187,9 @@ function buildViewport() {
     frame.style.height = device.screenH + "px";
     frame.style.margin = "0 -2px";
     if (wrapperForOverflow) wrapperForOverflow.style.overflow = "hidden";
+    if (activeDevice !== "chromebook") {
+      frame.style.boxShadow = "0 2px 12px rgba(0, 0, 0, 0.3)";
+    }
   }
 
   // Top chrome
@@ -3647,7 +4209,7 @@ function buildViewport() {
   if (isNoLimit && layout.hasAP) {
     viewport.style.height = "auto";
     viewport.style.minHeight = "100%";
-    viewport.style.background = "#fff";
+    viewport.style.background = "#e0e0e0";
   } else {
     viewport.style.height = availH + "px";
   }
@@ -3698,10 +4260,8 @@ function buildViewport() {
         toggleLabel.textContent = "Hide";
         toggleBtn.appendChild(toggleLabel);
 
-        const toggleIcon = document.createElement("img");
-        toggleIcon.className = "ap-left-toggle-icon";
-        toggleIcon.src = "icons/Double Arrow ICON.svg";
-        toggleIcon.alt = "Collapse";
+        const toggleIcon = createSVGIcon(doubleArrowIconSVG);
+        toggleIcon.classList.add("ap-left-toggle-icon");
         toggleBtn.appendChild(toggleIcon);
       } else {
         toggleBtn.style.height = (350) + "px";
@@ -3709,10 +4269,8 @@ function buildViewport() {
         toggleBtn.style.alignItems = "center";
         toggleBtn.style.justifyContent = "flex-start";
 
-        const toggleIcon = document.createElement("img");
-        toggleIcon.className = "ap-left-toggle-icon-collapsed";
-        toggleIcon.src = "icons/Double Arrow ICON.svg";
-        toggleIcon.alt = "Expand";
+        const toggleIcon = createSVGIcon(doubleArrowIconSVG);
+        toggleIcon.classList.add("ap-left-toggle-icon-collapsed");
         toggleBtn.appendChild(toggleIcon);
 
         const toggleLabel = document.createElement("span");
@@ -3724,6 +4282,8 @@ function buildViewport() {
       function toggleSidebar() {
         sidebarExpanded = !sidebarExpanded;
         buildViewport();
+        const newToggle = document.querySelector(".ap-left-toggle");
+        if (newToggle) newToggle.focus();
       }
       toggleBtn.addEventListener("click", toggleSidebar);
       toggleBtn.addEventListener("keydown", (e) => {
@@ -3750,7 +4310,6 @@ function buildViewport() {
 
         const resBody = document.createElement("div");
         resBody.className = "ap-left-resources-body";
-        resBody.setAttribute("tabindex", "0");
         resBody.setAttribute("role", "region");
         resBody.setAttribute("aria-label", "Resources content");
         resBody.innerHTML = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
@@ -3790,6 +4349,7 @@ function buildViewport() {
       content.setAttribute("role", "main");
       content.style.width = "100%";
       content.style.height = (AP_CONTENT_H) + "px";
+      applySimTheme(content);
       content.appendChild(getSimTitleBar());
       const sc2col = getSimContent();
       if (sc2col) content.appendChild(sc2col);
@@ -3820,6 +4380,7 @@ function buildViewport() {
       content.setAttribute("role", "main");
       content.style.width = (contentW) + "px";
       content.style.height = (AP_CONTENT_H) + "px";
+      applySimTheme(content);
       content.appendChild(getSimTitleBar());
       const scFull = getSimContent();
       if (scFull) content.appendChild(scFull);
@@ -3901,6 +4462,7 @@ function buildViewport() {
     content.style.width = (standaloneW) + "px";
     content.style.height = (standaloneH) + "px";
     content.style.marginLeft = ml + "px";
+    applySimTheme(content);
     content.appendChild(getSimTitleBar());
     const scSA1 = getSimContent();
     if (scSA1) content.appendChild(scSA1);
@@ -3955,14 +4517,21 @@ function buildViewport() {
     } else {
       // iPad/Android: fixed frame, fixed content, no responsiveness
       frameVisualW = device.screenW;
-      standaloneW = standaloneMax;
-      simMarginLeft = null;
+      if (device.screenW <= standaloneMax + contentBorder) {
+        standaloneW = device.screenW - (standaloneMargin * 2) - contentBorder;
+        simMarginLeft = standaloneMargin;
+      } else {
+        standaloneW = standaloneMax;
+        simMarginLeft = null;
+      }
 
       // Label freeze when frame is clipped by wrapper
       if (wrapperClientW < device.screenW) {
         info.style.alignSelf = "flex-start";
         info.style.minWidth = device.screenW + "px";
       }
+
+      frame.style.boxShadow = "0 2px 12px rgba(0, 0, 0, 0.3)";
     }
 
     const content = document.createElement("div");
@@ -3970,6 +4539,7 @@ function buildViewport() {
     content.setAttribute("role", "main");
     content.style.width = (standaloneW) + "px";
     content.style.height = (standaloneH) + "px";
+    applySimTheme(content);
     content.appendChild(getSimTitleBar());
     const scSA2 = getSimContent();
     if (scSA2) content.appendChild(scSA2);
@@ -4105,6 +4675,12 @@ function _updateStandaloneDeviceFrameNow() {
     info.style.minWidth = isClipping ? clipStart + "px" : "";
   }
 }
+
+// Track input method so focus rings only show on keyboard interaction.
+// Covers old browsers (no :focus-visible) and the edge case where
+// :focus-visible persists after clicking an already-keyboard-focused element.
+document.addEventListener("mousedown", () => document.body.classList.add("using-mouse"));
+document.addEventListener("keydown", () => document.body.classList.remove("using-mouse"));
 
 window.addEventListener("resize", () => {
   // Always update browser width label
