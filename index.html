@@ -59,7 +59,7 @@
     color: #333;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    margin-bottom: -2px;
   }
 
   .toggle-btn {
@@ -129,7 +129,6 @@
   body.teal-bg .toggle-btn.active {
     border-color: #fff;
   }
-
   /* Viewport display area */
   .viewport-wrapper {
     flex: 1;
@@ -1887,8 +1886,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <div class="btn-column">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.0</div>
-      <div style="font-weight: 400;">Updated: 6/11/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.1</div>
+      <div style="font-weight: 400;">Updated: 6/15/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -1912,6 +1911,13 @@
       <button class="toggle-btn active" data-layout="standalone" aria-pressed="true">Standalone</button>
       <button class="toggle-btn" data-layout="ap-full" aria-pressed="false">AP Full Width</button>
       <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false">AP 2-Column</button>
+      <hr style="border: none; border-top: 1px solid #858585; margin: 16px 0 14px;">
+      <button class="toggle-btn" id="demo-site-btn" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        Demo Site
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22,12 C22,6.48 17.52,2 12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 Z M4,12 C4,7.58 7.58,4 12,4 C16.42,4 20,7.58 20,12 C20,16.42 16.42,20 12,20 C7.58,20 4,16.42 4,12 Z M16,12 L12,16 L10.59,14.59 L12.17,13 L8,13 L8,11 L12.17,11 L10.58,9.41 L12,8 L16,12 Z" fill="currentColor" fill-rule="nonzero"/>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -2039,6 +2045,9 @@ let activeSim = "bananas";
 let activeDevice = "none";
 let activeLayout = "standalone";
 let sidebarExpanded = true;
+let demoMode = false;
+let _savedDevice = null;
+let _savedLayout = null;
 
 // Cached sim DOM elements — persist across layout switches
 const SIM = {};
@@ -3823,7 +3832,7 @@ function buildSimContent() {
           bCtx.scale(dprBar, dprBar);
 
           const hasFungus = st.fungusAfterCross !== null;
-          const margin = { top: hasFungus ? 35 : 15, right: 8, bottom: 28, left: 44 };
+          const margin = { top: hasFungus ? 35 : 15, right: 8, bottom: 40, left: 44 };
           const gw = lw - margin.left - margin.right;
           const gh = lh - margin.top - margin.bottom;
 
@@ -3873,25 +3882,28 @@ function buildSimContent() {
           const groupW = gw / gens.length;
           const barW = (groupW - groupGap - barGap) / 2;
 
+          // Highlight selected cross (behind labels and bars)
+          const labelW = bCtx.measureText("C00").width + 4;
+          const stagger = gens.length > 1 && (gw / gens.length) < labelW;
+          if (selCross !== null && selCross !== undefined && selCross < gens.length) {
+            const groupX = margin.left + selCross * groupW;
+            const selDropY = stagger && selCross % 2 === 1 ? 14 : 0;
+            const hlHeight = gh + 9 + selDropY + 18;
+            bCtx.globalAlpha = 0.8;
+            bCtx.fillStyle = (SIMS[activeSim].theme && SIMS[activeSim].theme.crossLabelBg) || "#FFE680";
+            bCtx.fillRect(groupX, margin.top, groupW, hlHeight);
+            bCtx.globalAlpha = 1;
+          }
+
           // X-axis labels
           bCtx.textAlign = "center";
           bCtx.textBaseline = "top";
           bCtx.font = "400 16px 'Roboto Condensed', sans-serif";
-          const labelW = bCtx.measureText("C00").width + 4;
-          const maxLabels = Math.max(1, Math.floor(gw / labelW));
-          const labelStep = Math.ceil(gens.length / maxLabels);
           gens.forEach((_, gi) => {
-            const isLast = gi === gens.length - 1;
-            if (gi % labelStep !== 0 && !isLast) return;
-            if (!isLast && gens.length > 1) {
-              const nextShown = isLast ? gi : gens.length - 1;
-              const thisX = margin.left + gi * groupW + groupW / 2;
-              const lastX = margin.left + (gens.length - 1) * groupW + groupW / 2;
-              if (lastX - thisX < labelW) return;
-            }
             const groupX = margin.left + gi * groupW + groupW / 2;
+            const dropY = stagger && gi % 2 === 1 ? 14 : 0;
             bCtx.fillStyle = "#333";
-            bCtx.fillText(SIM.selectedTrial + (gi + 1), groupX, margin.top + gh + 9);
+            bCtx.fillText(SIM.selectedTrial + (gi + 1), groupX, margin.top + gh + 9 + dropY);
           });
 
           // Fungus introduction marker
@@ -3906,15 +3918,6 @@ function buildSimContent() {
               fx = margin.left + fgi * groupW;
             }
             drawFungusFlag(bCtx, fx, margin, gh, true, lw);
-          }
-
-          // Highlight selected cross
-          if (selCross !== null && selCross !== undefined && selCross < gens.length) {
-            const groupX = margin.left + selCross * groupW;
-            bCtx.globalAlpha = 0.8;
-            bCtx.fillStyle = (SIMS[activeSim].theme && SIMS[activeSim].theme.crossLabelBg) || "#FFE680";
-            bCtx.fillRect(groupX, margin.top, groupW, gh);
-            bCtx.globalAlpha = 1;
           }
 
           // Draw bars
@@ -4050,7 +4053,296 @@ function buildSimContent() {
   return null;
 }
 
+function buildDemoView() {
+  const wrapper = document.querySelector(".viewport-wrapper");
+  const container = document.getElementById("viewportContainer");
+  const info = document.getElementById("viewportInfo");
+  const bwLabel = document.getElementById("browserWidthLabel");
+
+  // Detach cached sim elements before clearing
+  if (_simTitleBar && _simTitleBar.parentNode) _simTitleBar.remove();
+  if (_simContent && _simContent.parentNode) _simContent.remove();
+  container.innerHTML = "";
+
+  // Pull btn-column out of flow so centering uses full width
+  const btnColumn = document.querySelector(".btn-column");
+  btnColumn.style.position = "absolute";
+  btnColumn.style.left = "20px";
+  btnColumn.style.top = "20px";
+  btnColumn.style.zIndex = "10";
+  btnColumn.style.pointerEvents = "none";
+  document.getElementById("masssims-title").style.pointerEvents = "auto";
+
+  // Hide Sims and Device groups; in Layout group hide everything except hr + Demo Site btn
+  const groups = document.querySelectorAll(".btn-column [role='group']");
+  groups[0].style.visibility = "hidden"; // Sims
+  groups[1].style.visibility = "hidden"; // Device
+  const layoutGroup = groups[2];
+  layoutGroup.querySelector(".btn-column-label").style.visibility = "hidden";
+  layoutGroup.querySelectorAll("[data-layout]").forEach(b => b.style.visibility = "hidden");
+  layoutGroup.querySelector("hr").style.visibility = "hidden";
+
+  // Swap Demo Site button to Prototypes back button
+  const demoBtn = document.getElementById("demo-site-btn");
+  demoBtn.style.pointerEvents = "auto";
+  demoBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)"><path d="M22,12 C22,6.48 17.52,2 12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 Z M4,12 C4,7.58 7.58,4 12,4 C16.42,4 20,7.58 20,12 C20,16.42 16.42,20 12,20 C7.58,20 4,16.42 4,12 Z M16,12 L12,16 L10.59,14.59 L12.17,13 L8,13 L8,11 L12.17,11 L10.58,9.41 L12,8 L16,12 Z" fill="currentColor" fill-rule="nonzero"/></svg>Prototypes';
+
+  // Reset teal-bg styling from Prototypes page
+  document.body.classList.remove("teal-bg");
+  document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "");
+  const msTitle = document.getElementById("masssims-title");
+  if (msTitle) msTitle.style.color = "";
+  const demoHr = document.querySelector(".btn-column hr");
+  if (demoHr) demoHr.style.borderColor = "";
+  wrapper.style.borderColor = "";
+
+  // Hide viewport chrome
+  wrapper.style.borderLeft = "none";
+  if (bwLabel) bwLabel.style.display = "none";
+  info.style.display = "none";
+  document.body.style.background = "#ededed";
+  document.body.style.padding = "20px 0";
+  wrapper.style.alignItems = "stretch";
+  container.style.paddingTop = "";
+  container.style.alignSelf = "";
+  container.style.maxWidth = "";
+  container.style.flex = "1";
+  container.style.display = "flex";
+
+  // Center area: title above, sim buttons + sim content side by side below
+  const demoWrap = document.createElement("div");
+  demoWrap.id = "demo-wrap";
+  demoWrap.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;width:100%;padding:0 20px;";
+
+  const demoRow = document.createElement("div");
+  demoRow.setAttribute("data-demo-row", "");
+  demoRow.style.cssText = "display:flex;align-items:center;justify-content:center;gap:24px;width:100%;";
+
+  // Sim buttons column
+  const simBtns = document.createElement("div");
+  simBtns.id = "demo-sim-btns";
+  simBtns.style.cssText = "display:flex;flex-direction:column;gap:8px;flex-shrink:0;";
+  const sims = [
+    { key: "bananas", label: "Bananas" },
+    { key: "collapse", label: "Collapse!" },
+    { key: "noreaster", label: "Nor’easter Riley" },
+    { key: "tbd", label: "Coming Soon" }
+  ];
+  function applyDemoBtnStyle(btn, simKey, isActive) {
+    const simData = SIMS[simKey];
+    const theme = simData && simData.theme;
+    if (theme) {
+      btn.style.borderWidth = "2px";
+      if (isActive) {
+        btn.style.background = theme.btnActive;
+        btn.style.color = theme.titleText;
+        btn.style.borderColor = theme.btnBorder;
+      } else {
+        btn.style.background = theme.surface;
+        btn.style.color = theme.titleText;
+        btn.style.borderColor = theme.btnBorder;
+      }
+    } else {
+      btn.style.borderWidth = "2px";
+      if (isActive) {
+        btn.style.background = "#d0d0d0";
+        btn.style.color = "#333";
+        btn.style.borderColor = "#555";
+      } else {
+        btn.style.background = "#fff";
+        btn.style.color = "#333";
+        btn.style.borderColor = "#555";
+      }
+    }
+  }
+
+  sims.forEach(s => {
+    const btn = document.createElement("button");
+    btn.className = "toggle-btn" + (activeSim === s.key ? " active" : "");
+    btn.setAttribute("aria-pressed", activeSim === s.key ? "true" : "false");
+    btn.dataset.simKey = s.key;
+    btn.textContent = s.label.toUpperCase();
+    const simData = SIMS[s.key];
+    if (simData && simData.titleFont) btn.style.fontFamily = simData.titleFont;
+    if (simData && simData.titleLetterSpacing) btn.style.letterSpacing = simData.titleLetterSpacing;
+    btn.style.fontSize = "24px";
+    btn.style.fontWeight = "700";
+    btn.style.padding = "8px 20px";
+    btn.style.minHeight = "50px";
+    applyDemoBtnStyle(btn, s.key, activeSim === s.key);
+
+    const theme = simData && simData.theme;
+    btn.addEventListener("mouseenter", () => {
+      if (btn.classList.contains("active")) return;
+      btn.style.background = theme ? theme.btnHover : "#f0f0f0";
+    });
+    btn.addEventListener("mouseleave", () => {
+      if (btn.classList.contains("active")) return;
+      btn.style.background = theme ? theme.surface : "#fff";
+    });
+    btn.addEventListener("mousedown", () => {
+      if (btn.classList.contains("active")) return;
+      btn.style.background = theme ? theme.btnActive : "#d0d0d0";
+    });
+    btn.addEventListener("mouseup", () => {
+      if (btn.classList.contains("active")) return;
+      btn.style.background = theme ? theme.btnHover : "#f0f0f0";
+    });
+
+    btn.addEventListener("click", () => {
+      if (activeSim === s.key) return;
+      activeSim = s.key;
+      invalidateSimCache();
+      simBtns.querySelectorAll(".toggle-btn").forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
+        applyDemoBtnStyle(b, b.dataset.simKey, false);
+      });
+      btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
+      applyDemoBtnStyle(btn, s.key, true);
+      document.querySelectorAll("[data-sim]").forEach(b => {
+        b.classList.toggle("active", b.dataset.sim === s.key);
+        b.setAttribute("aria-pressed", b.dataset.sim === s.key ? "true" : "false");
+      });
+      rebuildDemoContent(demoWrap, simBtns);
+    });
+    simBtns.appendChild(btn);
+  });
+  demoWrap.appendChild(simBtns);
+
+  // Append buttons first so we can measure
+  demoRow.appendChild(simBtns);
+  demoWrap.appendChild(demoRow);
+  container.appendChild(demoWrap);
+
+  // Equalize button widths to the widest
+  const btns = simBtns.querySelectorAll(".toggle-btn");
+  let maxW = 0;
+  btns.forEach(b => { if (b.offsetWidth > maxW) maxW = b.offsetWidth; });
+  btns.forEach(b => { b.style.width = maxW + "px"; b.style.textAlign = "center"; });
+
+  // Sim content (TD/Standalone: responsive 768–1024 x 562)
+  const standaloneMax = 1024;
+  const standaloneMin = 768;
+  const standaloneBorder = 4;
+  const demoPad = 40;
+  const simBtnsActualW = maxW + 24; // measured buttons + gap
+  const availW = window.innerWidth - simBtnsActualW - demoPad - standaloneBorder;
+  const demoContentW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, availW)));
+
+  const contentCol = document.createElement("div");
+  contentCol.setAttribute("data-content-col", "");
+  contentCol.style.cssText = "display:flex;flex-direction:column;align-items:center;";
+
+  const demoTitle = document.createElement("h1");
+  demoTitle.style.cssText = "font-family:'Lato',sans-serif;font-size:28px;font-weight:700;color:#333;margin:0 0 24px;text-align:center;";
+  demoTitle.textContent = "Mass DESE Science Performance Assessments";
+  contentCol.appendChild(demoTitle);
+
+  const content = document.createElement("div");
+  content.className = "content-area standalone";
+  content.setAttribute("role", "main");
+  content.style.width = demoContentW + "px";
+  content.style.height = "562px";
+  applySimTheme(content);
+  content.appendChild(getSimTitleBar());
+  const sc = getSimContent();
+  if (sc) content.appendChild(sc);
+
+  contentCol.appendChild(content);
+  demoRow.appendChild(contentCol);
+
+  if (SIM.updateDataPanel) SIM.updateDataPanel();
+}
+
+function rebuildDemoContent(demoWrap, simBtns) {
+  if (_simTitleBar && _simTitleBar.parentNode) _simTitleBar.remove();
+  if (_simContent && _simContent.parentNode) _simContent.remove();
+  const demoRow = demoWrap.querySelector("[data-demo-row]");
+  const contentCol = demoRow.querySelector("[data-content-col]");
+  const oldContent = contentCol.querySelector(".content-area.standalone");
+  if (oldContent) oldContent.remove();
+
+  const standaloneMax = 1024;
+  const standaloneMin = 768;
+  const standaloneBorder = 4;
+  const demoPad = 40;
+  const measuredBtnW = simBtns.querySelector(".toggle-btn").offsetWidth;
+  const simBtnsActualW = measuredBtnW + 24;
+  const availW = window.innerWidth - simBtnsActualW - demoPad - standaloneBorder;
+  const demoContentW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, availW)));
+
+  const content = document.createElement("div");
+  content.className = "content-area standalone";
+  content.setAttribute("role", "main");
+  content.style.width = demoContentW + "px";
+  content.style.height = "562px";
+  applySimTheme(content);
+  content.appendChild(getSimTitleBar());
+  const sc = getSimContent();
+  if (sc) content.appendChild(sc);
+
+  contentCol.appendChild(content);
+  if (SIM.updateDataPanel) SIM.updateDataPanel();
+}
+
+function exitDemoView() {
+  const wrapper = document.querySelector(".viewport-wrapper");
+  const bwLabel = document.getElementById("browserWidthLabel");
+  const info = document.getElementById("viewportInfo");
+
+  // Restore btn-column to flow
+  const btnColumn = document.querySelector(".btn-column");
+  btnColumn.style.position = "";
+  btnColumn.style.left = "";
+  btnColumn.style.top = "";
+  btnColumn.style.zIndex = "";
+  btnColumn.style.pointerEvents = "";
+  document.getElementById("masssims-title").style.pointerEvents = "";
+  document.getElementById("demo-site-btn").style.pointerEvents = "";
+
+  // Restore sidebar groups
+  const groups = document.querySelectorAll(".btn-column [role='group']");
+  groups[0].style.visibility = ""; // Sims
+  groups[1].style.visibility = ""; // Device
+  const layoutGroup = groups[2];
+  layoutGroup.querySelector(".btn-column-label").style.visibility = "";
+  layoutGroup.querySelectorAll("[data-layout]").forEach(b => b.style.visibility = "");
+  layoutGroup.querySelector("hr").style.visibility = "";
+
+  // Restore Demo Site button
+  const demoBtn = document.getElementById("demo-site-btn");
+  demoBtn.innerHTML = 'Demo Site<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,12 C22,6.48 17.52,2 12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 Z M4,12 C4,7.58 7.58,4 12,4 C16.42,4 20,7.58 20,12 C20,16.42 16.42,20 12,20 C7.58,20 4,16.42 4,12 Z M16,12 L12,16 L10.59,14.59 L12.17,13 L8,13 L8,11 L12.17,11 L10.58,9.41 L12,8 L16,12 Z" fill="currentColor" fill-rule="nonzero"/></svg>';
+
+  // Restore viewport chrome
+  wrapper.style.borderLeft = "";
+  if (bwLabel) bwLabel.style.display = "";
+  info.style.display = "";
+  document.body.style.padding = "";
+  const container = document.getElementById("viewportContainer");
+  wrapper.style.alignItems = "";
+  container.style.flex = "";
+  container.style.display = "";
+
+  // Restore saved device/layout
+  activeDevice = _savedDevice || "none";
+  activeLayout = _savedLayout || "standalone";
+  if (activeLayout === "ap-2col") sidebarExpanded = true;
+  document.querySelectorAll("[data-device]").forEach(b => {
+    b.classList.toggle("active", b.dataset.device === activeDevice);
+    b.setAttribute("aria-pressed", b.dataset.device === activeDevice ? "true" : "false");
+  });
+  document.querySelectorAll("[data-layout]").forEach(b => {
+    b.classList.toggle("active", b.dataset.layout === activeLayout);
+    b.setAttribute("aria-pressed", b.dataset.layout === activeLayout ? "true" : "false");
+  });
+
+  buildViewport();
+}
+
 function buildViewport() {
+  if (demoMode) { buildDemoView(); return; }
   const device = DEVICES[activeDevice];
   const layout = LAYOUTS[activeLayout];
   const container = document.getElementById("viewportContainer");
@@ -4072,6 +4364,8 @@ function buildViewport() {
   const bwLabel = document.getElementById("browserWidthLabel");
   if (bwLabel) { bwLabel.style.color = ""; bwLabel.style.zIndex = ""; bwLabel.style.background = "rgba(0,0,0,0.15)"; }
   document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "");
+  const demoHr = document.querySelector(".btn-column hr");
+  if (demoHr) demoHr.style.borderColor = "";
   const msTitle = document.getElementById("masssims-title");
   if (msTitle) msTitle.style.color = "";
   info.style.textAlign = "";
@@ -4124,6 +4418,8 @@ function buildViewport() {
     document.body.style.background = "#0481A0";
     document.body.classList.add("teal-bg");
     document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "#fff");
+    const demoHrAP = document.querySelector(".btn-column hr");
+    if (demoHrAP) demoHrAP.style.borderColor = "#fff";
     const msTitle = document.getElementById("masssims-title");
     if (msTitle) msTitle.style.color = "#fff";
     const bwLabelAP = document.getElementById("browserWidthLabel");
@@ -4569,6 +4865,20 @@ wireToggleGroup("[data-layout]", btn => {
 });
 wireToggleGroup("[data-device]", btn => { activeDevice = btn.dataset.device; });
 
+document.getElementById("demo-site-btn").addEventListener("click", () => {
+  if (demoMode) {
+    demoMode = false;
+    exitDemoView();
+  } else {
+    demoMode = true;
+    _savedDevice = activeDevice;
+    _savedLayout = activeLayout;
+    activeDevice = "none";
+    activeLayout = "standalone";
+    buildDemoView();
+  }
+});
+
 buildViewport();
 
 // Resize handler
@@ -4657,6 +4967,8 @@ window.addEventListener("resize", () => {
   const bwEl = document.getElementById("browserWidthValue");
   const bwWrapper = document.querySelector(".viewport-wrapper");
   if (bwEl && bwWrapper) bwEl.textContent = Math.round(window.innerWidth - bwWrapper.getBoundingClientRect().left) + "px";
+
+  if (demoMode) { buildDemoView(); return; }
 
   if (activeLayout === "standalone" && activeDevice === "none") {
     // Teacher Desktop — full rebuild (responsive content)
