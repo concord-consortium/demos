@@ -1583,6 +1583,16 @@
     justify-content: center;
     flex-shrink: 0;
   }
+  .sim-btn {
+    white-space: nowrap;
+  }
+  .sim-buttons:has(.fungus-switch.stacked) {
+    align-items: stretch;
+  }
+  .sim-buttons:has(.fungus-switch.stacked) .sim-btn {
+    height: auto;
+    white-space: normal;
+  }
 
   .sim-btn {
     font-family: 'Lato', sans-serif;
@@ -1590,7 +1600,7 @@
     line-height: 20px;
     font-weight: 700;
     padding: 8px 12px 8px 8px;
-    min-height: 44px;
+    height: 44px;
     border: 2px solid var(--sim-btn-border, #555);
     border-radius: 6px;
     background: var(--sim-surface, #fff);
@@ -1638,6 +1648,140 @@
     opacity: 0.35;
   }
 
+
+  /* Fungus toggle switch */
+  .fungus-switch {
+    font-family: 'Lato', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 44px;
+    padding: 8px 12px 8px 8px;
+    border: 2px solid var(--sim-btn-border, #555);
+    border-radius: 6px;
+    background: var(--sim-surface, #fff);
+    color: var(--sim-btn-text, #333);
+  }
+  .fungus-switch svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: #5C4813;
+  }
+  .fungus-switch-label {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+    margin-right: 4px;
+  }
+  .fungus-switch-track {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: var(--sim-btn-hover, #f0f0f0);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 2px var(--sim-btn-border, #555);
+  }
+  .fungus-switch-track.on {
+    background: #C8D8FC;
+    box-shadow: inset 0 0 0 2px #1A3C8F;
+  }
+  .fungus-switch-track.on .fungus-switch-thumb {
+    box-shadow: 0 0 0 2px #1A3C8F;
+  }
+  .fungus-switch-track .fungus-switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #FFFDF2;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--sim-btn-border, #555);
+    transition: left 0.2s ease;
+  }
+  .fungus-switch-track.on .fungus-switch-thumb {
+    left: 22px;
+    background: #F0F4FF;
+  }
+  .fungus-switch:not(.disabled) .fungus-switch-hit:hover .fungus-switch-thumb {
+    background: var(--sim-btn-hover, #f0f0f0);
+    box-shadow: 0 0 0 2px var(--sim-btn-border, #555), 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .fungus-switch:not(.disabled) .fungus-switch-hit:hover .fungus-switch-track.on .fungus-switch-thumb {
+    background: #C8D8FC;
+    box-shadow: 0 0 0 2px #1A3C8F, 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .fungus-switch:not(.disabled) .fungus-switch-hit:active .fungus-switch-thumb {
+    background: var(--sim-btn-active, #d0d0d0);
+    box-shadow: 0 0 0 2px var(--sim-btn-border, #555), 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .fungus-switch:not(.disabled) .fungus-switch-hit:active .fungus-switch-track.on .fungus-switch-thumb {
+    background: #96B8E8;
+    box-shadow: 0 0 0 2px #1A3C8F, 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .fungus-switch-state {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 20px;
+    width: 25px;
+    text-align: center;
+  }
+  .fungus-switch-hit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 4px;
+    cursor: pointer;
+  }
+  .fungus-switch.disabled .fungus-switch-hit {
+    cursor: default;
+  }
+  .fungus-switch.stacked {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    height: auto;
+  }
+  .fungus-switch.stacked .fungus-switch-hit {
+    width: 100%;
+    justify-content: center;
+    min-height: auto;
+    position: relative;
+  }
+  .fungus-switch.stacked .fungus-switch-hit::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+  }
+  .fungus-switch:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .fungus-switch:focus:not(:focus-visible) {
+    outline: none;
+  }
+  .fungus-switch:focus-visible {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .fungus-switch.disabled {
+    color: rgba(51, 51, 51, 0.35);
+    border-color: var(--sim-btn-border-disabled, rgba(85, 85, 85, 0.35));
+    cursor: default;
+  }
+  .fungus-switch.disabled svg,
+  .fungus-switch.disabled .fungus-switch-track {
+    opacity: 0.35;
+  }
 
   /* Data panel */
   .data-panel-inner {
@@ -1886,8 +2030,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <div class="btn-column">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.1</div>
-      <div style="font-weight: 400;">Updated: 6/15/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.2</div>
+      <div style="font-weight: 400;">Updated: 6/16/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -2128,7 +2272,7 @@ const addIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://ww
 const expandIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" points="16.59 8.59 12 13.17 7.41 8.59 6 10 12 16 18 10"/></svg>';
 const crossIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M12,2 C6.47,2 2,6.47 2,12 C2,17.53 6.47,22 12,22 C17.53,22 22,17.53 22,12 C22,6.47 17.53,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M15.59,7 L12,10.59 L8.41,7 L7,8.41 L10.59,12 L7,15.59 L8.41,17 L12,13.41 L15.59,17 L17,15.59 L13.41,12 L17,8.41 L15.59,7 Z"/></svg>';
 const doubleArrowIconSVG = '<svg aria-hidden="true" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path fill="#FFFFFF" fill-rule="evenodd" d="M16.2,8.25 C16.3346077,8.25 16.4536688,8.30176503 16.5572144,8.40531062 L17.3337675,9.18186373 C17.4373131,9.28540932 17.4890782,9.40447044 17.4890782,9.53907816 C17.4890782,9.67368587 17.4373131,9.79274699 17.3337675,9.89629259 L11.2300601,16 L17.3337675,22.1037074 C17.4373131,22.207253 17.4890782,22.3263141 17.4890782,22.4609218 C17.4890782,22.5955296 17.4373131,22.7145907 17.3337675,22.8181363 L16.5572144,23.5946894 C16.4536688,23.698235 16.3346077,23.75 16.2,23.75 C16.0653923,23.75 15.9463312,23.698235 15.8427856,23.5946894 L8.60531062,16.3572144 C8.50176503,16.2536688 8.45,16.1346077 8.45,16 C8.45,15.8653923 8.50176503,15.7463312 8.60531062,15.6427856 L15.8427856,8.40531062 C15.9463312,8.30176503 16.0653923,8.25 16.2,8.25 Z M22.2,8.25 C22.3346077,8.25 22.4536688,8.30176503 22.5572144,8.40531062 L23.3337675,9.18186373 C23.4373131,9.28540932 23.4890782,9.40447044 23.4890782,9.53907816 C23.4890782,9.67368587 23.4373131,9.79274699 23.3337675,9.89629259 L17.2300601,16 L23.3337675,22.1037074 C23.4373131,22.207253 23.4890782,22.3263141 23.4890782,22.4609218 C23.4890782,22.5955296 23.4373131,22.7145907 23.3337675,22.8181363 L22.5572144,23.5946894 C22.4536688,23.698235 22.3346077,23.75 22.2,23.75 C22.0653923,23.75 21.9463312,23.698235 21.8427856,23.5946894 L14.6053106,16.3572144 C14.501765,16.2536688 14.45,16.1346077 14.45,16 C14.45,15.8653923 14.501765,15.7463312 14.6053106,15.6427856 L21.8427856,8.40531062 C21.9463312,8.30176503 22.0653923,8.25 22.2,8.25 Z"/></svg>';
-const addFungusIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M12,2 C17.53,2 22,6.47 22,12 C22,12.7158759 21.9250912,13.4139882 21.7826713,14.0869393 C21.229219,13.6744665 20.5966891,13.3642508 19.9117497,13.1828692 C19.9701437,12.7975201 20,12.4021698 20,12 C20,7.59 16.41,4 12,4 C7.59,4 4,7.59 4,12 C4,16.41 7.59,20 12,20 C12.4021698,20 12.7975201,19.9701437 13.18395,19.9125319 C13.3642508,20.5966891 13.6744665,21.229219 14.0860091,21.7818322 C13.4139882,21.9250912 12.7158759,22 12,22 C6.47,22 2,17.53 2,12 C2,6.47 6.47,2 12,2 Z M19.5,15 L19.5,17.5 L22,17.5 L22,19.5 L19.5,19.5 L19.5,22 L17.5,22 L17.5,19.5 L15,19.5 L15,17.5 L17.5,17.5 L17.5,15 L19.5,15 Z M15.6264648,6.97851562 L15.6264648,8.67382812 L10.7797852,8.67382812 L10.7797852,11.0458984 L14.9633789,11.0458984 L14.9633789,12.7412109 L10.7797852,12.7412109 L10.7797852,17 L8.75634766,17 L8.75634766,6.97851562 L15.6264648,6.97851562 Z"/></svg>';
+
 
 function createSVGIcon(svgString) {
   const temp = document.createElement("div");
@@ -2183,8 +2327,6 @@ function buildSimTitleBar() {
     modal.className = "info-modal";
     modal.setAttribute("role", "complementary");
     modal.setAttribute("tabindex", "-1");
-    modal.setAttribute("aria-label", "About the " + SIMS[activeSim].name + " Simulation");
-
     // Header
     const header = document.createElement("div");
     header.className = "info-modal-header";
@@ -2192,7 +2334,9 @@ function buildSimTitleBar() {
     hIcon.classList.add("info-modal-header-icon");
     const hTitle = document.createElement("h2");
     hTitle.className = "info-modal-header-title";
+    hTitle.id = "info-modal-title";
     hTitle.textContent = "About the " + SIMS[activeSim].name + " Simulation";
+    modal.setAttribute("aria-labelledby", "info-modal-title");
     const closeBtn = document.createElement("button");
     closeBtn.className = "info-modal-close";
     closeBtn.setAttribute("aria-label", "Close");
@@ -2230,17 +2374,11 @@ function buildSimTitleBar() {
         '<p>Follow the guided investigation across up to ten independent trials (A\u2013J):</p>' +
         '<ol>' +
         '<li><strong>Select parents:</strong> Choose two parent banana plants from the dropdown menus. Parent selections are locked once the first cross is made. Reset the trial to choose different parents.</li>' +
-        '<li><strong>Cross plants:</strong> Each cross produces 5\u201320 offspring. A maximum of 10 crosses are allowed per trial.</li>' +
-        '<li><strong>Introduce fungus:</strong> Fungus can be introduced at any time, even before the first cross. Plants that are not resistant will wilt and turn brown.</li>' +
-        '<li><strong>Continue crossing:</strong> Keep crossing after the fungus is introduced to observe how resistance changes across crosses.</li>' +
+        '<li><strong>Cross plants:</strong> Each cross produces 5\u201320 offspring. A maximum of 6 crosses are allowed per trial. Offspring are organized by cross (A1, A2, A3\u2026) in the grid, making it easy to compare with the data charts.</li>' +
+        '<li><strong>Introduce fungus:</strong> Toggle the Fungus switch on before crossing. Once the first cross is made, the fungus setting is locked for the rest of the trial. Plants that are not resistant will wilt and turn brown.</li>' +
+        '<li><strong>Continue crossing:</strong> Keep crossing to observe how resistance appears across crosses.</li>' +
         '<li><strong>Analyze data:</strong> Use the Data panel to compare healthy and infected plants across crosses.</li>' +
-        '</ol>' +
-        '<h3>Keep in Mind</h3>' +
-        '<ul>' +
-        '<li><strong>Irreversible fungus:</strong> Once introduced, the fungus cannot be removed within a trial \u2014 just like in real life.</li>' +
-        '<li><strong>Cross rows:</strong> Offspring are organized by cross (C1, C2, C3\u2026) in the grid, making it easy to compare with the data charts.</li>' +
-        '<li><strong>Dual markers:</strong> Notice that a blue dashed line appears in both the offspring grid and the bar chart at the cross when fungus is introduced.</li>' +
-        '</ul>',
+        '</ol>',
       collapse:
         '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>' +
         '<h3>Lorem Ipsum</h3>' +
@@ -2263,8 +2401,6 @@ function buildSimTitleBar() {
     body.innerHTML = aboutContent[activeSim] || aboutContent.bananas;
 
     body.setAttribute("tabindex", "0");
-    body.setAttribute("role", "region");
-    body.setAttribute("aria-label", "About content");
     const bodyWrap = document.createElement("div");
     bodyWrap.className = "info-modal-body-wrap";
     bodyWrap.appendChild(body);
@@ -2337,7 +2473,7 @@ let _cachedDDTriggerWCondensed = null;
 function buildSimContent() {
   if (activeSim === "bananas") {
     const MAX_TRIALS = 10;
-    const MAX_CROSSES = 10;
+    const MAX_CROSSES = 6;
     const OFFSPRING_MIN = 5;
     const OFFSPRING_MAX = 20;
     const CIRCLE_MIN = 42;
@@ -2551,10 +2687,9 @@ function buildSimContent() {
             html += '<span aria-hidden="true">&nbsp;</span>';
           }
 
-          // Line 4: fungus status — shows first affected cross
+          // Line 4: fungus status
           if (st.fungusAfterCross !== null) {
-            const fCross = st.fungusAfterCross + 1;
-            html += '<span style="display:inline-flex;align-items:center;gap:2px;color:#333"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#C8D8FC;flex-shrink:0"><svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;color:#1A3C8F"><path fill="currentColor" d="M12,2 C6.47,2 2,6.47 2,12 C2,17.53 6.47,22 12,22 C17.53,22 22,17.53 22,12 C22,6.47 17.53,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M15.6264648,6.97851562 L15.6264648,8.67382813 L10.7797852,8.67382813 L10.7797852,11.0458984 L14.9633789,11.0458984 L14.9633789,12.7412109 L10.7797852,12.7412109 L10.7797852,17 L8.75634766,17 L8.75634766,6.97851562 L15.6264648,6.97851562 Z" fill-rule="nonzero"/></svg></span>Fungus: ' + SIM.selectedTrial + fCross + (fCross < MAX_CROSSES ? '+' : '') + '</span>';
+            html += '<span style="display:inline-flex;align-items:center;gap:2px;color:#333"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#C8D8FC;flex-shrink:0"><svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;color:#1A3C8F"><path fill="currentColor" d="M12,2 C6.47,2 2,6.47 2,12 C2,17.53 6.47,22 12,22 C17.53,22 22,17.53 22,12 C22,6.47 17.53,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M15.6264648,6.97851562 L15.6264648,8.67382813 L10.7797852,8.67382813 L10.7797852,11.0458984 L14.9633789,11.0458984 L14.9633789,12.7412109 L10.7797852,12.7412109 L10.7797852,17 L8.75634766,17 L8.75634766,6.97851562 L15.6264648,6.97851562 Z" fill-rule="nonzero"/></svg></span>Fungus</span>';
           }
 
           statsEl.innerHTML = html;
@@ -3310,7 +3445,7 @@ function buildSimContent() {
             divider.className = "fungus-divider";
             const dlbl = document.createElement("span");
             dlbl.className = "fungus-divider-label";
-            dlbl.innerHTML = fungusAddedSVG + "Fungus introduced before crossing";
+            dlbl.innerHTML = fungusAddedSVG + "Fungus introduced";
             divider.appendChild(dlbl);
             offspring.appendChild(divider);
           }
@@ -3424,7 +3559,7 @@ function buildSimContent() {
           // Set initial roving tabindex
           updateCrossRowTabindex();
 
-          // Max crosses label after C10
+          // Max crosses label after C6
           if (st.crosses.length >= MAX_CROSSES) {
             const maxLabel = document.createElement("div");
             maxLabel.className = "sim-offspring-placeholder";
@@ -3453,12 +3588,78 @@ function buildSimContent() {
         // Bottom: Buttons
         const buttons = document.createElement("div");
         buttons.className = "sim-buttons";
-        ["Cross Plants", "Introduce Fungus", "Reset Trial"].forEach(label => {
+        // Fungus toggle switch
+        const fungusSwitch = document.createElement("div");
+        fungusSwitch.className = "fungus-switch disabled";
+        fungusSwitch.setAttribute("role", "switch");
+        fungusSwitch.setAttribute("aria-checked", "false");
+        fungusSwitch.setAttribute("aria-labelledby", "fungus-switch-label");
+        fungusSwitch.setAttribute("tabindex", "0");
+        const fungusIcon = createSVGIcon(fungusAddedSVG);
+        fungusSwitch.appendChild(fungusIcon);
+        const fungusLabel = document.createElement("span");
+        fungusLabel.className = "fungus-switch-label";
+        fungusLabel.id = "fungus-switch-label";
+        fungusLabel.textContent = "Fungus";
+        fungusSwitch.appendChild(fungusLabel);
+        const hitArea = document.createElement("div");
+        hitArea.className = "fungus-switch-hit";
+        const offLabel = document.createElement("span");
+        offLabel.className = "fungus-switch-state";
+        offLabel.textContent = "Off";
+        offLabel.style.fontWeight = "700";
+        offLabel.setAttribute("aria-hidden", "true");
+        hitArea.appendChild(offLabel);
+        const track = document.createElement("div");
+        track.className = "fungus-switch-track";
+        const thumb = document.createElement("div");
+        thumb.className = "fungus-switch-thumb";
+        track.appendChild(thumb);
+        hitArea.appendChild(track);
+        const onLabel = document.createElement("span");
+        onLabel.className = "fungus-switch-state";
+        onLabel.textContent = "On";
+        onLabel.setAttribute("aria-hidden", "true");
+        hitArea.appendChild(onLabel);
+        fungusSwitch.appendChild(hitArea);
+        SIM.fungusBtn = fungusSwitch;
+        function toggleFungus() {
+          if (fungusSwitch.classList.contains("disabled")) return;
+          const trial = SIM.selectedTrial;
+          const st = SIM.trialState[trial];
+          if (!st) return;
+          if (st.fungusAfterCross === null) {
+            st.fungusAfterCross = st.crosses.length;
+            fungusSwitch.setAttribute("aria-checked", "true");
+            track.classList.add("on");
+            offLabel.style.fontWeight = "400";
+            onLabel.style.fontWeight = "700";
+            if (SIM.announce) SIM.announce("Fungus introduced.");
+          } else {
+            st.fungusAfterCross = null;
+            fungusSwitch.setAttribute("aria-checked", "false");
+            track.classList.remove("on");
+            offLabel.style.fontWeight = "700";
+            onLabel.style.fontWeight = "400";
+            if (SIM.announce) SIM.announce("Fungus removed.");
+          }
+          if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
+          renderOffspring(trial);
+          offspring.scrollTop = offspring.scrollHeight;
+          SIM.updateSimButtons();
+          if (SIM.updateDataPanel) SIM.updateDataPanel();
+        }
+        hitArea.addEventListener("click", toggleFungus);
+        fungusSwitch.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleFungus(); }
+        });
+        buttons.appendChild(fungusSwitch);
+
+        ["Cross Plants", "Reset Trial"].forEach(label => {
           const btn = document.createElement("button");
           btn.className = "sim-btn";
           const iconMap = {
             "Cross Plants": crossIconSVG,
-            "Introduce Fungus": addFungusIconSVG,
             "Reset Trial": resetIconSVG
           };
           if (iconMap[label]) {
@@ -3480,11 +3681,9 @@ function buildSimContent() {
               if (st && st.p1 && st.p2 && st.crosses.length < MAX_CROSSES) {
                 const wasUnlocked = !st.locked;
                 st.locked = true;
-                // Lock dropdowns
                 parents.querySelectorAll(".sim-dropdown").forEach(d => d._lock());
                 const count = OFFSPRING_MIN + Math.floor(Math.random() * (OFFSPRING_MAX - OFFSPRING_MIN + 1));
                 const isFungusActive = st.fungusAfterCross !== null && st.crosses.length >= st.fungusAfterCross;
-                // Mendelian genetics: R = resistant (dominant), r = susceptible (recessive)
                 const genotypes = {
                   "Wild W1": ["R", "r"],
                   "Wild W2": ["R", "R"],
@@ -3514,25 +3713,6 @@ function buildSimContent() {
               }
             });
           }
-          if (label === "Introduce Fungus") {
-            btn.classList.add("sim-btn-fungus");
-            btn.setAttribute("aria-disabled", "true");
-            SIM.fungusBtn = btn;
-            btn.addEventListener("click", () => {
-              if (btn.getAttribute("aria-disabled") === "true") return;
-              const trial = SIM.selectedTrial;
-              const st = SIM.trialState[trial];
-              if (st && st.fungusAfterCross === null) {
-                st.fungusAfterCross = st.crosses.length;
-                if (SIM.announce) SIM.announce("Fungus introduced.");
-                if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
-                renderOffspring(trial);
-                offspring.scrollTop = offspring.scrollHeight;
-                SIM.updateSimButtons();
-                if (SIM.updateDataPanel) SIM.updateDataPanel();
-              }
-            });
-          }
           if (label === "Reset Trial") {
             btn.setAttribute("aria-disabled", "true");
             SIM.resetBtn = btn;
@@ -3553,6 +3733,7 @@ function buildSimContent() {
         });
         inner.appendChild(buttons);
 
+        // Watch buttons container width to toggle fungus switch stacking
         // Update button disabled states based on current trial
         SIM.updateSimButtons = function() {
           const trial = SIM.selectedTrial;
@@ -3560,12 +3741,22 @@ function buildSimContent() {
           if (!st) return;
           // Cross Plants: enabled only when both parents selected
           if (SIM.crossBtn) SIM.crossBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.crosses.length >= MAX_CROSSES) ? "true" : "false");
-          // Introduce Fungus: enabled when both parents selected, not already introduced, and under MAX_CROSSES (by design)
+          // Fungus switch: sync visual state and disabled
           if (SIM.fungusBtn) {
-            if (st.fungusAfterCross !== null) {
+            const isOn = st.fungusAfterCross !== null;
+            const switchTrack = SIM.fungusBtn.querySelector(".fungus-switch-track");
+            SIM.fungusBtn.setAttribute("aria-checked", isOn ? "true" : "false");
+            if (switchTrack) { if (isOn) switchTrack.classList.add("on"); else switchTrack.classList.remove("on"); }
+            const offLbl = SIM.fungusBtn.querySelectorAll(".fungus-switch-state")[0];
+            const onLbl = SIM.fungusBtn.querySelectorAll(".fungus-switch-state")[1];
+            if (offLbl) offLbl.style.fontWeight = isOn ? "400" : "700";
+            if (onLbl) onLbl.style.fontWeight = isOn ? "700" : "400";
+            if (st.crosses.length > 0 || !(st.p1 && st.p2)) {
+              SIM.fungusBtn.classList.add("disabled");
               SIM.fungusBtn.setAttribute("aria-disabled", "true");
             } else {
-              SIM.fungusBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.crosses.length >= MAX_CROSSES) ? "true" : "false");
+              SIM.fungusBtn.classList.remove("disabled");
+              SIM.fungusBtn.setAttribute("aria-disabled", "false");
             }
           }
           // Reset Trial: enabled when at least one parent selected
@@ -3573,9 +3764,27 @@ function buildSimContent() {
           // Update stats label and data panel
           updateStatsLabel();
           if (SIM.updateDataPanel) SIM.updateDataPanel();
+          const activeCard = SIM.trialCards[trial];
+          if (activeCard) {
+            const container = activeCard.closest(".trials-scroll");
+            if (container) {
+              const cRect = container.getBoundingClientRect();
+              const eRect = activeCard.getBoundingClientRect();
+              const cs = getComputedStyle(container);
+              const padTop = parseFloat(cs.paddingTop);
+              const gap = parseFloat(cs.gap) || 10;
+              if (eRect.top < cRect.top + padTop) {
+                container.scrollBy({ top: eRect.top - cRect.top - padTop, behavior: "smooth" });
+              } else if (eRect.bottom > cRect.bottom - gap) {
+                container.scrollBy({ top: eRect.bottom - cRect.bottom + gap, behavior: "smooth" });
+              }
+            }
+          }
         };
 
         panel.appendChild(inner);
+        SIM._buttons = buttons;
+        SIM._panel = panel;
       }
 
       // Data panel content
@@ -3832,7 +4041,7 @@ function buildSimContent() {
           bCtx.scale(dprBar, dprBar);
 
           const hasFungus = st.fungusAfterCross !== null;
-          const margin = { top: hasFungus ? 35 : 15, right: 8, bottom: 40, left: 44 };
+          const margin = { top: hasFungus ? 35 : 15, right: 8, bottom: 28, left: 44 };
           const gw = lw - margin.left - margin.right;
           const gh = lh - margin.top - margin.bottom;
 
@@ -3883,12 +4092,9 @@ function buildSimContent() {
           const barW = (groupW - groupGap - barGap) / 2;
 
           // Highlight selected cross (behind labels and bars)
-          const labelW = bCtx.measureText("C00").width + 4;
-          const stagger = gens.length > 1 && (gw / gens.length) < labelW;
           if (selCross !== null && selCross !== undefined && selCross < gens.length) {
             const groupX = margin.left + selCross * groupW;
-            const selDropY = stagger && selCross % 2 === 1 ? 14 : 0;
-            const hlHeight = gh + 9 + selDropY + 18;
+            const hlHeight = gh + 27;
             bCtx.globalAlpha = 0.8;
             bCtx.fillStyle = (SIMS[activeSim].theme && SIMS[activeSim].theme.crossLabelBg) || "#FFE680";
             bCtx.fillRect(groupX, margin.top, groupW, hlHeight);
@@ -3901,9 +4107,8 @@ function buildSimContent() {
           bCtx.font = "400 16px 'Roboto Condensed', sans-serif";
           gens.forEach((_, gi) => {
             const groupX = margin.left + gi * groupW + groupW / 2;
-            const dropY = stagger && gi % 2 === 1 ? 14 : 0;
             bCtx.fillStyle = "#333";
-            bCtx.fillText(SIM.selectedTrial + (gi + 1), groupX, margin.top + gh + 9 + dropY);
+            bCtx.fillText(SIM.selectedTrial + (gi + 1), groupX, margin.top + gh + 9);
           });
 
           // Fungus introduction marker
@@ -4881,6 +5086,16 @@ document.getElementById("demo-site-btn").addEventListener("click", () => {
 
 buildViewport();
 
+function checkFungusStack() {
+  if (!SIM.fungusBtn || !SIM._panel) return;
+  if (SIM._panel.clientWidth < 536) {
+    SIM.fungusBtn.classList.add("stacked");
+  } else {
+    SIM.fungusBtn.classList.remove("stacked");
+  }
+}
+checkFungusStack();
+
 // Resize handler
 let _resizeRafId = null;
 function updateStandaloneDeviceFrame() {
@@ -4973,6 +5188,7 @@ window.addEventListener("resize", () => {
   if (activeLayout === "standalone" && activeDevice === "none") {
     // Teacher Desktop — full rebuild (responsive content)
     buildViewport();
+    checkFungusStack();
   } else if (activeLayout === "standalone" && activeDevice !== "none") {
     // Device frame — lightweight update (no rebuild)
     updateStandaloneDeviceFrame();
