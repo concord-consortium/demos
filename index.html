@@ -2030,14 +2030,14 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <div class="btn-column">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.4</div>
-      <div style="font-weight: 400;">Updated: 6/16/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.5</div>
+      <div style="font-weight: 400;">Updated: 6/25/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
-      <button class="toggle-btn active" data-sim="bananas" aria-pressed="true">Bananas</button>
+      <button class="toggle-btn" data-sim="bananas" aria-pressed="false">Bananas</button>
       <button class="toggle-btn" data-sim="collapse" aria-pressed="false">Collapse!</button>
-      <button class="toggle-btn" data-sim="noreaster" aria-pressed="false">Nor&rsquo;easter Riley</button>
+      <button class="toggle-btn active" data-sim="noreaster" aria-pressed="true">Nor&rsquo;easter</button>
       <button class="toggle-btn" data-sim="tbd" aria-pressed="false">Coming Soon</button>
     </div>
 
@@ -2170,22 +2170,124 @@ const SIMS = {
     name: "Collapse!",
     description: "Short description of the sim",
     titleFont: "'Fontdiner Swanky', 'Lato', cursive",
-    titleLetterSpacing: "2px"
+    titleLetterSpacing: "2px",
+    theme: {
+      titleBarBg: "#CEF3DD",
+      titleText: "#124929",
+      titleDesc: "#333",
+      surface: "#F0FAF4",
+      panelBg: "#F0FAF4",
+      panelBorder: "#358D5A",
+      panelTabBg: "#BAE8CD",
+      panelTabText: "#124929",
+      crossLabelBg: "#BAE8CD",
+      crossLabelText: "#124929",
+      crossRowHover: "#DBF5E6",
+      crossRowActive: "#BAE8CD",
+      crossRowSelected: "#BAE8CD",
+      crossRowBorder: "#358D5A",
+      crossRowSelectedOutline: "#124929",
+      trialLabelBg: "#DBF5E6",
+      trialLabelSelectedBg: "#124929",
+      trialLabelSelectedText: "#DBF5E6",
+      trialSelectedBg: "#CEF3DD",
+      trialSelectedBorder: "#124929",
+      btnBorder: "#358D5A",
+      btnText: "#333",
+      btnHover: "#DBF5E6",
+      btnActive: "#BAE8CD",
+      btnBorderDisabled: "rgba(53, 141, 90, 0.35)",
+      aboutBorder: "#358D5A",
+      aboutText: "#333",
+      modalBorder: "#358D5A",
+      dataDivider: "#358D5A",
+      iconColor: "#124929",
+      contentBg: "#F0FAF4",
+      titleAccent: "7px"
+    }
   },
   noreaster: {
-    name: "Nor\u2019easter Riley",
-    description: "Short description of the sim",
+    name: "Nor\u2019easter",
+    description: "Which air masses create a nor\u2019easter?",
     titleFont: "'Vampiro One', 'Lato', cursive",
-    titleLetterSpacing: "-0.5px"
+    titleLetterSpacing: "-0.5px",
+    theme: {
+      titleBarBg: "#D2E7FE",
+      titleText: "#1E3F6E",
+      titleDesc: "#333",
+      surface: "#F0F6FE",
+      panelBg: "#F0F6FE",
+      panelBorder: "#4680B8",
+      panelTabBg: "#B6D9FB",
+      panelTabText: "#1E3F6E",
+      crossLabelBg: "#B6D9FB",
+      crossLabelText: "#1E3F6E",
+      crossRowHover: "#D3E8FD",
+      crossRowActive: "#B6D9FB",
+      crossRowSelected: "#B6D9FB",
+      crossRowBorder: "#4680B8",
+      crossRowSelectedOutline: "#1E3F6E",
+      trialLabelBg: "#D3E8FD",
+      trialLabelSelectedBg: "#1E3F6E",
+      trialLabelSelectedText: "#D3E8FD",
+      trialSelectedBg: "#D2E7FE",
+      trialSelectedBorder: "#1E3F6E",
+      btnBorder: "#4680B8",
+      btnText: "#333",
+      btnHover: "#D3E8FD",
+      btnActive: "#B6D9FB",
+      btnBorderDisabled: "rgba(70, 128, 184, 0.35)",
+      aboutBorder: "#4680B8",
+      aboutText: "#333",
+      modalBorder: "#4680B8",
+      dataDivider: "#4680B8",
+      iconColor: "#1E3F6E",
+      contentBg: "#F0F6FE",
+      titleAccent: "7px"
+    }
   },
   tbd: {
     name: "Coming Soon",
     description: "Short description of the sim",
-    titleFont: "'Coming Soon', 'Lato', cursive"
+    titleFont: "'Coming Soon', 'Lato', cursive",
+    theme: {
+      titleBarBg: "#E0CEF3",
+      titleText: "#3D1C5F",
+      titleDesc: "#333",
+      surface: "#F5F0FA",
+      panelBg: "#F5F0FA",
+      panelBorder: "#6B4096",
+      panelTabBg: "#D1BAE8",
+      panelTabText: "#3D1C5F",
+      crossLabelBg: "#D1BAE8",
+      crossLabelText: "#3D1C5F",
+      crossRowHover: "#E8DBF5",
+      crossRowActive: "#D1BAE8",
+      crossRowSelected: "#D1BAE8",
+      crossRowBorder: "#6B4096",
+      crossRowSelectedOutline: "#3D1C5F",
+      trialLabelBg: "#E8DBF5",
+      trialLabelSelectedBg: "#3D1C5F",
+      trialLabelSelectedText: "#E8DBF5",
+      trialSelectedBg: "#E0CEF3",
+      trialSelectedBorder: "#3D1C5F",
+      btnBorder: "#6B4096",
+      btnText: "#333",
+      btnHover: "#E8DBF5",
+      btnActive: "#D1BAE8",
+      btnBorderDisabled: "rgba(107, 64, 150, 0.35)",
+      aboutBorder: "#6B4096",
+      aboutText: "#333",
+      modalBorder: "#6B4096",
+      dataDivider: "#6B4096",
+      iconColor: "#3D1C5F",
+      contentBg: "#F5F0FA",
+      titleAccent: "7px"
+    }
   }
 };
 
-let activeSim = "bananas";
+let activeSim = "noreaster";
 let activeDevice = "none";
 let activeLayout = "standalone";
 let sidebarExpanded = true;
@@ -2576,9 +2678,11 @@ function buildSimContent() {
       const cRect = container.getBoundingClientRect();
       const eRect = el.getBoundingClientRect();
       if (eRect.top < cRect.top + padTop) {
-        container.scrollBy({ top: eRect.top - cRect.top - padTop });
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        container.scrollBy({ top: eRect.top - cRect.top - padTop, behavior });
       } else if (eRect.bottom > cRect.bottom - padBottom) {
-        container.scrollBy({ top: eRect.bottom - cRect.bottom + padBottom });
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        container.scrollBy({ top: eRect.bottom - cRect.bottom + padBottom, behavior });
       }
     }
 
@@ -2782,6 +2886,7 @@ function buildSimContent() {
           SIM.selectedTrial = targetLetter;
           const indicator = document.querySelector(".sim-trial-indicator");
           if (indicator) indicator.textContent = targetLetter;
+          scrollItemIntoView(targetCard, scrollWrap);
           if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(targetLetter);
           if (SIM.renderOffspring) SIM.renderOffspring(targetLetter);
           if (SIM.updateSimButtons) SIM.updateSimButtons();
@@ -4255,6 +4360,1236 @@ function buildSimContent() {
 
     return wrap;
   }
+
+  if (activeSim === "noreaster") {
+    const MAX_TRIALS = 10;
+
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content";
+
+    const liveAnnounce = document.createElement("div");
+    liveAnnounce.className = "sr-only";
+    liveAnnounce.setAttribute("aria-live", "polite");
+    wrap.appendChild(liveAnnounce);
+    SIM.announce = function(msg) {
+      liveAnnounce.textContent = "";
+      requestAnimationFrame(() => { liveAnnounce.textContent = msg; });
+    };
+
+    function scrollItemIntoView(el, container) {
+      const cs = getComputedStyle(container);
+      const padTop = parseFloat(cs.paddingTop);
+      const padBottom = parseFloat(cs.paddingBottom);
+      const cRect = container.getBoundingClientRect();
+      const eRect = el.getBoundingClientRect();
+      if (eRect.top < cRect.top + padTop) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        container.scrollBy({ top: eRect.top - cRect.top - padTop, behavior });
+      } else if (eRect.bottom > cRect.bottom - padBottom) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        container.scrollBy({ top: eRect.bottom - cRect.bottom + padBottom, behavior });
+      }
+    }
+
+    const panels = [
+      { name: "Trials", fixedWidth: 155, subtitle: null },
+      { name: "Simulation", flex: 564, subtitle: "Set up the air masses to begin" },
+      { name: "Data", flex: 285, subtitle: null, bg: "#fff" }
+    ];
+
+    panels.forEach(p => {
+      const panelWrap = document.createElement("div");
+      if (p.fixedWidth) {
+        panelWrap.style.width = p.fixedWidth + "px";
+        panelWrap.style.flexShrink = "0";
+      } else {
+        panelWrap.style.flex = p.flex;
+        panelWrap.style.minWidth = "0";
+      }
+      panelWrap.style.position = "relative";
+
+      const panel = document.createElement("div");
+      panel.className = "sim-panel";
+      panel.style.width = "100%";
+      panel.style.height = "calc(100% - 17px)";
+      if (p.bg) panel.style.background = p.bg;
+      panel.setAttribute("role", "region");
+      panel.setAttribute("aria-label", p.name + " panel");
+
+      // --- Trials panel ---
+      if (p.name === "Trials") {
+        panel.classList.add("has-scroll");
+        const scrollWrap = document.createElement("div");
+        scrollWrap.className = "trials-scroll";
+        scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("aria-orientation", "vertical");
+        scrollWrap.setAttribute("aria-label", "Trials");
+        function updateTrialsTabindex() {
+          if (scrollWrap.scrollHeight > scrollWrap.clientHeight) {
+            scrollWrap.setAttribute("tabindex", "0");
+          } else {
+            scrollWrap.removeAttribute("tabindex");
+          }
+        }
+        const allLabels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+        const trialState = {};
+        SIM.trialState = trialState;
+        SIM.trialCards = {};
+        SIM.selectedTrial = "A";
+        let activeTrialCount = 1;
+
+        function updateTrialCardLabel(letter) {
+          const cardEl = SIM.trialCards[letter];
+          if (!cardEl) return;
+          let statsEl = cardEl.querySelector(".trial-card-stats");
+          if (!statsEl) {
+            statsEl = document.createElement("div");
+            statsEl.className = "trial-card-stats";
+            statsEl.setAttribute("aria-hidden", "true");
+            cardEl.appendChild(statsEl);
+          }
+          statsEl.innerHTML = "";
+          cardEl.setAttribute("aria-label", "Trial " + letter);
+          const resetBtn = cardEl.querySelector(".trial-card-reset");
+          if (resetBtn) {
+            resetBtn.setAttribute("aria-disabled", "true");
+            const isSelected = cardEl.classList.contains("selected");
+            resetBtn.setAttribute("tabindex", (isSelected) ? "0" : "-1");
+          }
+        }
+        SIM.updateTrialCardLabel = updateTrialCardLabel;
+
+        function buildTrialCard(letter) {
+          trialState[letter] = {};
+          const card = document.createElement("div");
+          card.className = "trial-card";
+          card.setAttribute("role", "tab");
+          card.setAttribute("tabindex", "-1");
+          card.setAttribute("aria-label", "Trial " + letter);
+          card.style.cursor = "pointer";
+          SIM.trialCards[letter] = card;
+          function selectTrial() {
+            selectTrialByCard(card, letter);
+          }
+          card.addEventListener("click", selectTrial);
+          card.addEventListener("keydown", (e) => {
+            if ((e.key === "Enter" || e.key === " ") && e.target === card) {
+              e.preventDefault();
+              selectTrial();
+              return;
+            }
+            handleTrialCardNav(card, e);
+          });
+          card.setAttribute("aria-selected", "false");
+          const lbl = document.createElement("span");
+          lbl.className = "trial-card-label";
+          lbl.textContent = letter;
+          card.appendChild(lbl);
+          const resetBtn = document.createElement("button");
+          resetBtn.className = "trial-card-reset";
+          resetBtn.setAttribute("aria-label", "Reset trial " + letter);
+          resetBtn.setAttribute("aria-disabled", "true");
+          resetBtn.setAttribute("tabindex", "-1");
+          const resetIcon = createSVGIcon(resetIconSVG);
+          resetBtn.appendChild(resetIcon);
+          function resetTrial(e) {
+            e.stopPropagation();
+            if (resetBtn.getAttribute("aria-disabled") === "true") return;
+            trialState[letter] = {};
+            updateTrialCardLabel(letter);
+            if (SIM.announce) SIM.announce("Trial " + letter + " reset.");
+          }
+          resetBtn.addEventListener("click", resetTrial);
+          card.appendChild(resetBtn);
+          return card;
+        }
+
+        function selectTrialByCard(targetCard, targetLetter) {
+          scrollWrap.querySelectorAll(".trial-card:not(.new-card)").forEach(c => {
+            c.classList.remove("selected");
+            c.setAttribute("aria-selected", "false");
+            c.style.cursor = "pointer";
+            const rb = c.querySelector(".trial-card-reset");
+            if (rb) rb.setAttribute("tabindex", "-1");
+          });
+          targetCard.classList.add("selected");
+          targetCard.setAttribute("aria-selected", "true");
+          targetCard.style.cursor = "default";
+          const rb = targetCard.querySelector(".trial-card-reset");
+          if (rb && rb.getAttribute("aria-disabled") !== "true") rb.setAttribute("tabindex", "0");
+          SIM.selectedTrial = targetLetter;
+          const indicator = document.querySelector(".sim-trial-indicator");
+          if (indicator) indicator.textContent = targetLetter;
+          scrollItemIntoView(targetCard, scrollWrap);
+          updateTrialCardTabindex();
+        }
+
+        function getTrialNavCards() {
+          return Array.from(scrollWrap.querySelectorAll(".trial-card")).filter(c => c.style.display !== "none");
+        }
+
+        function handleTrialCardNav(cardEl, e) {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            const cur = cards.indexOf(cardEl);
+            if (cur < 0) return;
+            const next = e.key === "ArrowDown"
+              ? (cur + 1) % cards.length
+              : (cur - 1 + cards.length) % cards.length;
+            cards[cur].setAttribute("tabindex", "-1");
+            cards[next].setAttribute("tabindex", "0");
+            cards[next].focus({ preventScroll: true });
+            scrollItemIntoView(cards[next], scrollWrap);
+          } else if (e.key === "Home") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            cards.forEach(c => c.setAttribute("tabindex", "-1"));
+            cards[0].setAttribute("tabindex", "0");
+            cards[0].focus({ preventScroll: true });
+            scrollItemIntoView(cards[0], scrollWrap);
+          } else if (e.key === "End") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            cards.forEach(c => c.setAttribute("tabindex", "-1"));
+            cards[cards.length - 1].setAttribute("tabindex", "0");
+            cards[cards.length - 1].focus({ preventScroll: true });
+            scrollItemIntoView(cards[cards.length - 1], scrollWrap);
+          }
+        }
+
+        function updateTrialCardTabindex() {
+          const cards = getTrialNavCards();
+          const selIdx = cards.findIndex(c => c.classList.contains("selected"));
+          const activeIdx = selIdx >= 0 ? selIdx : 0;
+          cards.forEach((c, i) => c.setAttribute("tabindex", i === activeIdx ? "0" : "-1"));
+        }
+
+        function buildNewCard() {
+          const card = document.createElement("div");
+          card.className = "trial-card new-card";
+          card.setAttribute("role", "button");
+          card.setAttribute("tabindex", "-1");
+          card.setAttribute("aria-label", "Add new trial");
+          card.style.cursor = "pointer";
+          const addIcon = createSVGIcon(addIconSVG);
+          addIcon.classList.add("trial-card-new-icon");
+          card.appendChild(addIcon);
+          const lbl = document.createElement("span");
+          lbl.className = "trial-card-new-label";
+          lbl.textContent = "New";
+          card.appendChild(lbl);
+          card.addEventListener("click", () => {
+            if (activeTrialCount >= MAX_TRIALS) return;
+            card.classList.add("no-hover");
+            card.addEventListener("mouseleave", () => { card.classList.remove("no-hover"); }, { once: true });
+            const letter = allLabels[activeTrialCount];
+            activeTrialCount++;
+            const realCard = buildTrialCard(letter);
+            scrollWrap.insertBefore(realCard, card);
+            selectTrialByCard(realCard, letter);
+            realCard.focus({ preventScroll: true });
+            scrollItemIntoView(realCard, scrollWrap);
+            if (activeTrialCount >= MAX_TRIALS) {
+              card.style.display = "none";
+              const maxLabel = document.createElement("div");
+              maxLabel.className = "sim-offspring-placeholder";
+              maxLabel.textContent = "Max number of trials reached";
+              maxLabel.style.margin = "1px 0 1px 0";
+              maxLabel.style.padding = "2px 0";
+              maxLabel.style.textAlign = "center";
+              maxLabel.style.width = "calc(100% - 15px)";
+              scrollWrap.appendChild(maxLabel);
+              requestAnimationFrame(() => { scrollWrap.scrollTop = scrollWrap.scrollHeight; });
+              if (SIM.announce) SIM.announce("Maximum of " + MAX_TRIALS + " trials reached.");
+            }
+          });
+          card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              card.click();
+            } else {
+              handleTrialCardNav(card, e);
+            }
+          });
+          return card;
+        }
+
+        const cardA = buildTrialCard("A");
+        cardA.classList.add("selected");
+        cardA.setAttribute("aria-selected", "true");
+        cardA.setAttribute("tabindex", "0");
+        cardA.style.cursor = "default";
+        scrollWrap.appendChild(cardA);
+        scrollWrap.appendChild(buildNewCard());
+
+        panel.appendChild(scrollWrap);
+        const focusRing = document.createElement("div");
+        focusRing.className = "scroll-focus-ring";
+        panel.appendChild(focusRing);
+        requestAnimationFrame(updateTrialsTabindex);
+        if (SIM.trialsObserver) SIM.trialsObserver.disconnect();
+        SIM.trialsObserver = new MutationObserver(updateTrialsTabindex);
+        SIM.trialsObserver.observe(scrollWrap, { childList: true });
+      }
+
+      // --- Simulation panel ---
+      if (p.name === "Simulation") {
+        const theme = SIMS[activeSim].theme;
+        if (theme && theme.titleBarBg) panel.style.background = theme.titleBarBg;
+        panel.style.overflow = "hidden";
+        const inner = document.createElement("div");
+        inner.className = "sim-panel-inner";
+
+        const indicator = document.createElement("div");
+        indicator.className = "sim-trial-indicator";
+        indicator.textContent = "A";
+        indicator.setAttribute("aria-hidden", "true");
+        panel.appendChild(indicator);
+
+        // Top controls
+        const topControls = document.createElement("div");
+        topControls.className = "nor-top-controls";
+        topControls.style.cssText = "flex-shrink:0;padding:2px 10px 10px 10px;";
+        const topPlaceholder = document.createElement("div");
+        topPlaceholder.className = "sim-offspring-placeholder";
+        topPlaceholder.style.cssText = "font-style:italic;color:#4D4D4D;text-align:center;padding:8px 0;";
+        topPlaceholder.textContent = "Controls coming soon";
+        topControls.appendChild(topPlaceholder);
+        inner.appendChild(topControls);
+
+        // White container (not scrollable)
+        const stage = document.createElement("div");
+        stage.className = "nor-stage";
+        stage.style.cssText = "flex:1;min-height:0;background:#fff;overflow:hidden;";
+        inner.appendChild(stage);
+        SIM._stage = stage;
+
+        // Bottom controls (same height as Bananas sim-buttons)
+        const bottomControls = document.createElement("div");
+        bottomControls.className = "sim-buttons";
+
+        const runIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" points="8,5 19,12 8,19"/></svg>';
+
+        ["Run", "Reset Trial"].forEach(label => {
+          const btn = document.createElement("button");
+          btn.className = "sim-btn";
+          const iconMap = { "Run": runIconSVG, "Reset Trial": resetIconSVG };
+          const icon = createSVGIcon(iconMap[label]);
+          btn.appendChild(icon);
+          const span = document.createElement("span");
+          span.textContent = label;
+          btn.appendChild(span);
+          btn.setAttribute("aria-disabled", "true");
+          if (label === "Run") SIM.runBtn = btn;
+          if (label === "Reset Trial") SIM.resetTrialBtn = btn;
+          bottomControls.appendChild(btn);
+        });
+
+        inner.appendChild(bottomControls);
+
+        panel.appendChild(inner);
+        SIM._panel = panel;
+      }
+
+      // --- Data panel ---
+      if (p.name === "Data") {
+        const dataInner = document.createElement("div");
+        dataInner.className = "data-panel-inner";
+        const placeholder = document.createElement("div");
+        placeholder.style.cssText = "display:flex;align-items:center;justify-content:center;flex:1;font-style:italic;color:#4D4D4D;font-family:'Lato',sans-serif;font-size:16px;";
+        placeholder.textContent = "Data panel coming soon";
+        dataInner.appendChild(placeholder);
+        panel.appendChild(dataInner);
+      }
+
+      panelWrap.appendChild(panel);
+
+      const tab = document.createElement("div");
+      tab.className = "sim-panel-tab";
+      const tabLabel = document.createElement("h2");
+      tabLabel.className = "sim-panel-tab-label";
+      tabLabel.textContent = p.name;
+      tab.appendChild(tabLabel);
+      if (p.subtitle) {
+        const bc = (SIMS[activeSim].theme && SIMS[activeSim].theme.panelBorder) || "#555";
+        tab.style.border = "2px solid " + bc;
+        tab.style.borderRight = "none";
+        tab.style.borderRadius = "999px 0 0 999px";
+        tab.style.position = "static";
+        tab.style.transform = "none";
+        tab.style.left = "";
+        tab.style.height = "100%";
+        const tabSub = document.createElement("div");
+        const surfaceBg = (SIMS[activeSim].theme && SIMS[activeSim].theme.surface) || "#fff";
+        tabSub.style.cssText = "display:flex;align-items:center;padding:0 12px 0 10px;background:" + surfaceBg + ";height:100%;box-sizing:border-box;border:2px solid " + bc + ";border-left:none;border-radius:0 999px 999px 0;";
+        const tabSubLabel = document.createElement("span");
+        tabSubLabel.className = "sim-panel-tab-subtitle";
+        tabSubLabel.textContent = p.subtitle;
+        tabSub.appendChild(tabSubLabel);
+        const tabWrap = document.createElement("div");
+        tabWrap.className = "sim-tab-wrap";
+        tabWrap.appendChild(tab);
+        tabWrap.appendChild(tabSub);
+        panelWrap.appendChild(tabWrap);
+      } else if (p.name === "Data") {
+        tab.style.position = "static";
+        tab.style.transform = "none";
+        tab.style.left = "";
+        const tabWrap = document.createElement("div");
+        tabWrap.style.cssText = "position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;height:36px;z-index:11;";
+        tabWrap.appendChild(tab);
+        panelWrap.appendChild(tabWrap);
+      } else {
+        panelWrap.appendChild(tab);
+      }
+
+      wrap.appendChild(panelWrap);
+    });
+
+    // Ctrl+Arrow: navigate between panels
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
+    if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
+    SIM.panelNavHandler = (e) => {
+      if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+      e.preventDefault();
+      const panelArr = Array.from(panelEls);
+      const active = document.activeElement;
+      let curIdx = -1;
+      panelArr.forEach((p, i) => { if (p.contains(active)) curIdx = i; });
+      const dir = e.key === "ArrowRight" ? 1 : -1;
+      for (let i = 1; i <= panelArr.length; i++) {
+        const nextIdx = (curIdx + dir * i + panelArr.length * panelArr.length) % panelArr.length;
+        const focusable = nextIdx === curIdx ? null : panelArr[nextIdx].querySelectorAll('[tabindex="0"], button:not([tabindex="-1"]), a, input, select, textarea');
+        if (focusable && focusable.length > 0) {
+          focusable[0].focus();
+          break;
+        }
+      }
+    };
+    document.addEventListener("keydown", SIM.panelNavHandler);
+
+    return wrap;
+  }
+
+  if (activeSim === "collapse") {
+    const MAX_TRIALS = 10;
+
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content";
+
+    const liveAnnounce = document.createElement("div");
+    liveAnnounce.className = "sr-only";
+    liveAnnounce.setAttribute("aria-live", "polite");
+    wrap.appendChild(liveAnnounce);
+    SIM.announce = function(msg) {
+      liveAnnounce.textContent = "";
+      requestAnimationFrame(() => { liveAnnounce.textContent = msg; });
+    };
+
+    function scrollItemIntoView(el, container) {
+      const cs = getComputedStyle(container);
+      const padTop = parseFloat(cs.paddingTop);
+      const padBottom = parseFloat(cs.paddingBottom);
+      const cRect = container.getBoundingClientRect();
+      const eRect = el.getBoundingClientRect();
+      if (eRect.top < cRect.top + padTop) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        container.scrollBy({ top: eRect.top - cRect.top - padTop, behavior });
+      } else if (eRect.bottom > cRect.bottom - padBottom) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        container.scrollBy({ top: eRect.bottom - cRect.bottom + padBottom, behavior });
+      }
+    }
+
+    const panels = [
+      { name: "Trials", fixedWidth: 155, subtitle: null },
+      { name: "Simulation", flex: 564, subtitle: "Placeholder" },
+      { name: "Data", flex: 285, subtitle: null, bg: "#fff" }
+    ];
+
+    panels.forEach(p => {
+      const panelWrap = document.createElement("div");
+      if (p.fixedWidth) {
+        panelWrap.style.width = p.fixedWidth + "px";
+        panelWrap.style.flexShrink = "0";
+      } else {
+        panelWrap.style.flex = p.flex;
+        panelWrap.style.minWidth = "0";
+      }
+      panelWrap.style.position = "relative";
+
+      const panel = document.createElement("div");
+      panel.className = "sim-panel";
+      panel.style.width = "100%";
+      panel.style.height = "calc(100% - 17px)";
+      if (p.bg) panel.style.background = p.bg;
+      panel.setAttribute("role", "region");
+      panel.setAttribute("aria-label", p.name + " panel");
+
+      // --- Trials panel ---
+      if (p.name === "Trials") {
+        panel.classList.add("has-scroll");
+        const scrollWrap = document.createElement("div");
+        scrollWrap.className = "trials-scroll";
+        scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("aria-orientation", "vertical");
+        scrollWrap.setAttribute("aria-label", "Trials");
+        function updateTrialsTabindex() {
+          if (scrollWrap.scrollHeight > scrollWrap.clientHeight) {
+            scrollWrap.setAttribute("tabindex", "0");
+          } else {
+            scrollWrap.removeAttribute("tabindex");
+          }
+        }
+        const allLabels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+        const trialState = {};
+        SIM.trialState = trialState;
+        SIM.trialCards = {};
+        SIM.selectedTrial = "A";
+        let activeTrialCount = 1;
+
+        function updateTrialCardLabel(letter) {
+          const cardEl = SIM.trialCards[letter];
+          if (!cardEl) return;
+          let statsEl = cardEl.querySelector(".trial-card-stats");
+          if (!statsEl) {
+            statsEl = document.createElement("div");
+            statsEl.className = "trial-card-stats";
+            statsEl.setAttribute("aria-hidden", "true");
+            cardEl.appendChild(statsEl);
+          }
+          statsEl.innerHTML = "";
+          cardEl.setAttribute("aria-label", "Trial " + letter);
+          const resetBtn = cardEl.querySelector(".trial-card-reset");
+          if (resetBtn) {
+            resetBtn.setAttribute("aria-disabled", "true");
+            const isSelected = cardEl.classList.contains("selected");
+            resetBtn.setAttribute("tabindex", (isSelected) ? "0" : "-1");
+          }
+        }
+        SIM.updateTrialCardLabel = updateTrialCardLabel;
+
+        function buildTrialCard(letter) {
+          trialState[letter] = {};
+          const card = document.createElement("div");
+          card.className = "trial-card";
+          card.setAttribute("role", "tab");
+          card.setAttribute("tabindex", "-1");
+          card.setAttribute("aria-label", "Trial " + letter);
+          card.style.cursor = "pointer";
+          SIM.trialCards[letter] = card;
+          function selectTrial() {
+            selectTrialByCard(card, letter);
+          }
+          card.addEventListener("click", selectTrial);
+          card.addEventListener("keydown", (e) => {
+            if ((e.key === "Enter" || e.key === " ") && e.target === card) {
+              e.preventDefault();
+              selectTrial();
+              return;
+            }
+            handleTrialCardNav(card, e);
+          });
+          card.setAttribute("aria-selected", "false");
+          const lbl = document.createElement("span");
+          lbl.className = "trial-card-label";
+          lbl.textContent = letter;
+          card.appendChild(lbl);
+          const resetBtn = document.createElement("button");
+          resetBtn.className = "trial-card-reset";
+          resetBtn.setAttribute("aria-label", "Reset trial " + letter);
+          resetBtn.setAttribute("aria-disabled", "true");
+          resetBtn.setAttribute("tabindex", "-1");
+          const resetIcon = createSVGIcon(resetIconSVG);
+          resetBtn.appendChild(resetIcon);
+          function resetTrial(e) {
+            e.stopPropagation();
+            if (resetBtn.getAttribute("aria-disabled") === "true") return;
+            trialState[letter] = {};
+            updateTrialCardLabel(letter);
+            if (SIM.announce) SIM.announce("Trial " + letter + " reset.");
+          }
+          resetBtn.addEventListener("click", resetTrial);
+          card.appendChild(resetBtn);
+          return card;
+        }
+
+        function selectTrialByCard(targetCard, targetLetter) {
+          scrollWrap.querySelectorAll(".trial-card:not(.new-card)").forEach(c => {
+            c.classList.remove("selected");
+            c.setAttribute("aria-selected", "false");
+            c.style.cursor = "pointer";
+            const rb = c.querySelector(".trial-card-reset");
+            if (rb) rb.setAttribute("tabindex", "-1");
+          });
+          targetCard.classList.add("selected");
+          targetCard.setAttribute("aria-selected", "true");
+          targetCard.style.cursor = "default";
+          const rb = targetCard.querySelector(".trial-card-reset");
+          if (rb && rb.getAttribute("aria-disabled") !== "true") rb.setAttribute("tabindex", "0");
+          SIM.selectedTrial = targetLetter;
+          const indicator = document.querySelector(".sim-trial-indicator");
+          if (indicator) indicator.textContent = targetLetter;
+          scrollItemIntoView(targetCard, scrollWrap);
+          updateTrialCardTabindex();
+        }
+
+        function getTrialNavCards() {
+          return Array.from(scrollWrap.querySelectorAll(".trial-card")).filter(c => c.style.display !== "none");
+        }
+
+        function handleTrialCardNav(cardEl, e) {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            const cur = cards.indexOf(cardEl);
+            if (cur < 0) return;
+            const next = e.key === "ArrowDown"
+              ? (cur + 1) % cards.length
+              : (cur - 1 + cards.length) % cards.length;
+            cards[cur].setAttribute("tabindex", "-1");
+            cards[next].setAttribute("tabindex", "0");
+            cards[next].focus({ preventScroll: true });
+            scrollItemIntoView(cards[next], scrollWrap);
+          } else if (e.key === "Home") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            cards.forEach(c => c.setAttribute("tabindex", "-1"));
+            cards[0].setAttribute("tabindex", "0");
+            cards[0].focus({ preventScroll: true });
+            scrollItemIntoView(cards[0], scrollWrap);
+          } else if (e.key === "End") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            cards.forEach(c => c.setAttribute("tabindex", "-1"));
+            cards[cards.length - 1].setAttribute("tabindex", "0");
+            cards[cards.length - 1].focus({ preventScroll: true });
+            scrollItemIntoView(cards[cards.length - 1], scrollWrap);
+          }
+        }
+
+        function updateTrialCardTabindex() {
+          const cards = getTrialNavCards();
+          const selIdx = cards.findIndex(c => c.classList.contains("selected"));
+          const activeIdx = selIdx >= 0 ? selIdx : 0;
+          cards.forEach((c, i) => c.setAttribute("tabindex", i === activeIdx ? "0" : "-1"));
+        }
+
+        function buildNewCard() {
+          const card = document.createElement("div");
+          card.className = "trial-card new-card";
+          card.setAttribute("role", "button");
+          card.setAttribute("tabindex", "-1");
+          card.setAttribute("aria-label", "Add new trial");
+          card.style.cursor = "pointer";
+          const addIcon = createSVGIcon(addIconSVG);
+          addIcon.classList.add("trial-card-new-icon");
+          card.appendChild(addIcon);
+          const lbl = document.createElement("span");
+          lbl.className = "trial-card-new-label";
+          lbl.textContent = "New";
+          card.appendChild(lbl);
+          card.addEventListener("click", () => {
+            if (activeTrialCount >= MAX_TRIALS) return;
+            card.classList.add("no-hover");
+            card.addEventListener("mouseleave", () => { card.classList.remove("no-hover"); }, { once: true });
+            const letter = allLabels[activeTrialCount];
+            activeTrialCount++;
+            const realCard = buildTrialCard(letter);
+            scrollWrap.insertBefore(realCard, card);
+            selectTrialByCard(realCard, letter);
+            realCard.focus({ preventScroll: true });
+            scrollItemIntoView(realCard, scrollWrap);
+            if (activeTrialCount >= MAX_TRIALS) {
+              card.style.display = "none";
+              const maxLabel = document.createElement("div");
+              maxLabel.className = "sim-offspring-placeholder";
+              maxLabel.textContent = "Max number of trials reached";
+              maxLabel.style.margin = "1px 0 1px 0";
+              maxLabel.style.padding = "2px 0";
+              maxLabel.style.textAlign = "center";
+              maxLabel.style.width = "calc(100% - 15px)";
+              scrollWrap.appendChild(maxLabel);
+              requestAnimationFrame(() => { scrollWrap.scrollTop = scrollWrap.scrollHeight; });
+              if (SIM.announce) SIM.announce("Maximum of " + MAX_TRIALS + " trials reached.");
+            }
+          });
+          card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              card.click();
+            } else {
+              handleTrialCardNav(card, e);
+            }
+          });
+          return card;
+        }
+
+        const cardA = buildTrialCard("A");
+        cardA.classList.add("selected");
+        cardA.setAttribute("aria-selected", "true");
+        cardA.setAttribute("tabindex", "0");
+        cardA.style.cursor = "default";
+        scrollWrap.appendChild(cardA);
+        scrollWrap.appendChild(buildNewCard());
+
+        panel.appendChild(scrollWrap);
+        const focusRing = document.createElement("div");
+        focusRing.className = "scroll-focus-ring";
+        panel.appendChild(focusRing);
+        requestAnimationFrame(updateTrialsTabindex);
+        if (SIM.trialsObserver) SIM.trialsObserver.disconnect();
+        SIM.trialsObserver = new MutationObserver(updateTrialsTabindex);
+        SIM.trialsObserver.observe(scrollWrap, { childList: true });
+      }
+
+      // --- Simulation panel ---
+      if (p.name === "Simulation") {
+        const theme = SIMS[activeSim].theme;
+        if (theme && theme.titleBarBg) panel.style.background = theme.titleBarBg;
+        panel.style.overflow = "hidden";
+        const inner = document.createElement("div");
+        inner.className = "sim-panel-inner";
+
+        const indicator = document.createElement("div");
+        indicator.className = "sim-trial-indicator";
+        indicator.textContent = "A";
+        indicator.setAttribute("aria-hidden", "true");
+        panel.appendChild(indicator);
+
+        // Top controls
+        const topControls = document.createElement("div");
+        topControls.style.cssText = "flex-shrink:0;padding:2px 10px 10px 10px;";
+        const topPlaceholder = document.createElement("div");
+        topPlaceholder.className = "sim-offspring-placeholder";
+        topPlaceholder.style.cssText = "font-style:italic;color:#4D4D4D;text-align:center;padding:8px 0;";
+        topPlaceholder.textContent = "Controls coming soon";
+        topControls.appendChild(topPlaceholder);
+        inner.appendChild(topControls);
+
+        // White container (not scrollable)
+        const stage = document.createElement("div");
+        stage.style.cssText = "flex:1;min-height:0;background:#fff;overflow:hidden;";
+        inner.appendChild(stage);
+        SIM._stage = stage;
+
+        // Bottom controls (same height as Bananas sim-buttons)
+        const bottomControls = document.createElement("div");
+        bottomControls.className = "sim-buttons";
+
+        const runIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" points="8,5 19,12 8,19"/></svg>';
+
+        ["Run", "Reset Trial"].forEach(label => {
+          const btn = document.createElement("button");
+          btn.className = "sim-btn";
+          const iconMap = { "Run": runIconSVG, "Reset Trial": resetIconSVG };
+          const icon = createSVGIcon(iconMap[label]);
+          btn.appendChild(icon);
+          const span = document.createElement("span");
+          span.textContent = label;
+          btn.appendChild(span);
+          btn.setAttribute("aria-disabled", "true");
+          if (label === "Run") SIM.runBtn = btn;
+          if (label === "Reset Trial") SIM.resetTrialBtn = btn;
+          bottomControls.appendChild(btn);
+        });
+
+        inner.appendChild(bottomControls);
+
+        panel.appendChild(inner);
+        SIM._panel = panel;
+      }
+
+      // --- Data panel ---
+      if (p.name === "Data") {
+        const dataInner = document.createElement("div");
+        dataInner.className = "data-panel-inner";
+        const placeholder = document.createElement("div");
+        placeholder.style.cssText = "display:flex;align-items:center;justify-content:center;flex:1;font-style:italic;color:#4D4D4D;font-family:'Lato',sans-serif;font-size:16px;";
+        placeholder.textContent = "Data panel coming soon";
+        dataInner.appendChild(placeholder);
+        panel.appendChild(dataInner);
+      }
+
+      panelWrap.appendChild(panel);
+
+      const tab = document.createElement("div");
+      tab.className = "sim-panel-tab";
+      const tabLabel = document.createElement("h2");
+      tabLabel.className = "sim-panel-tab-label";
+      tabLabel.textContent = p.name;
+      tab.appendChild(tabLabel);
+      if (p.subtitle) {
+        const bc = (SIMS[activeSim].theme && SIMS[activeSim].theme.panelBorder) || "#555";
+        tab.style.border = "2px solid " + bc;
+        tab.style.borderRight = "none";
+        tab.style.borderRadius = "999px 0 0 999px";
+        tab.style.position = "static";
+        tab.style.transform = "none";
+        tab.style.left = "";
+        tab.style.height = "100%";
+        const tabSub = document.createElement("div");
+        const surfaceBg = (SIMS[activeSim].theme && SIMS[activeSim].theme.surface) || "#fff";
+        tabSub.style.cssText = "display:flex;align-items:center;padding:0 12px 0 10px;background:" + surfaceBg + ";height:100%;box-sizing:border-box;border:2px solid " + bc + ";border-left:none;border-radius:0 999px 999px 0;";
+        const tabSubLabel = document.createElement("span");
+        tabSubLabel.className = "sim-panel-tab-subtitle";
+        tabSubLabel.textContent = p.subtitle;
+        tabSub.appendChild(tabSubLabel);
+        const tabWrap = document.createElement("div");
+        tabWrap.className = "sim-tab-wrap";
+        tabWrap.appendChild(tab);
+        tabWrap.appendChild(tabSub);
+        panelWrap.appendChild(tabWrap);
+      } else if (p.name === "Data") {
+        tab.style.position = "static";
+        tab.style.transform = "none";
+        tab.style.left = "";
+        const tabWrap = document.createElement("div");
+        tabWrap.style.cssText = "position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;height:36px;z-index:11;";
+        tabWrap.appendChild(tab);
+        panelWrap.appendChild(tabWrap);
+      } else {
+        panelWrap.appendChild(tab);
+      }
+
+      wrap.appendChild(panelWrap);
+    });
+
+    // Ctrl+Arrow: navigate between panels
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
+    if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
+    SIM.panelNavHandler = (e) => {
+      if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+      e.preventDefault();
+      const panelArr = Array.from(panelEls);
+      const active = document.activeElement;
+      let curIdx = -1;
+      panelArr.forEach((p, i) => { if (p.contains(active)) curIdx = i; });
+      const dir = e.key === "ArrowRight" ? 1 : -1;
+      for (let i = 1; i <= panelArr.length; i++) {
+        const nextIdx = (curIdx + dir * i + panelArr.length * panelArr.length) % panelArr.length;
+        const focusable = nextIdx === curIdx ? null : panelArr[nextIdx].querySelectorAll('[tabindex="0"], button:not([tabindex="-1"]), a, input, select, textarea');
+        if (focusable && focusable.length > 0) {
+          focusable[0].focus();
+          break;
+        }
+      }
+    };
+    document.addEventListener("keydown", SIM.panelNavHandler);
+
+    return wrap;
+  }
+
+  if (activeSim === "tbd") {
+    const MAX_TRIALS = 10;
+
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content";
+
+    const liveAnnounce = document.createElement("div");
+    liveAnnounce.className = "sr-only";
+    liveAnnounce.setAttribute("aria-live", "polite");
+    wrap.appendChild(liveAnnounce);
+    SIM.announce = function(msg) {
+      liveAnnounce.textContent = "";
+      requestAnimationFrame(() => { liveAnnounce.textContent = msg; });
+    };
+
+    function scrollItemIntoView(el, container) {
+      const cs = getComputedStyle(container);
+      const padTop = parseFloat(cs.paddingTop);
+      const padBottom = parseFloat(cs.paddingBottom);
+      const cRect = container.getBoundingClientRect();
+      const eRect = el.getBoundingClientRect();
+      if (eRect.top < cRect.top + padTop) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        container.scrollBy({ top: eRect.top - cRect.top - padTop, behavior });
+      } else if (eRect.bottom > cRect.bottom - padBottom) {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        container.scrollBy({ top: eRect.bottom - cRect.bottom + padBottom, behavior });
+      }
+    }
+
+    const panels = [
+      { name: "Trials", fixedWidth: 155, subtitle: null },
+      { name: "Simulation", flex: 564, subtitle: "Placeholder" },
+      { name: "Data", flex: 285, subtitle: null, bg: "#fff" }
+    ];
+
+    panels.forEach(p => {
+      const panelWrap = document.createElement("div");
+      if (p.fixedWidth) {
+        panelWrap.style.width = p.fixedWidth + "px";
+        panelWrap.style.flexShrink = "0";
+      } else {
+        panelWrap.style.flex = p.flex;
+        panelWrap.style.minWidth = "0";
+      }
+      panelWrap.style.position = "relative";
+
+      const panel = document.createElement("div");
+      panel.className = "sim-panel";
+      panel.style.width = "100%";
+      panel.style.height = "calc(100% - 17px)";
+      if (p.bg) panel.style.background = p.bg;
+      panel.setAttribute("role", "region");
+      panel.setAttribute("aria-label", p.name + " panel");
+
+      // --- Trials panel ---
+      if (p.name === "Trials") {
+        panel.classList.add("has-scroll");
+        const scrollWrap = document.createElement("div");
+        scrollWrap.className = "trials-scroll";
+        scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("aria-orientation", "vertical");
+        scrollWrap.setAttribute("aria-label", "Trials");
+        function updateTrialsTabindex() {
+          if (scrollWrap.scrollHeight > scrollWrap.clientHeight) {
+            scrollWrap.setAttribute("tabindex", "0");
+          } else {
+            scrollWrap.removeAttribute("tabindex");
+          }
+        }
+        const allLabels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+        const trialState = {};
+        SIM.trialState = trialState;
+        SIM.trialCards = {};
+        SIM.selectedTrial = "A";
+        let activeTrialCount = 1;
+
+        function updateTrialCardLabel(letter) {
+          const cardEl = SIM.trialCards[letter];
+          if (!cardEl) return;
+          let statsEl = cardEl.querySelector(".trial-card-stats");
+          if (!statsEl) {
+            statsEl = document.createElement("div");
+            statsEl.className = "trial-card-stats";
+            statsEl.setAttribute("aria-hidden", "true");
+            cardEl.appendChild(statsEl);
+          }
+          statsEl.innerHTML = "";
+          cardEl.setAttribute("aria-label", "Trial " + letter);
+          const resetBtn = cardEl.querySelector(".trial-card-reset");
+          if (resetBtn) {
+            resetBtn.setAttribute("aria-disabled", "true");
+            const isSelected = cardEl.classList.contains("selected");
+            resetBtn.setAttribute("tabindex", (isSelected) ? "0" : "-1");
+          }
+        }
+        SIM.updateTrialCardLabel = updateTrialCardLabel;
+
+        function buildTrialCard(letter) {
+          trialState[letter] = {};
+          const card = document.createElement("div");
+          card.className = "trial-card";
+          card.setAttribute("role", "tab");
+          card.setAttribute("tabindex", "-1");
+          card.setAttribute("aria-label", "Trial " + letter);
+          card.style.cursor = "pointer";
+          SIM.trialCards[letter] = card;
+          function selectTrial() {
+            selectTrialByCard(card, letter);
+          }
+          card.addEventListener("click", selectTrial);
+          card.addEventListener("keydown", (e) => {
+            if ((e.key === "Enter" || e.key === " ") && e.target === card) {
+              e.preventDefault();
+              selectTrial();
+              return;
+            }
+            handleTrialCardNav(card, e);
+          });
+          card.setAttribute("aria-selected", "false");
+          const lbl = document.createElement("span");
+          lbl.className = "trial-card-label";
+          lbl.textContent = letter;
+          card.appendChild(lbl);
+          const resetBtn = document.createElement("button");
+          resetBtn.className = "trial-card-reset";
+          resetBtn.setAttribute("aria-label", "Reset trial " + letter);
+          resetBtn.setAttribute("aria-disabled", "true");
+          resetBtn.setAttribute("tabindex", "-1");
+          const resetIcon = createSVGIcon(resetIconSVG);
+          resetBtn.appendChild(resetIcon);
+          function resetTrial(e) {
+            e.stopPropagation();
+            if (resetBtn.getAttribute("aria-disabled") === "true") return;
+            trialState[letter] = {};
+            updateTrialCardLabel(letter);
+            if (SIM.announce) SIM.announce("Trial " + letter + " reset.");
+          }
+          resetBtn.addEventListener("click", resetTrial);
+          card.appendChild(resetBtn);
+          return card;
+        }
+
+        function selectTrialByCard(targetCard, targetLetter) {
+          scrollWrap.querySelectorAll(".trial-card:not(.new-card)").forEach(c => {
+            c.classList.remove("selected");
+            c.setAttribute("aria-selected", "false");
+            c.style.cursor = "pointer";
+            const rb = c.querySelector(".trial-card-reset");
+            if (rb) rb.setAttribute("tabindex", "-1");
+          });
+          targetCard.classList.add("selected");
+          targetCard.setAttribute("aria-selected", "true");
+          targetCard.style.cursor = "default";
+          const rb = targetCard.querySelector(".trial-card-reset");
+          if (rb && rb.getAttribute("aria-disabled") !== "true") rb.setAttribute("tabindex", "0");
+          SIM.selectedTrial = targetLetter;
+          const indicator = document.querySelector(".sim-trial-indicator");
+          if (indicator) indicator.textContent = targetLetter;
+          scrollItemIntoView(targetCard, scrollWrap);
+          updateTrialCardTabindex();
+        }
+
+        function getTrialNavCards() {
+          return Array.from(scrollWrap.querySelectorAll(".trial-card")).filter(c => c.style.display !== "none");
+        }
+
+        function handleTrialCardNav(cardEl, e) {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            const cur = cards.indexOf(cardEl);
+            if (cur < 0) return;
+            const next = e.key === "ArrowDown"
+              ? (cur + 1) % cards.length
+              : (cur - 1 + cards.length) % cards.length;
+            cards[cur].setAttribute("tabindex", "-1");
+            cards[next].setAttribute("tabindex", "0");
+            cards[next].focus({ preventScroll: true });
+            scrollItemIntoView(cards[next], scrollWrap);
+          } else if (e.key === "Home") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            cards.forEach(c => c.setAttribute("tabindex", "-1"));
+            cards[0].setAttribute("tabindex", "0");
+            cards[0].focus({ preventScroll: true });
+            scrollItemIntoView(cards[0], scrollWrap);
+          } else if (e.key === "End") {
+            e.preventDefault();
+            const cards = getTrialNavCards();
+            cards.forEach(c => c.setAttribute("tabindex", "-1"));
+            cards[cards.length - 1].setAttribute("tabindex", "0");
+            cards[cards.length - 1].focus({ preventScroll: true });
+            scrollItemIntoView(cards[cards.length - 1], scrollWrap);
+          }
+        }
+
+        function updateTrialCardTabindex() {
+          const cards = getTrialNavCards();
+          const selIdx = cards.findIndex(c => c.classList.contains("selected"));
+          const activeIdx = selIdx >= 0 ? selIdx : 0;
+          cards.forEach((c, i) => c.setAttribute("tabindex", i === activeIdx ? "0" : "-1"));
+        }
+
+        function buildNewCard() {
+          const card = document.createElement("div");
+          card.className = "trial-card new-card";
+          card.setAttribute("role", "button");
+          card.setAttribute("tabindex", "-1");
+          card.setAttribute("aria-label", "Add new trial");
+          card.style.cursor = "pointer";
+          const addIcon = createSVGIcon(addIconSVG);
+          addIcon.classList.add("trial-card-new-icon");
+          card.appendChild(addIcon);
+          const lbl = document.createElement("span");
+          lbl.className = "trial-card-new-label";
+          lbl.textContent = "New";
+          card.appendChild(lbl);
+          card.addEventListener("click", () => {
+            if (activeTrialCount >= MAX_TRIALS) return;
+            card.classList.add("no-hover");
+            card.addEventListener("mouseleave", () => { card.classList.remove("no-hover"); }, { once: true });
+            const letter = allLabels[activeTrialCount];
+            activeTrialCount++;
+            const realCard = buildTrialCard(letter);
+            scrollWrap.insertBefore(realCard, card);
+            selectTrialByCard(realCard, letter);
+            realCard.focus({ preventScroll: true });
+            scrollItemIntoView(realCard, scrollWrap);
+            if (activeTrialCount >= MAX_TRIALS) {
+              card.style.display = "none";
+              const maxLabel = document.createElement("div");
+              maxLabel.className = "sim-offspring-placeholder";
+              maxLabel.textContent = "Max number of trials reached";
+              maxLabel.style.margin = "1px 0 1px 0";
+              maxLabel.style.padding = "2px 0";
+              maxLabel.style.textAlign = "center";
+              maxLabel.style.width = "calc(100% - 15px)";
+              scrollWrap.appendChild(maxLabel);
+              requestAnimationFrame(() => { scrollWrap.scrollTop = scrollWrap.scrollHeight; });
+              if (SIM.announce) SIM.announce("Maximum of " + MAX_TRIALS + " trials reached.");
+            }
+          });
+          card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              card.click();
+            } else {
+              handleTrialCardNav(card, e);
+            }
+          });
+          return card;
+        }
+
+        const cardA = buildTrialCard("A");
+        cardA.classList.add("selected");
+        cardA.setAttribute("aria-selected", "true");
+        cardA.setAttribute("tabindex", "0");
+        cardA.style.cursor = "default";
+        scrollWrap.appendChild(cardA);
+        scrollWrap.appendChild(buildNewCard());
+
+        panel.appendChild(scrollWrap);
+        const focusRing = document.createElement("div");
+        focusRing.className = "scroll-focus-ring";
+        panel.appendChild(focusRing);
+        requestAnimationFrame(updateTrialsTabindex);
+        if (SIM.trialsObserver) SIM.trialsObserver.disconnect();
+        SIM.trialsObserver = new MutationObserver(updateTrialsTabindex);
+        SIM.trialsObserver.observe(scrollWrap, { childList: true });
+      }
+
+      // --- Simulation panel ---
+      if (p.name === "Simulation") {
+        const theme = SIMS[activeSim].theme;
+        if (theme && theme.titleBarBg) panel.style.background = theme.titleBarBg;
+        panel.style.overflow = "hidden";
+        const inner = document.createElement("div");
+        inner.className = "sim-panel-inner";
+
+        const indicator = document.createElement("div");
+        indicator.className = "sim-trial-indicator";
+        indicator.textContent = "A";
+        indicator.setAttribute("aria-hidden", "true");
+        panel.appendChild(indicator);
+
+        // Top controls
+        const topControls = document.createElement("div");
+        topControls.style.cssText = "flex-shrink:0;padding:2px 10px 10px 10px;";
+        const topPlaceholder = document.createElement("div");
+        topPlaceholder.className = "sim-offspring-placeholder";
+        topPlaceholder.style.cssText = "font-style:italic;color:#4D4D4D;text-align:center;padding:8px 0;";
+        topPlaceholder.textContent = "Controls coming soon";
+        topControls.appendChild(topPlaceholder);
+        inner.appendChild(topControls);
+
+        // White container (not scrollable)
+        const stage = document.createElement("div");
+        stage.style.cssText = "flex:1;min-height:0;background:#fff;overflow:hidden;";
+        inner.appendChild(stage);
+        SIM._stage = stage;
+
+        // Bottom controls (same height as Bananas sim-buttons)
+        const bottomControls = document.createElement("div");
+        bottomControls.className = "sim-buttons";
+
+        const runIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" points="8,5 19,12 8,19"/></svg>';
+
+        ["Run", "Reset Trial"].forEach(label => {
+          const btn = document.createElement("button");
+          btn.className = "sim-btn";
+          const iconMap = { "Run": runIconSVG, "Reset Trial": resetIconSVG };
+          const icon = createSVGIcon(iconMap[label]);
+          btn.appendChild(icon);
+          const span = document.createElement("span");
+          span.textContent = label;
+          btn.appendChild(span);
+          btn.setAttribute("aria-disabled", "true");
+          if (label === "Run") SIM.runBtn = btn;
+          if (label === "Reset Trial") SIM.resetTrialBtn = btn;
+          bottomControls.appendChild(btn);
+        });
+
+        inner.appendChild(bottomControls);
+
+        panel.appendChild(inner);
+        SIM._panel = panel;
+      }
+
+      // --- Data panel ---
+      if (p.name === "Data") {
+        const dataInner = document.createElement("div");
+        dataInner.className = "data-panel-inner";
+        const placeholder = document.createElement("div");
+        placeholder.style.cssText = "display:flex;align-items:center;justify-content:center;flex:1;font-style:italic;color:#4D4D4D;font-family:'Lato',sans-serif;font-size:16px;";
+        placeholder.textContent = "Data panel coming soon";
+        dataInner.appendChild(placeholder);
+        panel.appendChild(dataInner);
+      }
+
+      panelWrap.appendChild(panel);
+
+      const tab = document.createElement("div");
+      tab.className = "sim-panel-tab";
+      const tabLabel = document.createElement("h2");
+      tabLabel.className = "sim-panel-tab-label";
+      tabLabel.textContent = p.name;
+      tab.appendChild(tabLabel);
+      if (p.subtitle) {
+        const bc = (SIMS[activeSim].theme && SIMS[activeSim].theme.panelBorder) || "#555";
+        tab.style.border = "2px solid " + bc;
+        tab.style.borderRight = "none";
+        tab.style.borderRadius = "999px 0 0 999px";
+        tab.style.position = "static";
+        tab.style.transform = "none";
+        tab.style.left = "";
+        tab.style.height = "100%";
+        const tabSub = document.createElement("div");
+        const surfaceBg = (SIMS[activeSim].theme && SIMS[activeSim].theme.surface) || "#fff";
+        tabSub.style.cssText = "display:flex;align-items:center;padding:0 12px 0 10px;background:" + surfaceBg + ";height:100%;box-sizing:border-box;border:2px solid " + bc + ";border-left:none;border-radius:0 999px 999px 0;";
+        const tabSubLabel = document.createElement("span");
+        tabSubLabel.className = "sim-panel-tab-subtitle";
+        tabSubLabel.textContent = p.subtitle;
+        tabSub.appendChild(tabSubLabel);
+        const tabWrap = document.createElement("div");
+        tabWrap.className = "sim-tab-wrap";
+        tabWrap.appendChild(tab);
+        tabWrap.appendChild(tabSub);
+        panelWrap.appendChild(tabWrap);
+      } else if (p.name === "Data") {
+        tab.style.position = "static";
+        tab.style.transform = "none";
+        tab.style.left = "";
+        const tabWrap = document.createElement("div");
+        tabWrap.style.cssText = "position:absolute;top:0;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;height:36px;z-index:11;";
+        tabWrap.appendChild(tab);
+        panelWrap.appendChild(tabWrap);
+      } else {
+        panelWrap.appendChild(tab);
+      }
+
+      wrap.appendChild(panelWrap);
+    });
+
+    // Ctrl+Arrow: navigate between panels
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
+    if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
+    SIM.panelNavHandler = (e) => {
+      if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+      e.preventDefault();
+      const panelArr = Array.from(panelEls);
+      const active = document.activeElement;
+      let curIdx = -1;
+      panelArr.forEach((p, i) => { if (p.contains(active)) curIdx = i; });
+      const dir = e.key === "ArrowRight" ? 1 : -1;
+      for (let i = 1; i <= panelArr.length; i++) {
+        const nextIdx = (curIdx + dir * i + panelArr.length * panelArr.length) % panelArr.length;
+        const focusable = nextIdx === curIdx ? null : panelArr[nextIdx].querySelectorAll('[tabindex="0"], button:not([tabindex="-1"]), a, input, select, textarea');
+        if (focusable && focusable.length > 0) {
+          focusable[0].focus();
+          break;
+        }
+      }
+    };
+    document.addEventListener("keydown", SIM.panelNavHandler);
+
+    return wrap;
+  }
+
   return null;
 }
 
@@ -4330,7 +5665,7 @@ function buildDemoView() {
   const sims = [
     { key: "bananas", label: "Bananas" },
     { key: "collapse", label: "Collapse!" },
-    { key: "noreaster", label: "Nor’easter Riley" },
+    { key: "noreaster", label: "Nor’easter" },
     { key: "tbd", label: "Coming Soon" }
   ];
   function applyDemoBtnStyle(btn, simKey, isActive) {
@@ -4372,7 +5707,7 @@ function buildDemoView() {
     if (simData && simData.titleLetterSpacing) btn.style.letterSpacing = simData.titleLetterSpacing;
     btn.style.fontSize = "24px";
     btn.style.fontWeight = "700";
-    btn.style.padding = "8px 20px";
+    btn.style.padding = "8px 10px";
     btn.style.minHeight = "50px";
     applyDemoBtnStyle(btn, s.key, activeSim === s.key);
 
