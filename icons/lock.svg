@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>lock</title>
+    <g id="lock" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Group">
+            <polygon id="Path" fill-opacity="0.349999994" fill="#00B3C0" fill-rule="nonzero" points="6 10 6 20 18 20 18 10"></polygon>
+            <path d="M12,17 C13.1,17 14,16.1 14,15 C14,13.9 13.1,13 12,13 C10.9,13 10,13.9 10,15 C10,16.1 10.9,17 12,17 Z" id="Oval" fill="#000000"></path>
+            <rect id="Path" stroke="#000000" stroke-width="2" fill-rule="nonzero" x="5" y="9" width="14" height="12" rx="1"></rect>
+            <path d="M16,9 L16,6 C16,3.790861 14.209139,2 12,2 C9.790861,2 8,3.790861 8,6 L8,9 L16,9 Z" id="Path" stroke="#000000" stroke-width="2" fill-rule="nonzero"></path>
+        </g>
+    </g>
+</svg>

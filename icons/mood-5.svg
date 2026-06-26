@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>mood-5</title>
+    <g id="mood-5" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Group" transform="translate(2, 2)">
+            <circle id="Oval" fill-opacity="0.349999994" fill="#00B3C0" fill-rule="nonzero" cx="10" cy="10" r="9"></circle>
+            <circle id="Path" stroke="#000000" stroke-width="2" fill-rule="nonzero" cx="10" cy="10" r="10"></circle>
+            <path d="M3.29714602,11 L3.44814638,11.072024 C4.25134733,11.4385879 6.13342567,12.0528302 9.75,12.0528302 C13.6159932,12.0528302 16,11.3509434 16.7064227,11 C16.5,14.5679245 13.75,17.2 10,17.2 C6.25,17.2 3.5,14.5679245 3.29714602,11 Z" id="Path" fill="#000000" fill-rule="nonzero"></path>
+            <ellipse id="Oval" fill="#000000" fill-rule="nonzero" cx="13.09" cy="7" rx="1.54" ry="2.5"></ellipse>
+            <ellipse id="Oval" fill="#000000" fill-rule="nonzero" cx="6.93" cy="7" rx="1.54" ry="2.5"></ellipse>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>mood-1</title>
+    <g id="mood-1" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Group" transform="translate(2, 2)">
+            <circle id="Oval" fill-opacity="0.349999994" fill="#00B3C0" fill-rule="nonzero" cx="10" cy="10" r="9"></circle>
+            <circle id="Path" stroke="#000000" stroke-width="2" fill-rule="nonzero" cx="10" cy="10" r="10"></circle>
+            <path d="M6.86425781,16.1132812 C7.9156901,15.3710938 8.9609375,15 10,15 C11.0452474,15 12.0904948,15.3710938 13.1357422,16.1132812" id="Path" stroke="#000000" stroke-width="1.5" fill-rule="nonzero"></path>
+            <path d="M11.8925781,10.75 C12.4739583,11.1396484 13.0800781,11.4241536 13.7109375,11.6035156 C14.3417969,11.7828776 15.0592448,11.8725586 15.8632812,11.8725586" id="Path" stroke="#000000" stroke-width="1.5" fill-rule="nonzero"></path>
+            <path d="M4.13671875,11.8725586 C4.94075521,11.8725586 5.65820312,11.7828776 6.2890625,11.6035156 C6.91992188,11.4241536 7.52604167,11.1396484 8.10742188,10.75" id="Path" stroke="#000000" stroke-width="1.5" fill-rule="nonzero"></path>
+        </g>
+    </g>
+</svg>
