@@ -1182,6 +1182,8 @@
   .phone.samsung-internet .screen-content { padding-bottom: 20px; }
   .phone.desktop-mode .screen-content { padding-bottom: 30px; }
   .date-nav + .screen-content { padding-top: 10px; }
+  /* Tracked Metrics Setup has no date-nav; match the Log's 10px top gap above the first section */
+  #tracked-metrics-setup-screen .screen-content { padding-top: 10px; }
   /* .dash-tab-sticky removed — tabs combined into single view */
 
   .section-heading {
@@ -1442,6 +1444,8 @@
   .custom-select-trigger.has-value { border-color: rgba(0,179,192,0.4); }
   .custom-select-trigger.has-value:hover { border-color: var(--accent); }
   .custom-select-trigger:hover { border-color: var(--accent); }
+  /* Focus fallback to match .field-select:focus (the :focus-visible ring is added in the shared group above) */
+  .custom-select-trigger:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,179,192,0.18); }
   .custom-select-trigger.field-error {
     border-color: #E5484D;
     box-shadow: 0 0 0 3px rgba(229,72,77,0.18);
@@ -2318,34 +2322,45 @@
     padding: 12px;
   }
   /* Quick Views: 2-up grid of mini bar-chart cards, one per tracked metric */
-  .qv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 4px; }
+  .qv-grid { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 9px; margin-top: 4px; }
   .qv-empty { grid-column: 1 / -1; margin: 4px 0; color: var(--subtext); font-size: 16px; font-style: italic; }
+  /* Non-interactive display panel — matches the dashboard graph card (.dash-chart-card): same
+     background + corner radius, no border/outline, not clickable, not focusable. */
   .qv-card {
     display: flex; flex-direction: column; gap: 6px; text-align: left; min-width: 0;
-    background: #141A22; border: 1px solid var(--border); border-radius: 12px; padding: 12px;
-    color: var(--text); cursor: pointer; font-family: inherit;
-    transition: border-color 0.15s, transform 0.05s;
+    background: #141A22; border: none; border-radius: 8px; padding: 12px;
+    color: var(--text); font-family: inherit;
   }
-  .qv-card:hover { border-color: var(--accent); }
-  .qv-card:active { transform: scale(0.99); }
-  .qv-card:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
-  .qv-top { display: flex; align-items: center; gap: 7px; min-width: 0; }
-  .qv-ic {
-    width: 28px; height: 28px; border-radius: 8px; flex: none;
-    background: rgba(0,179,192,0.10); color: var(--accent);
-    display: flex; align-items: center; justify-content: center;
+  .qv-top { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
+  /* Icon styled like the graph dropdown's .option-icon: plain 24×24 glyph, subtext color, no chip */
+  .qv-ic { flex: none; display: flex; align-items: center; justify-content: center; color: var(--subtext); }
+  .qv-ic svg { width: 24px; height: 24px; color: var(--subtext); stroke-linecap: butt; stroke-linejoin: miter; }
+  .qv-ic img { width: 24px; height: 24px; }
+  /* Title like the graph dropdown titles: Barlow 16px, normal weight, text color. Always reserves 2 lines
+     (truncating longer titles) so every card is the same height and the value + sparkline line up. */
+  .qv-name {
+    flex: 1; min-width: 0;
+    font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 400; line-height: 1.25; color: var(--text);
+    overflow-wrap: anywhere;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+    overflow: hidden;
+    min-height: 2.5em;  /* 2 lines at line-height 1.25 */
   }
-  .qv-ic svg, .qv-ic img { width: 18px; height: 18px; }
-  .qv-name { font-size: 16px; font-weight: 600; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .qv-val { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); white-space: nowrap; }
+  /* Value styled like the chart's "Avg" label (.chart-avg-label): boxed Barlow Condensed pill */
+  .qv-val {
+    align-self: flex-start;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 500; letter-spacing: 0.04em;
+    color: var(--subtext); background: var(--surface2); border: 1.5px solid #546888;
+    padding: 1px 4px 3px; border-radius: 3px;
+  }
   .qv-spark-wrap { line-height: 0; }
   .qv-spark-wrap svg { width: 100%; height: 30px; display: block; overflow: visible; }
   /* Same bar palette as the log/chart (the .body-table-scoped fill rules don't reach here) */
   .qv-spark-wrap .track-spark-svg rect { fill: #4A7A5B; }
   .qv-spark-wrap .track-spark-svg rect.met { fill: #2ECC52; }
-  .qv-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-  .qv-cad { font-size: 11px; color: var(--subtext); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .qv-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 20px; white-space: nowrap; flex: none; }
+  .qv-foot { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+  .qv-cad { font-size: 16px; color: var(--subtext); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qv-trend { display: inline-flex; align-items: center; gap: 3px; font-size: 16px; font-weight: 600; padding: 1px 7px; border-radius: 20px; white-space: nowrap; flex: none; }
   .qv-trend.up { color: #36C58E; background: rgba(54,197,142,0.12); }
   .qv-trend.down { color: #E5736B; background: rgba(229,115,107,0.12); }
   .qv-trend.flat { color: var(--subtext); background: rgba(155,175,196,0.12); }
@@ -2674,6 +2689,17 @@
     grid-template-columns: auto 1fr;
     gap: 0 4px;
     margin-bottom: 30px;
+  }
+  /* Placeholder shown in the chart area for a tracked metric that has no logged data yet. */
+  .chart-nodata {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 140px;
+    color: var(--subtext);
+    font-size: 16px;
+    letter-spacing: 0.02em;
   }
   .chart-left {
     position: relative;
@@ -3319,7 +3345,49 @@
     color: var(--text);
     margin: 24px 0 6px;
   }
-  .log-sched-tbody:first-of-type .log-sched-heading { margin-top: 4px; }
+  /* "(n metrics)" count beside each section title — matches the calendar legend (All/Some/None) */
+  .log-sched-count {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--subtext);
+  }
+  .log-sched-tbody:first-of-type .log-sched-toggle { margin-top: 4px; }
+  /* Accordion toggle wrapping each section heading + chevron (carries the section spacing) */
+  .log-sched-toggle {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    width: 100%; cursor: pointer; margin: 12px 0 4px;
+    /* match the hamburger (.nav-menu-btn) button styling */
+    background: none; border: none; color: var(--text);
+    padding: 8px; min-height: 44px; border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .log-sched-toggle:hover { background: rgba(0,179,192,0.12); }
+  .log-sched-toggle:active { background: rgba(0,179,192,0.2); }
+  .log-sched-toggle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .log-sched-toggle .log-sched-heading { margin: 0; white-space: nowrap; flex: 1 1 auto; min-width: 0; }
+  .log-sched-toggle:hover .log-sched-chevron { color: var(--accent); }  /* match the date-nav < > chevrons (subtext → accent) */
+  .log-sched-chevron { color: var(--subtext); flex: none; transition: transform 0.2s ease; }
+  .log-sched-tbody.collapsed .log-sched-chevron { transform: rotate(-90deg); }
+  /* Collapsed: hide everything except the heading row */
+  .log-sched-tbody.collapsed tr:not(.log-sched-head-row) { display: none; }
+  /* Tracked Metrics Setup accordions — reuse the .log-sched-toggle bar + .log-sched-chevron.
+     Neutralize the section heading's own underline/margins inside the toggle bar. */
+  .log-sched-toggle .info-section-heading { margin: 0; padding-bottom: 0; border-bottom: none; white-space: nowrap; flex: 1 1 auto; min-width: 0; }
+  .setup-section:first-of-type .log-sched-toggle { margin-top: 4px; }
+  .setup-section.collapsed .setup-section-body { display: none; }
+  .setup-section.collapsed .log-sched-chevron { transform: rotate(-90deg); }
+  /* "(checkbox x of y)" tracked-count beside each Setup section title */
+  .setup-count {
+    display: inline-flex; align-items: center; white-space: nowrap;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 500;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--subtext);
+  }
+  .setup-count-check { pointer-events: none; flex: none; width: 16px; height: 16px; margin: 0 5px 0 3px; }
+  .setup-count-check:checked::after { width: 11px; height: 11px; }
+  .setup-count-num { text-transform: none; }  /* keep "of" lowercase (digits unaffected) */
   /* Per-section column header (Avg | Metric | Record), repeated under each section title */
   .body-table .log-col-header-row td {
     font-family: 'Barlow Condensed', sans-serif;
@@ -3335,8 +3403,10 @@
   .body-table .log-sched-empty-row td { padding: 8px 6px 14px; border-bottom: none; }
   .log-sched-empty-row[hidden] { display: none; }
   .log-sched-empty { font-family: 'Barlow', sans-serif; font-size: 16px; font-style: italic; color: var(--subtext); }
-  /* Close every section: the last visible metric row keeps its divider (the table-wide last-child exemption otherwise strips it, e.g. Lean Mass alone under Yearly) */
+  /* Every metric row gets a divider (the table-wide last-child exemption otherwise strips the section's last one) … */
   #metrics-data-entry-log-screen .body-table tbody tr:not(.log-sched-head-row):not(.log-col-header-row):not(.log-sched-empty-row) td { border-bottom: 1px solid var(--border); }
+  /* … except the LAST VISIBLE metric row in a section (tagged by JS), so a populated section doesn't end with a rule */
+  #metrics-data-entry-log-screen .body-table tbody tr.log-last-metric:not(.log-sched-head-row):not(.log-col-header-row):not(.log-sched-empty-row) td { border-bottom: none; }
   .record-cell {
     display: flex;
     align-items: center;
@@ -4488,7 +4558,7 @@
       <div class="screen-content">
         <p class="profile-welcome" id="tracked-metrics-setup-welcome"><strong class="profile-welcome-title">Choose what to track</strong>Select the training and performance data you want DataGOAT to collect. You can update these choices anytime.</p>
 
-        <h3 class="info-section-heading">Health &amp; Wellness Metrics</h3>
+        <h3 class="info-section-heading">Wellness Metrics</h3>
         <table class="data-table" id="wellness-table">
           <thead>
             <tr>
@@ -4626,7 +4696,7 @@
 
         <button class="add-measurement-btn" id="add-wellness-metric-btn" type="button">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" fill="rgba(0,179,192,0.35)"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Add Health &amp; Wellness Metric
+          Add Wellness Metric
         </button>
 
         <div class="chart-divider"></div>
@@ -4968,9 +5038,6 @@
             <p class="dash-log-status" id="dash-wellness-status">Log your&nbsp;<span class="status-highlight">6 metrics</span>&nbsp;for today.</p>
           </div>
           <hr class="section-rule" aria-hidden="true">
-          <div class="dash-log-label-row">
-            <span class="section-cal-today">Metric Trends</span>
-          </div>
           <div class="dash-chart-card">
           <div class="dash-chart-controls">
             <select class="field-select" id="metrics-body-select" aria-label="Health &amp; Performance metric" style="flex:1; min-height:40px; padding:6px 36px 6px 12px; font-size:16px;">
@@ -5026,9 +5093,6 @@
 
         <!-- Competitions Log Section -->
         <div class="dash-log-section" id="dash-performance-section">
-          <div class="dash-log-label-row">
-            <span class="section-cal-today" id="cal-performance-today">Quick Views</span>
-          </div>
           <div id="quick-views-grid" class="qv-grid"></div>
         </div>
 
@@ -5593,9 +5657,9 @@
 
   <nav class="device-switcher" aria-label="Device preview size">
     <div class="device-switcher-meta">
-      <span class="version-tag">v1.10</span>
+      <span class="version-tag">v1.11</span>
       <span class="meta-sep" aria-hidden="true">•</span>
-      <span class="device-switcher-updated">Updated: 6/26/26</span>
+      <span class="device-switcher-updated">Updated: 6/30/26</span>
     </div>
     <div class="device-switcher-label">Preview</div>
 
@@ -6048,6 +6112,19 @@
     'add-metric-screen': 'Add Metric'
   };
 
+  // First visible, enabled, tab-reachable control within a screen (DOM order)
+  function _firstFocusable(screen) {
+    var nodes = screen.querySelectorAll('a[href], button, input, select, textarea, [role="button"], [tabindex]');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      if (el.disabled) continue;
+      if (el.getAttribute('tabindex') === '-1') continue;
+      if (el.offsetParent === null) continue;  // display:none or hidden ancestor
+      return el;
+    }
+    return null;
+  }
+
   function showScreen(screenId) {
     // Mark onboarding complete once a new user reaches the Dashboard
     if (window.isNewUser && screenId === 'dashboard-screen') {
@@ -6202,9 +6279,21 @@
           cal.scrollTop = cal.scrollHeight;
         });
       }
-      var firstNavBtn = screen.querySelector('.nav-home-btn, .nav-menu-btn');
-      if (firstNavBtn) { firstNavBtn.focus(); }
-      else { var heading = screen.querySelector('.section-heading'); if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus(); } }
+      // Focus on screen change:
+      //  • Back navigation (Info/Edit → origin) restores focus to the control that opened it.
+      //  • Otherwise focus the first focusable control on the screen (visible ring on arrival).
+      if (window._resetCardGroups) window._resetCardGroups(screen);  // set card roving before picking the first control
+      var _heading = screen.querySelector('.section-heading');
+      var _returnTo = window._consumeFocusReturn ? window._focusReturnTarget : null;
+      window._consumeFocusReturn = false;
+      if (_returnTo && document.contains(_returnTo) && _returnTo.offsetParent !== null) {
+        window._focusReturnTarget = null;
+        _returnTo.focus();
+      } else {
+        var _first = _firstFocusable(screen);
+        if (_first) _first.focus();
+        else if (_heading) { _heading.setAttribute('tabindex', '-1'); _heading.focus(); }
+      }
     }
     // Pin date-nav below section-heading (measured after layout)
     requestAnimationFrame(function () {
@@ -8266,6 +8355,7 @@
   window.getGoalStatementHTML = getGoalStatementHTML;
 
   function showMetricDetail(name) {
+    window._focusReturnTarget = document.activeElement;  // restore focus here on Back
     // Rebuild chart data from live wellness/performance data
     var newBody = buildBodyChartData();
     for (var bk in newBody) { bodyChartData[bk] = newBody[bk]; }
@@ -8529,6 +8619,7 @@
   var backNavBtn = document.querySelector('#metric-detail-screen .back-nav-btn');
   if (backNavBtn) {
     backNavBtn.addEventListener('click', function () {
+      window._consumeFocusReturn = true;  // return focus to the control that opened this screen
       if (window.metricDetailOrigin === 'tracked-metrics-setup-screen') {
         showScreen('tracked-metrics-setup-screen');
       } else if (window.metricDetailOrigin === 'metrics-data-entry-log-screen') {
@@ -8542,6 +8633,7 @@
   var editMetricBackBtn = document.getElementById('edit-metric-back');
   if (editMetricBackBtn) {
     editMetricBackBtn.addEventListener('click', function () {
+      window._consumeFocusReturn = true;
       showScreen(window.metricEditOrigin || 'tracked-metrics-setup-screen');
     });
   }
@@ -8549,6 +8641,7 @@
   var editCancelBtn = document.getElementById('edit-cancel-btn');
   if (editCancelBtn) {
     editCancelBtn.addEventListener('click', function () {
+      window._consumeFocusReturn = true;
       if (typeof setEditMode === 'function') setEditMode('edit');
       editMetricCurrentName = null;
       showScreen(window.metricEditOrigin || 'tracked-metrics-setup-screen');
@@ -8557,9 +8650,10 @@
   var editSaveBtn = document.getElementById('edit-save-btn');
   if (editSaveBtn) {
     editSaveBtn.addEventListener('click', function () {
+      window._consumeFocusReturn = true;  // return focus to the opening control after save
       if (_editableMode()) {
         var form = _readEditForm();
-        if (!form.name) { var ni = document.getElementById('edit-field-name'); if (ni) ni.focus(); return; }  // require a name
+        if (!form.name) { var ni = document.getElementById('edit-field-name'); if (ni) ni.focus(); window._consumeFocusReturn = false; return; }  // require a name
         var isNew = (editMetricMode === 'new');
         var oldName = editMetricCurrentName;
         // Register so the Log/Info can render it
@@ -8621,6 +8715,7 @@
   var editDeleteBtn = document.getElementById('edit-delete-btn');
   if (editDeleteBtn) {
     editDeleteBtn.addEventListener('click', function () {
+      window._consumeFocusReturn = true;  // the deleted row's edit button is gone → falls back to the heading
       var name = editMetricCurrentName;
       if (name) {
         var row = _findTrackedRowByName(name);
@@ -9218,8 +9313,15 @@
   function renderBodyChart(metric, days, targetEl) {
     var wrapper = targetEl || document.getElementById('body-chart-area');
     if (!wrapper) return;
-    var data = bodyChartData[metric];
-    if (!data) { wrapper.innerHTML = ''; return; }
+    var data = bodyChartData[metric] || (typeof performanceChartData !== 'undefined' ? performanceChartData[metric] : null);
+    // Tracked metric with no chart data at all (e.g. a metric never logged) → show a placeholder rather than
+    // a blank box, matching the "No data yet" Quick View cards. The dropdown lists every checked metric.
+    var hasAny = data && data.bars && data.bars.some(function (v) { return v != null && isFinite(v) && v >= 0; });
+    if (!hasAny) {
+      wrapper.innerHTML = '<div class="chart-nodata">No data yet</div>';
+      wrapper.setAttribute('aria-label', metric + ' chart, no data yet');
+      return;
+    }
     var range = days || currentBodyRange;
     if (!targetEl && days) currentBodyRange = days;
     var bars = data.bars.slice(-range);
@@ -9473,18 +9575,32 @@
     var wd = window._wellnessData;
     if (wellnessStatus && wd && wd.length) {
       var today = wd[wd.length - 1];
-      var filled = 0, total = 6;
+      // Total = number of metrics due today = visible rows in the Metrics Data Entry Log "Daily" section
+      // (dynamic: tracks metrics being checked/unchecked on Tracked Metrics Setup).
+      var dayBody = document.querySelector('#metrics-data-entry-log-screen tbody[data-sched-body="day"]');
+      var total = 0;
+      if (dayBody) {
+        dayBody.querySelectorAll('tr').forEach(function (r) {
+          if (r.classList.contains('log-sched-head-row') || r.classList.contains('log-col-header-row') || r.classList.contains('log-sched-empty-row')) return;
+          if (r.style.display === 'none') return;
+          total++;
+        });
+      }
+      var filled = 0;
       if (today.hydration) filled++;
       if (today.sleepTime !== '') filled++;
       if (today.sleepEff !== '') filled++;
       if (today.protein !== '') filled++;
       if (today.practiceYN !== '' && today.gameYN !== '') filled++;
       if (today.mood !== '') filled++;
+      if (filled > total) filled = total;
       var missing = total - filled;
-      if (missing === 0) {
+      if (total === 0) {
+        wellnessStatus.innerHTML = 'No metrics to log today.';
+      } else if (missing === 0) {
         wellnessStatus.innerHTML = 'Great! You\u2019ve logged all your health \u0026 performance data!';
       } else if (filled === 0) {
-        wellnessStatus.innerHTML = 'Log your\u00a0<span class="status-highlight">' + total + ' metrics</span>\u00a0for today.';
+        wellnessStatus.innerHTML = 'Log your\u00a0<span class="status-highlight">' + total + ' metric' + (total > 1 ? 's' : '') + '</span>\u00a0for today.';
       } else {
         wellnessStatus.innerHTML = 'Log\u00a0<span class="status-highlight">' + missing + ' remaining metric' + (missing > 1 ? 's' : '') + '</span>.';
       }
@@ -9583,51 +9699,49 @@
 
   window._syncDashboardDropdowns = function () {
     var bodySelect = document.getElementById('metrics-body-select');
-    var perfSelect = document.getElementById('metrics-performance-select');
-    if (!bodySelect || !perfSelect) return;
+    if (!bodySelect) return;
 
-    // Read wellness metrics from Tracked Metrics Setup (DOM order, checked only)
-    var wellnessRows = document.querySelectorAll('#wellness-metrics tr');
-    var wellnessItems = [];
-    wellnessRows.forEach(function (tr) {
-      var cb = tr.querySelector('.track-check');
-      var pairedWith = tr.getAttribute('data-paired-with');
-      if (cb) {
-        if (!cb.checked) return;
-      } else if (pairedWith) {
-        // Paired metric — include if parent is checked
-        var parentRow = document.querySelector('#wellness-metrics [data-metric-id="' + pairedWith + '"]');
-        var parentCb = parentRow ? parentRow.querySelector('.track-check') : null;
-        if (!parentCb || !parentCb.checked) return;
-      } else {
-        return;
-      }
-      var infoBtn = tr.querySelector('.metric-info-btn');
-      if (!infoBtn) return;
-      var key = infoBtn.getAttribute('data-metric');
-      if (!key) return;
-      var display = _wellnessDisplayNames[key] || key;
-      // Grab icon from metricIcons if available, otherwise from the info button SVG
-      var icon = (metricIcons[key]) ? getIcon(key) : (infoBtn.querySelector('svg') ? infoBtn.querySelector('svg').outerHTML : '');
-      wellnessItems.push({ key: key, display: display, icon: icon });
+    // The dashboard chart dropdown lists EVERY metric the user is tracking (checked on Tracked Metrics
+    // Setup) — the same set shown as Quick Views cards — across all three setup tables in DOM order.
+    // No chart-data filter: competition metrics render via renderBodyChart's performanceChartData
+    // fallback, and metrics with no data yet show a "No data yet" chart placeholder.
+    var items = [];
+    var seen = {};
+    ['wellness-metrics', 'physical-metrics', 'performance-metrics'].forEach(function (tid) {
+      var tb = document.getElementById(tid);
+      if (!tb) return;
+      tb.querySelectorAll('tr').forEach(function (tr) {
+        var cb = tr.querySelector('.track-check');
+        var pairedWith = tr.getAttribute('data-paired-with');
+        var isChecked;
+        if (cb) {
+          isChecked = cb.checked;
+        } else if (pairedWith) {
+          var parentRow = document.querySelector('[data-metric-id="' + pairedWith + '"]');
+          var parentCb = parentRow ? parentRow.querySelector('.track-check') : null;
+          isChecked = !!(parentCb && parentCb.checked);
+        } else {
+          isChecked = false;
+        }
+        if (!isChecked) return;
+        var nc = tr.querySelector('.metric-name');
+        var nameText = nc ? (nc.childNodes[0] ? nc.childNodes[0].textContent.trim() : nc.textContent.trim()) : null;
+        var infoBtn = tr.querySelector('.metric-info-btn');
+        var key = (infoBtn && infoBtn.getAttribute('data-metric')) || nameText;
+        if (!key || seen[key]) return;
+        seen[key] = true;
+        var display = _wellnessDisplayNames[key] || nameText || key;
+        var icon = (metricIcons[key]) ? getIcon(key) : (infoBtn && infoBtn.querySelector('svg') ? infoBtn.querySelector('svg').outerHTML : '');
+        items.push({ key: key, display: display, icon: icon });
+      });
     });
 
-    // Read performance metrics from Tracked Metrics Setup (DOM order, checked only)
-    var perfRows = document.querySelectorAll('#performance-metrics tr');
-    var perfItems = [];
-    perfRows.forEach(function (tr) {
-      var cb = tr.querySelector('.track-check');
-      if (!cb || !cb.checked) return;
-      var infoBtn = tr.querySelector('.metric-info-btn');
-      if (!infoBtn) return;
-      var key = infoBtn.getAttribute('data-metric');
-      if (!key) return;
-      var icon = (metricIcons[key]) ? getIcon(key) : (infoBtn.querySelector('svg') ? infoBtn.querySelector('svg').outerHTML : '');
-      perfItems.push({ key: key, display: key, icon: icon });
-    });
-
-    rebuildCustomSelect(bodySelect, wellnessItems, bodySelect.value);
-    rebuildCustomSelect(perfSelect, perfItems, perfSelect.value);
+    if (!items.length) return; // nothing checked — keep the last good selection
+    var prevValue = bodySelect.value;
+    rebuildCustomSelect(bodySelect, items, prevValue);
+    // If the previously-selected metric was unchecked, rebuildCustomSelect re-pointed bodySelect.value
+    // to the first item — re-render the chart so it matches the new selection.
+    if (bodySelect.value !== prevValue) renderBodyChart(bodySelect.value);
   };
 
   // ── Dashboard tab switching (removed — sections now combined on one screen) ──
@@ -9689,6 +9803,34 @@
     }
   }
   // Delegated so dynamically-created swatches (custom metric Log rows, rebuilt previews) work too
+  // Move focus among swatches WITHOUT changing the logged value (value commits on Enter/Space/click)
+  function _roveSwatch(swatch) {
+    var group = swatch.closest('.color-scale'); if (!group) return;
+    group.querySelectorAll('.color-swatch').forEach(function (s) { s.setAttribute('tabindex', '-1'); });
+    swatch.setAttribute('tabindex', '0');
+    swatch.focus();
+  }
+  // Arrow-step to the next/prev swatch, wrapping around the ends (ARIA radio-group pattern)
+  function _arrowSwatch(swatch, dir) {
+    var group = swatch.closest('.color-scale'); if (!group) return;
+    var sw = Array.prototype.slice.call(group.querySelectorAll('.color-swatch'));
+    var i = sw.indexOf(swatch); if (i < 0 || !sw.length) return;
+    _roveSwatch(sw[(i + dir + sw.length) % sw.length]);
+  }
+  // Roving-tabindex entry = the FIRST card of each interactive group, so Tab always lands on card 1
+  // and every group is reachable (previously: unselected groups had no tabbable card). Skips a group
+  // the user is currently focused in so it doesn't disrupt active navigation.
+  function _resetCardGroups(root) {
+    (root || document).querySelectorAll('.color-scale[role="radiogroup"]').forEach(function (group) {
+      if (group.classList.contains('color-scale-static') || group.contains(document.activeElement)) return;
+      group.querySelectorAll('.color-swatch').forEach(function (s, i) { s.setAttribute('tabindex', i === 0 ? '0' : '-1'); });
+    });
+  }
+  window._resetCardGroups = _resetCardGroups;
+  // The Edit screen's Log Preview demos the record control; its Y/N radios were tabindex="-1"
+  // (unreachable). Make them tabbable so the shown preview control is reachable (hidden controls
+  // are display:none, so they never add tab stops).
+  document.querySelectorAll('.log-preview .avail-radio').forEach(function (r) { r.removeAttribute('tabindex'); });
   document.addEventListener('click', function (e) {
     var swatch = e.target.closest('.color-swatch');
     if (swatch && !swatch.closest('.color-scale-static')) selectSwatch(swatch);
@@ -9697,8 +9839,22 @@
     var swatch = e.target.closest('.color-swatch');
     if (!swatch || swatch.closest('.color-scale-static')) return;
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSwatch(swatch); }
-    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); var n = swatch.nextElementSibling; if (n && n.classList && n.classList.contains('color-swatch')) selectSwatch(n); }
-    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); var p = swatch.previousElementSibling; if (p && p.classList && p.classList.contains('color-swatch')) selectSwatch(p); }
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); _arrowSwatch(swatch, 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); _arrowSwatch(swatch, -1); }
+  });
+  // Custom radios (.avail-radio) are native <input type=radio> styled with appearance:none — they commit on
+  // Space/Arrow but NOT Enter. The app's convention is Enter-activates (see .track-check + .color-swatch
+  // handlers), so let Enter select the focused radio. Covers Y/N preview, Availability, real Log Y/N control,
+  // the Edit Type selector, and unit-choice radios. Firing 'change' drives syncPreviewType / data writes.
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var radio = e.target.closest ? e.target.closest('input.avail-radio') : null;
+    if (!radio || radio.disabled) return;
+    e.preventDefault();
+    if (!radio.checked) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
   });
 
   // ── Sync Competition Term from Profile → Availability labels ──
@@ -9943,10 +10099,24 @@
       } else if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         if (idx >= 0) opts[idx].click();
+      } else if (e.key === 'Tab') {
+        // Let focus move naturally (no preventDefault) but close the list
+        wrap.classList.remove('open');
+        wrap.classList.remove('drop-up');
+        trigger.setAttribute('aria-expanded', 'false');
       } else if (e.key === 'Escape') {
         wrap.classList.remove('open');
         trigger.setAttribute('aria-expanded', 'false');
         trigger.focus();
+      }
+    });
+    // Tabbing (or any focus move) out of the dropdown closes it — relatedTarget is the element
+    // gaining focus; if it's null or outside this wrap, focus has left, so collapse the list.
+    wrap.addEventListener('focusout', function (e) {
+      if (!e.relatedTarget || !wrap.contains(e.relatedTarget)) {
+        wrap.classList.remove('open');
+        wrap.classList.remove('drop-up');
+        trigger.setAttribute('aria-expanded', 'false');
       }
     });
 
@@ -10855,13 +11025,35 @@
     var wrap = document.getElementById('edit-icon-select');
     if (!wrap) return;
     var trigger = wrap.querySelector('.custom-select-trigger');
+    var optionsWrap = wrap.querySelector('.custom-select-options');
     var current = wrap.querySelector('.icon-current');
     var options = wrap.querySelectorAll('.custom-select-option');
+    function openIconList(open) {
+      if (open) document.querySelectorAll('.custom-select.open').forEach(function (cs) { if (cs !== wrap) cs.classList.remove('open'); });
+      wrap.classList.toggle('open', open);
+      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
     trigger.addEventListener('click', function (e) {
       e.stopPropagation();
-      document.querySelectorAll('.custom-select.open').forEach(function (cs) { if (cs !== wrap) cs.classList.remove('open'); });
-      var open = wrap.classList.toggle('open');
-      trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      openIconList(!wrap.classList.contains('open'));
+    });
+    // Keyboard: open + move focus into the options (was mouse-only before)
+    trigger.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+        e.preventDefault();  // also prevents the native <button> click from double-toggling
+        openIconList(true);
+        var first = wrap.querySelector('.custom-select-option.selected') || wrap.querySelector('.custom-select-option');
+        if (first) first.focus();
+      } else if (e.key === 'Escape') { openIconList(false); }
+    });
+    optionsWrap.addEventListener('keydown', function (e) {
+      var opts = Array.prototype.slice.call(options);
+      var idx = opts.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); if (idx < opts.length - 1) opts[idx + 1].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); if (idx > 0) opts[idx - 1].focus(); else trigger.focus(); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (idx >= 0) opts[idx].click(); }
+      else if (e.key === 'Tab') { openIconList(false); }  // close but let focus move naturally
+      else if (e.key === 'Escape') { openIconList(false); trigger.focus(); }
     });
     options.forEach(function (opt) {
       opt.addEventListener('click', function () {
@@ -10869,12 +11061,16 @@
         opt.classList.add('selected');
         if (current) current.src = opt.dataset.icon;
         if (_editableMode()) { var h = document.getElementById('edit-metric-icon'); if (h) h.innerHTML = '<img src="' + opt.dataset.icon + '" width="24" height="24" alt="">'; }
-        wrap.classList.remove('open');
-        trigger.setAttribute('aria-expanded', 'false');
+        openIconList(false);
+        trigger.focus();  // return focus to the trigger after a keyboard/mouse selection
       });
     });
     document.addEventListener('click', function (e) {
-      if (!wrap.contains(e.target)) { wrap.classList.remove('open'); trigger.setAttribute('aria-expanded', 'false'); }
+      if (!wrap.contains(e.target)) { openIconList(false); }
+    });
+    // Tabbing (or any focus move) out of the picker closes it.
+    wrap.addEventListener('focusout', function (e) {
+      if (!e.relatedTarget || !wrap.contains(e.relatedTarget)) { openIconList(false); }
     });
   })();
 
@@ -10903,6 +11099,7 @@
     });
     scale.innerHTML = html;
     scale.style.gridTemplateColumns = 'repeat(' + Math.min(rows.length, 4) + ', 1fr)';
+    if (window._resetCardGroups) window._resetCardGroups(scale.closest('.log-preview') || scale);  // first card tab-reachable
   }
   var _editNameInput = document.getElementById('edit-field-name');
   var _editUnitInput = document.getElementById('edit-field-unit');
@@ -11134,10 +11331,10 @@
       if (sc) {
         categorical.className = 'color-scale preview-control preview-categorical ' + (sc.scaleClass || '');
         categorical.style.gridTemplateColumns = '';
-        categorical.innerHTML = sc.swatches.map(function (s) {
+        categorical.innerHTML = sc.swatches.map(function (s, i) {
           var cls = s.cls || (_isLightBg(s.bg) ? 'swatch-dark' : 'swatch-light');
           return '<div class="color-swatch ' + cls + '" style="background:' + s.bg + ';" data-val="' + s.val +
-                 '" tabindex="-1" role="radio" aria-checked="false" aria-label="' + (sc.prefix || name) + ' ' + s.val + '">' + s.val + '</div>';
+                 '" tabindex="' + (i === 0 ? '0' : '-1') + '" role="radio" aria-checked="false" aria-label="' + (sc.prefix || name) + ' ' + s.val + '">' + s.val + '</div>';
         }).join('');
       }
       only('preview-categorical');
@@ -11162,14 +11359,17 @@
 
   // Open the editable form for a brand-new custom metric (clean reset via _populateEditForm)
   function openNewMetric(type) {
+    window._focusReturnTarget = document.activeElement;  // restore focus here on Cancel/Save/Back
     newMetricType = type || 'wellness';
     editMetricCurrentName = null;
     setEditMode('new');
     window.metricEditOrigin = 'tracked-metrics-setup-screen';
+    // Default Schedule by category: Wellness → Daily, Performance → Quarterly, Competition → As Needed
+    var defaultSchedule = (newMetricType === 'physical') ? 'quarter' : (newMetricType === 'wellness') ? 'day' : 'irregular';
     _populateEditForm({
       name: '', unit: '', type: 'numeric', icon: 'icons/custom-metric-info-1.svg',
       levels: [{ label: '', value: '', color: '#000000' }, { label: '', value: '', color: '#000000' }],
-      goal: '8', yTop: '10', yBottom: '0', schedule: 'irregular', times: '1'  // starter defaults
+      goal: '8', yTop: '10', yBottom: '0', schedule: defaultSchedule, times: '1'  // starter defaults (schedule per category)
     });
     if (_editNameInput) _editNameInput.placeholder = 'New Metric';
     if (_editUnitInput) _editUnitInput.placeholder = 'e.g. reps, kg, level';
@@ -11255,6 +11455,7 @@
   }
 
   function openMetricEdit(name, iconHTML, key) {
+    window._focusReturnTarget = document.activeElement;  // restore focus here on Cancel/Save/Back
     key = key || name;  // data key (config lookups); `name` is the display name (UI)
     // Custom metric → editable, fully populated from its saved config
     var custom = window._customMetrics[key];
@@ -11391,6 +11592,14 @@
   trackedScreen.addEventListener('change', function (e) {
     if (e.target.classList.contains('track-check')) {
       syncLogScreens();
+    }
+  });
+  // Enter toggles a track checkbox (native checkboxes only respond to Space; users expect Enter too)
+  trackedScreen.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.classList.contains('track-check')) {
+      e.preventDefault();
+      e.target.checked = !e.target.checked;
+      e.target.dispatchEvent(new Event('change', { bubbles: true }));
     }
   });
 
@@ -11639,6 +11848,9 @@
   function syncLogScreens() {
     syncDailyLog();
     renderQuickViews();
+    if (window._updateSetupCounts) window._updateSetupCounts();  // "x of y" tracked counts on Tracked Metrics Setup
+    if (window._updateDashStatus) window._updateDashStatus();    // dynamic "Log your N metrics" count
+    if (window._syncDashboardDropdowns) window._syncDashboardDropdowns();  // chart dropdown = checked metrics
   }
 
   // Re-sync log when a unit toggle changes so the field-unit label updates
@@ -11974,20 +12186,21 @@
     w = w || 30; h = h || 16;
     var pad = 1;
     var days = (bars || []).slice(-LOG_TREND_DAYS);  // last N calendar days, gaps preserved
-    var realCount = days.filter(function (v) { return v != null && isFinite(v) && v >= 0; }).length;
-    if (realCount < 2) return '';
+    // Empty/untracked series → render the full window so the "no data entered" baseline still appears.
+    if (!days.length) { days = []; for (var d = 0; d < LOG_TREND_DAYS; d++) days.push(null); }
     var hasGoal = (goal != null && isFinite(goal));
     var n = days.length;
     var innerW = w - pad * 2, innerH = h - pad * 2;
     var slot = innerW / n;
     var bw = Math.max(1, slot - Math.min(1, slot * 0.28));
     var rects = days.map(function (v, i) {
-      if (v == null || !isFinite(v) || v < 0) return '';  // missing day → empty slot (no bar)
-      var vc = Math.max(0, Math.min(100, v));
-      var bh = Math.max(1, (vc / 100) * innerH);
       var x = pad + i * slot + (slot - bw) / 2;
+      var hasData = (v != null && isFinite(v) && v >= 0);
+      // A day with no data entered draws a 1px line at the bottom (default dark-green rect fill, like a
+      // below-goal bar); a day with data draws a bar scaled to its value, bright green when it meets the goal.
+      var bh = hasData ? Math.max(1, (Math.max(0, Math.min(100, v)) / 100) * innerH) : 1;
       var y = pad + (innerH - bh);
-      var met = (hasGoal && vc >= goal) ? ' class="met"' : '';
+      var met = (hasData && hasGoal && v >= goal) ? ' class="met"' : '';
       return '<rect x="' + (Math.round(x * 10) / 10) + '" y="' + (Math.round(y * 10) / 10) +
         '" width="' + (Math.round(bw * 10) / 10) + '" height="' + (Math.round(bh * 10) / 10) +
         '" rx="0.4"' + met + '/>';
@@ -12018,12 +12231,13 @@
       var existing = cell.querySelector('.track-spark');
       if (existing) existing.parentNode.removeChild(existing);
       var data = _logRowChartData(tr);
-      if (!data || !data.bars) return;
+      var bars = (data && data.bars) ? data.bars : [];
+      var goal = data ? data.goal : null;
       // If the AVG is still a placeholder, compute it from the series so the
       // sparkline anchors to a real number rather than a dash.
       var valNode = Array.prototype.filter.call(cell.childNodes, function (n) { return n.nodeType === 3; })[0];
       var cur = valNode ? valNode.nodeValue.trim() : '';
-      if ((cur === '' || cur === '—') && typeof data.avgLabel === 'function') {
+      if ((cur === '' || cur === '—') && data && typeof data.avgLabel === 'function') {
         var nn = _logTrendPoints(data.bars);
         if (nn.length) {
           var meanPct = nn.reduce(function (a, b) { return a + b; }, 0) / nn.length;
@@ -12032,9 +12246,9 @@
           else cell.appendChild(document.createTextNode(cur));
         }
       }
-      // Never float a chart over a dash — only show it above a real average.
-      if (cur === '' || cur === '—') return;
-      var svg = _sparklineSVG(data.bars, data.goal);
+      // Always render the sparkline: data days draw bars, days with no data entered draw the 1px
+      // dark-green baseline — so a metric with no data shows that line above its "—".
+      var svg = _sparklineSVG(bars, goal);
       if (!svg) return;
       var holder = document.createElement('span');
       holder.className = 'track-spark';
@@ -12069,26 +12283,35 @@
     return '<span class="qv-trend ' + (improving ? 'up' : 'down') + '">' + arrow + ' ' + mag + '%</span>';
   }
   function _qvCard(name, key, data, schedKey) {
-    var pts = _logTrendPoints(data.bars);
-    if (pts.length < 2) return '';  // need ≥2 real points to show a trend
-    var meanPct = _qvAvg(pts);
-    var val;
-    if (typeof data.avgLabel === 'function') {
-      val = String(data.avgLabel(meanPct));
-    } else {
-      // No avgLabel: scale by the axis top and carry any non-numeric suffix (e.g. "100%" → "%")
-      var top = parseFloat(data.label) || 100;
-      var suffix = String(data.label || '').replace(/[-\d.\s]/g, '');
-      val = Math.round(meanPct / 100 * top) + suffix;
-    }
+    var pts = (data && data.bars) ? _logTrendPoints(data.bars) : [];
     var icon = (typeof window.getIcon === 'function' ? window.getIcon(key) : '') || '';
-    var spark = _sparklineSVG(data.bars, data.goal, 150, 30);
-    return '<button class="qv-card" type="button" data-qv-metric="' + name.replace(/"/g, '&quot;') + '" aria-label="' + name + ' trend, open details">' +
+    var val, spark, foot;
+    if (pts.length >= 2) {
+      var meanPct = _qvAvg(pts);
+      if (typeof data.avgLabel === 'function') {
+        val = String(data.avgLabel(meanPct));
+      } else {
+        // No avgLabel: scale by the axis top and carry any non-numeric suffix (e.g. "100%" → "%")
+        var top = parseFloat(data.label) || 100;
+        var suffix = String(data.label || '').replace(/[-\d.\s]/g, '');
+        val = Math.round(meanPct / 100 * top) + suffix;
+      }
+      spark = _sparklineSVG(data.bars, data.goal, 150, 30);
+      foot = _qvTrendChip(data);
+    } else {
+      // Tracked but no (or too little) data yet — still show the card so every tracked metric appears.
+      // The sparkline renders the "no data entered" baseline (1px dark-green line along the bottom).
+      val = '—';
+      spark = _sparklineSVG(data && data.bars ? data.bars : [], data && data.goal, 150, 30);
+      foot = '<span class="qv-trend flat">No data yet</span>';
+    }
+    // Non-interactive display panel (not a button, not clickable, not focusable).
+    return '<div class="qv-card">' +
       '<span class="qv-top"><span class="qv-ic" aria-hidden="true">' + icon + '</span><span class="qv-name">' + name + '</span></span>' +
       '<span class="qv-val">' + val + '</span>' +
       '<span class="qv-spark-wrap">' + spark + '</span>' +
-      '<span class="qv-foot"><span class="qv-cad">' + _qvCadence(schedKey) + ' · last ' + pts.length + '</span>' + _qvTrendChip(data) + '</span>' +
-    '</button>';
+      '<span class="qv-foot">' + foot + '</span>' +
+    '</div>';
   }
   function renderQuickViews() {
     var grid = document.getElementById('quick-views-grid');
@@ -12114,27 +12337,14 @@
         var ib = tr.querySelector('.metric-info-btn');
         var key = (ib && ib.getAttribute('data-metric')) || displayName;
         var data = bcd[key] || pcd[key] || bcd[displayName] || pcd[displayName];
-        if (!data || !data.bars) return;
+        // Show a card for every tracked metric, even with no data yet (_qvCard renders a "No data yet" state).
         html += _qvCard(displayName, key, data, _logSectionFor(key));
       });
     });
     grid.innerHTML = html || '<p class="qv-empty">Track metrics to see their trends here.</p>';
   }
   window.renderQuickViews = renderQuickViews;
-  // Tap a card → open that metric's detail (back routes to the dashboard by default)
-  (function () {
-    var grid = document.getElementById('quick-views-grid');
-    if (!grid) return;
-    grid.addEventListener('click', function (e) {
-      var card = e.target.closest ? e.target.closest('.qv-card') : null;
-      if (!card) return;
-      var nm = card.getAttribute('data-qv-metric');
-      if (nm && typeof showMetricDetail === 'function') {
-        window.metricDetailOrigin = 'dashboard-screen';
-        showMetricDetail(nm);
-      }
-    });
-  })();
+  // Quick View cards are non-interactive display panels (not clickable, not focusable).
 
   function syncDailyLog() {
     var table = document.querySelector('#metrics-data-entry-log-screen .body-table');
@@ -12224,11 +12434,153 @@
     });
     _fitScaleAnchors(table);  // abbreviate any scale anchors that clip at the current width
     renderLogSparklines();    // mini trend line above each AVG number
+    _markLastMetricRows(table); // drop the divider below each section's last visible metric
+    if (window._resetCardGroups) window._resetCardGroups(table);  // newly-created card rows start at card 1
+  }
+
+  // Sections the user has manually opened/closed — their choice overrides the count-based default
+  // (persists across leaving/returning the screen, since the log DOM isn't rebuilt on navigation).
+  var _logSectionUserToggled = {};
+
+  // Per-section pass: tag the last *visible* metric row (so its bottom rule can be hidden), update
+  // the "(n metrics)" count, and default the section open/closed by count (empty → closed) unless
+  // the user has toggled it. Runs on every sync, so counts + defaults track metric add/remove.
+  function _markLastMetricRows(table) {
+    table.querySelectorAll('tbody.log-sched-tbody').forEach(function (tb) {
+      var visible = null, count = 0;
+      tb.querySelectorAll('tr').forEach(function (r) {
+        r.classList.remove('log-last-metric');
+        if (r.classList.contains('log-sched-head-row') || r.classList.contains('log-col-header-row') || r.classList.contains('log-sched-empty-row')) return;
+        if (r.style.display === 'none') return;
+        visible = r; count++;
+      });
+      if (visible) visible.classList.add('log-last-metric');
+      var heading = tb.querySelector('.log-sched-heading');
+      if (heading) {
+        var countEl = heading.querySelector('.log-sched-count');
+        if (!countEl) { countEl = document.createElement('span'); countEl.className = 'log-sched-count'; heading.appendChild(countEl); }
+        countEl.textContent = '(' + count + ' metric' + (count === 1 ? '' : 's') + ')';
+      }
+      var key = tb.getAttribute('data-sched-body');
+      if (!_logSectionUserToggled[key]) {
+        var collapse = (count === 0);
+        tb.classList.toggle('collapsed', collapse);
+        var tg = tb.querySelector('.log-sched-toggle');
+        if (tg) tg.setAttribute('aria-expanded', collapse ? 'false' : 'true');
+      }
+    });
   }
 
   // Initial sync so unchecked metrics are hidden on page load
   syncLogScreens();
 
+  // Accordion: each schedule-section heading toggles its section open/closed
+  (function () {
+    var logTable = document.querySelector('#metrics-data-entry-log-screen .body-table');
+    if (!logTable) return;
+    logTable.querySelectorAll('.log-sched-head-row').forEach(function (row) {
+      var tbody = row.closest('.log-sched-tbody');
+      var cell = row.querySelector('td');
+      var heading = cell && cell.querySelector('.log-sched-heading');
+      if (!tbody || !heading || cell.querySelector('.log-sched-toggle')) return;
+      // Title only (the heading also holds the "(n metrics)" count span)
+      var title = (heading.childNodes[0] && heading.childNodes[0].nodeType === 3) ? heading.childNodes[0].textContent.trim() : heading.textContent.trim();
+      var startCollapsed = tbody.classList.contains('collapsed'); // count-based default may have collapsed it already
+      var toggle = document.createElement('div');
+      toggle.className = 'log-sched-toggle';
+      toggle.setAttribute('role', 'button');
+      toggle.setAttribute('tabindex', '0');
+      toggle.setAttribute('aria-expanded', startCollapsed ? 'false' : 'true');
+      toggle.setAttribute('aria-label', title + (startCollapsed ? ', expand section' : ', collapse section'));
+      cell.insertBefore(toggle, heading);
+      toggle.appendChild(heading);
+      toggle.insertAdjacentHTML('beforeend', '<svg class="log-sched-chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>');
+      function toggleSection() {
+        var collapsed = tbody.classList.toggle('collapsed');
+        _logSectionUserToggled[tbody.getAttribute('data-sched-body')] = true; // remember the user's choice (overrides the count default)
+        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        toggle.setAttribute('aria-label', title + (collapsed ? ', expand section' : ', collapse section'));
+      }
+      toggle.addEventListener('click', toggleSection);
+      toggle.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection(); }
+      });
+    });
+  })();
+
+})();
+</script>
+
+<script>
+// Tracked Metrics Setup: make each section heading (Wellness / Performance / Competition) an
+// accordion, reusing the Metrics Data Entry Log's toggle bar + chevron styling.
+(function () {
+  var screen = document.getElementById('tracked-metrics-setup-screen');
+  var content = screen && screen.querySelector('.screen-content');
+  if (!content) return;
+  var chevron = '<svg class="log-sched-chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+  Array.prototype.slice.call(content.querySelectorAll('.info-section-heading')).forEach(function (heading) {
+    // Gather this section's content: everything between this heading and the next heading
+    // (or the dashboard CTA), so it can be collapsed as one unit.
+    var nodes = [], n = heading.nextSibling;
+    while (n) {
+      var isHeading = n.nodeType === 1 && n.classList && n.classList.contains('info-section-heading');
+      var isCta = n.nodeType === 1 && n.id === 'tracked-metrics-setup-to-dashboard-wrap';
+      if (isHeading || isCta) break;
+      var next = n.nextSibling;
+      nodes.push(n);
+      n = next;
+    }
+    var section = document.createElement('div');
+    section.className = 'setup-section';
+    content.insertBefore(section, heading);
+    var toggle = document.createElement('div');
+    toggle.className = 'log-sched-toggle';
+    toggle.setAttribute('role', 'button');
+    toggle.setAttribute('tabindex', '0');
+    toggle.setAttribute('aria-expanded', 'true');
+    var title = heading.textContent.trim();
+    toggle.setAttribute('aria-label', title + ', collapse section');
+    section.appendChild(toggle);
+    toggle.appendChild(heading);
+    toggle.insertAdjacentHTML('beforeend', chevron);
+    var body = document.createElement('div');
+    body.className = 'setup-section-body';
+    section.appendChild(body);
+    nodes.forEach(function (node) { body.appendChild(node); });
+    function toggleSection() {
+      var collapsed = section.classList.toggle('collapsed');
+      toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      toggle.setAttribute('aria-label', title + (collapsed ? ', expand section' : ', collapse section'));
+    }
+    toggle.addEventListener('click', toggleSection);
+    toggle.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection(); }
+    });
+  });
+
+  // "(checkbox) x of y" — x = checked metrics, y = total metrics in the section (custom included).
+  // Counts the row checkboxes in each section body; the heading icon is the same .track-check at 24×24.
+  function updateSetupCounts() {
+    content.querySelectorAll('.setup-section').forEach(function (section) {
+      var checks = section.querySelectorAll('.setup-section-body .track-check');
+      var total = checks.length, checked = 0;
+      checks.forEach(function (c) { if (c.checked) checked++; });
+      var heading = section.querySelector('.info-section-heading');
+      if (!heading) return;
+      var countEl = heading.querySelector('.setup-count');
+      if (!countEl) {
+        countEl = document.createElement('span');
+        countEl.className = 'setup-count';
+        countEl.innerHTML = '(<input type="checkbox" class="track-check setup-count-check" checked tabindex="-1" aria-hidden="true"><span class="setup-count-num"></span>)';
+        heading.appendChild(countEl);
+      }
+      countEl.querySelector('.setup-count-num').textContent = checked + ' of ' + total;
+      countEl.setAttribute('aria-label', checked + ' of ' + total + ' metrics tracked');
+    });
+  }
+  window._updateSetupCounts = updateSetupCounts;
+  updateSetupCounts();
 })();
 </script>
 
