@@ -3,6 +3,6 @@
     <title>Precipitation Amount Heavy ICON</title>
     <g id="Precipitation-Amount-Heavy-ICON" stroke="none" fill="none">
         <rect id="Path" x="0" y="0" width="24" height="24"></rect>
-        <path d="M17.25,24 L23.75,24 L23.75,0 L17.25,0 L17.25,24 Z M8.75,24 L15.25,24 L15.25,7.57 L8.75,7.57 L8.75,24 Z M0.25,24.001 L6.75,24.001 L6.75,15.14 L0.25,15.14 L0.25,24.001 Z" id="Shape" fill="#000000" fill-rule="evenodd"></path>
+        <path d="M17.25,24 L23.75,24 L23.75,0 L17.25,0 L17.25,24 Z M8.75,24 L15.25,24 L15.25,7.33 L8.75,7.33 L8.75,24 Z M0.25,24 L6.75,24 L6.75,14.67 L0.25,14.67 L0.25,24 Z" id="Shape" fill="#000000" fill-rule="evenodd"></path>
     </g>
 </svg>
