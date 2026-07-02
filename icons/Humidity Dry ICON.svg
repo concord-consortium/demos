@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Humidity Dry ICON</title>
+    <g id="Humidity-Dry-ICON" stroke="none" fill="none">
+        <rect id="Path" x="0" y="0" width="24" height="24"></rect>
+        <path d="M12,2 C6.67,6.55 4,10.48 4,13.8 C4,18.78 7.8,22 12,22 C16.2,22 20,18.78 20,13.8 C20,10.48 17.33,6.55 12,2 Z M12,20 C8.65,20 6,17.43 6,13.8 C6,11.46 7.95,8.36 12,4.66 C16.05,8.36 18,11.45 18,13.8 C18,17.43 15.35,20 12,20 Z" id="Shape" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>
