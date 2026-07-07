@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="58px" height="58px" viewBox="0 0 58 58" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Noreaster</title>
+    <defs>
+        <path d="M58,29 C58,45.016 45.016,58 29,58 C12.984,58 0,45.016 0,29 C0,12.984 12.984,0 29,0 C45.016,0 58,12.984 58,29 Z" id="path-1"></path>
+    </defs>
+    <g id="Noreaster" stroke="none" fill="none" xlink:href="#path-1">
+        <path d="M58,29 C58,45.016 45.016,58 29,58 C12.984,58 0,45.016 0,29 C0,12.984 12.984,0 29,0 C45.016,0 58,12.984 58,29 Z" id="Path" fill="#FFFFFF" fill-rule="evenodd" opacity="0.75"></path>
+        <g id="Arrows" stroke-width="1" fill-rule="evenodd" transform="translate(4.7187, 3.7166)" stroke="#000000">
+            <path d="M2.8157,20.4641 C3.7257,16.4121 5.7687,12.6841 8.7247,9.7271 C12.1957,6.2571 16.7287,4.0451 21.5997,3.4471" id="Path" stroke-width="2"></path>
+            <polyline id="Path" stroke-width="2" points="8.115 17.6492 2.817 20.4662 0 15.1682"></polyline>
+            <path d="M29.1006,3.8178 C33.1526,4.7278 36.8806,6.7708 39.8376,9.7268 C43.3076,13.1978 45.5196,17.7308 46.1176,22.6028" id="Path" stroke-width="2"></path>
+            <polyline id="Path" stroke-width="2" points="31.9177 9.115 29.1007 3.817 34.3987 1"></polyline>
+            <path d="M19.462,46.749 C15.41,45.839 11.682,43.796 8.725,40.84 C5.255,37.369 3.043,32.836 2.445,27.964" id="Path" stroke-width="2"></path>
+            <polyline id="Path" stroke-width="2" points="16.6464 41.4476 19.4634 46.7456 14.1654 49.5626"></polyline>
+            <path d="M45.7469,30.1027 C44.8369,34.1547 42.7939,37.8827 39.8379,40.8397 C36.3669,44.3097 31.8339,46.5217 26.9629,47.1197" id="Path" stroke-width="2"></path>
+            <polyline id="Path" stroke-width="2" points="40.4492 32.9187 45.7472 30.1017 48.5642 35.3997"></polyline>
+        </g>
+        <text id="L" font-family="Lato-Black, Lato" font-size="36" font-weight="800" fill="#000000">
+            <tspan x="19.658" y="42">L</tspan>
+        </text>
+    </g>
+</svg>
