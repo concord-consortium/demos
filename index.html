@@ -2099,8 +2099,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.7</div>
-      <div style="font-weight: 400;">Updated: 7/7/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.8</div>
+      <div style="font-weight: 400;">Updated: 7/8/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -2477,11 +2477,11 @@ function buildSimTitleBar() {
   const right = document.createElement("div");
   right.className = "sim-title-right";
   const deseLogo = document.createElement("img");
-  deseLogo.src = "icons/DESE Logo.svg";
+  deseLogo.src = "ICONS/DESE Logo.svg";
   deseLogo.alt = "DESE";
   deseLogo.className = "sim-title-logo";
   const ccLogo = document.createElement("img");
-  ccLogo.src = "icons/CC Logo.svg";
+  ccLogo.src = "ICONS/CC Logo.svg";
   ccLogo.alt = "Concord Consortium";
   ccLogo.className = "sim-title-logo";
   const infoBtn = document.createElement("button");
@@ -2965,6 +2965,7 @@ function buildSimContent() {
           const indicator = document.querySelector(".sim-trial-indicator");
           if (indicator) indicator.textContent = targetLetter;
           scrollItemIntoView(targetCard, scrollWrap);
+
           if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(targetLetter);
           if (SIM.renderOffspring) SIM.renderOffspring(targetLetter);
           if (SIM.updateSimButtons) SIM.updateSimButtons();
@@ -5285,6 +5286,16 @@ function buildSimContent() {
             }
           }
           if (SIM._checkNorDataLabels) SIM._checkNorDataLabels();
+          if ((outcome === "strong" || outcome === "moderate") && SIM._startSnow) {
+            SIM._startSnow(outcome);
+            if (SIM._stopSun) SIM._stopSun();
+          } else if (outcome === "fair" && SIM._startSun) {
+            if (SIM._stopSnow) SIM._stopSnow();
+            SIM._startSun();
+          } else {
+            if (SIM._stopSnow) SIM._stopSnow();
+            if (SIM._stopSun) SIM._stopSun();
+          }
         }
 
         function clearDataPanel() {
@@ -5320,6 +5331,8 @@ function buildSimContent() {
             SIM._stormIcon.innerHTML = SIM._standInIcon;
           }
           if (SIM._checkNorDataLabels) SIM._checkNorDataLabels();
+          if (SIM._stopSnow) SIM._stopSnow();
+          if (SIM._stopSun) SIM._stopSun();
         }
 
         var NOR_LABEL_KEYS = {
@@ -5364,6 +5377,12 @@ function buildSimContent() {
             if (SIM._norPromptWrap) SIM._norPromptWrap.style.display = "none";
             SIM._norPromptVisible = false;
 
+            if ((st.outcome === "strong" || st.outcome === "moderate") && SIM._showNorCloudFinal) {
+              SIM._showNorCloudFinal(st.outcome);
+            } else if (SIM._stopNorCloud) {
+              SIM._stopNorCloud();
+            }
+
             stage.style.transition = "none";
             stage.style.backgroundColor = "#d8d8d8";
             if (SIM.runBtn) {
@@ -5379,6 +5398,7 @@ function buildSimContent() {
               else dd._setSelection(null);
             });
             clearDataPanel();
+            if (SIM._stopNorCloud) SIM._stopNorCloud();
 
             stage.style.transition = "none";
             stage.style.backgroundColor = "#ebebeb";
@@ -5397,13 +5417,14 @@ function buildSimContent() {
             setNorPillMode(false);
             norDropdowns.forEach(function(dd) { dd._setSelection(null); });
             clearDataPanel();
+            if (SIM._stopNorCloud) SIM._stopNorCloud();
 
             stage.style.transition = "none";
             stage.style.backgroundColor = "#ebebeb";
             if (SIM._norPromptWrap) SIM._norPromptWrap.style.display = "none";
             SIM._norPromptVisible = false;
             SIM._norRunning = false;
-            if (SIM._resetNoreasterAnim) SIM._resetNoreasterAnim();
+  
             if (SIM.runBtn) {
               SIM.runBtn.querySelector("span").textContent = "Run";
               SIM.runBtn.setAttribute("aria-disabled", "true");
@@ -5856,116 +5877,213 @@ function buildSimContent() {
 
         const noreasterGraphic = document.createElement("div");
         noreasterGraphic.setAttribute("aria-hidden", "true");
-        noreasterGraphic.style.cssText = "position:absolute;width:58px;height:58px;pointer-events:none;z-index:10;opacity:0;";
-        noreasterGraphic.innerHTML = '<svg width="100%" height="100%" viewBox="0 0 58 58" xmlns="http://www.w3.org/2000/svg"><path d="M58,29 C58,45.016 45.016,58 29,58 C12.984,58 0,45.016 0,29 C0,12.984 12.984,0 29,0 C45.016,0 58,12.984 58,29 Z" fill="#FFFFFF" fill-rule="evenodd" opacity="0.75"/><g data-arrows fill-rule="evenodd" transform="translate(4.7187, 3.7166)" stroke="#000000"><path d="M2.8157,20.4641 C3.7257,16.4121 5.7687,12.6841 8.7247,9.7271 C12.1957,6.2571 16.7287,4.0451 21.5997,3.4471" stroke-width="2" fill="none"/><polyline points="8.115 17.6492 2.817 20.4662 0 15.1682" stroke-width="2" fill="none"/><path d="M29.1006,3.8178 C33.1526,4.7278 36.8806,6.7708 39.8376,9.7268 C43.3076,13.1978 45.5196,17.7308 46.1176,22.6028" stroke-width="2" fill="none"/><polyline points="31.9177 9.115 29.1007 3.817 34.3987 1" stroke-width="2" fill="none"/><path d="M19.462,46.749 C15.41,45.839 11.682,43.796 8.725,40.84 C5.255,37.369 3.043,32.836 2.445,27.964" stroke-width="2" fill="none"/><polyline points="16.6464 41.4476 19.4634 46.7456 14.1654 49.5626" stroke-width="2" fill="none"/><path d="M45.7469,30.1027 C44.8369,34.1547 42.7939,37.8827 39.8379,40.8397 C36.3669,44.3097 31.8339,46.5217 26.9629,47.1197" stroke-width="2" fill="none"/><polyline points="40.4492 32.9187 45.7472 30.1017 48.5642 35.3997" stroke-width="2" fill="none"/></g><text font-family="Lato-Black, Lato" font-size="36" font-weight="800" fill="#000000"><tspan x="19.658" y="42">L</tspan></text></svg>';
-        stage.appendChild(noreasterGraphic);
-        function getNorBasePos() {
-          var sw = stage.offsetWidth, sh = stage.offsetHeight;
-          var imgW = sh * (2667 / 1334);
-          var imgLeft = (sw - imgW) / 2;
-          return { x: imgLeft + imgW / 2 - 29 - 20, y: sh / 2 - 29 + 35 };
+        noreasterGraphic.style.cssText = "position:absolute;width:298px;height:298px;pointer-events:none;z-index:10;overflow:visible;";
+
+        // Cloud particle canvas — appended after innerHTML below
+        var norCanvas = document.createElement("canvas");
+        norCanvas.width = 1192; norCanvas.height = 1192;
+        norCanvas.style.cssText = "position:absolute;left:0;top:0;width:100%;height:100%;";
+        var norCtx = norCanvas.getContext("2d");
+        var norOffCanvas = document.createElement("canvas");
+        norOffCanvas.width = 1192; norOffCanvas.height = 1192;
+        var norOffCtx = norOffCanvas.getContext("2d");
+        var NOR_SCALE = 1192 / 298, NOR_CX = 149 * NOR_SCALE, NOR_CY = 149 * NOR_SCALE;
+        var NOR_ALPHA = 0.95, NOR_OMEGA_MAX = 72, NOR_LIFE = 30, norOmegaScale = 1;
+        var norCloud = [], norLastCircleR = 0.5;
+
+        function norOmega(r) {
+          var rr = r / NOR_SCALE;
+          if (rr < 10) return 0;
+          var w = rr <= 29 ? NOR_OMEGA_MAX : NOR_OMEGA_MAX * Math.pow(29 / rr, 1 + NOR_ALPHA);
+          return w * norOmegaScale;
         }
-        function positionNoreasterGraphic() {
-          if (SIM._norAnimating) return;
+
+        var norCloudSources = [];
+        for (var nsi = 1; nsi < 10; nsi++) {
+          norCloudSources.push({ angle: Math.PI + nsi * Math.PI / 9 });
+        }
+        for (var nsi2 = 0; nsi2 < 2; nsi2++) {
+          norCloudSources.push({ angle: nsi2 * Math.PI / 6 });
+        }
+        norCloudSources.push({ angle: 1.27, weight: 0.15 });
+        norCloudSources.push({ angle: 2.0, weight: 0.15 });
+        norCloudSources.push({ angle: 2.75, weight: 0.15 });
+
+        function norSpawnCloud(circleR) {
+          var r = circleR * NOR_SCALE;
+          var spread = 0.405 + ((circleR - 0.5) / 98.5) * 0.7;
+          var count = 1 + ((circleR - 0.5) / 98.5) * 4;
+          for (var s = 0; s < norCloudSources.length; s++) {
+            var src = norCloudSources[s];
+            var srcCount = Math.max(1, Math.round(count * (src.weight || 1)));
+            for (var i = 0; i < srcCount; i++) {
+              var a = src.angle + (Math.random() - 0.5) * spread;
+              var tone = 230 + Math.floor(Math.random() * 26);
+              var op = 0.4 + Math.random() * 0.4;
+              var sz = 1.5 + Math.random() * 6;
+              norCloud.push({ a: a, r: r, age: 0, size: sz, tone: tone, op: op });
+            }
+          }
+        }
+
+        // Seed center particles
+        for (var nci = 0; nci < 800; nci++) {
+          var nca = Math.random() * Math.PI * 2;
+          var ncr = Math.random() * 50 * NOR_SCALE;
+          norCloud.push({ a: nca, r: ncr, age: 0, size: 1.5 + Math.random() * 6, tone: 230 + Math.floor(Math.random() * 26), op: 0.4 + Math.random() * 0.4 });
+        }
+
+        var norLastTime = null;
+        function stepNorCloud(dt, circleR) {
+          norSpawnCloud(circleR);
+          var drift = 1 * NOR_SCALE;
+          for (var j = 0; j < norCloud.length; j++) {
+            var c = norCloud[j];
+            var w = norOmega(c.r) * Math.PI / 180;
+            c.a -= w * dt;
+            c.r -= drift * dt;
+            c.age += dt;
+          }
+          norCloud = norCloud.filter(function(c) { return c.age < NOR_LIFE && c.r > 0; });
+        }
+
+        function drawNorCloud(circleR) {
+          norCtx.clearRect(0, 0, 1192, 1192);
+          var cr = circleR * NOR_SCALE;
+          // Blurred radial shadow circle behind particles
+          norCtx.save();
+          norCtx.filter = "blur(" + (8 * NOR_SCALE) + "px)";
+          var grad = norCtx.createRadialGradient(NOR_CX, NOR_CY, 0, NOR_CX, NOR_CY, cr);
+          grad.addColorStop(0, "rgba(0,0,0,0.8)");
+          grad.addColorStop(1, "rgba(0,0,0,0.1)");
+          norCtx.fillStyle = grad;
+          norCtx.beginPath();
+          norCtx.arc(NOR_CX, NOR_CY, cr * 1.1, 0, Math.PI * 2);
+          norCtx.fill();
+          norCtx.restore();
+          norOffCtx.clearRect(0, 0, 1192, 1192);
+          for (var j = 0; j < norCloud.length; j++) {
+            var c = norCloud[j];
+            var fade = 1 - c.age / NOR_LIFE;
+            var edgeDist = (cr - c.r) / (cr * 0.3);
+            var edgeFade = Math.min(1, Math.max(0, edgeDist));
+            var centerFade = Math.min(1, c.r / (10 * NOR_SCALE));
+            var cx2 = NOR_CX + c.r * Math.cos(c.a);
+            var cy2 = NOR_CY + c.r * Math.sin(c.a);
+            norOffCtx.fillStyle = "rgba(" + c.tone + "," + c.tone + "," + c.tone + "," + (c.op * fade * edgeFade * centerFade).toFixed(3) + ")";
+            norOffCtx.beginPath();
+            norOffCtx.arc(cx2, cy2, c.size * NOR_SCALE / 4, 0, Math.PI * 2);
+            norOffCtx.fill();
+          }
+          norCtx.drawImage(norOffCanvas, 0, 0);
+        }
+        noreasterGraphic.appendChild(norCanvas);
+        stage.appendChild(noreasterGraphic);
+        noreasterGraphic.style.display = "none";
+        var norStartOffX = -25, norStartOffY = 49;
+        var norEndOffX = -25 + 78, norEndOffY = 49 - 110;
+        var norCurrentT = 0;
+        function positionNoreasterGraphic(t) {
+          if (t !== undefined) norCurrentT = t;
           var sw = stage.offsetWidth, sh = stage.offsetHeight;
           if (!sw || !sh) return;
-          var base = getNorBasePos();
-          if (SIM._norAtEnd) {
-            noreasterGraphic.style.left = (base.x + 80) + "px";
-            noreasterGraphic.style.top = (base.y - 110) + "px";
-          } else {
-            noreasterGraphic.style.left = base.x + "px";
-            noreasterGraphic.style.top = base.y + "px";
-          }
+          var imgW = sh * (2667 / 1334);
+          var imgLeft = (sw - imgW) / 2;
+          var frac = norCurrentT;
+          var eased = 1 - Math.pow(1 - frac, 1.3);
+          var offX = norStartOffX + (norEndOffX - norStartOffX) * eased;
+          var offY = norStartOffY + (norEndOffY - norStartOffY) * eased;
+          noreasterGraphic.style.left = (imgLeft + imgW / 2 - 149 + offX) + "px";
+          noreasterGraphic.style.top = (sh / 2 - 149 + offY) + "px";
         }
         positionNoreasterGraphic();
         SIM._positionNoreasterGraphic = positionNoreasterGraphic;
 
-        var norArrowGroup = noreasterGraphic.querySelector('[data-arrows]');
-        var norAngle = 0;
-        var norRotSpeed = 36;
-        var norLastFrame = null;
-        function norRotateLoop(ts) {
-          if (norLastFrame === null) norLastFrame = ts;
-          var dt = (ts - norLastFrame) / 1000;
-          norLastFrame = ts;
-          norAngle -= norRotSpeed * dt;
-          norArrowGroup.setAttribute('transform', 'translate(4.7187, 3.7166) rotate(' + norAngle + ' 24.28 25.28)');
-          requestAnimationFrame(norRotateLoop);
-        }
-        requestAnimationFrame(norRotateLoop);
-
-        function startNoreasterAnim(onDone) {
-          var duration = 7000;
-          var animStart = null;
-          var strokedEls = noreasterGraphic.querySelectorAll('[stroke-width]');
-          SIM._norAnimating = true;
-          SIM._norAtEnd = false;
-          var base = getNorBasePos();
-          noreasterGraphic.style.left = base.x + "px";
-          noreasterGraphic.style.top = base.y + "px";
-
-          function step(ts) {
-            if (animStart === null) animStart = ts;
-            var t = Math.min((ts - animStart) / duration, 1);
-            var base = getNorBasePos();
-            noreasterGraphic.style.opacity = Math.min(t * duration / 1500, 1);
-            var ease = t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t);
-            noreasterGraphic.style.left = (base.x + 80 * ease) + "px";
-            noreasterGraphic.style.top = (base.y - 110 * ease) + "px";
-            var s = 1 + 2 * ease;
-            noreasterGraphic.style.transform = "scale(" + s + ")";
-            noreasterGraphic.style.transformOrigin = "center";
-            var sw2 = 2 / s;
-            for (var i = 0; i < strokedEls.length; i++) {
-              strokedEls[i].setAttribute("stroke-width", sw2);
-            }
-            var spinT = 1 - (1 - t) * (1 - t);
-            norRotSpeed = 72 + 72 * spinT;
-            if (t < 1) {
-              SIM._norAnimId = requestAnimationFrame(step);
-            } else {
-              SIM._norAnimating = false;
-              SIM._norAtEnd = true;
-              var decelStart = null;
-              var decelDur = 2000;
-              function decel(ts2) {
-                if (decelStart === null) decelStart = ts2;
-                var d = Math.min((ts2 - decelStart) / decelDur, 1);
-                norRotSpeed = 144 * (1 - d);
-                if (d < 1) {
-                  SIM._norAnimId = requestAnimationFrame(decel);
-                } else {
-                  norRotSpeed = 0;
-                  SIM._norAnimId = null;
-                  if (onDone) onDone();
-                }
-              }
-              SIM._norAnimId = requestAnimationFrame(decel);
+        var norAnimStart = null;
+        var norSpinRAF;
+        var norFinishCallback = null;
+        var norAnimMode = null;
+        var norMaxR = 99;
+        var norDuration = 10;
+        var norMoves = true;
+        function animateNorCloud(now) {
+          var elapsed = (now - norAnimStart) / 1000;
+          var t = Math.min(elapsed / norDuration, 1);
+          var cloudR = 0.5 + (norMaxR - 0.5) * t;
+          var cdt = norLastTime ? Math.min((now - norLastTime) / 1000, 0.05) : 0.016;
+          norLastTime = now;
+          stepNorCloud(cdt, cloudR);
+          drawNorCloud(cloudR);
+          noreasterGraphic.style.opacity = elapsed < 1 ? elapsed : 1;
+          positionNoreasterGraphic(norMoves ? t : 0);
+          if (elapsed < norDuration) {
+            norSpinRAF = requestAnimationFrame(animateNorCloud);
+          } else {
+            norFinalSnapshots[norAnimMode] = document.createElement("canvas");
+            norFinalSnapshots[norAnimMode].width = 1192;
+            norFinalSnapshots[norAnimMode].height = 1192;
+            norFinalSnapshots[norAnimMode].getContext("2d").drawImage(norCanvas, 0, 0);
+            if (norFinishCallback) {
+              norFinishCallback();
+              norFinishCallback = null;
             }
           }
-          SIM._norAnimId = requestAnimationFrame(step);
         }
-        SIM._startNoreasterAnim = startNoreasterAnim;
 
-        function resetNoreasterAnim() {
-          if (SIM._norAnimId) {
-            cancelAnimationFrame(SIM._norAnimId);
-            SIM._norAnimId = null;
+        function startNorCloud(mode, onFinish) {
+          if (norSpinRAF) cancelAnimationFrame(norSpinRAF);
+          norAnimMode = mode;
+          if (mode === "strong") {
+            norMaxR = 99;
+            norDuration = 10;
+            norMoves = true;
+            norOmegaScale = 1;
+          } else {
+            norMaxR = 59.4;
+            norDuration = 7;
+            norMoves = true;
+            norOmegaScale = 0.7;
           }
-          SIM._norAnimating = false;
-          SIM._norAtEnd = false;
-          norRotSpeed = 36;
-          noreasterGraphic.style.opacity = "0";
-          noreasterGraphic.style.transform = "";
-          noreasterGraphic.style.transformOrigin = "";
-          var strokedEls = noreasterGraphic.querySelectorAll('[stroke-width]');
-          for (var i = 0; i < strokedEls.length; i++) {
-            strokedEls[i].setAttribute("stroke-width", "2");
+          norCloud.length = 0;
+          norLastCircleR = 0.5;
+          norLastTime = null;
+          var seedR = Math.min(50, norMaxR * 0.5);
+          for (var nci2 = 0; nci2 < 800; nci2++) {
+            norCloud.push({ a: Math.random() * Math.PI * 2, r: Math.random() * seedR * NOR_SCALE, age: 0, size: 1.5 + Math.random() * 6, tone: 230 + Math.floor(Math.random() * 26), op: 0.4 + Math.random() * 0.4 });
           }
-          positionNoreasterGraphic();
+          noreasterGraphic.style.display = "";
+          noreasterGraphic.style.opacity = 0;
+          norFinishCallback = onFinish || null;
+          norAnimStart = performance.now();
+          norSpinRAF = requestAnimationFrame(animateNorCloud);
         }
-        SIM._resetNoreasterAnim = resetNoreasterAnim;
+        SIM._startNorCloud = startNorCloud;
+
+        function stopNorCloud() {
+          if (norSpinRAF) cancelAnimationFrame(norSpinRAF);
+          norSpinRAF = null;
+          norFinishCallback = null;
+          norAnimMode = null;
+          noreasterGraphic.style.display = "none";
+          norCtx.clearRect(0, 0, 1192, 1192);
+        }
+        SIM._stopNorCloud = stopNorCloud;
+
+        var norFinalSnapshots = {};
+        function showNorCloudFinal(mode) {
+          if (norSpinRAF) cancelAnimationFrame(norSpinRAF);
+          norSpinRAF = null;
+          norFinishCallback = null;
+          norAnimMode = mode;
+          noreasterGraphic.style.display = "";
+          noreasterGraphic.style.opacity = 1;
+          if (norFinalSnapshots[mode]) {
+            norCtx.clearRect(0, 0, 1192, 1192);
+            norCtx.drawImage(norFinalSnapshots[mode], 0, 0);
+          }
+          positionNoreasterGraphic(1);
+        }
+        SIM._showNorCloudFinal = showNorCloudFinal;
 
         const bostonMarker = document.createElement("div");
         bostonMarker.setAttribute("aria-hidden", "true");
@@ -5986,8 +6104,8 @@ function buildSimContent() {
         pathwayArrows.setAttribute("aria-hidden", "true");
         pathwayArrows.style.cssText = "position:absolute;inset:0;pointer-events:none;";
         var NOR_ARROW_IMG = [
-          {num: 1, xFrac: 0.16025, yFrac: -0.16981},
-          {num: 2, xFrac: 0.54908, yFrac: 0.71698},
+          {num: 1, xFrac: 0.16025, yFrac: -0.16981, xPx: -10},
+          {num: 2, xFrac: 0.54908, yFrac: 0.71698, xPx: -25, yPx: 4},
           {num: 3, xFrac: 0.60382, yFrac: -0.20755, xPx: -5},
           {num: 4, xFrac: -0.02472, yFrac: 0.58113, yPx: -23}
         ];
@@ -6027,9 +6145,9 @@ function buildSimContent() {
           return '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#1E3F6E" fill-opacity="0.25"/><circle cx="12" cy="12" r="10" fill="none" stroke="#1E3F6E" stroke-width="2"/><text x="12" y="17.65" text-anchor="middle" font-family="Lato-Bold, Lato" font-size="16" font-weight="bold" fill="#1E3F6E">' + num + '</text></svg>';
         }
         var pillData = [
-          { num: 1, label: "N/NW", leftPct: 0.105, leftPx: 35,  topPct: 0.109, topPx: 15 },
+          { num: 1, label: "N/NW", leftPct: 0.105, leftPx: 25,  topPct: 0.109, topPx: 15 },
           { num: 4, label: "W",    leftPct: 0.013, leftPx: 71, topPct: 0.472, topPx: -4 },
-          { num: 2, label: "S/SE", leftPct: 0.775, leftPx: -67,  topPct: 0.837, topPx: 0 },
+          { num: 2, label: "S/SE", leftPct: 0.775, leftPx: -94,  topPct: 0.837, topPx: 0 },
           { num: 3, label: "NE",   leftPct: 0.85,  leftPx: -57, topPct: 0.109, topPx: 15 }
         ];
         var pillContainer = document.createElement("div");
@@ -6171,7 +6289,7 @@ function buildSimContent() {
               if (SIM._norPromptWrap) SIM._norPromptWrap.style.display = "none";
               SIM._norPromptVisible = false;
               SIM._norRunning = true;
-              if (SIM._resetNoreasterAnim) SIM._resetNoreasterAnim();
+    
               setNorPillMode(true);
               var trial = SIM.selectedTrial;
               updateNorDropdownSize();
@@ -6180,10 +6298,13 @@ function buildSimContent() {
               stage.style.transition = "none";
               stage.style.backgroundColor = "#ebebeb";
               void stage.offsetWidth;
-              stage.style.transition = "background-color 2s linear";
-              stage.style.backgroundColor = "#d8d8d8";
               var outcome = evaluateOutcome();
+              var hasCloud = outcome === "strong" || outcome === "moderate";
+              var bgDur = outcome === "strong" ? 10 : outcome === "moderate" ? 7 : 2;
+              stage.style.transition = "background-color " + bgDur + "s linear";
+              stage.style.backgroundColor = "#d8d8d8";
               function finishRun() {
+                SIM._norRunning = false;
                 fillDataPanel(outcome);
                 if (SIM.trialState && SIM.trialState[trial]) {
                   SIM.trialState[trial].outcome = outcome;
@@ -6191,7 +6312,7 @@ function buildSimContent() {
                   if (SIM.updateTrialCardLabel) SIM.updateTrialCardLabel(trial);
                 }
                 stage.style.transition = "none";
-    
+
                 if (SIM.resetTrialBtn) SIM.resetTrialBtn.setAttribute("aria-disabled", "false");
                 btn.setAttribute("aria-disabled", "false");
                 btn.querySelector("span").textContent = "Replay";
@@ -6199,9 +6320,10 @@ function buildSimContent() {
                 if (SIM.updateArrowColors) SIM.updateArrowColors();
                 if (SIM.announce) SIM.announce(SIM._OUTCOME_DATA && SIM._OUTCOME_DATA[outcome] ? SIM._OUTCOME_DATA[outcome].banner : "Simulation finished.");
               }
-              if (outcome === "strong" && SIM._startNoreasterAnim) {
-                SIM._startNoreasterAnim(finishRun);
+              if (hasCloud) {
+                SIM._startNorCloud(outcome, finishRun);
               } else {
+                if (SIM._stopNorCloud) SIM._stopNorCloud();
                 setTimeout(finishRun, 2000);
               }
             });
@@ -6233,18 +6355,18 @@ function buildSimContent() {
         dataInner.style.paddingTop = "27px";
 
         const heading = document.createElement("h3");
-        heading.style.cssText = "font-family:'Lato',sans-serif;font-size:16px;font-weight:700;color:#333;text-align:center;padding:0 0 7px;margin:0;";
+        heading.style.cssText = "font-family:'Lato',sans-serif;font-size:16px;font-weight:700;color:#333;text-align:center;padding:0 0 7px;margin:0;position:relative;z-index:1;";
         heading.textContent = "Weather Outcome";
         dataInner.appendChild(heading);
 
         function addRule() {
           const rule = document.createElement("div");
-          rule.style.cssText = "border-top:1px solid " + rc + ";";
+          rule.style.cssText = "border-top:1px solid " + rc + ";position:relative;z-index:1;";
           dataInner.appendChild(rule);
         }
 
         const outcomeBar = document.createElement("div");
-        outcomeBar.style.cssText = "background:var(--sim-trial-selected-bg,#f0f0f0);border-radius:999px;padding:8px 0;text-align:center;font-family:'Lato',sans-serif;font-size:16px;color:#333;margin:1px 0 2px;";
+        outcomeBar.style.cssText = "background:var(--sim-trial-selected-bg,#f0f0f0);border-radius:999px;padding:8px 0;text-align:center;font-family:'Lato',sans-serif;font-size:16px;color:#333;margin:1px 0 2px;position:relative;z-index:1;";
         outcomeBar.textContent = "–";
         dataInner.appendChild(outcomeBar);
 
@@ -6265,7 +6387,7 @@ function buildSimContent() {
           if (!isFirstRow) addRule();
           isFirstRow = false;
           const row = document.createElement("div");
-          row.style.cssText = "display:flex;align-items:flex-start;gap:8px;padding:10px 0;font-family:'Lato',sans-serif;font-size:16px;font-weight:700;color:#333;line-height:24px;";
+          row.style.cssText = "display:flex;align-items:flex-start;gap:8px;padding:10px 0;font-family:'Lato',sans-serif;font-size:16px;font-weight:700;color:#333;line-height:24px;position:relative;z-index:1;";
 
           const icon = document.createElement("span");
           icon.style.cssText = "flex-shrink:0;width:24px;height:24px;color:" + tc + ";";
@@ -6309,6 +6431,233 @@ function buildSimContent() {
 
         SIM._outcomeBar = outcomeBar;
         SIM._dataValueEls = dataValueEls;
+
+        var snowCanvas = document.createElement("canvas");
+        snowCanvas.style.cssText = "position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:0;display:none;border-radius:6px 6px 0 0;";
+        dataInner.style.position = "relative";
+        dataInner.insertBefore(snowCanvas, dataInner.firstChild);
+
+        var snowCtx = snowCanvas.getContext("2d");
+        var snowFlakes = [];
+        var snowRAF = null;
+        var snowLastTime = null;
+        var snowGustUntil = 0;
+        var snowNextGust = 1.5 + Math.random() * 2;
+
+        var snowFixedW = 400;
+        var snowFixedH = 120;
+        function sizeSnowCanvas() {
+          var firstRule = dataInner.querySelector("div[style*='border-top']");
+          var h = firstRule ? firstRule.offsetTop : 120;
+          snowFixedH = h;
+          var dpr = window.devicePixelRatio || 1;
+          snowCanvas.width = snowFixedW * dpr;
+          snowCanvas.height = h * dpr;
+          snowCanvas.style.height = h + "px";
+          snowCanvas.style.objectFit = "cover";
+          snowCanvas.style.objectPosition = "right top";
+          snowCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          return { w: snowFixedW, h: h };
+        }
+
+        function spawnSnowFlake(dims, gust) {
+          var w = dims.w, h = dims.h;
+          var sz = 1.5 + Math.random() * 3;
+          var op = 0.4 + Math.random() * 0.5;
+          var speed = (gust ? (250 + Math.random() * 100) : (200 + Math.random() * 80)) * snowIntensity;
+          var windAngle = (gust ? (220 + (Math.random() - 0.5) * 10) : (225 + (Math.random() - 0.5) * 20)) * Math.PI / 180;
+          var vx = Math.cos(windAngle) * speed;
+          var vy = -Math.sin(windAngle) * speed;
+          var x, y;
+          if (Math.random() < 0.6) {
+            x = w + sz;
+            y = Math.random() * h;
+          } else {
+            x = Math.random() * w;
+            y = -sz;
+          }
+          snowFlakes.push({ x: x, y: y, sz: sz, op: op, vx: vx, vy: vy });
+        }
+
+        function animateSnow(now) {
+          var dt = snowLastTime ? Math.min((now - snowLastTime) / 1000, 0.05) : 0.016;
+          snowLastTime = now;
+          var dims = { w: snowFixedW, h: snowFixedH };
+          var snowElapsed = (now - snowAnimStart) / 1000;
+          var gusting = snowElapsed < snowGustUntil;
+          if (!gusting && snowElapsed > snowNextGust) {
+            snowGustUntil = snowElapsed + 0.6 + Math.random() * 0.6;
+            snowNextGust = snowGustUntil + 1.5 + Math.random() * 2.5;
+          }
+          if (gusting) {
+            var gustCount = snowIntensity < 1 ? 2 : 3;
+            for (var gi = 0; gi < gustCount; gi++) spawnSnowFlake(dims, true);
+          }
+          spawnSnowFlake(dims, false);
+          if (Math.random() < 0.5 * snowIntensity) spawnSnowFlake(dims, false);
+          for (var i = 0; i < snowFlakes.length; i++) {
+            var f = snowFlakes[i];
+            if (gusting) {
+              f.vx += -120 * snowIntensity * dt;
+              f.vy += 30 * snowIntensity * dt;
+            }
+            f.x += f.vx * dt;
+            f.y += f.vy * dt;
+          }
+          snowFlakes = snowFlakes.filter(function(f) {
+            return f.x > -10 && f.x < dims.w + 10 && f.y > -10 && f.y < dims.h + 10;
+          });
+          snowCtx.clearRect(0, 0, dims.w, dims.h);
+          var grad = snowCtx.createLinearGradient(0, 0, 0, dims.h);
+          var gradOp = (0.65 * snowIntensity).toFixed(2);
+          grad.addColorStop(0, "rgba(140,155,175," + gradOp + ")");
+          grad.addColorStop(1, "rgba(140,155,175,0)");
+          snowCtx.fillStyle = grad;
+          snowCtx.fillRect(0, 0, dims.w, dims.h);
+          for (var j = 0; j < snowFlakes.length; j++) {
+            var sf = snowFlakes[j];
+            snowCtx.fillStyle = "rgba(255,255,255," + sf.op.toFixed(2) + ")";
+            snowCtx.beginPath();
+            snowCtx.arc(sf.x, sf.y, sf.sz, 0, Math.PI * 2);
+            snowCtx.fill();
+          }
+          snowRAF = requestAnimationFrame(animateSnow);
+        }
+
+        var snowAnimStart = 0;
+        var snowIntensity = 1;
+        function startSnow(mode) {
+          snowIntensity = mode === "moderate" ? 0.75 : 1;
+          sizeSnowCanvas();
+          snowFlakes = [];
+          snowLastTime = null;
+          snowGustUntil = 0;
+          snowNextGust = 1.5 + Math.random() * 2;
+          snowAnimStart = performance.now();
+          snowCanvas.style.display = "";
+          if (snowRAF) cancelAnimationFrame(snowRAF);
+          snowRAF = requestAnimationFrame(animateSnow);
+        }
+
+        function stopSnow() {
+          if (snowRAF) cancelAnimationFrame(snowRAF);
+          snowRAF = null;
+          snowFlakes = [];
+          snowCanvas.style.display = "none";
+          snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+        }
+
+        SIM._startSnow = startSnow;
+        SIM._stopSnow = stopSnow;
+
+        var sunCanvas = document.createElement("canvas");
+        sunCanvas.style.cssText = "position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:0;display:none;border-radius:6px 6px 0 0;";
+        dataInner.insertBefore(sunCanvas, dataInner.firstChild);
+        var sunCtx = sunCanvas.getContext("2d");
+        var sunRAF = null;
+        var sunAnimStart = 0;
+        var sunFixedW = 400;
+        var sunFixedH = 120;
+        var SUN_RAY_COUNT = 11;
+        var sunRays = [];
+
+        function sizeSunCanvas() {
+          var firstRule = dataInner.querySelector("div[style*='border-top']");
+          var h = firstRule ? firstRule.offsetTop : 120;
+          sunFixedH = h;
+          var dpr = window.devicePixelRatio || 1;
+          sunCanvas.width = sunFixedW * dpr;
+          sunCanvas.height = h * dpr;
+          sunCanvas.style.height = h + "px";
+          sunCanvas.style.objectFit = "cover";
+          sunCanvas.style.objectPosition = "right top";
+          sunCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function initSunRays() {
+          sunRays = [];
+          var arcStart = Math.PI * 0.45;
+          var arcSpan = Math.PI * 1.05;
+          var step = arcSpan / SUN_RAY_COUNT;
+          for (var i = 0; i < SUN_RAY_COUNT; i++) {
+            sunRays.push({
+              angle: arcStart + step * (i + 0.5) + (Math.random() - 0.5) * step * 0.3,
+              width: 0.1 + Math.random() * 0.08,
+              onDur: 1.5 + Math.random() * 4,
+              offDur: 1 + Math.random() * 4,
+              phase: Math.random() * 6,
+              maxOp: 0.15 + Math.random() * 0.25
+            });
+          }
+        }
+
+        function animateSun(now) {
+          var elapsed = (now - sunAnimStart) / 1000;
+          sunCtx.clearRect(0, 0, sunFixedW, sunFixedH);
+
+          var grad = sunCtx.createLinearGradient(0, 0, 0, sunFixedH);
+          grad.addColorStop(0, "rgba(255,220,100,0.35)");
+          grad.addColorStop(1, "rgba(255,235,160,0)");
+          sunCtx.fillStyle = grad;
+          sunCtx.fillRect(0, 0, sunFixedW, sunFixedH);
+
+          var cx = sunFixedW + 30, cy = -30;
+          var maxR = Math.sqrt(sunFixedW * sunFixedW + sunFixedH * sunFixedH);
+
+          for (var i = 0; i < sunRays.length; i++) {
+            var r = sunRays[i];
+            var a = r.angle;
+            var cycle = r.onDur + r.offDur;
+            var t = ((elapsed + r.phase) % cycle);
+            var op;
+            if (t < 0.4) op = t / 0.4;
+            else if (t < r.onDur - 0.4) op = 1;
+            else if (t < r.onDur) op = (r.onDur - t) / 0.4;
+            else op = 0;
+            op *= r.maxOp;
+            if (op <= 0) continue;
+            var halfW = r.width;
+
+            sunCtx.save();
+            sunCtx.globalAlpha = op;
+            sunCtx.beginPath();
+            sunCtx.moveTo(cx, cy);
+            sunCtx.lineTo(cx + Math.cos(a - halfW) * maxR, cy + Math.sin(a - halfW) * maxR);
+            sunCtx.lineTo(cx + Math.cos(a + halfW) * maxR, cy + Math.sin(a + halfW) * maxR);
+            sunCtx.closePath();
+
+            var rGrad = sunCtx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.8);
+            rGrad.addColorStop(0, "rgba(255,180,0,1)");
+            rGrad.addColorStop(0.3, "rgba(255,200,40,0.7)");
+            rGrad.addColorStop(0.7, "rgba(255,220,80,0.3)");
+            rGrad.addColorStop(1, "rgba(255,240,150,0)");
+            sunCtx.fillStyle = rGrad;
+            sunCtx.fill();
+            sunCtx.restore();
+          }
+
+          sunRAF = requestAnimationFrame(animateSun);
+        }
+
+        function startSun() {
+          sizeSunCanvas();
+          initSunRays();
+          sunAnimStart = performance.now();
+          sunCanvas.style.display = "";
+          if (sunRAF) cancelAnimationFrame(sunRAF);
+          sunRAF = requestAnimationFrame(animateSun);
+        }
+
+        function stopSun() {
+          if (sunRAF) cancelAnimationFrame(sunRAF);
+          sunRAF = null;
+          sunCanvas.style.display = "none";
+          sunCtx.clearRect(0, 0, sunCanvas.width, sunCanvas.height);
+        }
+
+        SIM._startSun = startSun;
+        SIM._stopSun = stopSun;
+
         panel.appendChild(dataInner);
 
         function checkNorDataLabels() {
@@ -6322,6 +6671,16 @@ function buildSimContent() {
         SIM._checkNorDataLabels = checkNorDataLabels;
         var norDataRO = new ResizeObserver(function() {
           checkNorDataLabels();
+          var firstRule = dataInner.querySelector("div[style*='border-top']");
+          var h = firstRule ? firstRule.offsetTop : 120;
+          if (snowRAF) {
+            snowFixedH = h;
+            snowCanvas.style.height = h + "px";
+          }
+          if (sunRAF) {
+            sunFixedH = h;
+            sunCanvas.style.height = h + "px";
+          }
         });
         norDataRO.observe(dataInner);
       }
