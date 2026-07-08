@@ -12,6 +12,7 @@
 /* Lato 400 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 400; src: url('fonts/d5b18a30a456.woff2') format('woff2'); }
 /* Lato 400i */ @font-face { font-family: 'Lato'; font-style: italic; font-weight: 400; src: url('fonts/lato-italic-400.woff2') format('woff2'); }
 /* Lato 700 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 700; src: url('fonts/a658a6a6ab26.woff2') format('woff2'); }
+/* Lato 900 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 900; src: url('fonts/lato-black-900.woff2') format('woff2'); }
 /* Roboto Condensed */ @font-face { font-family: 'Roboto Condensed'; font-style: normal; font-weight: 100 900; src: url('fonts/d2466d84dfac.woff2') format('woff2'); }
 /* Slackey */ @font-face { font-family: 'Slackey'; font-style: normal; font-weight: 400; src: url('fonts/b9e0133fed40.woff2') format('woff2'); }
 /* Fontdiner Swanky */ @font-face { font-family: 'Fontdiner Swanky'; font-style: normal; font-weight: 400; src: url('fonts/ab612a511c9f.woff2') format('woff2'); }
@@ -2099,7 +2100,7 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.8</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.9</div>
       <div style="font-weight: 400;">Updated: 7/8/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
@@ -5379,8 +5380,13 @@ function buildSimContent() {
 
             if ((st.outcome === "strong" || st.outcome === "moderate") && SIM._showNorCloudFinal) {
               SIM._showNorCloudFinal(st.outcome);
-            } else if (SIM._stopNorCloud) {
-              SIM._stopNorCloud();
+              if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
+            } else if (st.outcome === "fair") {
+              if (SIM._stopNorCloud) SIM._stopNorCloud();
+              if (SIM._showHighPressureLabel) SIM._showHighPressureLabel();
+            } else {
+              if (SIM._stopNorCloud) SIM._stopNorCloud();
+              if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
             }
 
             stage.style.transition = "none";
@@ -5399,6 +5405,7 @@ function buildSimContent() {
             });
             clearDataPanel();
             if (SIM._stopNorCloud) SIM._stopNorCloud();
+            if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
 
             stage.style.transition = "none";
             stage.style.backgroundColor = "#ebebeb";
@@ -5418,6 +5425,7 @@ function buildSimContent() {
             norDropdowns.forEach(function(dd) { dd._setSelection(null); });
             clearDataPanel();
             if (SIM._stopNorCloud) SIM._stopNorCloud();
+            if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
 
             stage.style.transition = "none";
             stage.style.backgroundColor = "#ebebeb";
@@ -5599,7 +5607,10 @@ function buildSimContent() {
           var combos = {
             strong:   { label: "Strong nor’easter", vals: { "Pathway for Land": "N/NW", "Humidity for Land": "Dry", "Temperature for Land": "Cold", "Pathway for Ocean": "S/SE", "Humidity for Ocean": "Humid" } },
             moderate: { label: "Moderate nor’easter", vals: { "Pathway for Land": "W", "Humidity for Land": "Dry", "Temperature for Land": "Cold", "Pathway for Ocean": "S/SE", "Humidity for Ocean": "Humid" } },
-            fair:     { label: "Fair weather", vals: { "Pathway for Land": "N/NW", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "NE", "Humidity for Ocean": "Dry" } }
+            fair12:   { label: "Fair 1+2", vals: { "Pathway for Land": "N/NW", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "S/SE", "Humidity for Ocean": "Dry" } },
+            fair13:   { label: "Fair 1+3", vals: { "Pathway for Land": "N/NW", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "NE", "Humidity for Ocean": "Dry" } },
+            fair42:   { label: "Fair 4+2", vals: { "Pathway for Land": "W", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "S/SE", "Humidity for Ocean": "Dry" } },
+            fair43:   { label: "Fair 4+3", vals: { "Pathway for Land": "W", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "NE", "Humidity for Ocean": "Dry" } }
           };
           Object.keys(combos).forEach(function(key) {
             var btn = document.createElement("button");
@@ -5846,7 +5857,7 @@ function buildSimContent() {
             });
           }
         }
-        SIM.updateNorDropdownSize = function() { updateNorDropdownSize(); if (SIM._positionBostonMarker) SIM._positionBostonMarker(); if (SIM._positionNoreasterGraphic) SIM._positionNoreasterGraphic(); if (SIM._positionArrows) SIM._positionArrows(); if (SIM._positionPills) SIM._positionPills(); };
+        SIM.updateNorDropdownSize = function() { updateNorDropdownSize(); if (SIM._positionBostonMarker) SIM._positionBostonMarker(); if (SIM._positionNoreasterGraphic) SIM._positionNoreasterGraphic(); if (SIM._positionHighPressureLabel) SIM._positionHighPressureLabel(); if (SIM._positionArrows) SIM._positionArrows(); if (SIM._positionPills) SIM._positionPills(); };
         SIM.updateNorDropdownSize();
         document.fonts.ready.then(function() {
           if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
@@ -5976,11 +5987,22 @@ function buildSimContent() {
             norOffCtx.fill();
           }
           norCtx.drawImage(norOffCanvas, 0, 0);
+          var labelSize = 36 * NOR_SCALE;
+          norCtx.font = "900 " + labelSize + "px Lato, sans-serif";
+          norCtx.textAlign = "center";
+          norCtx.textBaseline = "middle";
+          norCtx.strokeStyle = "#fff";
+          norCtx.lineWidth = 4 * NOR_SCALE;
+          norCtx.lineJoin = "round";
+          norCtx.strokeText("L", NOR_CX, NOR_CY);
+          norCtx.fillStyle = "#534AB7";
+          norCtx.fillText("L", NOR_CX, NOR_CY);
         }
         noreasterGraphic.appendChild(norCanvas);
         stage.appendChild(noreasterGraphic);
         noreasterGraphic.style.display = "none";
-        var norStartOffX = -25, norStartOffY = 49;
+        var norStartOffX = -18, norStartOffY = 36;
+        var norCloudNudgeX = -5, norCloudNudgeY = 5;
         var norEndOffX = -25 + 78, norEndOffY = 49 - 110;
         var norCurrentT = 0;
         function positionNoreasterGraphic(t) {
@@ -5991,8 +6013,10 @@ function buildSimContent() {
           var imgLeft = (sw - imgW) / 2;
           var frac = norCurrentT;
           var eased = 1 - Math.pow(1 - frac, 1.3);
-          var offX = norStartOffX + (norEndOffX - norStartOffX) * eased;
-          var offY = norStartOffY + (norEndOffY - norStartOffY) * eased;
+          var cloudStartX = norStartOffX + norCloudNudgeX;
+          var cloudStartY = norStartOffY + norCloudNudgeY;
+          var offX = cloudStartX + (norEndOffX - cloudStartX) * eased;
+          var offY = cloudStartY + (norEndOffY - cloudStartY) * eased;
           noreasterGraphic.style.left = (imgLeft + imgW / 2 - 149 + offX) + "px";
           noreasterGraphic.style.top = (sh / 2 - 149 + offY) + "px";
         }
@@ -6085,6 +6109,45 @@ function buildSimContent() {
         }
         SIM._showNorCloudFinal = showNorCloudFinal;
 
+        // High pressure "H" label for fair weather
+        var highPressureLabel = document.createElement("div");
+        highPressureLabel.style.cssText = "position:absolute;display:none;font-family:'Lato',sans-serif;font-weight:900;font-size:36px;color:#0F6E56;z-index:5;pointer-events:none;text-align:center;line-height:1;-webkit-text-stroke:4px #fff;paint-order:stroke fill;";
+        highPressureLabel.textContent = "H";
+        stage.appendChild(highPressureLabel);
+        function positionHighPressureLabel() {
+          var sw = stage.offsetWidth, sh = stage.offsetHeight;
+          if (!sw || !sh) return;
+          var imgW = sh * (2667 / 1334);
+          var imgLeft = (sw - imgW) / 2;
+          var cx = imgLeft + imgW / 2 + norStartOffX;
+          var cy = sh / 2 + norStartOffY;
+          highPressureLabel.style.left = cx + "px";
+          highPressureLabel.style.top = cy + "px";
+          highPressureLabel.style.transform = "translate(-50%, -50%)";
+        }
+        function showHighPressureLabel(animate) {
+          highPressureLabel.style.transition = "none";
+          highPressureLabel.style.opacity = 0;
+          highPressureLabel.style.display = "";
+          positionHighPressureLabel();
+          if (animate) {
+            requestAnimationFrame(function() {
+              requestAnimationFrame(function() {
+                highPressureLabel.style.transition = "opacity 1s";
+                highPressureLabel.style.opacity = 1;
+              });
+            });
+          } else {
+            highPressureLabel.style.opacity = 1;
+          }
+        }
+        function hideHighPressureLabel() {
+          highPressureLabel.style.display = "none";
+        }
+        SIM._showHighPressureLabel = showHighPressureLabel;
+        SIM._hideHighPressureLabel = hideHighPressureLabel;
+        SIM._positionHighPressureLabel = positionHighPressureLabel;
+
         const bostonMarker = document.createElement("div");
         bostonMarker.setAttribute("aria-hidden", "true");
         bostonMarker.style.cssText = "position:absolute;pointer-events:none;display:flex;align-items:center;gap:4px;";
@@ -6104,10 +6167,10 @@ function buildSimContent() {
         pathwayArrows.setAttribute("aria-hidden", "true");
         pathwayArrows.style.cssText = "position:absolute;inset:0;pointer-events:none;";
         var NOR_ARROW_IMG = [
-          {num: 1, xFrac: 0.16025, yFrac: -0.16981, xPx: -10},
-          {num: 2, xFrac: 0.54908, yFrac: 0.71698, xPx: -25, yPx: 4},
-          {num: 3, xFrac: 0.60382, yFrac: -0.20755, xPx: -5},
-          {num: 4, xFrac: -0.02472, yFrac: 0.58113, yPx: -23}
+          {num: 1, xFrac: 0.16025, yFrac: -0.16981, xPx: -12, yPx: 21},
+          {num: 2, xFrac: 0.54908, yFrac: 0.71698, xPx: -25, yPx: 14},
+          {num: 3, xFrac: 0.60382, yFrac: -0.20755, xPx: -36, yPx: 31},
+          {num: 4, xFrac: -0.02472, yFrac: 0.58113, xPx: -3, yPx: -21}
         ];
         pathwayArrows.innerHTML = '<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" overflow="visible">' +
           '<g data-arrow="1" fill="#8A929C">' +
@@ -6145,10 +6208,10 @@ function buildSimContent() {
           return '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#1E3F6E" fill-opacity="0.25"/><circle cx="12" cy="12" r="10" fill="none" stroke="#1E3F6E" stroke-width="2"/><text x="12" y="17.65" text-anchor="middle" font-family="Lato-Bold, Lato" font-size="16" font-weight="bold" fill="#1E3F6E">' + num + '</text></svg>';
         }
         var pillData = [
-          { num: 1, label: "N/NW", leftPct: 0.105, leftPx: 25,  topPct: 0.109, topPx: 15 },
-          { num: 4, label: "W",    leftPct: 0.013, leftPx: 71, topPct: 0.472, topPx: -4 },
-          { num: 2, label: "S/SE", leftPct: 0.775, leftPx: -94,  topPct: 0.837, topPx: 0 },
-          { num: 3, label: "NE",   leftPct: 0.85,  leftPx: -57, topPct: 0.109, topPx: 15 }
+          { num: 1, label: "N/NW", leftPct: 0.105, leftPx: 23,  topPct: 0.109, topPx: 36 },
+          { num: 4, label: "W",    leftPct: 0.013, leftPx: 71, topPct: 0.472, topPx: -1 },
+          { num: 2, label: "S/SE", leftPct: 0.775, leftPx: -98,  topPct: 0.837, topPx: 0 },
+          { num: 3, label: "NE",   leftPct: 0.85,  leftPx: -88, topPct: 0.109, topPx: 46 }
         ];
         var pillContainer = document.createElement("div");
         pillContainer.setAttribute("aria-hidden", "true");
@@ -6184,6 +6247,7 @@ function buildSimContent() {
           var oceanPath = st ? st.oceanPath : null;
           var oceanTemp = oceanPath === "S/SE" ? "Warm" : oceanPath === "NE" ? "Cool" : null;
           var hideCompanions = (st && st.hasRun) || SIM._norRunning;
+          var hideConverged = st && st.hasRun;
           var landNum = landPath ? NOR_PATH_NUM[landPath] : null;
           var oceanNum = oceanPath ? NOR_PATH_NUM[oceanPath] : null;
           var dimOpacity = hideCompanions ? 0 : 0.35;
@@ -6206,13 +6270,72 @@ function buildSimContent() {
                 opacity = dimOpacity;
               }
             }
+            if (hideConverged) {
+              var convergedNums;
+              if (st.outcome === "strong") convergedNums = [1, 2];
+              else if (st.outcome === "moderate") convergedNums = [4, 2];
+              else {
+                convergedNums = [];
+                if (st.landPath) convergedNums.push(NOR_PATH_NUM[st.landPath]);
+                if (st.oceanPath) convergedNums.push(NOR_PATH_NUM[st.oceanPath]);
+              }
+              if (convergedNums.indexOf(num) !== -1) opacity = 0;
+            }
             arrow.setAttribute("fill", color);
             arrow.style.opacity = opacity;
-            if (pill) pill.style.opacity = opacity;
+            if (pill) pill.style.opacity = (hideConverged && convergedNums.indexOf(num) !== -1) ? 1 : opacity;
           });
         };
 
-
+        // Arrow convergence animation for nor'easter
+        var arrowAnimRAF = null;
+        function animateArrowsToStart(duration, nums) {
+          var arrowNums = nums || [1, 2];
+          var sw = stage.offsetWidth, sh = stage.offsetHeight;
+          var imgW = sh * (2667 / 1334);
+          var imgLeft = (sw - imgW) / 2;
+          var scale = sh / 265;
+          var targetX = imgLeft + imgW / 2 + norStartOffX;
+          var targetY = sh / 2 + norStartOffY;
+          var arrowTips = { 1: { tx: 155, ty: 156 }, 2: { tx: 0, ty: 0 }, 3: { tx: 0, ty: 172 }, 4: { tx: 219, ty: 38 } };
+          var startPositions = [];
+          arrowNums.forEach(function(num) {
+            var a = NOR_ARROW_IMG.find(function(ar) { return ar.num === num; });
+            startPositions.push({
+              x: imgLeft + a.xFrac * imgW + (a.xPx || 0),
+              y: a.yFrac * sh + (a.yPx || 0)
+            });
+          });
+          var start = performance.now();
+          function step(now) {
+            var t = Math.min((now - start) / (duration * 1000), 1);
+            for (var i = 0; i < arrowNums.length; i++) {
+              var num = arrowNums[i];
+              var sp = startPositions[i];
+              var tip = arrowTips[num] || { tx: 0, ty: 0 };
+              var adjTargetX = targetX - tip.tx * scale;
+              var adjTargetY = targetY - tip.ty * scale;
+              var x = sp.x + (adjTargetX - sp.x) * t;
+              var y = sp.y + (adjTargetY - sp.y) * t;
+              var arrow = pathwayArrows.querySelector('[data-arrow="' + num + '"]');
+              if (arrow) {
+                var fade = t < 0.5 ? 1 : Math.max(0, 1 - (t - 0.5) / 0.5);
+                arrow.setAttribute('transform', 'translate(' + x + ',' + y + ') scale(' + scale + ')');
+                arrow.style.opacity = fade;
+              }
+            }
+            if (t < 1) arrowAnimRAF = requestAnimationFrame(step);
+          }
+          if (arrowAnimRAF) cancelAnimationFrame(arrowAnimRAF);
+          arrowAnimRAF = requestAnimationFrame(step);
+        }
+        function resetArrowPositions() {
+          if (arrowAnimRAF) { cancelAnimationFrame(arrowAnimRAF); arrowAnimRAF = null; }
+          positionArrows();
+          positionPills();
+        }
+        SIM._animateArrowsToStart = animateArrowsToStart;
+        SIM._resetArrowPositions = resetArrowPositions;
 
         // Bottom controls (same height as Bananas sim-buttons)
         const bottomControls = document.createElement("div");
@@ -6295,6 +6418,9 @@ function buildSimContent() {
               updateNorDropdownSize();
               if (SIM.updateArrowColors) SIM.updateArrowColors();
   
+              if (SIM._stopNorCloud) SIM._stopNorCloud();
+              if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
+              if (SIM._resetArrowPositions) SIM._resetArrowPositions();
               stage.style.transition = "none";
               stage.style.backgroundColor = "#ebebeb";
               void stage.offsetWidth;
@@ -6321,10 +6447,26 @@ function buildSimContent() {
                 if (SIM.announce) SIM.announce(SIM._OUTCOME_DATA && SIM._OUTCOME_DATA[outcome] ? SIM._OUTCOME_DATA[outcome].banner : "Simulation finished.");
               }
               if (hasCloud) {
-                SIM._startNorCloud(outcome, finishRun);
+                if (outcome === "strong" && SIM._animateArrowsToStart) SIM._animateArrowsToStart(2, [1, 2]);
+                if (outcome === "moderate" && SIM._animateArrowsToStart) SIM._animateArrowsToStart(2, [4, 2]);
+                setTimeout(function() { SIM._startNorCloud(outcome, finishRun); }, 1500);
               } else {
                 if (SIM._stopNorCloud) SIM._stopNorCloud();
-                setTimeout(finishRun, 2000);
+                var s = getNorSelections();
+                var fairLand = s["Pathway for Land"];
+                var fairOcean = s["Pathway for Ocean"];
+                var fairLandNum = NOR_PATH_NUM[fairLand];
+                var fairOceanNum = NOR_PATH_NUM[fairOcean];
+                var fairArrows = [fairLandNum, fairOceanNum].filter(function(n) { return n !== undefined; });
+                if (fairArrows.length === 2) {
+                  SIM._animateArrowsToStart(2, fairArrows);
+                  setTimeout(function() {
+                    if (SIM._showHighPressureLabel) SIM._showHighPressureLabel(true);
+                    setTimeout(finishRun, 500);
+                  }, 1500);
+                } else {
+                  setTimeout(finishRun, 2000);
+                }
               }
             });
           }
@@ -6442,7 +6584,7 @@ function buildSimContent() {
         var snowRAF = null;
         var snowLastTime = null;
         var snowGustUntil = 0;
-        var snowNextGust = 1.5 + Math.random() * 2;
+        var snowNextGust = Math.random() * 1.2;
 
         var snowFixedW = 400;
         var snowFixedH = 120;
@@ -6462,20 +6604,17 @@ function buildSimContent() {
 
         function spawnSnowFlake(dims, gust) {
           var w = dims.w, h = dims.h;
-          var sz = 1.5 + Math.random() * 3;
+          var sz = snowIntensity < 1 ? (1.5 + Math.random() * 3) : (1 + Math.random() * 2.8);
           var op = 0.4 + Math.random() * 0.5;
-          var speed = (gust ? (250 + Math.random() * 100) : (200 + Math.random() * 80)) * snowIntensity;
+          var speedMult = gust ? (snowIntensity >= 1 ? 2.5 : 1.6) : 1;
+          var baseSpeed = snowIntensity < 1 ? (180 + Math.random() * 60) : (200 + Math.random() * 80);
+          var speed = (gust ? (250 + Math.random() * 100) * snowIntensity : baseSpeed) * speedMult;
           var windAngle = (gust ? (220 + (Math.random() - 0.5) * 10) : (225 + (Math.random() - 0.5) * 20)) * Math.PI / 180;
           var vx = Math.cos(windAngle) * speed;
           var vy = -Math.sin(windAngle) * speed;
           var x, y;
-          if (Math.random() < 0.6) {
-            x = w + sz;
-            y = Math.random() * h;
-          } else {
-            x = Math.random() * w;
-            y = -sz;
-          }
+          x = -sz + Math.random() * (w + 200 + sz);
+          y = -sz;
           snowFlakes.push({ x: x, y: y, sz: sz, op: op, vx: vx, vy: vy });
         }
 
@@ -6486,30 +6625,41 @@ function buildSimContent() {
           var snowElapsed = (now - snowAnimStart) / 1000;
           var gusting = snowElapsed < snowGustUntil;
           if (!gusting && snowElapsed > snowNextGust) {
-            snowGustUntil = snowElapsed + 0.6 + Math.random() * 0.6;
-            snowNextGust = snowGustUntil + 1.5 + Math.random() * 2.5;
+            snowGustUntil = snowElapsed + (snowIntensity < 1 ? (0.6 + Math.random() * 1.7) : (1 + Math.random() * 2.5));
+            snowNextGust = snowGustUntil + (snowIntensity < 1 ? (Math.random() * 3.5) : (Math.random() * 2.5));
           }
           if (gusting) {
-            var gustCount = snowIntensity < 1 ? 2 : 3;
+            var gustMin = snowIntensity < 1 ? 5 : 12;
+            var gustMax = snowIntensity < 1 ? 10 : 24;
+            var gustCount = gustMin + Math.floor(Math.random() * (gustMax - gustMin + 1));
             for (var gi = 0; gi < gustCount; gi++) spawnSnowFlake(dims, true);
           }
-          spawnSnowFlake(dims, false);
-          if (Math.random() < 0.5 * snowIntensity) spawnSnowFlake(dims, false);
+          var baseCount;
+          if (snowIntensity < 1) {
+            baseCount = 1 + Math.floor(Math.random() * 4);
+          } else {
+            baseCount = 12;
+          }
+          for (var sfi = 0; sfi < baseCount; sfi++) {
+            if (snowIntensity >= 1 && Math.random() > 0.7) continue;
+            spawnSnowFlake(dims, false);
+          }
           for (var i = 0; i < snowFlakes.length; i++) {
             var f = snowFlakes[i];
             if (gusting) {
-              f.vx += -120 * snowIntensity * dt;
-              f.vy += 30 * snowIntensity * dt;
+              var gustMult = snowIntensity >= 1 ? 3.5 : 2.2;
+              f.vx += -120 * snowIntensity * gustMult * dt;
+              f.vy += 30 * snowIntensity * gustMult * dt;
             }
             f.x += f.vx * dt;
             f.y += f.vy * dt;
           }
           snowFlakes = snowFlakes.filter(function(f) {
-            return f.x > -10 && f.x < dims.w + 10 && f.y > -10 && f.y < dims.h + 10;
+            return f.x > -10 && f.x < dims.w + 210 && f.y > -10 && f.y < dims.h + 10;
           });
           snowCtx.clearRect(0, 0, dims.w, dims.h);
           var grad = snowCtx.createLinearGradient(0, 0, 0, dims.h);
-          var gradOp = (0.65 * snowIntensity).toFixed(2);
+          var gradOp = (0.77 * snowIntensity).toFixed(2);
           grad.addColorStop(0, "rgba(140,155,175," + gradOp + ")");
           grad.addColorStop(1, "rgba(140,155,175,0)");
           snowCtx.fillStyle = grad;
@@ -6527,12 +6677,12 @@ function buildSimContent() {
         var snowAnimStart = 0;
         var snowIntensity = 1;
         function startSnow(mode) {
-          snowIntensity = mode === "moderate" ? 0.75 : 1;
+          snowIntensity = mode === "moderate" ? 0.68 : 1;
           sizeSnowCanvas();
           snowFlakes = [];
           snowLastTime = null;
           snowGustUntil = 0;
-          snowNextGust = 1.5 + Math.random() * 2;
+          snowNextGust = Math.random() * 1.2;
           snowAnimStart = performance.now();
           snowCanvas.style.display = "";
           if (snowRAF) cancelAnimationFrame(snowRAF);
