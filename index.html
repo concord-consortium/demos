@@ -2110,7 +2110,7 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.11</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.12</div>
       <div style="font-weight: 400;">Updated: 7/12/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
@@ -6504,7 +6504,7 @@ function buildSimContent() {
                 }
                 arrow.setAttribute('transform', 'translate(' + x + ',' + y + ') scale(' + scale + ')' + rot);
                 arrow.style.opacity = fade;
-                arrow.style.filter = fade === 1 ? "drop-shadow(0 1px 3px rgba(0,0,0,0.35))" : "none";
+                arrow.style.filter = fade > 0 ? "drop-shadow(0 1px 3px rgba(0,0,0," + (0.35 * fade) + "))" : "none";
               }
             }
             if (t < 1) arrowAnimRAF = requestAnimationFrame(step);
