@@ -822,6 +822,8 @@
     white-space: nowrap;
   }
 
+  /* DEV NOTE: flex is overridden by JS — initial panel setup sets per-sim ratios,
+     then the responsive handler (e.g. updateNorDropdownSize) sets flex:none + explicit widths. */
   .sim-panel {
     border: 2px solid var(--sim-panel-border, #555);
     border-radius: 8px;
@@ -894,7 +896,10 @@
     transition: background-color 0.15s ease, border-color 0.15s ease;
   }
   .nor-trials .trial-card {
-    height: 201px;
+    height: 213px;
+  }
+  .nor-trials .trial-card-stats {
+    bottom: 5px;
   }
 
   .trial-card-label {
@@ -1111,6 +1116,7 @@
   }
 
   /* Simulation panel sections */
+  /* DEV NOTE: padding-top is overridden to 27px by JS at build time (per-sim panel setup). */
   .sim-panel-inner {
     display: flex;
     flex-direction: column;
@@ -1249,8 +1255,9 @@
     cursor: default;
     justify-content: center;
     border-radius: 999px;
-    padding: 6px 12px;
-    min-height: auto;
+    padding: 0 12px;
+    height: 38px;
+    min-height: 0;
     background: var(--sim-surface, #fff);
   }
 
@@ -1592,10 +1599,10 @@
   .sim-btn {
     white-space: nowrap;
   }
-  .sim-buttons:has(.fungus-switch.stacked) {
+  .sim-buttons:has(.sim-switch.stacked) {
     align-items: stretch;
   }
-  .sim-buttons:has(.fungus-switch.stacked) .sim-btn {
+  .sim-buttons:has(.sim-switch.stacked) .sim-btn {
     height: auto;
     white-space: normal;
   }
@@ -1655,8 +1662,8 @@
   }
 
 
-  /* Fungus toggle switch */
-  .fungus-switch {
+  /* Toggle switch */
+  .sim-switch {
     font-family: 'Lato', sans-serif;
     display: flex;
     align-items: center;
@@ -1668,19 +1675,19 @@
     background: var(--sim-surface, #fff);
     color: var(--sim-btn-text, #333);
   }
-  .fungus-switch svg {
+  .sim-switch svg {
     width: 24px;
     height: 24px;
     flex-shrink: 0;
     color: #5C4813;
   }
-  .fungus-switch-label {
+  .sim-switch-label {
     font-size: 16px;
     font-weight: 700;
     line-height: 20px;
     margin-right: 4px;
   }
-  .fungus-switch-track {
+  .sim-switch-track {
     position: relative;
     width: 44px;
     height: 24px;
@@ -1691,14 +1698,14 @@
     flex-shrink: 0;
     box-shadow: inset 0 0 0 2px var(--sim-btn-border, #555);
   }
-  .fungus-switch-track.on {
+  .sim-switch-track.on {
     background: #C8D8FC;
     box-shadow: inset 0 0 0 2px #1A3C8F;
   }
-  .fungus-switch-track.on .fungus-switch-thumb {
+  .sim-switch-track.on .sim-switch-thumb {
     box-shadow: 0 0 0 2px #1A3C8F;
   }
-  .fungus-switch-track .fungus-switch-thumb {
+  .sim-switch-track .sim-switch-thumb {
     position: absolute;
     top: 2px;
     left: 2px;
@@ -1709,34 +1716,34 @@
     box-shadow: 0 0 0 2px var(--sim-btn-border, #555);
     transition: left 0.2s ease;
   }
-  .fungus-switch-track.on .fungus-switch-thumb {
+  .sim-switch-track.on .sim-switch-thumb {
     left: 22px;
     background: #F0F4FF;
   }
-  .fungus-switch:not(.disabled) .fungus-switch-hit:hover .fungus-switch-thumb {
+  .sim-switch:not(.disabled) .sim-switch-hit:hover .sim-switch-thumb {
     background: var(--sim-btn-hover, #f0f0f0);
     box-shadow: 0 0 0 2px var(--sim-btn-border, #555), 0 2px 8px rgba(0,0,0,0.15);
   }
-  .fungus-switch:not(.disabled) .fungus-switch-hit:hover .fungus-switch-track.on .fungus-switch-thumb {
+  .sim-switch:not(.disabled) .sim-switch-hit:hover .sim-switch-track.on .sim-switch-thumb {
     background: #C8D8FC;
     box-shadow: 0 0 0 2px #1A3C8F, 0 2px 8px rgba(0,0,0,0.15);
   }
-  .fungus-switch:not(.disabled) .fungus-switch-hit:active .fungus-switch-thumb {
+  .sim-switch:not(.disabled) .sim-switch-hit:active .sim-switch-thumb {
     background: var(--sim-btn-active, #d0d0d0);
     box-shadow: 0 0 0 2px var(--sim-btn-border, #555), 0 2px 8px rgba(0,0,0,0.15);
   }
-  .fungus-switch:not(.disabled) .fungus-switch-hit:active .fungus-switch-track.on .fungus-switch-thumb {
+  .sim-switch:not(.disabled) .sim-switch-hit:active .sim-switch-track.on .sim-switch-thumb {
     background: #96B8E8;
     box-shadow: 0 0 0 2px #1A3C8F, 0 2px 8px rgba(0,0,0,0.15);
   }
-  .fungus-switch-state {
+  .sim-switch-state {
     font-size: 16px;
     font-weight: 400;
     line-height: 20px;
     width: 25px;
     text-align: center;
   }
-  .fungus-switch-state[data-text]::after {
+  .sim-switch-state[data-text]::after {
     content: attr(data-text);
     font-weight: 700;
     display: block;
@@ -1744,7 +1751,7 @@
     overflow: hidden;
     visibility: hidden;
   }
-  .fungus-switch-hit {
+  .sim-switch-hit {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1752,23 +1759,23 @@
     padding: 0 4px;
     cursor: pointer;
   }
-  .fungus-switch.disabled .fungus-switch-hit {
+  .sim-switch.disabled .sim-switch-hit {
     cursor: default;
   }
-  .fungus-switch.stacked {
+  .sim-switch.stacked {
     flex-wrap: wrap;
     justify-content: center;
     gap: 6px;
     padding: 8px 10px;
     height: auto;
   }
-  .fungus-switch.stacked .fungus-switch-hit {
+  .sim-switch.stacked .sim-switch-hit {
     width: 100%;
     justify-content: center;
     min-height: auto;
     position: relative;
   }
-  .fungus-switch.stacked .fungus-switch-hit::after {
+  .sim-switch.stacked .sim-switch-hit::after {
     content: '';
     position: absolute;
     top: -10px;
@@ -1776,34 +1783,36 @@
     left: 0;
     right: 0;
   }
-  .fungus-switch:focus {
+  .sim-switch:focus {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
   }
-  .fungus-switch:focus:not(:focus-visible) {
+  .sim-switch:focus:not(:focus-visible) {
     outline: none;
   }
-  .fungus-switch:focus-visible {
+  .sim-switch:focus-visible {
     outline: 2px solid #005FCC;
     outline-offset: 2px;
   }
-  .fungus-switch.disabled {
+  .sim-switch.disabled {
     color: rgba(51, 51, 51, 0.35);
     border-color: var(--sim-btn-border-disabled, rgba(85, 85, 85, 0.35));
     cursor: default;
   }
-  .fungus-switch.disabled svg,
-  .fungus-switch.disabled .fungus-switch-track {
+  .sim-switch.disabled svg,
+  .sim-switch.disabled .sim-switch-track {
     opacity: 0.35;
   }
 
   /* Data panel */
+  /* DEV NOTE: paddingTop is set to 27px by JS at build time. */
   .data-panel-inner {
     display: flex;
     flex-direction: column;
     height: 100%;
     padding: 0 10px 0 10px;
     box-sizing: border-box;
+    overflow: hidden;
   }
 
   .data-half {
@@ -2020,14 +2029,14 @@
   }
   .nor-air-mass-icon {
     width: 24px;
-    height: 36px;
+    height: 24px;
     flex-shrink: 0;
     color: var(--sim-icon-color, #000);
   }
   .nor-air-mass-icon svg {
     display: block;
     width: 24px;
-    height: 36px;
+    height: 24px;
   }
   .nor-air-mass-label {
     font-family: 'Lato', sans-serif;
@@ -2100,8 +2109,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.9</div>
-      <div style="font-weight: 400;">Updated: 7/8/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.10</div>
+      <div style="font-weight: 400;">Updated: 7/12/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -2393,6 +2402,15 @@ function invalidateSimCache() {
   _simTitleBar = null;
   _simContent = null;
   _currentSim = null;
+  if (SIM._stopNorCloud) SIM._stopNorCloud();
+  if (SIM._stopSnow) SIM._stopSnow();
+  if (SIM._stopSun) SIM._stopSun();
+  if (SIM._resetArrowPositions) SIM._resetArrowPositions();
+  if (SIM._norRunTimeouts) { SIM._norRunTimeouts.forEach(clearTimeout); SIM._norRunTimeouts.length = 0; }
+  if (SIM.trialsObserver) SIM.trialsObserver.disconnect();
+  if (SIM._norDataRO) SIM._norDataRO.disconnect();
+  if (SIM.closeDropdownsHandler) document.removeEventListener("click", SIM.closeDropdownsHandler);
+  if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
   for (var key in SIM) delete SIM[key];
 }
 
@@ -2498,7 +2516,7 @@ function buildSimTitleBar() {
     // Create modal
     const modal = document.createElement("div");
     modal.className = "info-modal";
-    modal.setAttribute("role", "complementary");
+    modal.setAttribute("role", "dialog");
     modal.setAttribute("tabindex", "-1");
     // Header
     const header = document.createElement("div");
@@ -2659,7 +2677,9 @@ function buildSimContent() {
     liveAnnounce.className = "sr-only";
     liveAnnounce.setAttribute("aria-live", "polite");
     wrap.appendChild(liveAnnounce);
+    SIM._suppressAnnounce = false;
     SIM.announce = function(msg) {
+      if (SIM._suppressAnnounce) return;
       liveAnnounce.textContent = "";
       requestAnimationFrame(() => { liveAnnounce.textContent = msg; });
     };
@@ -2967,10 +2987,24 @@ function buildSimContent() {
           if (indicator) indicator.textContent = targetLetter;
           scrollItemIntoView(targetCard, scrollWrap);
 
+          SIM._suppressAnnounce = true;
           if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(targetLetter);
           if (SIM.renderOffspring) SIM.renderOffspring(targetLetter);
           if (SIM.updateSimButtons) SIM.updateSimButtons();
           updateTrialCardTabindex();
+          SIM._suppressAnnounce = false;
+
+          var st = trialState[targetLetter];
+          if (st && SIM.announce) {
+            var parts = ["Trial " + targetLetter];
+            parts.push("Parent 1 " + (st.p1 || "not selected"));
+            parts.push("Parent 2 " + (st.p2 || "not selected"));
+            if (st.crosses.length > 0) {
+              parts.push(st.crosses.length + (st.crosses.length === 1 ? " cross" : " crosses") + " performed");
+              if (st.fungusAfterCross !== null) parts.push("Fungus active");
+            }
+            SIM.announce(parts.join(", "));
+          }
         }
 
         function getTrialNavCards() {
@@ -3017,7 +3051,7 @@ function buildSimContent() {
         function buildNewCard() {
           const card = document.createElement("div");
           card.className = "trial-card new-card";
-          card.setAttribute("role", "tab");
+          card.setAttribute("role", "button");
           card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Add new trial");
           card.style.cursor = "pointer";
@@ -3092,6 +3126,11 @@ function buildSimContent() {
         panel.style.overflow = "hidden";
         const inner = document.createElement("div");
         inner.className = "sim-panel-inner";
+
+        var simDesc = document.createElement("span");
+        simDesc.className = "sr-only";
+        simDesc.textContent = "Select two banana plant parents to cross. Each cross produces 5 to 20 offspring. A fungus toggle can be activated to test disease resistance.";
+        inner.appendChild(simDesc);
 
         // Trial indicator
         const indicator = document.createElement("div");
@@ -3784,34 +3823,34 @@ function buildSimContent() {
         buttons.className = "sim-buttons";
         // Fungus toggle switch
         const fungusSwitch = document.createElement("div");
-        fungusSwitch.className = "fungus-switch disabled";
+        fungusSwitch.className = "sim-switch disabled";
         fungusSwitch.setAttribute("role", "switch");
         fungusSwitch.setAttribute("aria-checked", "false");
-        fungusSwitch.setAttribute("aria-labelledby", "fungus-switch-label");
+        fungusSwitch.setAttribute("aria-labelledby", "sim-switch-label");
         fungusSwitch.setAttribute("tabindex", "0");
         const fungusIcon = createSVGIcon(fungusAddedSVG);
         fungusSwitch.appendChild(fungusIcon);
         const fungusLabel = document.createElement("span");
-        fungusLabel.className = "fungus-switch-label";
-        fungusLabel.id = "fungus-switch-label";
+        fungusLabel.className = "sim-switch-label";
+        fungusLabel.id = "sim-switch-label";
         fungusLabel.textContent = "Fungus";
         fungusSwitch.appendChild(fungusLabel);
         const hitArea = document.createElement("div");
-        hitArea.className = "fungus-switch-hit";
+        hitArea.className = "sim-switch-hit";
         const offLabel = document.createElement("span");
-        offLabel.className = "fungus-switch-state";
+        offLabel.className = "sim-switch-state";
         offLabel.textContent = "Off";
         offLabel.style.fontWeight = "700";
         offLabel.setAttribute("aria-hidden", "true");
         hitArea.appendChild(offLabel);
         const track = document.createElement("div");
-        track.className = "fungus-switch-track";
+        track.className = "sim-switch-track";
         const thumb = document.createElement("div");
-        thumb.className = "fungus-switch-thumb";
+        thumb.className = "sim-switch-thumb";
         track.appendChild(thumb);
         hitArea.appendChild(track);
         const onLabel = document.createElement("span");
-        onLabel.className = "fungus-switch-state";
+        onLabel.className = "sim-switch-state";
         onLabel.textContent = "On";
         onLabel.setAttribute("aria-hidden", "true");
         hitArea.appendChild(onLabel);
@@ -3938,11 +3977,11 @@ function buildSimContent() {
           // Fungus switch: sync visual state and disabled
           if (SIM.fungusBtn) {
             const isOn = st.fungusAfterCross !== null;
-            const switchTrack = SIM.fungusBtn.querySelector(".fungus-switch-track");
+            const switchTrack = SIM.fungusBtn.querySelector(".sim-switch-track");
             SIM.fungusBtn.setAttribute("aria-checked", isOn ? "true" : "false");
             if (switchTrack) { if (isOn) switchTrack.classList.add("on"); else switchTrack.classList.remove("on"); }
-            const offLbl = SIM.fungusBtn.querySelectorAll(".fungus-switch-state")[0];
-            const onLbl = SIM.fungusBtn.querySelectorAll(".fungus-switch-state")[1];
+            const offLbl = SIM.fungusBtn.querySelectorAll(".sim-switch-state")[0];
+            const onLbl = SIM.fungusBtn.querySelectorAll(".sim-switch-state")[1];
             if (offLbl) offLbl.style.fontWeight = isOn ? "400" : "700";
             if (onLbl) onLbl.style.fontWeight = isOn ? "700" : "400";
             if (st.crosses.length > 0 || !(st.p1 && st.p2)) {
@@ -4428,7 +4467,7 @@ function buildSimContent() {
     });
 
     // Ctrl+Arrow: navigate between panels
-    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"], .sim-panel[role="tabpanel"]');
     if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
     SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
@@ -4454,6 +4493,7 @@ function buildSimContent() {
 
   if (activeSim === "noreaster") {
     const MAX_TRIALS = 10;
+    var NOR_PATH_NUM = { "N/NW": 1, "W": 4, "S/SE": 2, "NE": 3 };
 
     const wrap = document.createElement("div");
     wrap.className = "sim-content";
@@ -4462,7 +4502,9 @@ function buildSimContent() {
     liveAnnounce.className = "sr-only";
     liveAnnounce.setAttribute("aria-live", "polite");
     wrap.appendChild(liveAnnounce);
+    SIM._suppressAnnounce = false;
     SIM.announce = function(msg) {
+      if (SIM._suppressAnnounce) return;
       liveAnnounce.textContent = "";
       requestAnimationFrame(() => { liveAnnounce.textContent = msg; });
     };
@@ -4552,13 +4594,11 @@ function buildSimContent() {
             statsEl.setAttribute("aria-hidden", "true");
             cardEl.appendChild(statsEl);
           }
-          var pathNumMap = { "N/NW": 1, "W": 4, "S/SE": 2, "NE": 3 };
-
-          var landAMSvg = '<svg width="24" height="36" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg"><path d="M24.0038528,33.4002279 L24,36 L-8.8817842e-15,36 L0.00424533809,33.419615 L5.30400339,24.9400021 L6.85061922,22.4654168 L8.99984672,25.3335377 L14.0960769,18.5385641 L24.0038528,33.4002279 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M14,22 L10.25,27 L13.1,30.8 L11.5,32 C9.81,29.75 7,26 7,26 L2,34 L22,34 L14,22 Z" fill="currentColor" fill-rule="evenodd"/><path d="M21,5.5 C21,6.51703236 20.7230712,7.47013634 20.2356767,8.28463081 C22.4222328,9.00907944 24,11.0724277 24,13.5 C24,16.5345695 21.5345695,19 18.5,19 C16.8333333,19 15.8313005,19.0009854 15.4939015,19.0029561 C14.5801445,20.2145906 13.1291159,21 11.5,21 C9.08776833,21 7.06598801,19.2780118 6.6009886,17 L0,17 L0,5 L10.0252993,5 C10.2760149,2.19880324 12.6342131,0 15.5,0 C18.5345695,0 21,2.4654305 21,5.5 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M14.5,16 C14.5,17.65 13.15,19 11.5,19 C9.85,19 8.5,17.65 8.5,16 L10.5,16 C10.5,16.55 10.95,17 11.5,17 C12.05,17 12.5,16.55 12.5,16 C12.5,15.45 12.05,15 11.5,15 L2,15 L2,13 L11.5,13 C13.15,13 14.5,14.35 14.5,16 Z M19,5.5 C19,3.57 17.43,2 15.5,2 C13.57,2 12,3.57 12,5.5 L14,5.5 C14,4.67 14.67,4 15.5,4 C16.33,4 17,4.67 17,5.5 C17,6.33 16.33,7 15.5,7 L2,7 L2,9 L15.5,9 C17.43,9 19,7.43 19,5.5 Z M18.5,10 L2,10 L2,12 L18.5,12 C19.33,12 20,12.67 20,13.5 C20,14.33 19.33,15 18.5,15 L18.5,17 C20.43,17 22,15.43 22,13.5 C22,11.57 20.43,10 18.5,10 Z" fill="currentColor" fill-rule="nonzero"/></svg>';
-          var oceanAMSvg = '<svg width="24" height="36" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg"><path d="M21.5645922,21.7563259 C21.6177582,21.7861945 21.8504003,21.9199972 21.9000357,21.947315 C21.9502841,21.9749702 21.9822803,21.9912349 22.0010959,22 L24,22 L24,36 L22,36 C20.8158043,36 19.9798426,35.7461655 19.0854078,35.2436741 C19.0322418,35.2138055 18.7995997,35.0800028 18.7499643,35.052685 C18.7098941,35.0306316 18.6814307,35.0158215 18.6620496,35.0063099 C18.6379836,35.0182018 18.6062216,35.0352779 18.5628624,35.0599301 C18.5209785,35.0837436 18.3193295,35.2022683 18.2640678,35.2340279 C17.376484,35.7441335 16.5406534,36 15.34,36 C14.1558043,36 13.3198426,35.7461655 12.4254078,35.2436741 C12.3722418,35.2138055 12.1395997,35.0800028 12.0899643,35.052685 C12.0498024,35.0305812 12.0213006,35.0157538 12.0019172,35.006245 C11.9779764,35.0180297 11.9463752,35.0349603 11.9032732,35.0593908 C11.8610502,35.083323 11.6568821,35.2030472 11.6006689,35.2352611 C10.7119887,35.7445334 9.8736325,36 8.67,36 C7.46501574,36 6.62642943,35.7436822 5.74002568,35.2327867 C5.68344823,35.2001772 5.48196434,35.0813265 5.44071435,35.0577917 C5.39667305,35.0326643 5.36486521,35.0155457 5.34116203,35.0038882 C5.31747567,35.0153769 5.28576231,35.0322379 5.24210597,35.0568795 C5.19876087,35.0813454 4.98922039,35.2039477 4.93227788,35.2364863 C4.04294487,35.7446766 3.2029308,36 2,36 L0,36 L0,22 L1.99317447,22 C2.01789629,21.988187 2.05174229,21.9701489 2.10071435,21.9422083 C2.14196434,21.9186735 2.34344823,21.7998228 2.40002568,21.7672133 C3.28642943,21.2563178 4.12501574,21 5.33,21 C6.51419571,21 7.35015744,21.2538345 8.24459216,21.7563259 C8.29775821,21.7861945 8.53040026,21.9199972 8.58003572,21.947315 C8.61943237,21.9689977 8.64760912,21.9836785 8.66697822,21.9932134 C8.68995573,21.9817058 8.72014461,21.965355 8.76071435,21.9422083 C8.80196434,21.9186735 9.00344823,21.7998228 9.06002568,21.7672133 C9.94642943,21.2563178 10.7850157,21 11.99,21 C13.1741957,21 14.0101574,21.2538345 14.9045922,21.7563259 C14.9577582,21.7861945 15.1904003,21.9199972 15.2400357,21.947315 C15.2794324,21.9689977 15.3076091,21.9836785 15.3269782,21.9932134 C15.3499557,21.9817058 15.3801446,21.965355 15.4207144,21.9422083 C15.4619643,21.9186735 15.6634482,21.7998228 15.7200257,21.7672133 C16.6064294,21.2563178 17.4450157,21 18.65,21 C19.8341957,21 20.6701574,21.2538345 21.5645922,21.7563259 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M5.35,29 C6.54,29 6.77,30 8.68,30 C10.63,30 10.77,29 12.01,29 C13.2,29 13.43,30 15.34,30 C17.29,30 17.43,29 18.67,29 C19.86,29 20.07,29.98 21.98,30 L21.98,28 C20.79,28 20.56,27 18.65,27 C16.7,27 16.56,28 15.32,28 C14.13,28 13.9,27 11.99,27 C10.04,27 9.9,28 8.66,28 C7.47,28 7.24,27 5.33,27 C3.38,27 3.24,28 2,28 L2,30 C3.9,30 4.17,29 5.35,29 Z M18.67,31 C16.72,31 16.58,32 15.34,32 C14.15,32 13.92,31 12.01,31 C10.06,31 9.91,32 8.67,32 C7.43,32 7.29,31 5.34,31 C3.39,31 3.24,32 2,32 L2,34 C3.95,34 4.11,33 5.34,33 C6.58,33 6.72,34 8.67,34 C10.62,34 10.77,33 12.01,33 C13.2,33 13.43,34 15.34,34 C17.28,34 17.43,33 18.67,33 C19.86,33 20.09,34 22,34 L22,32 C20.76,32 20.62,31 18.67,31 Z M5.35,25 C6.54,25 6.77,26 8.68,26 C10.63,26 10.77,25 12.01,25 C13.2,25 13.43,26 15.34,26 C17.29,26 17.43,25 18.67,25 C19.86,25 20.07,25.98 21.98,26 L21.98,24 C20.79,24 20.56,23 18.65,23 C16.7,23 16.56,24 15.32,24 C14.13,24 13.9,23 11.99,23 C10.04,23 9.9,24 8.66,24 C7.47,24 7.24,23 5.33,23 C3.38,23 3.24,24 2,24 L2,26 C3.9,26 4.17,25 5.35,25 Z" fill="currentColor" fill-rule="nonzero"/><path d="M21,5.5 C21,6.51703236 20.7230712,7.47013634 20.2356767,8.28463081 C22.4222328,9.00907944 24,11.0724277 24,13.5 C24,16.5345695 21.5345695,19 18.5,19 C16.8333333,19 15.8313005,19.0009854 15.4939015,19.0029561 C14.5801445,20.2145906 13.1291159,21 11.5,21 C9.08776833,21 7.06598801,19.2780118 6.6009886,17 L0,17 L0,5 L10.0252993,5 C10.2760149,2.19880324 12.6342131,0 15.5,0 C18.5345695,0 21,2.4654305 21,5.5 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M14.5,16 C14.5,17.65 13.15,19 11.5,19 C9.85,19 8.5,17.65 8.5,16 L10.5,16 C10.5,16.55 10.95,17 11.5,17 C12.05,17 12.5,16.55 12.5,16 C12.5,15.45 12.05,15 11.5,15 L2,15 L2,13 L11.5,13 C13.15,13 14.5,14.35 14.5,16 Z M19,5.5 C19,3.57 17.43,2 15.5,2 C13.57,2 12,3.57 12,5.5 L14,5.5 C14,4.67 14.67,4 15.5,4 C16.33,4 17,4.67 17,5.5 C17,6.33 16.33,7 15.5,7 L2,7 L2,9 L15.5,9 C17.43,9 19,7.43 19,5.5 Z M18.5,10 L2,10 L2,12 L18.5,12 C19.33,12 20,12.67 20,13.5 C20,14.33 19.33,15 18.5,15 L18.5,17 C20.43,17 22,15.43 22,13.5 C22,11.57 20.43,10 18.5,10 Z" fill="currentColor" fill-rule="nonzero"/></svg>';
+          var landAMSvg = '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24.0038528,17.4002279 L24,20 L-2.84217094e-14,20 L0.00424533809,17.419615 L5.30400339,8.94000212 L6.85061922,6.4654168 L8.99984672,9.33353772 L14.0960769,2.53856411 L24.0038528,17.4002279 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M14,6 L10.25,11 L13.1,14.8 L11.5,16 C9.81,13.75 7,10 7,10 L2,18 L22,18 L14,6 Z" fill="currentColor" fill-rule="evenodd"/></svg>';
+          var oceanAMSvg = '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5645922,5.25632595 C21.6177582,5.28619452 21.8504003,5.41999722 21.9000357,5.44731501 C21.9502841,5.47497016 21.9822803,5.49123491 22.0010959,5.5 L24,5.5 L24,19.5 L22,19.5 C20.8158043,19.5 19.9798426,19.2461655 19.0854078,18.7436741 C19.0322418,18.7138055 18.7995997,18.5800028 18.7499643,18.552685 C18.7098941,18.5306316 18.6814307,18.5158215 18.6620496,18.5063099 C18.6379836,18.5182018 18.6062216,18.5352779 18.5628624,18.5599301 C18.5209785,18.5837436 18.3193295,18.7022683 18.2640678,18.7340279 C17.376484,19.2441335 16.5406534,19.5 15.34,19.5 C14.1558043,19.5 13.3198426,19.2461655 12.4254078,18.7436741 C12.3722418,18.7138055 12.1395997,18.5800028 12.0899643,18.552685 C12.0498024,18.5305812 12.0213006,18.5157538 12.0019172,18.506245 C11.9779764,18.5180297 11.9463752,18.5349603 11.9032732,18.5593908 C11.8610502,18.583323 11.6568821,18.7030472 11.6006689,18.7352611 C10.7119887,19.2445334 9.8736325,19.5 8.67,19.5 C7.46501574,19.5 6.62642943,19.2436822 5.74002568,18.7327867 C5.68344823,18.7001772 5.48196434,18.5813265 5.44071435,18.5577917 C5.39667305,18.5326643 5.36486521,18.5155457 5.34116203,18.5038882 C5.31747567,18.5153769 5.28576231,18.5322379 5.24210597,18.5568795 C5.19876087,18.5813454 4.98922039,18.7039477 4.93227788,18.7364863 C4.04294487,19.2446766 3.2029308,19.5 2,19.5 L0,19.5 L0,5.5 L1.99317447,5.5 C2.01789629,5.48818699 2.05174229,5.47014889 2.10071435,5.44220833 C2.14196434,5.41867353 2.34344823,5.29982279 2.40002568,5.2672133 C3.28642943,4.75631777 4.12501574,4.5 5.33,4.5 C6.51419571,4.5 7.35015744,4.75383453 8.24459216,5.25632595 C8.29775821,5.28619452 8.53040026,5.41999722 8.58003572,5.44731501 C8.61943237,5.46899769 8.64760912,5.48367852 8.66697822,5.49321341 C8.68995573,5.48170576 8.72014461,5.46535502 8.76071435,5.44220833 C8.80196434,5.41867353 9.00344823,5.29982279 9.06002568,5.2672133 C9.94642943,4.75631777 10.7850157,4.5 11.99,4.5 C13.1741957,4.5 14.0101574,4.75383453 14.9045922,5.25632595 C14.9577582,5.28619452 15.1904003,5.41999722 15.2400357,5.44731501 C15.2794324,5.46899769 15.3076091,5.48367852 15.3269782,5.49321341 C15.3499557,5.48170576 15.3801446,5.46535502 15.4207144,5.44220833 C15.4619643,5.41867353 15.6634482,5.29982279 15.7200257,5.2672133 C16.6064294,4.75631777 17.4450157,4.5 18.65,4.5 C19.8341957,4.5 20.6701574,4.75383453 21.5645922,5.25632595 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M5.35,12.5 C6.54,12.5 6.77,13.5 8.68,13.5 C10.63,13.5 10.77,12.5 12.01,12.5 C13.2,12.5 13.43,13.5 15.34,13.5 C17.29,13.5 17.43,12.5 18.67,12.5 C19.86,12.5 20.07,13.48 21.98,13.5 L21.98,11.5 C20.79,11.5 20.56,10.5 18.65,10.5 C16.7,10.5 16.56,11.5 15.32,11.5 C14.13,11.5 13.9,10.5 11.99,10.5 C10.04,10.5 9.9,11.5 8.66,11.5 C7.47,11.5 7.24,10.5 5.33,10.5 C3.38,10.5 3.24,11.5 2,11.5 L2,13.5 C3.9,13.5 4.17,12.5 5.35,12.5 Z M18.67,14.5 C16.72,14.5 16.58,15.5 15.34,15.5 C14.15,15.5 13.92,14.5 12.01,14.5 C10.06,14.5 9.91,15.5 8.67,15.5 C7.43,15.5 7.29,14.5 5.34,14.5 C3.39,14.5 3.24,15.5 2,15.5 L2,17.5 C3.95,17.5 4.11,16.5 5.34,16.5 C6.58,16.5 6.72,17.5 8.67,17.5 C10.62,17.5 10.77,16.5 12.01,16.5 C13.2,16.5 13.43,17.5 15.34,17.5 C17.28,17.5 17.43,16.5 18.67,16.5 C19.86,16.5 20.09,17.5 22,17.5 L22,15.5 C20.76,15.5 20.62,14.5 18.67,14.5 Z M5.35,8.5 C6.54,8.5 6.77,9.5 8.68,9.5 C10.63,9.5 10.77,8.5 12.01,8.5 C13.2,8.5 13.43,9.5 15.34,9.5 C17.29,9.5 17.43,8.5 18.67,8.5 C19.86,8.5 20.07,9.48 21.98,9.5 L21.98,7.5 C20.79,7.5 20.56,6.5 18.65,6.5 C16.7,6.5 16.56,7.5 15.32,7.5 C14.13,7.5 13.9,6.5 11.99,6.5 C10.04,6.5 9.9,7.5 8.66,7.5 C7.47,7.5 7.24,6.5 5.33,6.5 C3.38,6.5 3.24,7.5 2,7.5 L2,9.5 C3.9,9.5 4.17,8.5 5.35,8.5 Z" fill="currentColor" fill-rule="nonzero"/></svg>';
 
           function pathIcon18(num) {
-            return '<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3,12 C3,16.97 7.03,21 12,21 C16.97,21 21,16.97 21,12 C21,7.03 16.97,3 12,3 C7.03,3 3,7.03 3,12 Z" fill="currentColor" opacity="0.25"/><path d="M23,12 C23,18.08 18.08,23 12,23 C5.92,23 1,18.08 1,12 C1,5.92 5.92,1 12,1 C18.08,1 23,5.92 23,12 Z M3,12 C3,16.97 7.03,21 12,21 C16.97,21 21,16.97 21,12 C21,7.03 16.97,3 12,3 C7.03,3 3,7.03 3,12 Z" fill="currentColor"/><text font-family="Lato-Bold,Lato" font-size="16" font-weight="bold" fill="currentColor"><tspan x="7.36" y="17.65">' + num + '</tspan></text></svg>';
+            return '<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3,12 C3,16.97 7.03,21 12,21 C16.97,21 21,16.97 21,12 C21,7.03 16.97,3 12,3 C7.03,3 3,7.03 3,12 Z" fill="currentColor" opacity="0.25"/><path d="M23,12 C23,18.08 18.08,23 12,23 C5.92,23 1,18.08 1,12 C1,5.92 5.92,1 12,1 C18.08,1 23,5.92 23,12 Z M3,12 C3,16.97 7.03,21 12,21 C16.97,21 21,16.97 21,12 C21,7.03 16.97,3 12,3 C7.03,3 3,7.03 3,12 Z" fill="currentColor"/><text font-family="Lato, sans-serif" font-size="16" font-weight="bold" fill="currentColor"><tspan x="7.36" y="17.65">' + num + '</tspan></text></svg>';
           }
           var humDryPath = '<path d="M12,2 C6.67,6.55 4,10.48 4,13.8 C4,18.78 7.8,22 12,22 C16.2,22 20,18.78 20,13.8 C20,10.48 17.33,6.55 12,2 Z M12,20 C8.65,20 6,17.43 6,13.8 C6,11.46 7.95,8.36 12,4.66 C16.05,8.36 18,11.45 18,13.8 C18,17.43 15.35,20 12,20 Z" fill="currentColor" fill-rule="nonzero"/>';
           var humHumidPath = '<path d="M12,4.66 C16.05,8.36 18,11.45 18,13.8 C18,17.43 15.35,20 12,20 C8.65,20 6,17.43 6,13.8 C6,11.46 7.95,8.36 12,4.66 Z M7.83,14 C7.37,14 7.01,14.42 7.09,14.87 C7.66,17.9 10.15,19.12 12.28,18.99 C12.68,18.97 13,18.64 13,18.24 C13,17.81 12.64,17.47 12.21,17.49 C10.85,17.6 8.98,16.84 8.57,14.62 C8.5,14.26 8.2,14 7.83,14 Z" fill="currentColor" fill-rule="evenodd" opacity="0.5"/><path d="M12,2 C6.67,6.55 4,10.48 4,13.8 C4,18.78 7.8,22 12,22 C16.2,22 20,18.78 20,13.8 C20,10.48 17.33,6.55 12,2 Z M12,20 C8.65,20 6,17.43 6,13.8 C6,11.46 7.95,8.36 12,4.66 C16.05,8.36 18,11.45 18,13.8 C18,17.43 15.35,20 12,20 Z" fill="currentColor" fill-rule="nonzero"/>';
@@ -4574,12 +4614,12 @@ function buildSimContent() {
           }
 
           function amSection(amSvg, pathVal, humVal, tempVal, hasData) {
-            var pn = pathNumMap[pathVal] || "";
+            var pn = NOR_PATH_NUM[pathVal] || "";
             var ic = "color:var(--sim-icon-color,#1E3F6E)";
             var amColor = tempVal === "Warm" ? "color:#EF4444" : (tempVal === "Cold" || tempVal === "Cool") ? "color:#2196F3" : ic;
-            var g = '<div style="display:grid;grid-template-columns:24px 8px 18px 5px 1fr;grid-template-rows:repeat(3,18px);row-gap:2px;align-items:center">';
+            var g = '<div style="display:grid;grid-template-columns:24px 8px 18px 5px 1fr;grid-template-rows:repeat(3,18px);row-gap:1.5px;align-items:center">';
             if (hasData) {
-              g += '<div style="grid-column:1;grid-row:1/span 3;width:24px;height:36px;align-self:start;' + amColor + '">' + amSvg + '</div>';
+              g += '<div style="grid-column:1;grid-row:1/span 3;width:24px;height:24px;align-self:start;margin-top:-3px;' + amColor + '">' + amSvg + '</div>';
             }
             if (pathVal) {
               g += '<div style="grid-column:3;grid-row:1;width:18px;height:18px;' + ic + '">' + pathIcon18(pn) + '</div>';
@@ -4609,18 +4649,22 @@ function buildSimContent() {
             html += amSection(landAMSvg, st.landPath, st.landHum, st.landTemp, true);
             html += amSection(oceanAMSvg, st.oceanPath, st.oceanHum, oceanTemp, true);
             var d = SIM._OUTCOME_DATA ? SIM._OUTCOME_DATA[st.outcome] : null;
-            var bannerText;
+            var bannerText, bannerAria;
             if (st.outcome === "fair") {
-              bannerText = "Fair weather";
+              bannerText = "Fair<br>weather";
+              bannerAria = "Fair weather";
             } else if (st.outcome === "strong") {
-              bannerText = "Strong";
+              bannerText = "Strong<br>nor’easter";
+              bannerAria = "Strong nor’easter";
             } else if (st.outcome === "moderate") {
-              bannerText = "Moderate";
+              bannerText = "Moderate<br>nor’easter";
+              bannerAria = "Moderate nor’easter";
             } else {
-              bannerText = d ? d.banner : st.outcome;
+              bannerAria = d ? d.banner : st.outcome;
+              bannerText = bannerAria.replace(" ", "<br>");
             }
-            html += '<div style="text-align:center;font-weight:500;font-size:16px;line-height:1.2;white-space:nowrap;padding-right:5px">' + bannerText + '</div>';
-            ariaLabel += ". " + bannerText;
+            html += '<div style="text-align:center;font-weight:500;font-size:16px;line-height:1.2;margin-left:-5px">' + bannerText + '</div>';
+            ariaLabel += ". " + bannerAria;
           } else if (st) {
             var hasLand = st.landPath || st.landHum || st.landTemp;
             var hasOcean = st.oceanPath || st.oceanHum;
@@ -4637,13 +4681,14 @@ function buildSimContent() {
           if (hasContent) {
             statsEl.style.alignItems = "stretch";
             statsEl.style.textAlign = "left";
-            statsEl.style.gap = "8px";
+            statsEl.style.gap = "5px";
             statsEl.style.paddingLeft = "5px";
             statsEl.style.paddingBottom = "0";
           } else {
             statsEl.style.alignItems = "";
             statsEl.style.textAlign = "";
             statsEl.style.gap = "";
+            statsEl.style.paddingTop = "";
             statsEl.style.paddingLeft = "";
             statsEl.style.paddingBottom = "";
           }
@@ -4773,7 +4818,7 @@ function buildSimContent() {
         function buildNewCard() {
           const card = document.createElement("div");
           card.className = "trial-card new-card";
-          card.setAttribute("role", "tab");
+          card.setAttribute("role", "button");
           card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Add new trial");
           card.style.cursor = "pointer";
@@ -4849,6 +4894,11 @@ function buildSimContent() {
         inner.className = "sim-panel-inner";
         inner.style.paddingTop = "27px";
 
+        var mapDesc = document.createElement("span");
+        mapDesc.className = "sr-only";
+        mapDesc.textContent = "Map of the eastern United States, showing the coast from Maine in the north to Florida in the south. The Atlantic Ocean is on the right and land is on the left. Boston is marked near the coast in the northeast. Four numbered pathways show the directions from which air masses can approach.";
+        inner.appendChild(mapDesc);
+
         const indicator = document.createElement("div");
         indicator.className = "sim-trial-indicator";
         indicator.textContent = "A";
@@ -4868,7 +4918,7 @@ function buildSimContent() {
         let norDDCounter = 0;
 
         function pathwayIcon(num) {
-          return '<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3,12 C3,16.9705627 7.02943725,21 12,21 C16.9705627,21 21,16.9705627 21,12 C21,7.02943725 16.9705627,3 12,3 C7.02943725,3 3,7.02943725 3,12 Z" fill="currentColor" fill-rule="nonzero" opacity="0.25"/><path d="M23,12 C23,18.0751322 18.0751322,23 12,23 C5.92486775,23 1,18.0751322 1,12 C1,5.92486775 5.92486775,1 12,1 C18.0751322,1 23,5.92486775 23,12 Z M3,12 C3,16.9705627 7.02943725,21 12,21 C16.9705627,21 21,16.9705627 21,12 C21,7.02943725 16.9705627,3 12,3 C7.02943725,3 3,7.02943725 3,12 Z" fill="currentColor" fill-rule="nonzero"/><text font-family="Lato-Bold, Lato" font-size="16" font-weight="bold" fill="currentColor"><tspan x="7.36" y="17.65">' + num + '</tspan></text></svg>';
+          return '<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3,12 C3,16.9705627 7.02943725,21 12,21 C16.9705627,21 21,16.9705627 21,12 C21,7.02943725 16.9705627,3 12,3 C7.02943725,3 3,7.02943725 3,12 Z" fill="currentColor" fill-rule="nonzero" opacity="0.25"/><path d="M23,12 C23,18.0751322 18.0751322,23 12,23 C5.92486775,23 1,18.0751322 1,12 C1,5.92486775 5.92486775,1 12,1 C18.0751322,1 23,5.92486775 23,12 Z M3,12 C3,16.9705627 7.02943725,21 12,21 C16.9705627,21 21,16.9705627 21,12 C21,7.02943725 16.9705627,3 12,3 C7.02943725,3 3,7.02943725 3,12 Z" fill="currentColor" fill-rule="nonzero"/><text font-family="Lato, sans-serif" font-size="16" font-weight="bold" fill="currentColor"><tspan x="7.36" y="17.65">' + num + '</tspan></text></svg>';
         }
 
         const humidityDryIcon = '<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,2 C6.67,6.55 4,10.48 4,13.8 C4,18.78 7.8,22 12,22 C16.2,22 20,18.78 20,13.8 C20,10.48 17.33,6.55 12,2 Z M12,20 C8.65,20 6,17.43 6,13.8 C6,11.46 7.95,8.36 12,4.66 C16.05,8.36 18,11.45 18,13.8 C18,17.43 15.35,20 12,20 Z" fill="currentColor" fill-rule="nonzero"/></svg>';
@@ -4933,6 +4983,8 @@ function buildSimContent() {
             itemLabel.textContent = opt;
             item.appendChild(itemLabel);
             item.setAttribute("role", "option");
+            var optPathNum = NOR_PATH_NUM[opt];
+            if (optPathNum && labelText.indexOf("Pathway") === 0) item.setAttribute("aria-label", optPathNum + " " + opt);
             item.setAttribute("aria-selected", "false");
             item.id = id + "-opt-" + i;
             item.addEventListener("click", (e) => {
@@ -4965,10 +5017,19 @@ function buildSimContent() {
             trigger.setAttribute("aria-activedescendant", items[i].id);
             dropdown._hasSelection = true;
             closeDD();
-            trigger.focus();
-            if (SIM.announce) SIM.announce(labelText + ": " + options[i]);
+            if (!SIM._suppressAnnounce) trigger.focus();
+            var announceVal = options[i];
+            var pathNum = NOR_PATH_NUM[announceVal];
+            if (pathNum && labelText.indexOf("Pathway") === 0) announceVal = pathNum + " " + announceVal;
+            if (labelText === "Pathway for Ocean Air Mass") {
+              var derivedTemp = options[i] === "S/SE" ? "Warm" : options[i] === "NE" ? "Cool" : null;
+              if (derivedTemp) announceVal += "; Temperature for Ocean Air Mass: " + derivedTemp;
+            }
+            if (SIM.announce) SIM.announce(labelText + ": " + announceVal);
             if (SIM.saveNorSelection) SIM.saveNorSelection(labelText, options[i]);
+            SIM._suppressOceanTempAnnounce = true;
             if (SIM.updateNorButtons) SIM.updateNorButtons();
+            SIM._suppressOceanTempAnnounce = false;
             if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
           }
 
@@ -5122,25 +5183,14 @@ function buildSimContent() {
         }
         SIM.updateNorButtons = updateNorButtons;
 
-        function getNorSelections() {
-          var sels = {};
-          norDropdowns.forEach(function(dd) {
-            var text = dd.querySelector(".sim-dropdown-text");
-            if (text && !text.classList.contains("placeholder")) {
-              var label = dd.querySelector(".sim-dropdown-trigger").getAttribute("aria-label");
-              sels[label] = text.textContent;
-            }
-          });
-          return sels;
-        }
-
         function evaluateOutcome() {
-          var s = getNorSelections();
-          var landPath = s["Pathway for Land"];
-          var landTemp = s["Temperature for Land"];
-          var landHum = s["Humidity for Land"];
-          var oceanPath = s["Pathway for Ocean"];
-          var oceanHum = s["Humidity for Ocean"];
+          var st = SIM.trialState && SIM.trialState[SIM.selectedTrial];
+          if (!st) return "fair";
+          var landPath = st.landPath;
+          var landTemp = st.landTemp;
+          var landHum = st.landHum;
+          var oceanPath = st.oceanPath;
+          var oceanHum = st.oceanHum;
           if (landTemp === "Cold" && landHum === "Dry" && oceanPath === "S/SE" && oceanHum === "Humid") {
             if (landPath === "N/NW") return "strong";
             if (landPath === "W") return "moderate";
@@ -5337,11 +5387,11 @@ function buildSimContent() {
         }
 
         var NOR_LABEL_KEYS = {
-          "Pathway for Land": "landPath",
-          "Humidity for Land": "landHum",
-          "Temperature for Land": "landTemp",
-          "Pathway for Ocean": "oceanPath",
-          "Humidity for Ocean": "oceanHum"
+          "Pathway for Land Air Mass": "landPath",
+          "Humidity for Land Air Mass": "landHum",
+          "Temperature for Land Air Mass": "landTemp",
+          "Pathway for Ocean Air Mass": "oceanPath",
+          "Humidity for Ocean Air Mass": "oceanHum"
         };
 
         function defaultNorTrialState() {
@@ -5353,6 +5403,7 @@ function buildSimContent() {
         }
 
         SIM.saveNorSelection = function(labelText, value) {
+          if (SIM._norRunning) return;
           var key = NOR_LABEL_KEYS[labelText];
           if (!key) return;
           var trial = SIM.selectedTrial;
@@ -5365,8 +5416,13 @@ function buildSimContent() {
         };
 
         SIM.syncNorToTrial = function(letter) {
+          SIM._norRunning = false;
+          stage.removeAttribute("aria-busy");
+          if (SIM._resetArrowPositions) SIM._resetArrowPositions();
+          if (SIM._norRunTimeouts) { SIM._norRunTimeouts.forEach(clearTimeout); SIM._norRunTimeouts.length = 0; }
           var st = SIM.trialState[letter];
           if (!st) return;
+          SIM._suppressAnnounce = true;
           if (st.hasRun) {
             norDropdowns.forEach(function(dd) {
               var key = NOR_LABEL_KEYS[dd._labelText];
@@ -5416,15 +5472,34 @@ function buildSimContent() {
           if (SIM.updateAMColors) SIM.updateAMColors();
           if (SIM.updateArrowColors) SIM.updateArrowColors();
           updateNorDropdownSize();
+          SIM._suppressAnnounce = false;
+
+          var parts = ["Trial " + letter];
+          parts.push("Land Air Mass Pathway: " + (st.landPath ? NOR_PATH_NUM[st.landPath] + " " + st.landPath : "not selected"));
+          parts.push("Land Air Mass Humidity: " + (st.landHum || "not selected"));
+          parts.push("Land Air Mass Temperature: " + (st.landTemp || "not selected"));
+          parts.push("Ocean Air Mass Pathway: " + (st.oceanPath ? NOR_PATH_NUM[st.oceanPath] + " " + st.oceanPath : "not selected"));
+          parts.push("Ocean Air Mass Temperature: " + (st.oceanPath ? (st.oceanPath === "S/SE" ? "Warm" : "Cool") : "not selected"));
+          parts.push("Ocean Air Mass Humidity: " + (st.oceanHum || "not selected"));
+          if (st.hasRun && SIM._OUTCOME_DATA && SIM._OUTCOME_DATA[st.outcome]) {
+            parts.push("Weather Outcome: " + SIM._OUTCOME_DATA[st.outcome].banner);
+          } else {
+            parts.push("Weather Outcome: simulation not run");
+          }
+          SIM.announce(parts.join("; "));
         };
 
         SIM.resetNorTrial = function(letter) {
+          if (SIM._norRunTimeouts) { SIM._norRunTimeouts.forEach(clearTimeout); SIM._norRunTimeouts.length = 0; }
           if (SIM.trialState) SIM.trialState[letter] = defaultNorTrialState();
           if (letter === SIM.selectedTrial) {
             setNorPillMode(false);
             norDropdowns.forEach(function(dd) { dd._setSelection(null); });
             clearDataPanel();
             if (SIM._stopNorCloud) SIM._stopNorCloud();
+            if (SIM._resetArrowPositions) SIM._resetArrowPositions();
+            if (SIM._stopSnow) SIM._stopSnow();
+            if (SIM._stopSun) SIM._stopSun();
             if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
 
             stage.style.transition = "none";
@@ -5432,7 +5507,8 @@ function buildSimContent() {
             if (SIM._norPromptWrap) SIM._norPromptWrap.style.display = "none";
             SIM._norPromptVisible = false;
             SIM._norRunning = false;
-  
+            stage.removeAttribute("aria-busy");
+
             if (SIM.runBtn) {
               SIM.runBtn.querySelector("span").textContent = "Run";
               SIM.runBtn.setAttribute("aria-disabled", "true");
@@ -5458,14 +5534,20 @@ function buildSimContent() {
               tr.style.pointerEvents = "none";
               tr.style.cursor = "default";
               tr.style.justifyContent = "center";
-              tr.style.padding = "8px 10px";
+              tr.style.padding = "0 10px";
+              tr.style.height = "38px";
+              tr.style.minHeight = "0";
+              dd.style.alignSelf = "center";
               tr.style.borderRadius = "999px";
               tr.style.borderColor = "transparent";
               tr.setAttribute("tabindex", "-1");
-              tr.removeAttribute("role");
-              tr.setAttribute("aria-disabled", "true");
+              tr.setAttribute("role", "img");
+              tr.removeAttribute("aria-disabled");
               tr.removeAttribute("aria-expanded");
               tr.removeAttribute("aria-haspopup");
+              tr.removeAttribute("aria-controls");
+              var pillVal = tr.querySelector(".sim-dropdown-text");
+              tr.setAttribute("aria-label", dd._labelText + ": " + (pillVal ? pillVal.textContent : ""));
             } else {
               if (caret) caret.style.display = "";
               var text = tr.querySelector(".sim-dropdown-text");
@@ -5474,6 +5556,9 @@ function buildSimContent() {
               tr.style.pointerEvents = "";
               tr.style.cursor = "";
               tr.style.justifyContent = "";
+              tr.style.height = "";
+              tr.style.minHeight = "";
+              dd.style.alignSelf = "";
               tr.style.borderRadius = "";
               tr.style.borderColor = "";
               tr.setAttribute("tabindex", "0");
@@ -5481,8 +5566,22 @@ function buildSimContent() {
               tr.removeAttribute("aria-disabled");
               tr.setAttribute("aria-expanded", "false");
               tr.setAttribute("aria-haspopup", "listbox");
+              var list = dd.querySelector(".sim-dropdown-list");
+              if (list) tr.setAttribute("aria-controls", list.id);
+              if (dd._labelText) tr.setAttribute("aria-label", dd._labelText);
             }
           });
+          if (SIM._oceanTempDisplay) {
+            if (on) {
+              SIM._oceanTempDisplay.style.height = "38px";
+              SIM._oceanTempDisplay.style.minHeight = "0";
+              SIM._oceanTempDisplay.style.alignSelf = "center";
+            } else {
+              SIM._oceanTempDisplay.style.height = "";
+              SIM._oceanTempDisplay.style.minHeight = "";
+              SIM._oceanTempDisplay.style.alignSelf = "";
+            }
+          }
           SIM._norPillMode = on;
           if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
         }
@@ -5498,29 +5597,28 @@ function buildSimContent() {
         // Row 2: Land Air Mass
         const am1 = document.createElement("div");
         am1.className = "nor-air-mass";
-        am1.innerHTML = '<div class="nor-air-mass-icon" aria-hidden="true"><svg width="24" height="36" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg"><path d="M24.0038528,33.4002279 L24,36 L-8.8817842e-15,36 L0.00424533809,33.419615 L5.30400339,24.9400021 L6.85061922,22.4654168 L8.99984672,25.3335377 L14.0960769,18.5385641 L24.0038528,33.4002279 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M14,22 L10.25,27 L13.1,30.8 L11.5,32 C9.81,29.75 7,26 7,26 L2,34 L22,34 L14,22 Z" fill="currentColor" fill-rule="evenodd"/><path d="M21,5.5 C21,6.51703236 20.7230712,7.47013634 20.2356767,8.28463081 C22.4222328,9.00907944 24,11.0724277 24,13.5 C24,16.5345695 21.5345695,19 18.5,19 C16.8333333,19 15.8313005,19.0009854 15.4939015,19.0029561 C14.5801445,20.2145906 13.1291159,21 11.5,21 C9.08776833,21 7.06598801,19.2780118 6.6009886,17 L0,17 L0,5 L10.0252993,5 C10.2760149,2.19880324 12.6342131,0 15.5,0 C18.5345695,0 21,2.4654305 21,5.5 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M14.5,16 C14.5,17.65 13.15,19 11.5,19 C9.85,19 8.5,17.65 8.5,16 L10.5,16 C10.5,16.55 10.95,17 11.5,17 C12.05,17 12.5,16.55 12.5,16 C12.5,15.45 12.05,15 11.5,15 L2,15 L2,13 L11.5,13 C13.15,13 14.5,14.35 14.5,16 Z M19,5.5 C19,3.57 17.43,2 15.5,2 C13.57,2 12,3.57 12,5.5 L14,5.5 C14,4.67 14.67,4 15.5,4 C16.33,4 17,4.67 17,5.5 C17,6.33 16.33,7 15.5,7 L2,7 L2,9 L15.5,9 C17.43,9 19,7.43 19,5.5 Z M18.5,10 L2,10 L2,12 L18.5,12 C19.33,12 20,12.67 20,13.5 C20,14.33 19.33,15 18.5,15 L18.5,17 C20.43,17 22,15.43 22,13.5 C22,11.57 20.43,10 18.5,10 Z" fill="currentColor" fill-rule="nonzero"/></svg></div><span class="nor-air-mass-label">Land<br>Air Mass</span>';
+        am1.innerHTML = '<div class="nor-air-mass-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24.0038528,17.4002279 L24,20 L-2.84217094e-14,20 L0.00424533809,17.419615 L5.30400339,8.94000212 L6.85061922,6.4654168 L8.99984672,9.33353772 L14.0960769,2.53856411 L24.0038528,17.4002279 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M14,6 L10.25,11 L13.1,14.8 L11.5,16 C9.81,13.75 7,10 7,10 L2,18 L22,18 L14,6 Z" fill="currentColor" fill-rule="evenodd"/></svg></div><span class="nor-air-mass-label">Land<br>Air Mass</span>';
         grid.appendChild(am1);
-        grid.appendChild(buildNorDropdown("Pathway for Land", ["N/NW", "W"], [pathwayIcon(1), pathwayIcon(4)]));
-        grid.appendChild(buildNorDropdown("Humidity for Land", ["Dry", "Humid"], [humidityDryIcon, humidityHumidIcon]));
-        grid.appendChild(buildNorDropdown("Temperature for Land", ["Cold", "Warm"], [tempColdIcon, tempWarmIcon]));
+        grid.appendChild(buildNorDropdown("Pathway for Land Air Mass", ["N/NW", "W"], [pathwayIcon(1), pathwayIcon(4)]));
+        grid.appendChild(buildNorDropdown("Humidity for Land Air Mass", ["Dry", "Humid"], [humidityDryIcon, humidityHumidIcon]));
+        grid.appendChild(buildNorDropdown("Temperature for Land Air Mass", ["Cold", "Warm"], [tempColdIcon, tempWarmIcon]));
 
         // Row 3: Ocean Air Mass
         const am2 = document.createElement("div");
         am2.className = "nor-air-mass";
-        am2.innerHTML = '<div class="nor-air-mass-icon" aria-hidden="true"><svg width="24" height="36" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg"><path d="M21.5645922,21.7563259 C21.6177582,21.7861945 21.8504003,21.9199972 21.9000357,21.947315 C21.9502841,21.9749702 21.9822803,21.9912349 22.0010959,22 L24,22 L24,36 L22,36 C20.8158043,36 19.9798426,35.7461655 19.0854078,35.2436741 C19.0322418,35.2138055 18.7995997,35.0800028 18.7499643,35.052685 C18.7098941,35.0306316 18.6814307,35.0158215 18.6620496,35.0063099 C18.6379836,35.0182018 18.6062216,35.0352779 18.5628624,35.0599301 C18.5209785,35.0837436 18.3193295,35.2022683 18.2640678,35.2340279 C17.376484,35.7441335 16.5406534,36 15.34,36 C14.1558043,36 13.3198426,35.7461655 12.4254078,35.2436741 C12.3722418,35.2138055 12.1395997,35.0800028 12.0899643,35.052685 C12.0498024,35.0305812 12.0213006,35.0157538 12.0019172,35.006245 C11.9779764,35.0180297 11.9463752,35.0349603 11.9032732,35.0593908 C11.8610502,35.083323 11.6568821,35.2030472 11.6006689,35.2352611 C10.7119887,35.7445334 9.8736325,36 8.67,36 C7.46501574,36 6.62642943,35.7436822 5.74002568,35.2327867 C5.68344823,35.2001772 5.48196434,35.0813265 5.44071435,35.0577917 C5.39667305,35.0326643 5.36486521,35.0155457 5.34116203,35.0038882 C5.31747567,35.0153769 5.28576231,35.0322379 5.24210597,35.0568795 C5.19876087,35.0813454 4.98922039,35.2039477 4.93227788,35.2364863 C4.04294487,35.7446766 3.2029308,36 2,36 L0,36 L0,22 L1.99317447,22 C2.01789629,21.988187 2.05174229,21.9701489 2.10071435,21.9422083 C2.14196434,21.9186735 2.34344823,21.7998228 2.40002568,21.7672133 C3.28642943,21.2563178 4.12501574,21 5.33,21 C6.51419571,21 7.35015744,21.2538345 8.24459216,21.7563259 C8.29775821,21.7861945 8.53040026,21.9199972 8.58003572,21.947315 C8.61943237,21.9689977 8.64760912,21.9836785 8.66697822,21.9932134 C8.68995573,21.9817058 8.72014461,21.965355 8.76071435,21.9422083 C8.80196434,21.9186735 9.00344823,21.7998228 9.06002568,21.7672133 C9.94642943,21.2563178 10.7850157,21 11.99,21 C13.1741957,21 14.0101574,21.2538345 14.9045922,21.7563259 C14.9577582,21.7861945 15.1904003,21.9199972 15.2400357,21.947315 C15.2794324,21.9689977 15.3076091,21.9836785 15.3269782,21.9932134 C15.3499557,21.9817058 15.3801446,21.965355 15.4207144,21.9422083 C15.4619643,21.9186735 15.6634482,21.7998228 15.7200257,21.7672133 C16.6064294,21.2563178 17.4450157,21 18.65,21 C19.8341957,21 20.6701574,21.2538345 21.5645922,21.7563259 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M5.35,29 C6.54,29 6.77,30 8.68,30 C10.63,30 10.77,29 12.01,29 C13.2,29 13.43,30 15.34,30 C17.29,30 17.43,29 18.67,29 C19.86,29 20.07,29.98 21.98,30 L21.98,28 C20.79,28 20.56,27 18.65,27 C16.7,27 16.56,28 15.32,28 C14.13,28 13.9,27 11.99,27 C10.04,27 9.9,28 8.66,28 C7.47,28 7.24,27 5.33,27 C3.38,27 3.24,28 2,28 L2,30 C3.9,30 4.17,29 5.35,29 Z M18.67,31 C16.72,31 16.58,32 15.34,32 C14.15,32 13.92,31 12.01,31 C10.06,31 9.91,32 8.67,32 C7.43,32 7.29,31 5.34,31 C3.39,31 3.24,32 2,32 L2,34 C3.95,34 4.11,33 5.34,33 C6.58,33 6.72,34 8.67,34 C10.62,34 10.77,33 12.01,33 C13.2,33 13.43,34 15.34,34 C17.28,34 17.43,33 18.67,33 C19.86,33 20.09,34 22,34 L22,32 C20.76,32 20.62,31 18.67,31 Z M5.35,25 C6.54,25 6.77,26 8.68,26 C10.63,26 10.77,25 12.01,25 C13.2,25 13.43,26 15.34,26 C17.29,26 17.43,25 18.67,25 C19.86,25 20.07,25.98 21.98,26 L21.98,24 C20.79,24 20.56,23 18.65,23 C16.7,23 16.56,24 15.32,24 C14.13,24 13.9,23 11.99,23 C10.04,23 9.9,24 8.66,24 C7.47,24 7.24,23 5.33,23 C3.38,23 3.24,24 2,24 L2,26 C3.9,26 4.17,25 5.35,25 Z" fill="currentColor" fill-rule="nonzero"/><path d="M21,5.5 C21,6.51703236 20.7230712,7.47013634 20.2356767,8.28463081 C22.4222328,9.00907944 24,11.0724277 24,13.5 C24,16.5345695 21.5345695,19 18.5,19 C16.8333333,19 15.8313005,19.0009854 15.4939015,19.0029561 C14.5801445,20.2145906 13.1291159,21 11.5,21 C9.08776833,21 7.06598801,19.2780118 6.6009886,17 L0,17 L0,5 L10.0252993,5 C10.2760149,2.19880324 12.6342131,0 15.5,0 C18.5345695,0 21,2.4654305 21,5.5 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M14.5,16 C14.5,17.65 13.15,19 11.5,19 C9.85,19 8.5,17.65 8.5,16 L10.5,16 C10.5,16.55 10.95,17 11.5,17 C12.05,17 12.5,16.55 12.5,16 C12.5,15.45 12.05,15 11.5,15 L2,15 L2,13 L11.5,13 C13.15,13 14.5,14.35 14.5,16 Z M19,5.5 C19,3.57 17.43,2 15.5,2 C13.57,2 12,3.57 12,5.5 L14,5.5 C14,4.67 14.67,4 15.5,4 C16.33,4 17,4.67 17,5.5 C17,6.33 16.33,7 15.5,7 L2,7 L2,9 L15.5,9 C17.43,9 19,7.43 19,5.5 Z M18.5,10 L2,10 L2,12 L18.5,12 C19.33,12 20,12.67 20,13.5 C20,14.33 19.33,15 18.5,15 L18.5,17 C20.43,17 22,15.43 22,13.5 C22,11.57 20.43,10 18.5,10 Z" fill="currentColor" fill-rule="nonzero"/></svg></div><span class="nor-air-mass-label">Ocean<br>Air Mass</span>';
+        am2.innerHTML = '<div class="nor-air-mass-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.5645922,5.25632595 C21.6177582,5.28619452 21.8504003,5.41999722 21.9000357,5.44731501 C21.9502841,5.47497016 21.9822803,5.49123491 22.0010959,5.5 L24,5.5 L24,19.5 L22,19.5 C20.8158043,19.5 19.9798426,19.2461655 19.0854078,18.7436741 C19.0322418,18.7138055 18.7995997,18.5800028 18.7499643,18.552685 C18.7098941,18.5306316 18.6814307,18.5158215 18.6620496,18.5063099 C18.6379836,18.5182018 18.6062216,18.5352779 18.5628624,18.5599301 C18.5209785,18.5837436 18.3193295,18.7022683 18.2640678,18.7340279 C17.376484,19.2441335 16.5406534,19.5 15.34,19.5 C14.1558043,19.5 13.3198426,19.2461655 12.4254078,18.7436741 C12.3722418,18.7138055 12.1395997,18.5800028 12.0899643,18.552685 C12.0498024,18.5305812 12.0213006,18.5157538 12.0019172,18.506245 C11.9779764,18.5180297 11.9463752,18.5349603 11.9032732,18.5593908 C11.8610502,18.583323 11.6568821,18.7030472 11.6006689,18.7352611 C10.7119887,19.2445334 9.8736325,19.5 8.67,19.5 C7.46501574,19.5 6.62642943,19.2436822 5.74002568,18.7327867 C5.68344823,18.7001772 5.48196434,18.5813265 5.44071435,18.5577917 C5.39667305,18.5326643 5.36486521,18.5155457 5.34116203,18.5038882 C5.31747567,18.5153769 5.28576231,18.5322379 5.24210597,18.5568795 C5.19876087,18.5813454 4.98922039,18.7039477 4.93227788,18.7364863 C4.04294487,19.2446766 3.2029308,19.5 2,19.5 L0,19.5 L0,5.5 L1.99317447,5.5 C2.01789629,5.48818699 2.05174229,5.47014889 2.10071435,5.44220833 C2.14196434,5.41867353 2.34344823,5.29982279 2.40002568,5.2672133 C3.28642943,4.75631777 4.12501574,4.5 5.33,4.5 C6.51419571,4.5 7.35015744,4.75383453 8.24459216,5.25632595 C8.29775821,5.28619452 8.53040026,5.41999722 8.58003572,5.44731501 C8.61943237,5.46899769 8.64760912,5.48367852 8.66697822,5.49321341 C8.68995573,5.48170576 8.72014461,5.46535502 8.76071435,5.44220833 C8.80196434,5.41867353 9.00344823,5.29982279 9.06002568,5.2672133 C9.94642943,4.75631777 10.7850157,4.5 11.99,4.5 C13.1741957,4.5 14.0101574,4.75383453 14.9045922,5.25632595 C14.9577582,5.28619452 15.1904003,5.41999722 15.2400357,5.44731501 C15.2794324,5.46899769 15.3076091,5.48367852 15.3269782,5.49321341 C15.3499557,5.48170576 15.3801446,5.46535502 15.4207144,5.44220833 C15.4619643,5.41867353 15.6634482,5.29982279 15.7200257,5.2672133 C16.6064294,4.75631777 17.4450157,4.5 18.65,4.5 C19.8341957,4.5 20.6701574,4.75383453 21.5645922,5.25632595 Z" fill="#FFFFFF" fill-rule="nonzero"/><path d="M5.35,12.5 C6.54,12.5 6.77,13.5 8.68,13.5 C10.63,13.5 10.77,12.5 12.01,12.5 C13.2,12.5 13.43,13.5 15.34,13.5 C17.29,13.5 17.43,12.5 18.67,12.5 C19.86,12.5 20.07,13.48 21.98,13.5 L21.98,11.5 C20.79,11.5 20.56,10.5 18.65,10.5 C16.7,10.5 16.56,11.5 15.32,11.5 C14.13,11.5 13.9,10.5 11.99,10.5 C10.04,10.5 9.9,11.5 8.66,11.5 C7.47,11.5 7.24,10.5 5.33,10.5 C3.38,10.5 3.24,11.5 2,11.5 L2,13.5 C3.9,13.5 4.17,12.5 5.35,12.5 Z M18.67,14.5 C16.72,14.5 16.58,15.5 15.34,15.5 C14.15,15.5 13.92,14.5 12.01,14.5 C10.06,14.5 9.91,15.5 8.67,15.5 C7.43,15.5 7.29,14.5 5.34,14.5 C3.39,14.5 3.24,15.5 2,15.5 L2,17.5 C3.95,17.5 4.11,16.5 5.34,16.5 C6.58,16.5 6.72,17.5 8.67,17.5 C10.62,17.5 10.77,16.5 12.01,16.5 C13.2,16.5 13.43,17.5 15.34,17.5 C17.28,17.5 17.43,16.5 18.67,16.5 C19.86,16.5 20.09,17.5 22,17.5 L22,15.5 C20.76,15.5 20.62,14.5 18.67,14.5 Z M5.35,8.5 C6.54,8.5 6.77,9.5 8.68,9.5 C10.63,9.5 10.77,8.5 12.01,8.5 C13.2,8.5 13.43,9.5 15.34,9.5 C17.29,9.5 17.43,8.5 18.67,8.5 C19.86,8.5 20.07,9.48 21.98,9.5 L21.98,7.5 C20.79,7.5 20.56,6.5 18.65,6.5 C16.7,6.5 16.56,7.5 15.32,7.5 C14.13,7.5 13.9,6.5 11.99,6.5 C10.04,6.5 9.9,7.5 8.66,7.5 C7.47,7.5 7.24,6.5 5.33,6.5 C3.38,6.5 3.24,7.5 2,7.5 L2,9.5 C3.9,9.5 4.17,8.5 5.35,8.5 Z" fill="currentColor" fill-rule="nonzero"/></svg></div><span class="nor-air-mass-label">Ocean<br>Air Mass</span>';
         am2.style.marginTop = "1px";
         grid.appendChild(am2);
-        const oceanPathDD = buildNorDropdown("Pathway for Ocean", ["S/SE", "NE"], [pathwayIcon(2), pathwayIcon(3)]);
+        const oceanPathDD = buildNorDropdown("Pathway for Ocean Air Mass", ["S/SE", "NE"], [pathwayIcon(2), pathwayIcon(3)]);
         oceanPathDD.style.marginTop = "1px";
         grid.appendChild(oceanPathDD);
-        const oceanHumDD = buildNorDropdown("Humidity for Ocean", ["Dry", "Humid"], [humidityDryIcon, humidityHumidIcon]);
+        const oceanHumDD = buildNorDropdown("Humidity for Ocean Air Mass", ["Dry", "Humid"], [humidityDryIcon, humidityHumidIcon]);
         oceanHumDD.style.marginTop = "1px";
         grid.appendChild(oceanHumDD);
         const oceanTempDisplay = document.createElement("div");
         oceanTempDisplay.className = "nor-temp-display";
-        oceanTempDisplay.setAttribute("aria-label", "Ocean temperature");
-        oceanTempDisplay.setAttribute("aria-live", "polite");
-        oceanTempDisplay.setAttribute("aria-atomic", "true");
+        oceanTempDisplay.setAttribute("role", "status");
+        oceanTempDisplay.setAttribute("aria-label", "Temperature for Ocean Air Mass");
         oceanTempDisplay.style.borderRadius = "999px";
         oceanTempDisplay.style.border = "2px solid transparent";
         oceanTempDisplay.style.background = "var(--sim-surface, #fff)";
@@ -5542,8 +5640,9 @@ function buildSimContent() {
         grid.appendChild(oceanTempDisplay);
 
         function updateOceanTemp() {
-          var pathText = oceanPathDD.querySelector(".sim-dropdown-text");
-          if (!pathText || pathText.classList.contains("placeholder")) {
+          var st = SIM.trialState && SIM.trialState[SIM.selectedTrial];
+          var oceanPath = st ? st.oceanPath : null;
+          if (!oceanPath) {
             oceanTempIcon.style.display = "none";
             oceanTempIcon.innerHTML = "";
             oceanTempLabel.textContent = "–";
@@ -5552,8 +5651,7 @@ function buildSimContent() {
             if (SIM.updateAMColors) SIM.updateAMColors();
             return;
           }
-          var sel = pathText.textContent;
-          if (sel === "S/SE") {
+          if (oceanPath === "S/SE") {
             oceanTempIcon.innerHTML = tempWarmIcon;
             oceanTempIcon.style.background = "none";
             oceanTempIcon.style.borderRadius = "0";
@@ -5561,7 +5659,8 @@ function buildSimContent() {
             oceanTempLabel.textContent = "Warm";
             oceanTempLabel.style.textAlign = "";
             oceanTempLabel.style.flex = "none";
-          } else if (sel === "NE") {
+            if (SIM.announce && !SIM._suppressOceanTempAnnounce) SIM.announce("Temperature for Ocean Air Mass: Warm");
+          } else if (oceanPath === "NE") {
             oceanTempIcon.innerHTML = tempCoolIcon;
             oceanTempIcon.style.background = "none";
             oceanTempIcon.style.borderRadius = "0";
@@ -5569,6 +5668,7 @@ function buildSimContent() {
             oceanTempLabel.textContent = "Cool";
             oceanTempLabel.style.textAlign = "";
             oceanTempLabel.style.flex = "none";
+            if (SIM.announce && !SIM._suppressOceanTempAnnounce) SIM.announce("Temperature for Ocean Air Mass: Cool");
           }
           if (SIM.updateAMColors) SIM.updateAMColors();
         }
@@ -5579,8 +5679,8 @@ function buildSimContent() {
           var oceanIcon = am2.querySelector(".nor-air-mass-icon");
           var st = SIM.trialState && SIM.trialState[SIM.selectedTrial];
           var landTemp = st ? st.landTemp : null;
-          var oceanSel = oceanPathDD.querySelector(".sim-dropdown-text");
-          var oceanTemp = (!oceanSel || oceanSel.classList.contains("placeholder")) ? null : oceanSel.textContent === "S/SE" ? "Warm" : "Cool";
+          var oceanPath = st ? st.oceanPath : null;
+          var oceanTemp = !oceanPath ? null : oceanPath === "S/SE" ? "Warm" : "Cool";
           if (landIcon) landIcon.style.color = landTemp === "Warm" ? "#EF4444" : landTemp === "Cold" ? "#2196F3" : "";
           if (oceanIcon) oceanIcon.style.color = oceanTemp === "Warm" ? "#EF4444" : oceanTemp === "Cool" ? "#2196F3" : "";
         }
@@ -5605,12 +5705,12 @@ function buildSimContent() {
           label.textContent = "Test combos:";
           bar.appendChild(label);
           var combos = {
-            strong:   { label: "Strong nor’easter", vals: { "Pathway for Land": "N/NW", "Humidity for Land": "Dry", "Temperature for Land": "Cold", "Pathway for Ocean": "S/SE", "Humidity for Ocean": "Humid" } },
-            moderate: { label: "Moderate nor’easter", vals: { "Pathway for Land": "W", "Humidity for Land": "Dry", "Temperature for Land": "Cold", "Pathway for Ocean": "S/SE", "Humidity for Ocean": "Humid" } },
-            fair12:   { label: "Fair 1+2", vals: { "Pathway for Land": "N/NW", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "S/SE", "Humidity for Ocean": "Dry" } },
-            fair13:   { label: "Fair 1+3", vals: { "Pathway for Land": "N/NW", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "NE", "Humidity for Ocean": "Dry" } },
-            fair42:   { label: "Fair 4+2", vals: { "Pathway for Land": "W", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "S/SE", "Humidity for Ocean": "Dry" } },
-            fair43:   { label: "Fair 4+3", vals: { "Pathway for Land": "W", "Humidity for Land": "Humid", "Temperature for Land": "Warm", "Pathway for Ocean": "NE", "Humidity for Ocean": "Dry" } }
+            strong:   { label: "Strong nor’easter", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Dry", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Humid" } },
+            moderate: { label: "Moderate nor’easter", vals: { "Pathway for Land Air Mass": "W", "Humidity for Land Air Mass": "Dry", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Humid" } },
+            fair12:   { label: "Fair 1+2", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Humid", "Temperature for Land Air Mass": "Warm", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Dry" } },
+            fair13:   { label: "Fair 1+3", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Humid", "Temperature for Land Air Mass": "Warm", "Pathway for Ocean Air Mass": "NE", "Humidity for Ocean Air Mass": "Dry" } },
+            fair42:   { label: "Fair 4+2", vals: { "Pathway for Land Air Mass": "W", "Humidity for Land Air Mass": "Humid", "Temperature for Land Air Mass": "Warm", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Dry" } },
+            fair43:   { label: "Fair 4+3", vals: { "Pathway for Land Air Mass": "W", "Humidity for Land Air Mass": "Humid", "Temperature for Land Air Mass": "Warm", "Pathway for Ocean Air Mass": "NE", "Humidity for Ocean Air Mass": "Dry" } }
           };
           Object.keys(combos).forEach(function(key) {
             var btn = document.createElement("button");
@@ -5657,7 +5757,7 @@ function buildSimContent() {
         const NOR_ITEM_PAD_L_MAX = 10, NOR_ITEM_PAD_L_MIN = [7, 5, 3];
         const NOR_ITEM_GAP_MAX = 8, NOR_ITEM_GAP_MIN = [4, 2, 0];
         const NOR_AM_ICON_W_MAX = 24, NOR_AM_ICON_W_MIN = 22;
-        const NOR_AM_ICON_H_MAX = 36, NOR_AM_ICON_H_MIN = 33;
+        const NOR_AM_ICON_H_MAX = 24, NOR_AM_ICON_H_MIN = 22;
 
         const NOR_F_MAX = 829, NOR_F_MIN = 573;
         const NOR_SIM_MAX = 525, NOR_SIM_MIN = 390;
@@ -5714,7 +5814,7 @@ function buildSimContent() {
               }
               var pillL = Math.max(0, padR - pillShift);
               var pillR = padR + pillShift + Math.min(0, padR - pillShift);
-              tr.style.padding = "8px " + pillR + "px 8px " + pillL + "px";
+              tr.style.padding = "0 " + pillR + "px 0 " + pillL + "px";
             } else {
               tr.style.padding = "8px " + padR + "px 8px " + padL + "px";
             }
@@ -5742,7 +5842,8 @@ function buildSimContent() {
           var otPadR = NOR_PAD_R_MIN + t * (NOR_PAD_R_MAX - NOR_PAD_R_MIN);
           var otIconMR = NOR_ICON_MR_MIN[2] + t * (NOR_ICON_MR_MAX - NOR_ICON_MR_MIN[2]);
           var otShift = (oceanTempIcon.style.display !== "none") ? 3 : 0;
-          oceanTempDisplay.style.padding = "8px " + (otPadR + otShift) + "px 8px " + (otPadR - otShift) + "px";
+          var otPadV = SIM._norPillMode ? 0 : 8;
+          oceanTempDisplay.style.padding = otPadV + "px " + (otPadR + otShift) + "px " + otPadV + "px " + (otPadR - otShift) + "px";
           oceanTempDisplay.style.fontWeight = useCondensed ? "500" : "";
           oceanTempDisplay.style.fontFamily = useCondensed ? "'Roboto Condensed',sans-serif" : "";
           oceanTempIcon.style.marginRight = otIconMR + "px";
@@ -5787,14 +5888,14 @@ function buildSimContent() {
             // Reset to full state: Lato everything, full padding
             norMapHit.style.padding = "0 " + PAD_MAX + "px";
             const btns = norBottomBar.querySelectorAll(".sim-btn");
-            const switchLabels = norBottomBar.querySelectorAll(".fungus-switch-state");
+            const switchLabels = norBottomBar.querySelectorAll(".sim-switch-state");
             btns.forEach(el => {
               el.style.fontFamily = ""; el.style.fontWeight = ""; el.style.width = ""; el.style.padding = ""; el.style.gap = "";
               const ic = el.querySelector('svg'); if (ic) { ic.style.width = ""; ic.style.height = ""; }
             });
             norMapHit.style.gap = "";
             switchLabels.forEach(el => { el.style.fontFamily = ""; el.style.flex = "1"; el.style.overflow = ""; });
-            const switchEl = norBottomBar.querySelector(".fungus-switch");
+            const switchEl = norBottomBar.querySelector(".sim-switch");
             if (switchEl) { switchEl.style.width = ""; switchEl.style.padding = "8px 0"; }
             norBottomBar.style.gap = csGap_MAX + "px";
 
@@ -5873,17 +5974,26 @@ function buildSimContent() {
         topControls.appendChild(norPromptWrap);
         SIM._norPromptWrap = norPromptWrap;
 
-        // White container (not scrollable)
+        /* DEV NOTE: Stage z-index stacking order (bottom to top, by DOM insertion order):
+           1. Satellite layer (insertBefore as firstChild — behind everything)
+           2. Street map (stage background-image — behind all children)
+           3. Compass rose
+           4. Nor'easter graphic + cloud canvas (child of graphic)
+           5. High-pressure "H" label
+           6. Boston marker
+           7. Pathway arrows (4 arrows in one container)
+           8. Pill container (post-run result pills)
+           No explicit z-index values — order depends entirely on DOM position. */
         const stage = document.createElement("div");
         stage.className = "nor-stage";
-        stage.style.cssText = "flex:1;min-height:0;background-color:#ebebeb;background-image:url('ICONS/Map_Street_3x.png');background-size:auto 100%;background-position:center;background-repeat:no-repeat;overflow:hidden;position:relative;";
+        stage.style.cssText = "flex:1;min-height:0;background-color:#ebebeb;background-image:url('ICONS/Map_Street_2x.png');background-size:auto 100%;background-position:center;background-repeat:no-repeat;overflow:hidden;position:relative;";
         inner.appendChild(stage);
         SIM._stage = stage;
 
         const compassRose = document.createElement("div");
         compassRose.setAttribute("aria-hidden", "true");
-        compassRose.style.cssText = "position:absolute;left:12px;bottom:10px;width:72px;height:74px;pointer-events:none;color:var(--sim-icon-color, #000);";
-        compassRose.innerHTML = '<svg width="100%" height="100%" viewBox="0 0 72 74" xmlns="http://www.w3.org/2000/svg"><rect fill-rule="nonzero" x="0" y="0" width="72" height="74" fill="none"/><path d="M39.0593547,58.7884348 L38.9564897,58.7218699 C39.7896785,59.2203017 40.4466351,59.9077532 40.8972098,60.7575003 C41.3320043,61.5774874 41.5480902,62.4833375 41.5480902,63.4460742 L41.5480902,65.4460742 L40.6769574,65.4460742 C40.9380247,65.8150778 41.1446478,66.2174347 41.2952022,66.6480155 C41.500587,67.2354094 41.5986273,67.8706228 41.5986273,68.5478809 C41.5986273,69.2755439 41.4690211,69.9640337 41.2021837,70.5991027 C40.9286754,71.2500482 40.5259447,71.819706 40.0048728,72.2899622 C39.497791,72.7475926 38.8987104,73.0928074 38.2240183,73.3260533 C37.5773245,73.54962 36.8790747,73.6575 36.1357367,73.6575 C35.4361873,73.6575 34.7562336,73.5515042 34.1036676,73.3389504 C33.4068645,73.1119878 32.7753833,72.7610725 32.2229029,72.2917413 C31.6413931,71.7977497 31.1847449,71.1828172 30.8595313,70.4672829 C30.5291534,69.7403861 30.3720648,68.9294045 30.3720648,68.0484912 L30.3720648,66.0484912 L31.5602095,66.0484912 C31.3604251,65.7831096 31.1884974,65.4975364 31.0454041,65.1936378 C30.7469947,64.559882 30.6048529,63.8592022 30.6048529,63.1092822 C30.6048529,62.3825403 30.7390397,61.6916625 31.0131032,61.052498 C31.2890205,60.4090098 31.689363,59.8437407 32.2038327,59.3728025 C32.4414732,59.1552698 32.6987405,58.9620079 32.974038,58.7931896 C23.2122858,57.4536118 15.4916183,49.7073808 14.1897306,39.9321844 L13.2986429,44.685 L8.18270744,44.685 L8.13927281,44.4779893 L8.09481425,44.685 L2.99716716,44.685 L0.1,29.31 L15.3774287,29.3100178 C17.8255467,22.7488335 23.3158066,17.6702851 30.1325983,15.7899828 L30.1320648,0.66 L35.1981524,0.66 L36.0207367,2.27167478 L36.0207367,0.66 L41.8492279,0.66 L41.8494919,15.787234 C49.0477267,17.7690806 54.7683141,23.3166917 56.9923794,30.4111926 L56.9920648,29.31 L67.2852777,29.31 L67.2852777,34.9063785 L66.667846,34.9062454 L66.667846,39.0971259 L67.3303216,39.097255 L67.3303216,44.685 L56.9920648,44.685 L56.9926923,43.5878094 C54.488378,51.5776123 47.5494201,57.6056661 39.0593547,58.7884348 Z" fill="#FFFFFF" fill-rule="nonzero" opacity="0.75"/><path d="M55.9960324,37 C55.9960324,48.045695 47.0417274,57 35.9960324,57 C24.9503374,57 15.9960324,48.045695 15.9960324,37 C15.9960324,25.954305 24.9503374,17 35.9960324,17 C47.0417274,17 55.9960324,25.954305 55.9960324,37 Z M17.9960324,37 C17.9960324,46.9411255 26.0549069,55 35.9960324,55 C45.9371579,55 53.9960324,46.9411255 53.9960324,37 C53.9960324,27.0588745 45.9371579,19 35.9960324,19 C26.0549069,19 17.9960324,27.0588745 17.9960324,37 Z" fill="currentColor" fill-rule="nonzero"/><path d="M51.7460324,37 C51.7460324,45.6984848 44.6945172,52.75 35.9960324,52.75 C27.2975476,52.75 20.2460324,45.6984848 20.2460324,37 C20.2460324,28.3015152 27.2975476,21.25 35.9960324,21.25 C44.6945172,21.25 51.7460324,28.3015152 51.7460324,37 Z M21.7460324,37 C21.7460324,44.8700577 28.1259747,51.25 35.9960324,51.25 C43.8660901,51.25 50.2460324,44.8700577 50.2460324,37 C50.2460324,29.1299423 43.8660901,22.75 35.9960324,22.75 C28.1259747,22.75 21.7460324,29.1299423 21.7460324,37 Z" fill="currentColor" fill-rule="nonzero"/><g fill-rule="evenodd" transform="translate(11.4921, 12.5)"><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 48.53076 20.46777 32.86279 10.93945 38.05908 16.13672 28.53223 0.46875 24.5 16.13672 20.46777 10.93945 10.94092 20.46777 16.13721 24.5 0.46924 28.53223 16.13721 38.06055 10.94092 32.86328 20.46777 48.53125 24.5 32.86328 28.53223 38.06055 38.05908 28.53223 32.86279"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 43.51562 21.27832 30.99658 14.07227 34.92676 18.00293 27.72168 5.48438 24.5 18.00293 21.27832 14.07227 14.07324 21.27832 18.00342 24.5 5.48438 27.72168 18.00342 34.92773 14.07324 30.99707 21.27832 43.51562 24.5 30.99707 27.72168 34.92773 34.92676 27.72168 30.99658"/><polygon fill="currentColor" fill-rule="nonzero" points="17.20564 17.20563 24.5 21.18421 24.5 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="17.20564 17.20563 24.5 24.5 21.18421 24.5"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 24.5 17.20563 31.79436 21.18421 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 24.5 24.5 27.81579 17.20563 31.79436"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 24.5 31.79436 31.79437 24.5 27.81579"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 24.5 27.81579 24.5 31.79436 31.79437"/><polygon fill="currentColor" fill-rule="nonzero" points="31.79437 17.20564 27.81579 24.5 24.5 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 21.18421 31.79437 17.20564 24.5 24.5"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 24.5 10.5 24.5 21.63436 21.63436"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 24.5 21.63436 27.36564 10.5 24.5"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 24.5 24.5 38.5 21.63436 27.36564"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 24.5 27.36564 27.36564 24.5 38.5"/><polygon fill="currentColor" fill-rule="nonzero" points="38.5 24.5 27.36564 27.36564 24.5 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="27.36564 21.63436 38.5 24.5 24.5 24.5"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 10.5 27.36564 21.63436 24.5 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 10.5 24.5 24.5 21.63436 21.63436"/></g><polygon fill="currentColor" fill-rule="nonzero" points="5.71806479 39.381 7.37241635 31.31 8.94895444 31.31 10.5830648 39.384 11.8975628 31.31 13.7734173 31.31 11.6390179 42.685 9.80662046 42.685 8.16206479 34.847 6.4787396 42.685 4.65549741 42.685 2.51206479 31.31 4.39365659 31.31"/><path d="M37.702265,68.5635059 C37.702265,68.3303516 37.6776678,68.1217131 37.6284735,67.9375903 C37.5792791,67.7534676 37.4875637,67.5850309 37.353327,67.4322803 C37.2190903,67.2795296 37.0276027,67.1305632 36.7788641,66.9853809 C36.5301255,66.8401986 36.2110947,66.6909473 35.8217718,66.537627 C35.375971,66.3655078 34.9589789,66.1776823 34.5707953,65.9741504 C34.1826117,65.7706185 33.841242,65.5361418 33.5466864,65.2707202 C33.2521307,65.0052987 33.0215195,64.6956063 32.8548529,64.3416431 C32.6881862,63.9876799 32.6048529,63.5768929 32.6048529,63.1092822 C32.6048529,62.6466357 32.6869859,62.2237638 32.8512518,61.8406665 C33.0155178,61.4575692 33.2498521,61.1266976 33.5542547,60.8480518 C33.8586574,60.5694059 34.2212062,60.3534025 34.6419012,60.2000415 C35.0625962,60.0466805 35.5303086,59.97 36.0450384,59.97 C36.7797389,59.97 37.4079738,60.1260669 37.929743,60.4382007 C38.4515122,60.7503345 38.8516791,61.1690763 39.1302435,61.6944263 C39.408808,62.2197762 39.5480902,62.8036589 39.5480902,63.4460742 L37.6558783,63.4460742 C37.6558783,63.0762012 37.5995225,62.7485238 37.4868109,62.463042 C37.3740993,62.1775602 37.1980739,61.9531136 36.9587347,61.7897021 C36.7193955,61.6262907 36.4085638,61.544585 36.0262396,61.544585 C35.6776068,61.544585 35.3902329,61.6134123 35.164118,61.7510669 C34.9380031,61.8887215 34.7709092,62.0748381 34.6628363,62.3094165 C34.5547634,62.543995 34.5007269,62.81021 34.5007269,63.1080615 C34.5007269,63.3199756 34.544896,63.5103239 34.6332342,63.6791064 C34.7215724,63.847889 34.8490342,64.0028573 35.0156195,64.1440112 C35.1822048,64.2851652 35.3861029,64.4175505 35.6273138,64.541167 C35.8685248,64.6647835 36.1434271,64.7841683 36.4520208,64.8993213 C36.9857123,65.0937386 37.4502712,65.307382 37.8456976,65.5402515 C38.241124,65.7731209 38.5683539,66.0347786 38.8273871,66.3252246 C39.0864203,66.6156706 39.2797186,66.9433073 39.4072821,67.3081348 C39.5348456,67.6729622 39.5986273,68.0862109 39.5986273,68.5478809 C39.5986273,69.0176074 39.5185288,69.4431038 39.3583319,69.8243701 C39.1981349,70.2056364 38.9669948,70.5325814 38.6649115,70.8052051 C38.3628281,71.0778288 37.9980414,71.2880339 37.5705511,71.4358203 C37.1430609,71.5836068 36.6647894,71.6575 36.1357367,71.6575 C35.6446885,71.6575 35.1738023,71.5840951 34.723078,71.4372852 C34.2723537,71.2904753 33.8705796,71.0672087 33.5177557,70.7674854 C33.1649318,70.467762 32.8857774,70.0918465 32.6802923,69.6397388 C32.4748073,69.187631 32.3720648,68.6572152 32.3720648,68.0484912 L34.2687933,68.0484912 C34.2687933,68.4125049 34.3132269,68.724069 34.4020941,68.9831836 C34.4909613,69.2422982 34.6202134,69.4527881 34.7898504,69.6146533 C34.9594875,69.7765186 35.1600287,69.8956388 35.391474,69.9720142 C35.6229193,70.0483895 35.8806504,70.0865771 36.1646673,70.0865771 C36.5190781,70.0865771 36.8097682,70.0224902 37.0367376,69.8943164 C37.263707,69.7661426 37.4313706,69.5873503 37.5397284,69.3579395 C37.6480861,69.1285286 37.702265,68.8637174 37.702265,68.5635059 Z" fill="currentColor" fill-rule="nonzero"/><polygon fill="currentColor" fill-rule="nonzero" points="65.3303216 41.0968652 65.3303216 42.685 58.9920648 42.685 58.9920648 31.31 65.2852777 31.31 65.2852777 32.9059473 60.8910648 32.905 60.8910648 36.046 64.667846 36.0463281 64.667846 37.6044336 60.8910648 37.604 60.8910648 41.096"/><polygon fill="currentColor" fill-rule="nonzero" points="39.8492279 2.66 39.8492279 14.035 37.9893646 14.035 33.9693451 6.16146484 33.9693451 14.035 32.1320648 14.035 32.1320648 2.66 33.9734955 2.66 38.0207367 10.5896875 38.0207367 2.66"/></svg>';
+        compassRose.style.cssText = "position:absolute;left:8px;bottom:8px;width:72px;height:74px;pointer-events:none;color:var(--sim-icon-color, #000);transform:scale(0.95);transform-origin:left bottom;";
+        compassRose.innerHTML = '<svg width="100%" height="100%" viewBox="0 0 72 74" xmlns="http://www.w3.org/2000/svg"><rect fill-rule="nonzero" x="0" y="0" width="72" height="74" fill="none"/><path d="M39.0593547,58.7884348 L38.9564897,58.7218699 C39.7896785,59.2203017 40.4466351,59.9077532 40.8972098,60.7575003 C41.3320043,61.5774874 41.5480902,62.4833375 41.5480902,63.4460742 L41.5480902,65.4460742 L40.6769574,65.4460742 C40.9380247,65.8150778 41.1446478,66.2174347 41.2952022,66.6480155 C41.500587,67.2354094 41.5986273,67.8706228 41.5986273,68.5478809 C41.5986273,69.2755439 41.4690211,69.9640337 41.2021837,70.5991027 C40.9286754,71.2500482 40.5259447,71.819706 40.0048728,72.2899622 C39.497791,72.7475926 38.8987104,73.0928074 38.2240183,73.3260533 C37.5773245,73.54962 36.8790747,73.6575 36.1357367,73.6575 C35.4361873,73.6575 34.7562336,73.5515042 34.1036676,73.3389504 C33.4068645,73.1119878 32.7753833,72.7610725 32.2229029,72.2917413 C31.6413931,71.7977497 31.1847449,71.1828172 30.8595313,70.4672829 C30.5291534,69.7403861 30.3720648,68.9294045 30.3720648,68.0484912 L30.3720648,66.0484912 L31.5602095,66.0484912 C31.3604251,65.7831096 31.1884974,65.4975364 31.0454041,65.1936378 C30.7469947,64.559882 30.6048529,63.8592022 30.6048529,63.1092822 C30.6048529,62.3825403 30.7390397,61.6916625 31.0131032,61.052498 C31.2890205,60.4090098 31.689363,59.8437407 32.2038327,59.3728025 C32.4414732,59.1552698 32.6987405,58.9620079 32.974038,58.7931896 C23.2122858,57.4536118 15.4916183,49.7073808 14.1897306,39.9321844 L13.2986429,44.685 L8.18270744,44.685 L8.13927281,44.4779893 L8.09481425,44.685 L2.99716716,44.685 L0.1,29.31 L15.3774287,29.3100178 C17.8255467,22.7488335 23.3158066,17.6702851 30.1325983,15.7899828 L30.1320648,0.66 L35.1981524,0.66 L36.0207367,2.27167478 L36.0207367,0.66 L41.8492279,0.66 L41.8494919,15.787234 C49.0477267,17.7690806 54.7683141,23.3166917 56.9923794,30.4111926 L56.9920648,29.31 L67.2852777,29.31 L67.2852777,34.9063785 L66.667846,34.9062454 L66.667846,39.0971259 L67.3303216,39.097255 L67.3303216,44.685 L56.9920648,44.685 L56.9926923,43.5878094 C54.488378,51.5776123 47.5494201,57.6056661 39.0593547,58.7884348 Z" fill="#FFFFFF" fill-rule="nonzero" opacity="1"/><path d="M55.9960324,37 C55.9960324,48.045695 47.0417274,57 35.9960324,57 C24.9503374,57 15.9960324,48.045695 15.9960324,37 C15.9960324,25.954305 24.9503374,17 35.9960324,17 C47.0417274,17 55.9960324,25.954305 55.9960324,37 Z M17.9960324,37 C17.9960324,46.9411255 26.0549069,55 35.9960324,55 C45.9371579,55 53.9960324,46.9411255 53.9960324,37 C53.9960324,27.0588745 45.9371579,19 35.9960324,19 C26.0549069,19 17.9960324,27.0588745 17.9960324,37 Z" fill="currentColor" fill-rule="nonzero"/><path d="M51.7460324,37 C51.7460324,45.6984848 44.6945172,52.75 35.9960324,52.75 C27.2975476,52.75 20.2460324,45.6984848 20.2460324,37 C20.2460324,28.3015152 27.2975476,21.25 35.9960324,21.25 C44.6945172,21.25 51.7460324,28.3015152 51.7460324,37 Z M21.7460324,37 C21.7460324,44.8700577 28.1259747,51.25 35.9960324,51.25 C43.8660901,51.25 50.2460324,44.8700577 50.2460324,37 C50.2460324,29.1299423 43.8660901,22.75 35.9960324,22.75 C28.1259747,22.75 21.7460324,29.1299423 21.7460324,37 Z" fill="currentColor" fill-rule="nonzero"/><g fill-rule="evenodd" transform="translate(11.4921, 12.5)"><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 48.53076 20.46777 32.86279 10.93945 38.05908 16.13672 28.53223 0.46875 24.5 16.13672 20.46777 10.93945 10.94092 20.46777 16.13721 24.5 0.46924 28.53223 16.13721 38.06055 10.94092 32.86328 20.46777 48.53125 24.5 32.86328 28.53223 38.06055 38.05908 28.53223 32.86279"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 43.51562 21.27832 30.99658 14.07227 34.92676 18.00293 27.72168 5.48438 24.5 18.00293 21.27832 14.07227 14.07324 21.27832 18.00342 24.5 5.48438 27.72168 18.00342 34.92773 14.07324 30.99707 21.27832 43.51562 24.5 30.99707 27.72168 34.92773 34.92676 27.72168 30.99658"/><polygon fill="currentColor" fill-rule="nonzero" points="17.20564 17.20563 24.5 21.18421 24.5 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="17.20564 17.20563 24.5 24.5 21.18421 24.5"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 24.5 17.20563 31.79436 21.18421 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 24.5 24.5 27.81579 17.20563 31.79436"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 24.5 31.79436 31.79437 24.5 27.81579"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 24.5 27.81579 24.5 31.79436 31.79437"/><polygon fill="currentColor" fill-rule="nonzero" points="31.79437 17.20564 27.81579 24.5 24.5 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 21.18421 31.79437 17.20564 24.5 24.5"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 24.5 10.5 24.5 21.63436 21.63436"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 24.5 21.63436 27.36564 10.5 24.5"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 24.5 24.5 38.5 21.63436 27.36564"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 24.5 27.36564 27.36564 24.5 38.5"/><polygon fill="currentColor" fill-rule="nonzero" points="38.5 24.5 27.36564 27.36564 24.5 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="27.36564 21.63436 38.5 24.5 24.5 24.5"/><polygon fill="currentColor" fill-rule="nonzero" points="24.5 10.5 27.36564 21.63436 24.5 24.5"/><polygon fill="#FFFFFF" fill-rule="nonzero" points="24.5 10.5 24.5 24.5 21.63436 21.63436"/></g><polygon fill="currentColor" fill-rule="nonzero" points="5.71806479 39.381 7.37241635 31.31 8.94895444 31.31 10.5830648 39.384 11.8975628 31.31 13.7734173 31.31 11.6390179 42.685 9.80662046 42.685 8.16206479 34.847 6.4787396 42.685 4.65549741 42.685 2.51206479 31.31 4.39365659 31.31"/><path d="M37.702265,68.5635059 C37.702265,68.3303516 37.6776678,68.1217131 37.6284735,67.9375903 C37.5792791,67.7534676 37.4875637,67.5850309 37.353327,67.4322803 C37.2190903,67.2795296 37.0276027,67.1305632 36.7788641,66.9853809 C36.5301255,66.8401986 36.2110947,66.6909473 35.8217718,66.537627 C35.375971,66.3655078 34.9589789,66.1776823 34.5707953,65.9741504 C34.1826117,65.7706185 33.841242,65.5361418 33.5466864,65.2707202 C33.2521307,65.0052987 33.0215195,64.6956063 32.8548529,64.3416431 C32.6881862,63.9876799 32.6048529,63.5768929 32.6048529,63.1092822 C32.6048529,62.6466357 32.6869859,62.2237638 32.8512518,61.8406665 C33.0155178,61.4575692 33.2498521,61.1266976 33.5542547,60.8480518 C33.8586574,60.5694059 34.2212062,60.3534025 34.6419012,60.2000415 C35.0625962,60.0466805 35.5303086,59.97 36.0450384,59.97 C36.7797389,59.97 37.4079738,60.1260669 37.929743,60.4382007 C38.4515122,60.7503345 38.8516791,61.1690763 39.1302435,61.6944263 C39.408808,62.2197762 39.5480902,62.8036589 39.5480902,63.4460742 L37.6558783,63.4460742 C37.6558783,63.0762012 37.5995225,62.7485238 37.4868109,62.463042 C37.3740993,62.1775602 37.1980739,61.9531136 36.9587347,61.7897021 C36.7193955,61.6262907 36.4085638,61.544585 36.0262396,61.544585 C35.6776068,61.544585 35.3902329,61.6134123 35.164118,61.7510669 C34.9380031,61.8887215 34.7709092,62.0748381 34.6628363,62.3094165 C34.5547634,62.543995 34.5007269,62.81021 34.5007269,63.1080615 C34.5007269,63.3199756 34.544896,63.5103239 34.6332342,63.6791064 C34.7215724,63.847889 34.8490342,64.0028573 35.0156195,64.1440112 C35.1822048,64.2851652 35.3861029,64.4175505 35.6273138,64.541167 C35.8685248,64.6647835 36.1434271,64.7841683 36.4520208,64.8993213 C36.9857123,65.0937386 37.4502712,65.307382 37.8456976,65.5402515 C38.241124,65.7731209 38.5683539,66.0347786 38.8273871,66.3252246 C39.0864203,66.6156706 39.2797186,66.9433073 39.4072821,67.3081348 C39.5348456,67.6729622 39.5986273,68.0862109 39.5986273,68.5478809 C39.5986273,69.0176074 39.5185288,69.4431038 39.3583319,69.8243701 C39.1981349,70.2056364 38.9669948,70.5325814 38.6649115,70.8052051 C38.3628281,71.0778288 37.9980414,71.2880339 37.5705511,71.4358203 C37.1430609,71.5836068 36.6647894,71.6575 36.1357367,71.6575 C35.6446885,71.6575 35.1738023,71.5840951 34.723078,71.4372852 C34.2723537,71.2904753 33.8705796,71.0672087 33.5177557,70.7674854 C33.1649318,70.467762 32.8857774,70.0918465 32.6802923,69.6397388 C32.4748073,69.187631 32.3720648,68.6572152 32.3720648,68.0484912 L34.2687933,68.0484912 C34.2687933,68.4125049 34.3132269,68.724069 34.4020941,68.9831836 C34.4909613,69.2422982 34.6202134,69.4527881 34.7898504,69.6146533 C34.9594875,69.7765186 35.1600287,69.8956388 35.391474,69.9720142 C35.6229193,70.0483895 35.8806504,70.0865771 36.1646673,70.0865771 C36.5190781,70.0865771 36.8097682,70.0224902 37.0367376,69.8943164 C37.263707,69.7661426 37.4313706,69.5873503 37.5397284,69.3579395 C37.6480861,69.1285286 37.702265,68.8637174 37.702265,68.5635059 Z" fill="currentColor" fill-rule="nonzero"/><polygon fill="currentColor" fill-rule="nonzero" points="65.3303216 41.0968652 65.3303216 42.685 58.9920648 42.685 58.9920648 31.31 65.2852777 31.31 65.2852777 32.9059473 60.8910648 32.905 60.8910648 36.046 64.667846 36.0463281 64.667846 37.6044336 60.8910648 37.604 60.8910648 41.096"/><polygon fill="currentColor" fill-rule="nonzero" points="39.8492279 2.66 39.8492279 14.035 37.9893646 14.035 33.9693451 6.16146484 33.9693451 14.035 32.1320648 14.035 32.1320648 2.66 33.9734955 2.66 38.0207367 10.5896875 38.0207367 2.66"/></svg>';
         stage.appendChild(compassRose);
 
         const noreasterGraphic = document.createElement("div");
@@ -5900,7 +6010,16 @@ function buildSimContent() {
         var norOffCtx = norOffCanvas.getContext("2d");
         var NOR_SCALE = 1192 / 298, NOR_CX = 149 * NOR_SCALE, NOR_CY = 149 * NOR_SCALE;
         var NOR_ALPHA = 0.95, NOR_OMEGA_MAX = 72, NOR_LIFE = 30, norOmegaScale = 1;
-        var norCloud = [], norLastCircleR = 0.5;
+        var norCloud = [];
+        function norMulberry32(seed) {
+          return function() {
+            seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+            var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+          };
+        }
+        var norRand = norMulberry32(31415);
 
         function norOmega(r) {
           var rr = r / NOR_SCALE;
@@ -5928,10 +6047,10 @@ function buildSimContent() {
             var src = norCloudSources[s];
             var srcCount = Math.max(1, Math.round(count * (src.weight || 1)));
             for (var i = 0; i < srcCount; i++) {
-              var a = src.angle + (Math.random() - 0.5) * spread;
-              var tone = 230 + Math.floor(Math.random() * 26);
-              var op = 0.4 + Math.random() * 0.4;
-              var sz = 1.5 + Math.random() * 6;
+              var a = src.angle + (norRand() - 0.5) * spread;
+              var tone = 230 + Math.floor(norRand() * 26);
+              var op = 0.4 + norRand() * 0.4;
+              var sz = 1.5 + norRand() * 6;
               norCloud.push({ a: a, r: r, age: 0, size: sz, tone: tone, op: op });
             }
           }
@@ -5939,9 +6058,9 @@ function buildSimContent() {
 
         // Seed center particles
         for (var nci = 0; nci < 800; nci++) {
-          var nca = Math.random() * Math.PI * 2;
-          var ncr = Math.random() * 50 * NOR_SCALE;
-          norCloud.push({ a: nca, r: ncr, age: 0, size: 1.5 + Math.random() * 6, tone: 230 + Math.floor(Math.random() * 26), op: 0.4 + Math.random() * 0.4 });
+          var nca = norRand() * Math.PI * 2;
+          var ncr = norRand() * 50 * NOR_SCALE;
+          norCloud.push({ a: nca, r: ncr, age: 0, size: 1.5 + norRand() * 6, tone: 230 + Math.floor(norRand() * 26), op: 0.4 + norRand() * 0.4 });
         }
 
         var norLastTime = null;
@@ -5958,20 +6077,9 @@ function buildSimContent() {
           norCloud = norCloud.filter(function(c) { return c.age < NOR_LIFE && c.r > 0; });
         }
 
-        function drawNorCloud(circleR) {
+        function drawNorCloud(circleR, t) {
           norCtx.clearRect(0, 0, 1192, 1192);
           var cr = circleR * NOR_SCALE;
-          // Blurred radial shadow circle behind particles
-          norCtx.save();
-          norCtx.filter = "blur(" + (8 * NOR_SCALE) + "px)";
-          var grad = norCtx.createRadialGradient(NOR_CX, NOR_CY, 0, NOR_CX, NOR_CY, cr);
-          grad.addColorStop(0, "rgba(0,0,0,0.8)");
-          grad.addColorStop(1, "rgba(0,0,0,0.1)");
-          norCtx.fillStyle = grad;
-          norCtx.beginPath();
-          norCtx.arc(NOR_CX, NOR_CY, cr * 1.1, 0, Math.PI * 2);
-          norCtx.fill();
-          norCtx.restore();
           norOffCtx.clearRect(0, 0, 1192, 1192);
           for (var j = 0; j < norCloud.length; j++) {
             var c = norCloud[j];
@@ -5986,6 +6094,12 @@ function buildSimContent() {
             norOffCtx.arc(cx2, cy2, c.size * NOR_SCALE / 4, 0, Math.PI * 2);
             norOffCtx.fill();
           }
+          norCtx.save();
+          var shadowBlur = 2 + (t || 0) * 1;
+          norCtx.filter = "blur(" + (shadowBlur * NOR_SCALE) + "px) brightness(0)";
+          norCtx.globalAlpha = 0.35 + (t || 0) * 0.55;
+          norCtx.drawImage(norOffCanvas, 0, 0);
+          norCtx.restore();
           norCtx.drawImage(norOffCanvas, 0, 0);
           var labelSize = 36 * NOR_SCALE;
           norCtx.font = "900 " + labelSize + "px Lato, sans-serif";
@@ -6024,7 +6138,7 @@ function buildSimContent() {
         SIM._positionNoreasterGraphic = positionNoreasterGraphic;
 
         var norAnimStart = null;
-        var norSpinRAF;
+        var norSpinRAF = null;
         var norFinishCallback = null;
         var norAnimMode = null;
         var norMaxR = 99;
@@ -6037,16 +6151,13 @@ function buildSimContent() {
           var cdt = norLastTime ? Math.min((now - norLastTime) / 1000, 0.05) : 0.016;
           norLastTime = now;
           stepNorCloud(cdt, cloudR);
-          drawNorCloud(cloudR);
+          drawNorCloud(cloudR, t);
           noreasterGraphic.style.opacity = elapsed < 1 ? elapsed : 1;
           positionNoreasterGraphic(norMoves ? t : 0);
           if (elapsed < norDuration) {
             norSpinRAF = requestAnimationFrame(animateNorCloud);
           } else {
-            norFinalSnapshots[norAnimMode] = document.createElement("canvas");
-            norFinalSnapshots[norAnimMode].width = 1192;
-            norFinalSnapshots[norAnimMode].height = 1192;
-            norFinalSnapshots[norAnimMode].getContext("2d").drawImage(norCanvas, 0, 0);
+            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[norAnimMode] = snapImg;
             if (norFinishCallback) {
               norFinishCallback();
               norFinishCallback = null;
@@ -6069,13 +6180,30 @@ function buildSimContent() {
             norOmegaScale = 0.7;
           }
           norCloud.length = 0;
-          norLastCircleR = 0.5;
           norLastTime = null;
+          norRand = norMulberry32(mode === "strong" ? 92653 : 58979);
           var seedR = Math.min(50, norMaxR * 0.5);
           for (var nci2 = 0; nci2 < 800; nci2++) {
-            norCloud.push({ a: Math.random() * Math.PI * 2, r: Math.random() * seedR * NOR_SCALE, age: 0, size: 1.5 + Math.random() * 6, tone: 230 + Math.floor(Math.random() * 26), op: 0.4 + Math.random() * 0.4 });
+            norCloud.push({ a: norRand() * Math.PI * 2, r: norRand() * seedR * NOR_SCALE, age: 0, size: 1.5 + norRand() * 6, tone: 230 + Math.floor(norRand() * 26), op: 0.4 + norRand() * 0.4 });
           }
           noreasterGraphic.style.display = "";
+
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            var simDt = 1 / 30;
+            var simSteps = Math.round(norDuration / simDt);
+            for (var si = 0; si < simSteps; si++) {
+              var simT = (si + 1) / simSteps;
+              var simR = 0.5 + (norMaxR - 0.5) * simT;
+              stepNorCloud(simDt, simR);
+            }
+            drawNorCloud(norMaxR, 1);
+            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[mode] = snapImg;
+            noreasterGraphic.style.opacity = 1;
+            positionNoreasterGraphic(1);
+            if (onFinish) onFinish();
+            return;
+          }
+
           noreasterGraphic.style.opacity = 0;
           norFinishCallback = onFinish || null;
           norAnimStart = performance.now();
@@ -6090,6 +6218,7 @@ function buildSimContent() {
           norAnimMode = null;
           noreasterGraphic.style.display = "none";
           norCtx.clearRect(0, 0, 1192, 1192);
+          norCloud.length = 0;
         }
         SIM._stopNorCloud = stopNorCloud;
 
@@ -6111,6 +6240,8 @@ function buildSimContent() {
 
         // High pressure "H" label for fair weather
         var highPressureLabel = document.createElement("div");
+        highPressureLabel.setAttribute("role", "img");
+        highPressureLabel.setAttribute("aria-label", "High Pressure");
         highPressureLabel.style.cssText = "position:absolute;display:none;font-family:'Lato',sans-serif;font-weight:900;font-size:36px;color:#0F6E56;z-index:5;pointer-events:none;text-align:center;line-height:1;-webkit-text-stroke:4px #fff;paint-order:stroke fill;";
         highPressureLabel.textContent = "H";
         stage.appendChild(highPressureLabel);
@@ -6130,6 +6261,7 @@ function buildSimContent() {
           highPressureLabel.style.opacity = 0;
           highPressureLabel.style.display = "";
           positionHighPressureLabel();
+          if (SIM.announce) SIM.announce("High pressure developing, no nor’easter forming");
           if (animate) {
             requestAnimationFrame(function() {
               requestAnimationFrame(function() {
@@ -6170,7 +6302,7 @@ function buildSimContent() {
           {num: 1, xFrac: 0.16025, yFrac: -0.16981, xPx: -12, yPx: 21},
           {num: 2, xFrac: 0.54908, yFrac: 0.71698, xPx: -25, yPx: 14},
           {num: 3, xFrac: 0.60382, yFrac: -0.20755, xPx: -36, yPx: 31},
-          {num: 4, xFrac: -0.02472, yFrac: 0.58113, xPx: -3, yPx: -21}
+          {num: 4, xFrac: -0.02472, yFrac: 0.58113, xPx: -3, yPx: -17}
         ];
         pathwayArrows.innerHTML = '<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" overflow="visible">' +
           '<g data-arrow="1" fill="#8A929C">' +
@@ -6205,13 +6337,13 @@ function buildSimContent() {
         SIM._positionArrows = positionArrows;
 
         function makePillIcon(num) {
-          return '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#1E3F6E" fill-opacity="0.25"/><circle cx="12" cy="12" r="10" fill="none" stroke="#1E3F6E" stroke-width="2"/><text x="12" y="17.65" text-anchor="middle" font-family="Lato-Bold, Lato" font-size="16" font-weight="bold" fill="#1E3F6E">' + num + '</text></svg>';
+          return '<svg style="color:var(--sim-icon-color, #1E3F6E)" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="currentColor" fill-opacity="0.25"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="17.65" text-anchor="middle" font-family="Lato, sans-serif" font-size="16" font-weight="bold" fill="currentColor">' + num + '</text></svg>';
         }
         var pillData = [
-          { num: 1, label: "N/NW", leftPct: 0.105, leftPx: 23,  topPct: 0.109, topPx: 36 },
-          { num: 4, label: "W",    leftPct: 0.013, leftPx: 71, topPct: 0.472, topPx: -1 },
+          { num: 1, label: "N/NW", leftPct: 0.105, leftPx: 23,  topPct: 0.109, topPx: 37 },
+          { num: 4, label: "W",    leftPct: 0.013, leftPx: 81, topPct: 0.472, topPx: 3 },
           { num: 2, label: "S/SE", leftPct: 0.775, leftPx: -98,  topPct: 0.837, topPx: 0 },
-          { num: 3, label: "NE",   leftPct: 0.85,  leftPx: -88, topPct: 0.109, topPx: 46 }
+          { num: 3, label: "NE",   leftPct: 0.85,  leftPx: -86, topPct: 0.109, topPx: 49 }
         ];
         var pillContainer = document.createElement("div");
         pillContainer.setAttribute("aria-hidden", "true");
@@ -6239,7 +6371,6 @@ function buildSimContent() {
         positionPills();
         SIM._positionPills = positionPills;
 
-        var NOR_PATH_NUM = { "N/NW": 1, "W": 4, "S/SE": 2, "NE": 3 };
         SIM.updateArrowColors = function() {
           var st = SIM.trialState && SIM.trialState[SIM.selectedTrial];
           var landPath = st ? st.landPath : null;
@@ -6306,6 +6437,32 @@ function buildSimContent() {
               y: a.yFrac * sh + (a.yPx || 0)
             });
           });
+
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            for (var i = 0; i < arrowNums.length; i++) {
+              var num = arrowNums[i];
+              var sp = startPositions[i];
+              var tip = arrowTips[num] || { tx: 0, ty: 0 };
+              var adjTargetX = targetX - tip.tx * scale;
+              var adjTargetY = targetY - tip.ty * scale;
+              if (num === 3) { adjTargetX += 15; adjTargetY += 7; }
+              if (num === 1) { adjTargetX += 7; adjTargetY -= 12; }
+              if (num === 2) { adjTargetX -= 8; adjTargetY += 14; }
+              if (num === 4) { adjTargetX -= 5; adjTargetY += 12; }
+              var arrow = pathwayArrows.querySelector('[data-arrow="' + num + '"]');
+              if (arrow) {
+                var rot = '';
+                if (num === 3) rot = ' rotate(8,64,86)';
+                else if (num === 1) rot = ' rotate(7,78,78)';
+                else if (num === 2) rot = ' rotate(8,70,68)';
+                else if (num === 4) rot = ' rotate(-6,110,28)';
+                arrow.setAttribute('transform', 'translate(' + adjTargetX + ',' + adjTargetY + ') scale(' + scale + ')' + rot);
+                arrow.style.opacity = 0;
+              }
+            }
+            return;
+          }
+
           var start = performance.now();
           function step(now) {
             var t = Math.min((now - start) / (duration * 1000), 1);
@@ -6315,12 +6472,30 @@ function buildSimContent() {
               var tip = arrowTips[num] || { tx: 0, ty: 0 };
               var adjTargetX = targetX - tip.tx * scale;
               var adjTargetY = targetY - tip.ty * scale;
+              if (num === 3) { adjTargetX += 15; adjTargetY += 7; }
+              if (num === 1) { adjTargetX += 7; adjTargetY -= 12; }
+              if (num === 2) { adjTargetX -= 8; adjTargetY += 14; }
+              if (num === 4) { adjTargetX -= 5; adjTargetY += 12; }
               var x = sp.x + (adjTargetX - sp.x) * t;
               var y = sp.y + (adjTargetY - sp.y) * t;
               var arrow = pathwayArrows.querySelector('[data-arrow="' + num + '"]');
               if (arrow) {
                 var fade = t < 0.5 ? 1 : Math.max(0, 1 - (t - 0.5) / 0.5);
-                arrow.setAttribute('transform', 'translate(' + x + ',' + y + ') scale(' + scale + ')');
+                var rot = '';
+                if (num === 3) {
+                  var deg = 8 * t;
+                  rot = ' rotate(' + deg + ',64,86)';
+                } else if (num === 1) {
+                  var deg = 7 * t;
+                  rot = ' rotate(' + deg + ',78,78)';
+                } else if (num === 2) {
+                  var deg = 8 * t;
+                  rot = ' rotate(' + deg + ',70,68)';
+                } else if (num === 4) {
+                  var deg = -6 * t;
+                  rot = ' rotate(' + deg + ',110,28)';
+                }
+                arrow.setAttribute('transform', 'translate(' + x + ',' + y + ') scale(' + scale + ')' + rot);
                 arrow.style.opacity = fade;
               }
             }
@@ -6343,31 +6518,31 @@ function buildSimContent() {
 
         // Street / Satellite map toggle
         const mapSwitch = document.createElement("div");
-        mapSwitch.className = "fungus-switch";
+        mapSwitch.className = "sim-switch";
         mapSwitch.style.padding = "8px 0";
         mapSwitch.setAttribute("role", "switch");
         mapSwitch.setAttribute("aria-checked", "false");
         mapSwitch.setAttribute("aria-label", "Map view: Street");
         mapSwitch.setAttribute("tabindex", "0");
         const mapHit = document.createElement("div");
-        mapHit.className = "fungus-switch-hit";
+        mapHit.className = "sim-switch-hit";
         mapHit.style.cssText = "padding:0 10px;flex:1;";
         const streetLabel = document.createElement("span");
-        streetLabel.className = "fungus-switch-state";
+        streetLabel.className = "sim-switch-state";
         streetLabel.textContent = "Street";
         streetLabel.setAttribute("data-text", "Street");
         streetLabel.style.cssText = "font-weight:700;width:auto;text-align:center;flex:1;";
         streetLabel.setAttribute("aria-hidden", "true");
         mapHit.appendChild(streetLabel);
         const mapTrack = document.createElement("div");
-        mapTrack.className = "fungus-switch-track";
+        mapTrack.className = "sim-switch-track";
         mapTrack.style.flexShrink = "0";
         const mapThumb = document.createElement("div");
-        mapThumb.className = "fungus-switch-thumb";
+        mapThumb.className = "sim-switch-thumb";
         mapTrack.appendChild(mapThumb);
         mapHit.appendChild(mapTrack);
         const satLabel = document.createElement("span");
-        satLabel.className = "fungus-switch-state";
+        satLabel.className = "sim-switch-state";
         satLabel.textContent = "Satellite";
         satLabel.setAttribute("data-text", "Satellite");
         satLabel.style.cssText = "width:auto;text-align:center;flex:1;";
@@ -6375,6 +6550,9 @@ function buildSimContent() {
         mapHit.appendChild(satLabel);
         mapSwitch.appendChild(mapHit);
         norMapHit = mapHit;
+        var satLayer = document.createElement("div");
+        satLayer.style.cssText = "position:absolute;inset:0;background-image:url('ICONS/Map_Satellite_2x.png');background-size:auto 100%;background-position:center;background-repeat:no-repeat;opacity:0;pointer-events:none;";
+        stage.insertBefore(satLayer, stage.firstChild);
         let mapIsSatellite = false;
         function toggleMapView() {
           mapIsSatellite = !mapIsSatellite;
@@ -6383,7 +6561,8 @@ function buildSimContent() {
           mapThumb.style.left = mapIsSatellite ? "22px" : "";
           streetLabel.style.fontWeight = mapIsSatellite ? "400" : "700";
           satLabel.style.fontWeight = mapIsSatellite ? "700" : "400";
-          stage.style.backgroundImage = "url('ICONS/" + (mapIsSatellite ? "Map_Satellite_3x" : "Map_Street_3x") + ".png')";
+          satLayer.style.opacity = mapIsSatellite ? "1" : "0";
+          if (SIM.announce) SIM.announce(mapIsSatellite ? "Satellite view — aerial imagery" : "Street view — illustrated map");
         }
         mapSwitch.addEventListener("click", toggleMapView);
         mapSwitch.addEventListener("keydown", function(e) {
@@ -6405,19 +6584,22 @@ function buildSimContent() {
           btn.setAttribute("aria-disabled", "true");
           if (label === "Run") {
             SIM.runBtn = btn;
+            SIM._norRunTimeouts = [];
             btn.addEventListener("click", function() {
               if (btn.getAttribute("aria-disabled") === "true") return;
               btn.setAttribute("aria-disabled", "true");
-              SIM.resetTrialBtn.setAttribute("aria-disabled", "true");
               if (SIM._norPromptWrap) SIM._norPromptWrap.style.display = "none";
               SIM._norPromptVisible = false;
               SIM._norRunning = true;
-    
+              stage.setAttribute("aria-busy", "true");
+              SIM._norRunTimeouts.forEach(clearTimeout);
+              SIM._norRunTimeouts.length = 0;
+
               setNorPillMode(true);
               var trial = SIM.selectedTrial;
               updateNorDropdownSize();
               if (SIM.updateArrowColors) SIM.updateArrowColors();
-  
+
               if (SIM._stopNorCloud) SIM._stopNorCloud();
               if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
               if (SIM._resetArrowPositions) SIM._resetArrowPositions();
@@ -6426,11 +6608,22 @@ function buildSimContent() {
               void stage.offsetWidth;
               var outcome = evaluateOutcome();
               var hasCloud = outcome === "strong" || outcome === "moderate";
-              var bgDur = outcome === "strong" ? 10 : outcome === "moderate" ? 7 : 2;
+              var bgDur = outcome === "strong" ? 11.5 : outcome === "moderate" ? 8.5 : 2;
               stage.style.transition = "background-color " + bgDur + "s linear";
               stage.style.backgroundColor = "#d8d8d8";
+
+              var rs = SIM.trialState && SIM.trialState[trial];
+              var landDesc = ((rs && rs.landTemp) || "").toLowerCase() + " " + ((rs && rs.landHum) || "").toLowerCase();
+              var oceanTemp = (rs && rs.oceanPath) === "S/SE" ? "warm" : "cool";
+              var oceanDesc = oceanTemp + " " + ((rs && rs.oceanHum) || "").toLowerCase();
+              var isReplay = btn.querySelector("span").textContent === "Replay";
+              var startMsg = (isReplay ? "Replaying simulation, " : "Running simulation, ") + landDesc.trim() + " air mass from the " + (rs && rs.landPath) + " and " + oceanDesc.trim() + " air mass from the " + (rs && rs.oceanPath) + " converging";
+              if (SIM.announce) SIM.announce(startMsg);
+
               function finishRun() {
+                if (SIM.selectedTrial !== trial) return;
                 SIM._norRunning = false;
+                stage.removeAttribute("aria-busy");
                 fillDataPanel(outcome);
                 if (SIM.trialState && SIM.trialState[trial]) {
                   SIM.trialState[trial].outcome = outcome;
@@ -6444,28 +6637,60 @@ function buildSimContent() {
                 btn.querySelector("span").textContent = "Replay";
                 if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
                 if (SIM.updateArrowColors) SIM.updateArrowColors();
-                if (SIM.announce) SIM.announce(SIM._OUTCOME_DATA && SIM._OUTCOME_DATA[outcome] ? SIM._OUTCOME_DATA[outcome].banner : "Simulation finished.");
+                var od = SIM._OUTCOME_DATA && SIM._OUTCOME_DATA[outcome];
+                if (SIM.announce) {
+                  var finishParts = ["Weather Outcome: " + (od ? od.banner : "Simulation finished")];
+                  if (od) {
+                    finishParts.push("Sky: " + od["Sky"]);
+                    finishParts.push("Pressure: " + od["Pressure"]);
+                    finishParts.push("Wind: " + od["Wind"]);
+                    finishParts.push("Precipitation Type: " + od["Precipitation Type"]);
+                    finishParts.push("Precipitation Amount: " + od["Precipitation Amount"]);
+                    finishParts.push("Storm Intensity: " + od.intensity);
+                  }
+                  SIM.announce(finishParts.join("; "));
+                }
+                btn.focus();
               }
+              var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
               if (hasCloud) {
                 if (outcome === "strong" && SIM._animateArrowsToStart) SIM._animateArrowsToStart(2, [1, 2]);
                 if (outcome === "moderate" && SIM._animateArrowsToStart) SIM._animateArrowsToStart(2, [4, 2]);
-                setTimeout(function() { SIM._startNorCloud(outcome, finishRun); }, 1500);
+                if (reducedMotion) {
+                  stage.style.transition = "none";
+                  stage.style.backgroundColor = "#d8d8d8";
+                  SIM._startNorCloud(outcome, finishRun);
+                } else {
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    if (SIM.announce) SIM.announce("Low pressure developing, nor’easter forming");
+                  }, 1500));
+                  var midDelay = outcome === "strong" ? 5000 : 4000;
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    if (SIM.announce) SIM.announce("Nor’easter growing, moving northeast along the coast, offshore");
+                  }, midDelay));
+                  SIM._norRunTimeouts.push(setTimeout(function() { SIM._startNorCloud(outcome, finishRun); }, 1500));
+                }
               } else {
                 if (SIM._stopNorCloud) SIM._stopNorCloud();
-                var s = getNorSelections();
-                var fairLand = s["Pathway for Land"];
-                var fairOcean = s["Pathway for Ocean"];
+                var fairLand = rs && rs.landPath;
+                var fairOcean = rs && rs.oceanPath;
                 var fairLandNum = NOR_PATH_NUM[fairLand];
                 var fairOceanNum = NOR_PATH_NUM[fairOcean];
                 var fairArrows = [fairLandNum, fairOceanNum].filter(function(n) { return n !== undefined; });
-                if (fairArrows.length === 2) {
+                if (reducedMotion) {
+                  stage.style.transition = "none";
+                  stage.style.backgroundColor = "#d8d8d8";
+                  if (fairArrows.length === 2) SIM._animateArrowsToStart(2, fairArrows);
+                  if (SIM._showHighPressureLabel) SIM._showHighPressureLabel(false);
+                  SIM._norRunTimeouts.push(setTimeout(finishRun, 1500));
+                } else if (fairArrows.length === 2) {
                   SIM._animateArrowsToStart(2, fairArrows);
-                  setTimeout(function() {
+                  SIM._norRunTimeouts.push(setTimeout(function() {
                     if (SIM._showHighPressureLabel) SIM._showHighPressureLabel(true);
-                    setTimeout(finishRun, 500);
-                  }, 1500);
+                    SIM._norRunTimeouts.push(setTimeout(finishRun, 1500));
+                  }, 1500));
                 } else {
-                  setTimeout(finishRun, 2000);
+                  SIM._norRunTimeouts.push(setTimeout(finishRun, 2000));
                 }
               }
             });
@@ -6475,6 +6700,7 @@ function buildSimContent() {
             btn.addEventListener("click", () => {
               if (btn.getAttribute("aria-disabled") === "true") return;
               if (SIM.resetNorTrial) SIM.resetNorTrial(SIM.selectedTrial);
+              if (SIM.announce) SIM.announce("Trial " + SIM.selectedTrial + " reset.");
             });
           }
           bottomControls.appendChild(btn);
@@ -6496,8 +6722,8 @@ function buildSimContent() {
         dataInner.className = "data-panel-inner";
         dataInner.style.paddingTop = "27px";
 
-        const heading = document.createElement("h3");
-        heading.style.cssText = "font-family:'Lato',sans-serif;font-size:16px;font-weight:700;color:#333;text-align:center;padding:0 0 7px;margin:0;position:relative;z-index:1;";
+        const heading = document.createElement("h2");
+        heading.style.cssText = "font-family:'Lato',sans-serif;font-size:16px;font-weight:700;color:#333;text-align:center;padding:0 0 7px;margin:0;position:relative;z-index:1;-webkit-text-stroke:4px #fff;paint-order:stroke fill;";
         heading.textContent = "Weather Outcome";
         dataInner.appendChild(heading);
 
@@ -6532,6 +6758,7 @@ function buildSimContent() {
           row.style.cssText = "display:flex;align-items:flex-start;gap:8px;padding:10px 0;font-family:'Lato',sans-serif;font-size:16px;font-weight:700;color:#333;line-height:24px;position:relative;z-index:1;";
 
           const icon = document.createElement("span");
+          icon.setAttribute("aria-hidden", "true");
           icon.style.cssText = "flex-shrink:0;width:24px;height:24px;color:" + tc + ";";
           icon.innerHTML = SIM._standInIcon;
           if (r.label === "Sky") SIM._skyIcon = icon;
@@ -6575,6 +6802,7 @@ function buildSimContent() {
         SIM._dataValueEls = dataValueEls;
 
         var snowCanvas = document.createElement("canvas");
+        snowCanvas.setAttribute("aria-hidden", "true");
         snowCanvas.style.cssText = "position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:0;display:none;border-radius:6px 6px 0 0;";
         dataInner.style.position = "relative";
         dataInner.insertBefore(snowCanvas, dataInner.firstChild);
@@ -6621,6 +6849,12 @@ function buildSimContent() {
         function animateSnow(now) {
           var dt = snowLastTime ? Math.min((now - snowLastTime) / 1000, 0.05) : 0.016;
           snowLastTime = now;
+          var dpr = window.devicePixelRatio || 1;
+          var neededH = Math.round(snowFixedH * dpr);
+          if (neededH !== snowCanvas.height) {
+            snowCanvas.height = neededH;
+            snowCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          }
           var dims = { w: snowFixedW, h: snowFixedH };
           var snowElapsed = (now - snowAnimStart) / 1000;
           var gusting = snowElapsed < snowGustUntil;
@@ -6657,11 +6891,11 @@ function buildSimContent() {
           snowFlakes = snowFlakes.filter(function(f) {
             return f.x > -10 && f.x < dims.w + 210 && f.y > -10 && f.y < dims.h + 10;
           });
-          snowCtx.clearRect(0, 0, dims.w, dims.h);
+          snowCtx.clearRect(0, 0, snowFixedW, snowFixedH);
           var grad = snowCtx.createLinearGradient(0, 0, 0, dims.h);
-          var gradOp = (0.77 * snowIntensity).toFixed(2);
-          grad.addColorStop(0, "rgba(140,155,175," + gradOp + ")");
-          grad.addColorStop(1, "rgba(140,155,175,0)");
+          var gradOp = snowIntensity < 1 ? "0.80" : "1.00";
+          grad.addColorStop(0, "rgba(66,79,96," + gradOp + ")");
+          grad.addColorStop(1, "rgba(66,79,96,0)");
           snowCtx.fillStyle = grad;
           snowCtx.fillRect(0, 0, dims.w, dims.h);
           for (var j = 0; j < snowFlakes.length; j++) {
@@ -6676,7 +6910,10 @@ function buildSimContent() {
 
         var snowAnimStart = 0;
         var snowIntensity = 1;
+        var snowActiveMode = null;
         function startSnow(mode) {
+          if (snowRAF && snowActiveMode === mode) return;
+          snowActiveMode = mode;
           snowIntensity = mode === "moderate" ? 0.68 : 1;
           sizeSnowCanvas();
           snowFlakes = [];
@@ -6686,21 +6923,38 @@ function buildSimContent() {
           snowAnimStart = performance.now();
           snowCanvas.style.display = "";
           if (snowRAF) cancelAnimationFrame(snowRAF);
+
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            snowRAF = null;
+            var dims = { w: snowFixedW, h: snowFixedH };
+            snowCtx.clearRect(0, 0, snowFixedW, snowFixedH);
+            var grad = snowCtx.createLinearGradient(0, 0, 0, dims.h);
+            var gradOp = snowIntensity < 1 ? "0.80" : "1.00";
+            grad.addColorStop(0, "rgba(66,79,96," + gradOp + ")");
+            grad.addColorStop(1, "rgba(66,79,96,0)");
+            snowCtx.fillStyle = grad;
+            snowCtx.fillRect(0, 0, dims.w, dims.h);
+            return;
+          }
+
           snowRAF = requestAnimationFrame(animateSnow);
         }
 
         function stopSnow() {
           if (snowRAF) cancelAnimationFrame(snowRAF);
           snowRAF = null;
+          snowActiveMode = null;
           snowFlakes = [];
           snowCanvas.style.display = "none";
           snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
         }
 
+
         SIM._startSnow = startSnow;
         SIM._stopSnow = stopSnow;
 
         var sunCanvas = document.createElement("canvas");
+        sunCanvas.setAttribute("aria-hidden", "true");
         sunCanvas.style.cssText = "position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:0;display:none;border-radius:6px 6px 0 0;";
         dataInner.insertBefore(sunCanvas, dataInner.firstChild);
         var sunCtx = sunCanvas.getContext("2d");
@@ -6711,14 +6965,14 @@ function buildSimContent() {
         var SUN_RAY_COUNT = 11;
         var sunRays = [];
 
+        var sunBufferH = 200;
         function sizeSunCanvas() {
           var firstRule = dataInner.querySelector("div[style*='border-top']");
-          var h = firstRule ? firstRule.offsetTop : 120;
-          sunFixedH = h;
+          sunFixedH = firstRule ? firstRule.offsetTop : 120;
           var dpr = window.devicePixelRatio || 1;
           sunCanvas.width = sunFixedW * dpr;
-          sunCanvas.height = h * dpr;
-          sunCanvas.style.height = h + "px";
+          sunCanvas.height = sunBufferH * dpr;
+          sunCanvas.style.height = sunFixedH + "px";
           sunCanvas.style.objectFit = "cover";
           sunCanvas.style.objectPosition = "right top";
           sunCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -6743,6 +6997,15 @@ function buildSimContent() {
 
         function animateSun(now) {
           var elapsed = (now - sunAnimStart) / 1000;
+          var firstRule = dataInner.querySelector("div[style*='border-top']");
+          sunFixedH = firstRule ? firstRule.offsetTop : 120;
+          sunCanvas.style.height = sunFixedH + "px";
+          var dpr = window.devicePixelRatio || 1;
+          var neededSunH = Math.round(sunFixedH * dpr);
+          if (neededSunH !== sunCanvas.height) {
+            sunCanvas.height = neededSunH;
+            sunCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          }
           sunCtx.clearRect(0, 0, sunFixedW, sunFixedH);
 
           var grad = sunCtx.createLinearGradient(0, 0, 0, sunFixedH);
@@ -6790,11 +7053,22 @@ function buildSimContent() {
         }
 
         function startSun() {
+          if (sunRAF) return;
           sizeSunCanvas();
           initSunRays();
           sunAnimStart = performance.now();
           sunCanvas.style.display = "";
-          if (sunRAF) cancelAnimationFrame(sunRAF);
+
+          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            sunCtx.clearRect(0, 0, sunFixedW, sunFixedH);
+            var grad = sunCtx.createLinearGradient(0, 0, 0, sunFixedH);
+            grad.addColorStop(0, "rgba(255,220,100,0.35)");
+            grad.addColorStop(1, "rgba(255,235,160,0)");
+            sunCtx.fillStyle = grad;
+            sunCtx.fillRect(0, 0, sunFixedW, sunFixedH);
+            return;
+          }
+
           sunRAF = requestAnimationFrame(animateSun);
         }
 
@@ -6808,6 +7082,7 @@ function buildSimContent() {
         SIM._startSun = startSun;
         SIM._stopSun = stopSun;
 
+
         panel.appendChild(dataInner);
 
         function checkNorDataLabels() {
@@ -6819,7 +7094,7 @@ function buildSimContent() {
           });
         }
         SIM._checkNorDataLabels = checkNorDataLabels;
-        var norDataRO = new ResizeObserver(function() {
+        SIM._norDataRO = new ResizeObserver(function() {
           checkNorDataLabels();
           var firstRule = dataInner.querySelector("div[style*='border-top']");
           var h = firstRule ? firstRule.offsetTop : 120;
@@ -6832,7 +7107,7 @@ function buildSimContent() {
             sunCanvas.style.height = h + "px";
           }
         });
-        norDataRO.observe(dataInner);
+        SIM._norDataRO.observe(dataInner);
       }
 
       panelWrap.appendChild(panel);
@@ -6879,7 +7154,7 @@ function buildSimContent() {
     });
 
     // Ctrl+Arrow: navigate between panels
-    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"], .sim-panel[role="tabpanel"]');
     if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
     SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
@@ -7119,7 +7394,7 @@ function buildSimContent() {
         function buildNewCard() {
           const card = document.createElement("div");
           card.className = "trial-card new-card";
-          card.setAttribute("role", "tab");
+          card.setAttribute("role", "button");
           card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Add new trial");
           card.style.cursor = "pointer";
@@ -7299,7 +7574,7 @@ function buildSimContent() {
     });
 
     // Ctrl+Arrow: navigate between panels
-    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"], .sim-panel[role="tabpanel"]');
     if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
     SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
@@ -7539,7 +7814,7 @@ function buildSimContent() {
         function buildNewCard() {
           const card = document.createElement("div");
           card.className = "trial-card new-card";
-          card.setAttribute("role", "tab");
+          card.setAttribute("role", "button");
           card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Add new trial");
           card.style.cursor = "pointer";
@@ -7719,7 +7994,7 @@ function buildSimContent() {
     });
 
     // Ctrl+Arrow: navigate between panels
-    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"], .sim-panel[role="tabpanel"]');
     if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
     SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
