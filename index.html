@@ -1058,24 +1058,298 @@
   .form-area[hidden] { display: none; }
 
   /* ── Profile Screen ── */
+  /* First-time coach marks (in-content look). Toggled via .show by showScreen(); .pop replays the
+     goat pop-in each time the card is shown. Later, "More" will switch the screen into the
+     anchored+spotlight tour. */
   .profile-welcome {
-    font-size: 16px;
-    color: var(--subtext);
-    line-height: 1.5;
-    margin: 0 0 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
+    position: relative;
+    background: #141A22;
+    border: 1.5px solid var(--border);
+    border-left: 4px solid var(--accent);   /* thick accent bar; left edge kept straight */
+    border-radius: 0 12px 12px 0;
+    /* Full-bleed the accent bar to the screen edge (cancel the .screen-content 24px left padding),
+       then inset the content back by that same 24px so it lines up with the rest of the screen. */
+    padding: 14px 14px 12px 20px;   /* left 20 + 4px bar = 24px content inset */
+    margin: 0 0 18px -24px;
+    overflow: hidden;
     font-family: 'Barlow', sans-serif;
     display: none;
   }
-  .profile-welcome-title {
-    display: block;
-    color: var(--text);
-    font-weight: 700;
-    font-size: 17px;
-    margin-bottom: 4px;
+  .profile-welcome::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120px 80px at 14% -10%, rgba(0,179,192,0.10), transparent 70%);
   }
   .profile-welcome.show { display: block; }
+  /* Setup's .screen-content uses padding-top:10px; add 10px so the coach card's top gap matches the
+     20px used on Profile/Dashboard (consistent spacing above the onboarding message). */
+  #tracked-metrics-setup-screen .profile-welcome,
+  #metrics-data-entry-log-screen .profile-welcome { margin-top: 10px; margin-bottom: 12px; }   /* 10 + 10px content pad = 20px top gap (matches other screens); tighter 12px bottom */
+  .coach-goat {
+    float: left; width: 54px; height: 54px; border-radius: 50%;
+    background: #D11E32; margin: 2px 13px 6px 0;   /* brand red — ties to the DataGOAT logo */
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35); position: relative; z-index: 1;
+  }
+  .coach-goat img { width: 46px; height: 39px; display: block; transform-origin: 50% 90%; animation: goatBob 3.4s ease-in-out infinite; }
+  .profile-welcome.pop .coach-goat { animation: badgePop 0.55s cubic-bezier(0.2,1.35,0.4,1) both; }
+  .profile-welcome.pop .coach-goat img { animation: goatBob 3.4s ease-in-out 0.55s infinite, goatEnter 0.55s ease both; }
+  /* Hand-built animated goat (walking gait): body bob + diagonal-trot legs. White goat on the brand-red badge. */
+  .coach-goat .goat-svg { width: 48px; height: 43px; display: block; overflow: visible; fill: #FFFFFF; }
+  .coach-goat .goat-svg .g-body { transform-box: fill-box; transform-origin: 50% 70%; animation: gBob 0.34s ease-in-out infinite; }
+  .coach-goat .goat-svg .leg { transform-box: fill-box; transform-origin: 50% 6%; animation: gLegA 0.68s ease-in-out infinite; }
+  .coach-goat .goat-svg .leg.b { animation-name: gLegB; }
+  .profile-welcome.pop .coach-goat .goat-svg { animation: goatEnter 0.55s ease both; }
+  @keyframes gBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-1.3px)} }
+  @keyframes gLegA { 0%,100%{transform:rotate(13deg)} 50%{transform:rotate(-13deg)} }
+  @keyframes gLegB { 0%,100%{transform:rotate(-13deg)} 50%{transform:rotate(13deg)} }
+  /* ✕ close: goat winds up, charges right and headbutts the title (head dips on impact; the title jolts
+     right), holds the contact, then the card fades out. The goat must travel far enough to actually reach
+     the title (~23px gap), so the lunge is big and the badge lets it overflow. */
+  .coach-closing .coach-goat { overflow: visible; z-index: 3; }  /* let the goat lunge out, above the title */
+  .coach-closing .coach-goat .goat-svg { animation: goatHeadbutt 0.7s cubic-bezier(0.4,0,0.35,1.2) both; }
+  .coach-closing .coach-title { animation: titleKnock 0.7s cubic-bezier(0.3,0,0.2,1) both; }
+  .coach-closing { transform-origin: left center; animation: coachClose 0.38s ease-in 0.64s both; }
+  @keyframes goatHeadbutt {
+    0%   { transform: translateX(0) rotate(0); }
+    20%  { transform: translateX(-9px) rotate(-7deg); }   /* wind up — head back */
+    48%  { transform: translateX(34px) rotate(9deg); }    /* CHARGE — head dips into the title */
+    60%  { transform: translateX(27px) rotate(5deg); }    /* recoil off the hit */
+    100% { transform: translateX(31px) rotate(7deg); }    /* stays rammed as the card fades */
+  }
+  @keyframes titleKnock {
+    0%,34% { transform: translateX(0); }
+    50%    { transform: translateX(17px); }               /* knocked right on impact */
+    62%    { transform: translateX(11px); }
+    100%   { transform: translateX(14px); }               /* holds shoved over, then card fades */
+  }
+  /* Fade + subtle shrink anchored to the LEFT edge, so the full-bleed accent bar stays flush to the
+     screen edge during the close (no rightward drift back to the old inset dimensions). */
+  @keyframes coachClose { 0%{opacity:1} 100%{opacity:0; transform: scale(0.98)} }
+  /* Setup card (.coach-eat): instead of headbutting, the goat leans in and chomps while ONLY the first
+     word ("Choose") gets slurped into its mouth — its width collapses to 0 so the rest of the title
+     ("what to track") slides left to follow, like a noodle. The word's start width is pinned in JS on
+     close (measured, not guessed). Higher specificity than the headbutt rules so it overrides them here. */
+  .coach-eat.coach-closing .coach-goat .goat-svg { animation: goatEat 0.72s ease-in-out both; }
+  .coach-eat.coach-closing .coach-eat-word {
+    display: inline-block; white-space: nowrap; vertical-align: baseline;
+    transform-origin: left center; animation: eatPull 0.72s ease-in both;
+  }
+  /* each letter is eaten in turn from the mouth (left) side; it gets sucked up-left and vanishes */
+  .coach-eat.coach-closing .coach-eat-word > span { display: inline-block; animation: eatLetter 0.14s ease-in both; }
+  .coach-eat.coach-closing .coach-eat-word > span:nth-child(1) { animation-delay: 0.08s; }
+  .coach-eat.coach-closing .coach-eat-word > span:nth-child(2) { animation-delay: 0.16s; }
+  .coach-eat.coach-closing .coach-eat-word > span:nth-child(3) { animation-delay: 0.24s; }
+  .coach-eat.coach-closing .coach-eat-word > span:nth-child(4) { animation-delay: 0.32s; }
+  .coach-eat.coach-closing .coach-eat-word > span:nth-child(5) { animation-delay: 0.40s; }
+  .coach-eat.coach-closing .coach-eat-word > span:nth-child(6) { animation-delay: 0.48s; }
+  @keyframes goatEat {
+    0%   { transform: translateX(0) rotate(0) scaleY(1); }
+    16%  { transform: translateX(18px) rotate(-5deg) scaleY(0.92); }   /* lean toward the word, head up, chomp */
+    32%  { transform: translateX(15px) rotate(-10deg) scaleY(1.06); }  /* head tips up, chew */
+    48%  { transform: translateX(19px) rotate(-5deg) scaleY(0.92); }   /* chomp */
+    64%  { transform: translateX(15px) rotate(-9deg) scaleY(1.04); }   /* chew, head up */
+    80%  { transform: translateX(17px) rotate(-5deg) scaleY(0.96); }
+    100% { transform: translateX(6px) rotate(-1deg) scaleY(1); }       /* satisfied */
+  }
+  /* "Choose" keeps its slot (fixed width, pinned in JS) so the rest of the title can't reflow. The whole
+     word is drawn left toward the goat's mouth while its letters are eaten one at a time from the left
+     (see the per-letter stagger above). Pure transform, so nothing else on the line moves. */
+  @keyframes eatPull {
+    0%   { transform: translateX(0); }
+    11%  { transform: translateX(0); }        /* wait — goat hasn't reached it yet */
+    100% { transform: translateX(-56px); }    /* word drawn left into the mouth */
+  }
+  @keyframes eatLetter {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(-8px,6px) scale(0.35); }  /* this letter sucked down-left into the mouth */
+  }
+  /* Dashboard card (.coach-stomp): instead of headbutting, the goat crouches, leaps up over the first word
+     ("Your") and stomps it flat, then a second smaller stomp. Only "Your" is crushed — the base titleKnock
+     is nulled so "Dashboard" holds still (pure scaleY on the word means nothing else on the line reflows). */
+  .coach-stomp.coach-closing { overflow: visible; }   /* let the goat leap up above the card edge */
+  .coach-stomp.coach-closing .coach-goat .goat-svg { animation: goatStomp 0.72s cubic-bezier(0.3,0,0.35,1.25) both; }
+  .coach-stomp.coach-closing .coach-title { animation: none; }
+  .coach-stomp.coach-closing .coach-stomp-word {
+    display: inline-block; vertical-align: baseline; transform-origin: bottom center;
+    animation: stompSquish 0.72s ease-out both;
+  }
+  /* Geometry (measured): "Your" sits +58px right of the goat and its top is ~48px up, so the goat must
+     arc up-and-RIGHT to come down centered on the word — landing translate ≈ (58px, -32px). */
+  @keyframes goatStomp {
+    0%   { transform: translate(0,0) scaleY(1); }
+    14%  { transform: translate(4px,6px) scaleY(0.82); }      /* crouch — load up */
+    40%  { transform: translate(46px,-66px) scaleY(1.12); }   /* leap high AND right, up over "Your" */
+    54%  { transform: translate(58px,-22px) scaleY(0.74); }   /* SMASH straight down THROUGH the word to its baseline */
+    66%  { transform: translate(58px,-34px) scaleY(1.06); }   /* rebound up */
+    80%  { transform: translate(58px,-23px) scaleY(0.86); }   /* second, smaller stomp */
+    100% { transform: translate(58px,-26px) scaleY(1); }      /* hooves land at the bottom of the flattened word */
+  }
+  @keyframes stompSquish {
+    0%,52% { transform: translateY(0) scaleY(1); }            /* intact until the goat lands */
+    60%    { transform: translateY(2px) scaleY(0.16); }       /* STOMPED flat */
+    70%    { transform: translateY(0) scaleY(0.4); }          /* springs up a little */
+    82%    { transform: translateY(2px) scaleY(0.1); }        /* second stomp crushes it */
+    100%   { transform: translateY(2px) scaleY(0.06); }       /* stays pancaked, then the card fades */
+  }
+  /* Log card (.coach-fly): the goat headbutts the title (title jolts right), then the title headbutts BACK
+     and launches the goat spinning off the left edge of the screen. Needs overflow visible so the goat can
+     fly out. */
+  /* 1.4s total: goat headbutts the title (~0.4s) → ~0.5s BEAT (both hold) → title headbutts back and the
+     goat flies off spinning (~0.4s). Card fade is delayed until after the goat has left. */
+  .coach-fly.coach-closing { overflow: visible; animation: coachClose 0.34s ease-in 1.16s both; }
+  .coach-fly.coach-closing .coach-goat { overflow: visible; }
+  .coach-fly.coach-closing .coach-goat .goat-svg { animation: goatFly 1.4s both; }
+  .coach-fly.coach-closing .coach-title { animation: titleHeadbuttBack 1.4s cubic-bezier(0.3,0,0.2,1) both; }
+  @keyframes goatFly {
+    0%   { transform: translateX(0) rotate(0deg); animation-timing-function: cubic-bezier(0.4,0,0.2,1.2); }
+    9%   { transform: translateX(-9px) rotate(-7deg); }                                                       /* wind up */
+    29%  { transform: translateX(34px) rotate(9deg); }                                                        /* CHARGE — headbutts the title */
+    33%  { transform: translateX(30px) rotate(6deg); }                                                        /* settle rammed against the title */
+    64%  { transform: translateX(30px) rotate(6deg); animation-timing-function: cubic-bezier(0.5,0,0.85,1); } /* HOLD — the beat */
+    71%  { transform: translateX(24px) rotate(-28deg); animation-timing-function: cubic-bezier(0.55,0,0.85,1); } /* title smacks it — starts to tumble */
+    100% { transform: translateX(-560px) rotate(-1080deg); }                                                  /* flies spinning off the left edge */
+  }
+  @keyframes titleHeadbuttBack {
+    0%,20% { transform: translateX(0); }
+    31%    { transform: translateX(16px); }   /* knocked right by the goat's headbutt */
+    34%    { transform: translateX(15px); }
+    64%    { transform: translateX(15px); }   /* HOLD — the beat (stays shoved over) */
+    71%    { transform: translateX(-10px); }  /* title lunges LEFT — headbutts the goat away */
+    81%    { transform: translateX(4px); }    /* recoils from its own swing */
+    100%   { transform: translateX(0); }      /* settles, then fades with the card */
+  }
+  .coach-title, .profile-welcome-title {
+    display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase;
+    letter-spacing: 0.04em; font-weight: 700; font-size: 18px; color: var(--text);
+    margin: 3px 44px 5px 0; line-height: 1.15;
+  }
+  .coach-body { font-size: 16px; line-height: 1.5; color: var(--subtext); margin: 0; }
+  .coach-x {
+    position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; padding: 0; border: none; background: transparent;
+    color: var(--subtext); cursor: pointer; border-radius: 50%; font-size: 15px; line-height: 1;
+    display: flex; align-items: center; justify-content: center; z-index: 2;
+    transition: background 0.15s, color 0.15s, transform 0.05s;
+  }
+  .coach-x svg { width: 24px; height: 24px; pointer-events: none; }  /* matches the app's standard 24×24 icons */
+  .coach-x:hover { background: rgba(0,179,192,0.14); color: var(--text); }
+  .coach-x:active { transform: scale(0.9); }
+  .coach-foot { display: flex; justify-content: flex-end; align-items: center; margin-top: 12px; clear: both; }
+  /* Buttons follow the app styleguide: Barlow Condensed, uppercase, accent bg + #080A0E dark text,
+     6px radius, 16px, hover brightness + active scale. */
+  .coach-more {
+    background: var(--accent); border: none; color: #080A0E; border-radius: 6px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; padding: 10px 18px;
+    display: inline-flex; align-items: center; gap: 5px; transition: filter 0.15s, transform 0.1s;
+  }
+  .coach-more:hover { filter: brightness(1.08); }
+  .coach-more:active { transform: scale(0.98); }
+  .coach-more:focus-visible, .coach-x:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  @keyframes goatBob { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-2px) rotate(-3deg)} 55%{transform:translateY(0) rotate(2deg)} 80%{transform:translateY(-1px) rotate(-1deg)} }
+  @keyframes badgePop { 0%{transform:scale(0.3);opacity:0} 60%{transform:scale(1.12)} 100%{transform:scale(1);opacity:1} }
+  @keyframes goatEnter { 0%{transform:scale(0.6) rotate(-14deg)} 100%{transform:scale(1) rotate(0)} }
+  @media (prefers-reduced-motion: reduce) { .coach-goat img, .coach-goat .goat-svg *, .profile-welcome.pop .coach-goat, .profile-welcome.pop .coach-goat img, .profile-welcome.pop .coach-goat .goat-svg, .coach-closing, .coach-closing .coach-goat .goat-svg, .coach-closing .coach-title { animation: none !important; } }
+  /* Interactive brand logo: toggles the screen's coach mark. Added on coach-mark screens EXCEPT the
+     Dashboard "home" (whose logo advances the streak). Padding + negative margin gives a ≥44px hit area
+     without shifting the header layout. */
+  .brand-logo-btn {
+    position: relative; display: inline-flex; align-items: center; justify-content: center;
+    padding: 4px 3px; margin: -4px -3px; border: none; background: transparent; cursor: pointer;
+    border-radius: 10px; flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+  }
+  .brand-logo-btn:active { transform: scale(0.97); }
+  .brand-logo-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+  .brand-info-badge {
+    position: absolute; top: 0; right: -1px; z-index: 4;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); color: #04181a;
+    font-family: 'Barlow', sans-serif; font-weight: 700; font-style: italic; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+    box-shadow: 0 0 0 2px var(--bg); pointer-events: none;
+    transition: transform 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+  }
+  .brand-info-badge svg { width: 20px; height: 20px; display: block; }
+  .brand-logo-btn:hover .brand-info-badge { transform: scale(1.14); }
+  /* (i) badge indicates coach-mark state: teal = closed; brand red with a white "i" + white ring = open. */
+  .brand-logo-btn[aria-expanded="true"] .brand-info-badge { background: #D11E32; color: #FFFFFF; box-shadow: 0 0 0 2px #FFFFFF; }
+
+  /* ===== Anchored-spotlight guided tour (launched from a coach mark's "More") ===== */
+  .coach-tour { position: absolute; inset: 0; z-index: 60; display: none; }
+  .coach-tour.on { display: block; }
+  /* Tapping "More": the onboarding card collapses from the bottom up (max-height set inline in JS) as the
+     first coach mark fades up into view — softer than the old instant swap. */
+  .profile-welcome.coach-collapsing {
+    overflow: hidden !important; opacity: 0; pointer-events: none;
+    margin-top: 0 !important; margin-bottom: 0 !important; border-top-width: 0; border-bottom-width: 0;
+    padding-top: 0; padding-bottom: 0;   /* padding doesn't shrink under max-height, so collapse it too — else the card keeps ~26px and the content snaps up when it's removed */
+    transition: max-height 0.36s cubic-bezier(0.4,0,0.2,1), opacity 0.26s ease,
+                margin 0.36s cubic-bezier(0.4,0,0.2,1), padding 0.36s cubic-bezier(0.4,0,0.2,1),
+                border-width 0.36s cubic-bezier(0.4,0,0.2,1);
+  }
+  .coach-tour.on.intro { animation: tourIntro 0.42s cubic-bezier(0.2,0,0.2,1) both; }
+  @keyframes tourIntro { 0% { opacity: 0; transform: translateY(12px); } 100% { opacity: 1; transform: translateY(0); } }
+  .coach-tour-spot {
+    position: absolute; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(5,7,10,0.35);
+    border: 2px solid var(--accent); pointer-events: none;
+    transition: top 0.42s cubic-bezier(0.4,0,0.2,1), left 0.42s cubic-bezier(0.4,0,0.2,1), width 0.42s cubic-bezier(0.4,0,0.2,1), height 0.42s cubic-bezier(0.4,0,0.2,1);
+  }
+  /* Goat mascot: perches on top of the current spotlight, hops to the next on Next/Back. */
+  .coach-tour-goat {
+    position: absolute; width: 42px; height: 38px; pointer-events: none; z-index: 2; display: none;
+    transition: left 0.42s cubic-bezier(0.34,0.2,0.3,1), top 0.42s cubic-bezier(0.34,0.2,0.3,1);
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6));
+  }
+  .coach-tour-goat .goat-svg { width: 42px; height: 38px; display: block; overflow: visible; fill: #FFFFFF; transition: transform 0.2s ease; }
+  .coach-tour-goat.face-left .goat-svg { transform: scaleX(-1); }   /* faces left when jumping Back */
+  .coach-tour-goat .goat-svg .g-body { transform-box: fill-box; transform-origin: 50% 70%; animation: gBob 0.34s ease-in-out infinite; }
+  .coach-tour-goat .goat-svg .leg { transform-box: fill-box; transform-origin: 50% 6%; animation: gLegA 0.68s ease-in-out infinite; }
+  .coach-tour-goat .goat-svg .leg.b { animation-name: gLegB; }
+  .coach-tour-goat.hop { animation: tourGoatHop 0.42s ease-in-out; }
+  @keyframes tourGoatHop {
+    0%   { transform: translateY(0) scaleY(1); }
+    14%  { transform: translateY(3px) scaleY(0.88); }   /* crouch */
+    50%  { transform: translateY(-42px) scaleY(1.06); } /* peak of the arc */
+    86%  { transform: translateY(0) scaleY(0.9); }       /* land squash */
+    100% { transform: translateY(0) scaleY(1); }
+  }
+  @media (prefers-reduced-motion: reduce) { .coach-tour-goat, .coach-tour-goat *, .coach-tour-goat.hop { animation: none !important; } .coach-tour-goat, .coach-tour-goat .goat-svg { transition: none !important; } .coach-tour.on.intro { animation: none !important; } .profile-welcome.coach-collapsing { transition: none !important; } }
+  /* Full-width callout, styled like the coach card (accent left bar). Positioned above/below the target. */
+  .coach-tour-card {
+    position: absolute; left: 12px; right: 12px; background: #141A22;
+    border: 1.5px solid var(--border); border-left: 4px solid var(--accent); border-radius: 12px;
+    padding: 14px 18px;   /* body/footer use full width; only the title clears the ✕ (below) */
+    box-shadow: 0 12px 30px rgba(0,0,0,0.55); font-family: 'Barlow', sans-serif;
+    transition: top 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  .coach-tour-card .ct-arrow { position: absolute; width: 14px; height: 14px; background: #141A22; border: 1.5px solid var(--border); transform: rotate(45deg); }
+  .coach-tour-card.arrow-top .ct-arrow { top: -8px; border-right: none; border-bottom: none; }
+  .coach-tour-card.arrow-bottom .ct-arrow { bottom: -8px; border-left: none; border-top: none; }
+  .coach-tour-card.arrow-none .ct-arrow { display: none; }
+  /* ✕ close — same as the coach card's: 44×44 hit area, 24px SVG glyph, hover/active. */
+  .ct-x {
+    position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; padding: 0; border: none; background: transparent;
+    color: var(--subtext); cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s, transform 0.05s;
+  }
+  .ct-x svg { width: 24px; height: 24px; pointer-events: none; }
+  .ct-x:hover { background: rgba(0,179,192,0.14); color: var(--text); }
+  .ct-x:active { transform: scale(0.9); }
+  .ct-title { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; font-size: 18px; color: var(--text); margin: 0 40px 6px 0; }
+  .ct-body { font-size: 16px; line-height: 1.5; color: var(--subtext); margin: 0; }
+  .ct-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; gap: 10px; }
+  .ct-dots { display: flex; gap: 6px; }
+  .ct-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+  .ct-dots i.on { background: var(--accent); }
+  .ct-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  /* Tour buttons — styleguide: Barlow Condensed uppercase 16px, accent primary / outline secondary. */
+  .ct-back { background: transparent; border: 1.5px solid #546888; color: var(--text); border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; padding: 9px 16px; transition: border-color 0.15s, background 0.15s, transform 0.1s; }
+  .ct-back:hover { border-color: var(--accent); background: rgba(0,179,192,0.10); }
+  .ct-back:active { transform: scale(0.98); }
+  .ct-next { background: var(--accent); border: none; color: #080A0E; border-radius: 6px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; padding: 10px 18px; transition: filter 0.15s, transform 0.1s; }
+  .ct-next:hover { filter: brightness(1.08); }
+  .ct-next:active { transform: scale(0.98); }
+  .ct-back:focus-visible, .ct-next:focus-visible, .ct-x:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
   .profile-signed-in {
     font-family: 'Barlow', sans-serif;
     font-size: 16px;
@@ -4410,7 +4684,12 @@
       <h2 class="section-heading"><button class="back-nav-btn" id="profile-back-btn" type="button" aria-label="Back to Sign Up" style="display:none;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3,22 L3,20 C3,17.5147186 5.01471863,15.5 7.5,15.5 L16.5,15.5 C18.9852814,15.5 21,17.5147186 21,20 L21,22" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><circle cx="12" cy="6.75" r="4.75" fill="rgba(0,179,192,0.35)" /></svg>Profile</h2>
 
       <div class="screen-content">
-      <p class="profile-welcome" id="profile-welcome"><strong class="profile-welcome-title">Welcome to DataGOAT</strong>First, complete your profile. Then you&#x2019;ll choose what training and performance data to track.</p>
+      <div class="profile-welcome" id="profile-welcome">
+        <span class="coach-goat"></span>
+        <button class="coach-x" type="button" aria-label="Dismiss tip" data-coach-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+        <strong class="coach-title">Welcome to DataGOAT</strong>
+        <p class="coach-body">First, complete your profile. Then you&#x2019;ll choose what data to track.</p>
+      </div>
       <p class="profile-signed-in" id="profile-signed-in" style="display:none;">Logged in as <strong class="profile-signed-in-email" id="profile-signed-in-email"></strong></p>
       <div class="field-wrap">
         <label class="field-label" for="profile-fullname">Full Name<span class="required-mark" aria-hidden="true">*</span></label>
@@ -4556,7 +4835,13 @@
       <h2 class="section-heading"><button class="back-nav-btn" id="tracked-metrics-setup-back-btn" type="button" aria-label="Back to Profile" style="display:none;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button><button class="nav-home-btn" type="button" aria-label="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg></button><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><g transform="translate(2.4178, 2)" stroke="currentColor" stroke-width="2"><path d="M11.2681634,0 L11.7076987,3.11005391 C12.7150062,3.42727603 13.627057,3.95929699 14.3901408,4.65240647 L17.3153681,3.4767355 L19.0555098,6.48469472 L16.5887706,8.438424 C16.6996076,8.94128951 16.758036,9.46382141 16.758036,10 C16.758036,10.5369741 16.6994341,11.060261 16.5882769,11.5638141 L19.0716275,13.4955398 L17.3264792,16.5121534 L14.4012172,15.337512 C13.6420227,16.0299503 12.7345578,16.5625913 11.732017,16.8822401 L11.2722207,20 L7.79235302,20 L7.35508151,16.8871536 C6.34933043,16.5689896 5.43880423,16.0366093 4.67705366,15.3435636 L1.74514835,16.5232645 L0,13.5066509 L2.4845879,11.5694084 C2.37262832,11.064137 2.31359154,10.5389629 2.31359154,10 C2.31359154,9.46421917 2.37193327,8.94206478 2.48261039,8.43954317 L0,6.50446019 L1.74514835,3.48784661 L4.67151706,4.6614788 C5.43076552,3.96927789 6.33822344,3.43686231 7.34071506,3.1174078 L7.79940684,0 L11.2681634,0 Z M9.58223239,7 C7.92537814,7 6.58223239,8.34314575 6.58223239,10 C6.58223239,11.6568542 7.92537814,13 9.58223239,13 C11.2390866,13 12.5822324,11.6568542 12.5822324,10 C12.5822324,8.34314575 11.2390866,7 9.58223239,7 Z" fill="rgba(0,179,192,0.35)" fill-rule="nonzero"/><circle cx="9.58223239" cy="10" r="3" fill-rule="nonzero"/></g></svg>Tracked Metrics Setup</h2>
 
       <div class="screen-content">
-        <p class="profile-welcome" id="tracked-metrics-setup-welcome"><strong class="profile-welcome-title">Choose what to track</strong>Select the training and performance data you want DataGOAT to collect. You can update these choices anytime.</p>
+        <div class="profile-welcome coach-eat" id="tracked-metrics-setup-welcome">
+          <span class="coach-goat"></span>
+          <button class="coach-x" type="button" aria-label="Dismiss tip" data-coach-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+          <strong class="coach-title"><span class="coach-eat-word"><span>C</span><span>h</span><span>o</span><span>o</span><span>s</span><span>e</span></span> what to track</strong>
+          <p class="coach-body">Select the Wellness, Performance, and Competition metrics you want DataGOAT to track. Or add your own.</p>
+          <div class="coach-foot"><button class="coach-more" type="button" data-coach-more>More <span aria-hidden="true">&#x203A;</span></button></div>
+        </div>
 
         <h3 class="info-section-heading">Wellness Metrics</h3>
         <table class="data-table" id="wellness-table">
@@ -5009,7 +5294,13 @@
     <div class="screen-body">
       <h2 class="section-heading"><button class="nav-menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-haspopup="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="3" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="3" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/><rect x="14" y="14" width="7" height="7" fill="rgba(0,179,192,0.35)"/></svg>Dashboard</h2>
       <div class="screen-content">
-        <p class="profile-welcome" id="dashboard-welcome"><strong class="profile-welcome-title">Your Dashboard</strong>This is your home base. Here you&#x2019;ll see a snapshot of your recent activity, trends, and overall progress. Check back daily to stay on top of your goals.</p>
+        <div class="profile-welcome coach-stomp" id="dashboard-welcome">
+          <span class="coach-goat"></span>
+          <button class="coach-x" type="button" aria-label="Dismiss tip" data-coach-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+          <strong class="coach-title"><span class="coach-stomp-word">Your</span> Dashboard</strong>
+          <p class="coach-body">This is your home base. Here you&#x2019;ll see a snapshot of your recent activity, trends, and overall progress. Check back daily to stay on top of your goals.</p>
+          <div class="coach-foot"><button class="coach-more" type="button" data-coach-more>More <span aria-hidden="true">&#x203A;</span></button></div>
+        </div>
 
         <!-- Metrics Data Entry Log Section -->
         <div class="dash-log-section" id="dash-wellness-section">
@@ -5135,7 +5426,13 @@
       </div>
 
       <div class="screen-content">
-        <p class="profile-welcome" id="metrics-data-entry-log-welcome"><strong class="profile-welcome-title">Your Metrics Data Entry Log</strong>Record your health &amp; performance metrics here. Logging consistently &#x2014; even on rest days &#x2014; helps you and your team spot patterns over time.</p>
+        <div class="profile-welcome coach-fly" id="metrics-data-entry-log-welcome">
+          <span class="coach-goat"></span>
+          <button class="coach-x" type="button" aria-label="Dismiss tip" data-coach-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+          <strong class="coach-title">Your Metrics Data Entry Log</strong>
+          <p class="coach-body">Record your metrics here. Logging consistently &#x2014; even on rest days &#x2014; helps you and your team spot patterns over time.</p>
+          <div class="coach-foot"><button class="coach-more" type="button" data-coach-more>More <span aria-hidden="true">&#x203A;</span></button></div>
+        </div>
 
         <!-- Body Tracking Table -->
         <table class="body-table">
@@ -5657,9 +5954,9 @@
 
   <nav class="device-switcher" aria-label="Device preview size">
     <div class="device-switcher-meta">
-      <span class="version-tag">v1.11</span>
+      <span class="version-tag">v1.12</span>
       <span class="meta-sep" aria-hidden="true">•</span>
-      <span class="device-switcher-updated">Updated: 6/30/26</span>
+      <span class="device-switcher-updated">Updated: 7/13/26</span>
     </div>
     <div class="device-switcher-label">Preview</div>
 
@@ -6085,16 +6382,397 @@
 
   var profileScreen = document.getElementById('profile-screen');
 
-  // Insert dashboard logo into all screen headers
+  // Insert the DataGOAT logo into every screen header. On coach-mark screens the logo is an interactive
+  // button that opens/closes that screen's coach mark (and resumes a paused tour), with a "?" badge to
+  // signal it's tappable.
+  var coachLogoScreens = { 'profile-screen': 1, 'tracked-metrics-setup-screen': 1, 'metrics-data-entry-log-screen': 1, 'dashboard-screen': 1 };
   var screenHeaders = document.querySelectorAll('.screen-header');
   screenHeaders.forEach(function (header) {
-    var dashLogo = document.createElement('img');
-    dashLogo.className = 'brand-logo-img';
-    dashLogo.src = 'icons/datagoat-logo-dashboard.svg';
-    dashLogo.style.width = '43px';
-    dashLogo.style.height = '36px';
-    header.insertBefore(dashLogo, header.firstChild);
+    var screenEl = header.closest('.screen');
+    var sid = screenEl ? screenEl.id : '';
+    if (coachLogoScreens[sid]) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'brand-logo-btn';
+      btn.setAttribute('aria-label', 'Show tips for this screen');
+      btn.setAttribute('aria-expanded', 'false');
+      var img = document.createElement('img');
+      img.className = 'brand-logo-img'; img.src = 'icons/datagoat-logo-dashboard.svg';
+      img.alt = ''; img.setAttribute('aria-hidden', 'true');
+      img.style.width = '43px'; img.style.height = '36px';
+      var badge = document.createElement('span');
+      badge.className = 'brand-info-badge'; badge.setAttribute('aria-hidden', 'true');
+      // Help "?" glyph from icons/help.svg, inheriting the badge's color (dark closed / white open).
+      badge.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.8344846,17.654601 C13.0761513,17.4129343 13.1969846,17.117101 13.1969846,16.767101 C13.1969846,16.417101 13.0761513,16.1212677 12.8344846,15.879601 C12.592818,15.6379343 12.2969846,15.517101 11.9469846,15.517101 C11.5969846,15.517101 11.3011513,15.6379343 11.0594846,15.879601 C10.817818,16.1212677 10.6969846,16.417101 10.6969846,16.767101 C10.6969846,17.117101 10.817818,17.4129343 11.0594846,17.654601 C11.3011513,17.8962677 11.5969846,18.017101 11.9469846,18.017101 C12.2969846,18.017101 12.592818,17.8962677 12.8344846,17.654601 Z M12.8209846,10.714601 L12.6469846,10.867101 C11.9136513,11.517101 11.4636513,12.0087677 11.2969846,12.342101 C11.130318,12.6754343 11.0469846,13.2837677 11.0469846,14.167101 L12.8969846,14.167101 C12.8969846,13.617101 12.9594846,13.1837677 13.0844846,12.867101 C13.2094846,12.5504343 13.5636513,12.117101 14.1469846,11.567101 C14.580318,11.1337677 14.9219846,10.7212677 15.1719846,10.329601 C15.4219846,9.93793434 15.5469846,9.46710101 15.5469846,8.91710101 C15.5469846,7.98376767 15.205318,7.26710101 14.5219846,6.76710101 C13.8386513,6.26710101 13.030318,6.01710101 12.0969846,6.01710101 C11.1469846,6.01710101 10.3761513,6.26710101 9.78448463,6.76710101 C9.19281796,7.26710101 8.78031796,7.86710101 8.54698463,8.56710101 L10.1969846,9.21710101 C10.280318,8.91710101 10.467818,8.59210101 10.7594846,8.24210101 C11.0511513,7.89210101 11.4969846,7.71710101 12.0969846,7.71710101 C12.630318,7.71710101 13.030318,7.86293434 13.2969846,8.15460101 C13.5636513,8.44626767 13.6969846,8.76710101 13.6969846,9.11710101 C13.6969846,9.45043434 13.5969846,9.76293434 13.3969846,10.054601 C13.2369846,10.2879343 13.0449846,10.5079343 12.8209846,10.714601 Z" transform="translate(12.047, 12.0171) rotate(20) translate(-12.047, -12.0171)"/></svg>';
+      btn.appendChild(img); btn.appendChild(badge);
+      btn.addEventListener('click', function () {
+        // If a guided tour was paused (✕-closed) on this screen, resume it where we left off.
+        if (window._coachResumeTour && window._coachResumeTour(screenEl)) return;
+        var card = screenEl.querySelector('.profile-welcome');
+        if (!card) return;
+        if (card.classList.contains('show')) {
+          card.classList.remove('show', 'pop');
+          btn.setAttribute('aria-expanded', 'false');
+        } else {
+          if (card.id && window._coachDismissed) delete window._coachDismissed[card.id];
+          var sb = screenEl.querySelector('.screen-body'); if (sb) sb.scrollTop = 0;  // card is at the top
+          card.classList.add('show'); void card.offsetWidth; card.classList.add('pop');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+      header.insertBefore(btn, header.firstChild);
+    } else {
+      var dashLogo = document.createElement('img');
+      dashLogo.className = 'brand-logo-img';
+      dashLogo.src = 'icons/datagoat-logo-dashboard.svg';
+      dashLogo.style.width = '43px';
+      dashLogo.style.height = '36px';
+      header.insertBefore(dashLogo, header.firstChild);
+    }
   });
+
+  // Inject the animated goat into every coach mark badge (one definition, easy to finesse later).
+  var COACH_GOAT_SVG = '<svg class="goat-svg" viewBox="0 0 140 116" aria-hidden="true"><g class="g-body"><path d="M28,54 L20,36 Q18,32 24,35 L35,52 Z"/><path d="M30,58 Q27,41 47,40 L90,41 Q106,42 102,57 Q100,71 83,72 L46,73 Q31,72 30,58 Z"/><path d="M88,49 Q98,27 112,32 L118,44 Q104,59 87,58 Z"/><ellipse cx="120" cy="44" rx="13" ry="8"/><path d="M111,34 Q108,8 90,13 Q102,12 106,29 Q108,33 109,37 Z"/><path d="M106,41 L94,35 L105,48 Z"/><path d="M117,51 L114,69 L122,53 Z"/></g><path class="leg" d="M35.8,71 L36.8,101 Q36.8,105 40,105 L43.2,105 Q43.2,101 44.2,71 Z"/><path class="leg b" d="M46.8,72 L47.8,102 Q47.8,106 51,106 L54.2,106 Q54.2,102 55.2,72 Z"/><path class="leg b" d="M79.8,72 L80.8,102 Q80.8,106 84,106 L87.2,106 Q87.2,102 88.2,72 Z"/><path class="leg" d="M89.8,71 L90.8,101 Q90.8,105 94,105 L97.2,105 Q97.2,101 98.2,71 Z"/></svg>';
+  document.querySelectorAll('.coach-goat').forEach(function (el) { el.innerHTML = COACH_GOAT_SVG; });
+
+  // Keep the logo's (i) badge state (teal closed / red open) in sync with the card's actual visibility,
+  // however it was opened/closed (logo toggle, ✕, or onboarding auto-show).
+  window._syncCoachLogo = function (screenEl) {
+    if (!screenEl) return;
+    var lbtn = screenEl.querySelector('.brand-logo-btn');
+    if (!lbtn) return;
+    var lcard = screenEl.querySelector('.profile-welcome');
+    var open = (lcard && lcard.classList.contains('show')) || !!screenEl.querySelector('.coach-tour.on');
+    lbtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  // ===== Anchored-spotlight guided tour (launched from a coach mark's "More") =====
+  (function () {
+    var TOUR_STEPS = {
+      'tracked-metrics-setup-screen': [
+        { sel: '.log-sched-toggle', title: 'Metrics Grouped by Category', body: 'Metrics are grouped into Wellness, Performance, and Competition. Each group header shows how many metrics you’re currently tracking — and you can hide or show a group by tapping its header.' },
+        { sel: '#wellness-metrics tr[data-metric-id="hydration"] .drag-handle', title: 'Reorder Your Metrics', body: 'Drag the handle to reorder your metrics.' },
+        { sel: '#wellness-metrics tr[data-metric-id="hydration"] .track-check', title: 'Track a metric', body: 'Check a box to track a metric — uncheck it anytime to stop.' },
+        { sel: '#wellness-metrics tr[data-metric-id="hydration"] .metric-name', title: 'Metric & schedule', body: 'Each metric’s name, plus how often you’ll log it.', rightHalfTo: '#wellness-metrics tr[data-metric-id="hydration"] .metric-info-btn' },
+        { sel: '#wellness-metrics tr[data-metric-id="hydration"] .metric-info-btn', title: 'Learn more', body: 'Tap the Info button for an explanation of each metric and what it measures.' },
+        { sel: '#wellness-metrics tr[data-metric-id="hydration"] .metric-edit-btn', title: 'Edit a metric', body: 'Tap the Edit button to adjust a metric’s goal, units, and settings.' },
+        { sel: '#add-wellness-metric-btn', title: 'Add Your Own Metric', body: 'Don’t see what you need? Add your own custom metric to a group.' },
+        { sel: '#tracked-metrics-setup-to-dashboard-btn', title: 'You’re all set', body: 'All set? Head to your Dashboard to start logging.' }
+      ],
+      'dashboard-screen': [
+        { sel: '#cal-wellness', title: 'Your Activity Calendar', body: 'The calendar shows which days you logged data — a filled square means every metric was entered, a darker one means some, and an empty one means none. Tap on a date to enter or review that day’s data in your Data Entry Log.' },
+        { sel: '[data-nav="metrics-data-entry-log-screen"]', title: 'Log Today’s Metrics', body: 'Tap here to jump to your Data Entry Log and record today’s numbers.' },
+        { sel: '.dash-chart-controls .custom-select', title: 'Chart Any Metric', body: 'Pick any metric you’re tracking to chart it below.' },
+        { sel: '#body-chart-area', title: 'See Your Trends', includeOverflow: true, body: 'Your selected metric is graphed here so you can spot patterns and progress at a glance.' },
+        { sel: '#wellness-range-picker', title: 'Change the Time Range', pill: true, body: 'Zoom from the last 7 days out to a full year to see short- and long-term trends.' },
+        { sel: '#quick-views-grid .qv-card', title: 'Quick View', body: 'Every metric you track gets a mini card like this — showing its latest value and a sparkline.' },
+        { sel: '.codap-btn', title: 'Dig Deeper in CODAP', body: 'Send your data to CODAP to explore it with charts, graphs, and analyses of your own.' }
+      ],
+      'metrics-data-entry-log-screen': [
+        { sel: '.date-nav', title: 'Choose the Day', inset: 12, body: 'The square next to the date shows how much you logged that day — filled means every metric was entered, a darker shade means some, and empty means none. Use the arrows to log or review another date.' },
+        { sel: '.body-table .log-sched-toggle', title: 'Grouped by Schedule', body: 'Your metrics are grouped by how often you log them — daily metrics here, others in their own sections below. Tap a header to collapse or expand its group.' },
+        { sel: '#avg-hydration', title: 'Recent Average', tightRight: 3, body: 'The Avg column shows your recent average for each metric, so you can see today’s entry in context — with a sparkline above it for a quick view of the trend.' },
+        { sel: '.body-table .metric-name', title: 'Metric Details', tightRight: 8, body: 'Tapping a metric’s name takes you to its Info screen. There you can learn what it measures and why it matters.' },
+        { sel: '.body-table .color-scale', title: 'Record Your Value', body: 'Enter today’s value with the control that fits the metric — a color scale, a number field, or a simple Yes/No.' }
+      ]
+    };
+    var STICKY = 60;   // sticky .section-heading height to keep targets clear of
+    var overlay, spot, cardEl, arrowEl, titleEl, bodyEl, dotsEl, backBtn, nextBtn, xBtn, goatEl;
+    var curScreen, curSteps, curIdx, curSB, prevOverflow, prevPos, curWelcomeId, ro, _returnFocus;
+    var tourPaused = {};   // screenId -> step index remembered when ✕-closed mid-tour (for logo resume)
+    // Make the background behind the tour non-focusable / inert while it's open (keyboard + AT + click-through),
+    // leaving only the callout controls reachable. The overlay is a sibling of these, so it stays interactive.
+    function setBackgroundInert(screen, on) {
+      if (!screen) return;
+      ['.screen-header', '.screen-body'].forEach(function (sel) {
+        var el = screen.querySelector(sel);
+        if (el) { if (on) el.setAttribute('inert', ''); else el.removeAttribute('inert'); }
+      });
+    }
+
+    function build() {
+      overlay = document.createElement('div');
+      overlay.className = 'coach-tour';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', 'Guided tour');
+      overlay.innerHTML =
+        '<div class="coach-tour-spot"></div>' +
+        '<span class="coach-tour-goat">' + COACH_GOAT_SVG + '</span>' +
+        '<div class="coach-tour-card">' +
+          '<div class="ct-arrow"></div>' +
+          '<button class="ct-x" type="button" aria-label="Close tour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>' +
+          '<strong class="ct-title"></strong><p class="ct-body"></p>' +
+          '<div class="ct-foot"><div class="ct-dots"></div><div class="ct-actions">' +
+            '<button class="ct-back" type="button">Back</button>' +
+            '<button class="ct-next" type="button">Next</button>' +
+          '</div></div>' +
+        '</div>';
+      spot = overlay.querySelector('.coach-tour-spot');
+      cardEl = overlay.querySelector('.coach-tour-card');
+      arrowEl = overlay.querySelector('.ct-arrow');
+      titleEl = overlay.querySelector('.ct-title');
+      bodyEl = overlay.querySelector('.ct-body');
+      dotsEl = overlay.querySelector('.ct-dots');
+      backBtn = overlay.querySelector('.ct-back');
+      nextBtn = overlay.querySelector('.ct-next');
+      xBtn = overlay.querySelector('.ct-x');
+      goatEl = overlay.querySelector('.coach-tour-goat');
+      nextBtn.addEventListener('click', function () { if (curIdx < curSteps.length - 1) goto(curIdx + 1); else close(true); });
+      backBtn.addEventListener('click', function () { if (curIdx > 0) goto(curIdx - 1); else backToCard(); });  // step 1 Back → the coach card
+      xBtn.addEventListener('click', function () { close(false); });   // ✕ pauses (logo can resume)
+      overlay.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { close(false); return; }
+        if (e.key !== 'Tab') return;
+        // Focus trap: keep Tab / Shift+Tab cycling within the callout's controls (✕ / Back / Next).
+        var f = [xBtn, backBtn, nextBtn].filter(function (btn) { return btn && !btn.disabled && btn.offsetParent !== null; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1], active = document.activeElement;
+        if (e.shiftKey && (active === first || !overlay.contains(active))) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && (active === last || !overlay.contains(active))) { e.preventDefault(); first.focus(); }
+      });
+      // Reposition the spotlight/card when the device size changes (device-switcher) or the window resizes.
+      if (window.ResizeObserver) ro = new ResizeObserver(reposition);
+      window.addEventListener('resize', reposition);
+    }
+
+    // How far to scroll so the target sits ~32% down the visible area (callout fits below it). Clamped to
+    // the scrollable range and RETURNED (not applied), so the caller can animate the scroll.
+    function scrollDeltaFor(target) {
+      if (!curSB || !target) return 0;
+      var tr = target.getBoundingClientRect(), sr = curSB.getBoundingClientRect();
+      var visTop = sr.top + STICKY, visBottom = sr.bottom;
+      var center = tr.top + tr.height / 2;
+      var want = visTop + (visBottom - visTop) * 0.32;
+      var maxScroll = curSB.scrollHeight - curSB.clientHeight;
+      var newTop = Math.max(0, Math.min(maxScroll, curSB.scrollTop + (center - want)));
+      return newTop - curSB.scrollTop;
+    }
+    // Smoothly ease the container's scroll by `delta` px (easeInOutQuad) so moving between steps glides
+    // instead of jumping. Uses rAF timestamps only (no Date.now) so it stays resume-safe.
+    var _scrollRAF = null;
+    function smoothScrollBy(delta, dur) {
+      if (_scrollRAF) { cancelAnimationFrame(_scrollRAF); _scrollRAF = null; }
+      if (!curSB || Math.abs(delta) < 1) return;
+      var start = curSB.scrollTop, t0 = null;
+      function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+      function step(ts) {
+        if (t0 == null) t0 = ts;
+        var t = Math.min(1, (ts - t0) / dur);
+        curSB.scrollTop = start + delta * ease(t);
+        if (t < 1) _scrollRAF = requestAnimationFrame(step); else _scrollRAF = null;
+      }
+      _scrollRAF = requestAnimationFrame(step);
+    }
+
+    function setContent() {
+      var step = curSteps[curIdx];
+      titleEl.textContent = step.title; bodyEl.textContent = step.body;
+      dotsEl.innerHTML = curSteps.map(function (_, i) { return '<i class="' + (i === curIdx ? 'on' : '') + '"></i>'; }).join('');
+      nextBtn.textContent = curIdx < curSteps.length - 1 ? 'Next' : 'Done';   // Back is always shown (step 1 → card)
+    }
+    // Position the spotlight + card against the target's CURRENT geometry (no scroll) — also used on resize.
+    // instant=true skips the 0.28s transition so the outline tracks a device-width change with no lag
+    // (matching the card, whose width just follows the container). Animated only on step-to-step moves.
+    function position(instant, scrollDelta) {
+      spot.style.transition = instant ? 'none' : '';
+      cardEl.style.transition = instant ? 'none' : '';
+      goatEl.style.transition = instant ? 'none' : '';
+      var step = curSteps[curIdx];
+      var target = curScreen.querySelector(step.sel);
+      var sr = curScreen.getBoundingClientRect();
+      var cardW = sr.width - 24;  // full width (left:12 / right:12 via CSS)
+      var cardH = cardEl.offsetHeight || 150;
+      if (target) {
+        var tr = target.getBoundingClientRect(), pad = 6;
+        // Offset by the pending scroll so the outline is placed where the target WILL be once the smooth
+        // scroll finishes; it then glides there in lock-step with the content (no jump).
+        var top = tr.top - sr.top - pad - (scrollDelta || 0), left = tr.left - sr.left - pad, h = tr.height + pad * 2;
+        var w = tr.width + pad * 2 - (step.tightRight || 0);   // pull in the right edge for over-wide cells
+        // Extend the bottom to the deepest descendant, for targets whose content overflows their box
+        // (e.g. the chart's x-axis date labels sit just below the chart-wrapper).
+        if (step.includeOverflow) {
+          var maxB = tr.bottom, kids = target.querySelectorAll('*');
+          for (var oi = 0; oi < kids.length; oi++) { var kb = kids[oi].getBoundingClientRect().bottom; if (kb > maxB) maxB = kb; }
+          h = (maxB - tr.top) + pad * 2;
+        }
+        // Optionally extend the right edge to the midpoint between the target's TEXT and another element
+        // (the cell box can be far wider than its text, so base the halfway on the rendered content).
+        if (step.rightHalfTo) {
+          var ref = curScreen.querySelector(step.rightHalfTo);
+          if (ref) {
+            var contentRight = tr.right;
+            try { var rg = document.createRange(); rg.selectNodeContents(target); var rcts = rg.getClientRects(), mx = 0;
+              for (var ri = 0; ri < rcts.length; ri++) mx = Math.max(mx, rcts[ri].right); if (mx) contentRight = mx; } catch (e) {}
+            contentRight -= sr.left;
+            var refLeft = ref.getBoundingClientRect().left - sr.left;
+            w = (contentRight + (refLeft - contentRight) / 2) - left;   // right edge = halfway text→info
+          }
+        }
+        // For full-bleed targets (edge-to-edge), inset the outline from the screen edges so its left/right
+        // edges stay visible on-screen instead of overhanging.
+        if (step.inset != null) { left = step.inset; w = sr.width - 2 * step.inset; }
+        spot.style.display = 'block';
+        spot.style.top = top + 'px'; spot.style.left = left + 'px'; spot.style.width = w + 'px'; spot.style.height = h + 'px';
+        spot.style.borderRadius = step.pill ? (h / 2) + 'px' : '';   // match pill-shaped controls (else default radius)
+        var gap = 14, below = top + h + gap;
+        var useBelow = (below + cardH < sr.height - 12);
+        cardEl.style.top = (useBelow ? below : Math.max(STICKY + 10, top - cardH - gap)) + 'px';
+        cardEl.className = 'coach-tour-card ' + (useBelow ? 'arrow-top' : 'arrow-bottom');
+        arrowEl.style.left = Math.min(Math.max(12, (left + w / 2) - 12 - 7), cardW - 26) + 'px';  // arrow points at target
+        // Goat perches on top of the spotlight, centered.
+        var gw = 42, gh = 38;
+        goatEl.style.display = 'block';
+        goatEl.style.left = (left + w / 2 - gw / 2) + 'px';
+        goatEl.style.top = (top - gh + 3) + 'px';
+      } else {
+        spot.style.display = 'none';
+        goatEl.style.display = 'none';
+        cardEl.className = 'coach-tour-card arrow-none';
+        cardEl.style.top = (sr.height / 2 - cardH / 2) + 'px';
+      }
+    }
+    function hopGoat() { if (goatEl) { goatEl.classList.remove('hop'); void goatEl.offsetWidth; goatEl.classList.add('hop'); } }
+    // animate=true → step-to-step move (glide + goat hop); false → initial placement (instant, no hop).
+    function render(animate) {
+      setContent();
+      var target = curScreen.querySelector(curSteps[curIdx].sel);
+      var delta = scrollDeltaFor(target);
+      if (animate) {
+        position(false, delta);       // glide the outline/card/goat to their post-scroll spots…
+        smoothScrollBy(delta, 420);   // …while the content eases to match (same 0.42s) — scrolls, not jumps
+        hopGoat();
+      } else {
+        // Initial placement / resume — instant, and NO hop. Clear any leftover .hop so re-appending the
+        // overlay on resume doesn't replay the previous step's jump.
+        if (goatEl) goatEl.classList.remove('hop');
+        if (curSB) curSB.scrollTop += delta;
+        position(true, 0);
+      }
+    }
+    function goto(idx) {
+      if (goatEl) goatEl.classList.toggle('face-left', idx < curIdx);   // face the direction of travel
+      curIdx = idx; render(true);
+    }
+    var _repoQueued = false;
+    function reposition() {   // throttled reposition for device/viewport resizes — instant (no lag)
+      if (_repoQueued) return;
+      _repoQueued = true;
+      requestAnimationFrame(function () { _repoQueued = false; if (overlay && overlay.classList.contains('on')) position(true); });
+    }
+
+    // Collapse the onboarding card from the bottom up (softer than an instant remove). Runs alongside the
+    // tour's fade-up so the two cross-dissolve. Reduced-motion → instant hide.
+    function collapseCard(wc, onDone) {
+      var fire = function () { if (onDone) { var f = onDone; onDone = null; f(); } };
+      if (!wc) { fire(); return; }
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) { wc.classList.remove('show', 'pop', 'coach-closing'); fire(); return; }
+      var hgt = wc.offsetHeight;
+      wc.classList.remove('pop');
+      wc.style.maxHeight = hgt + 'px';
+      void wc.offsetWidth;                       // lock the start height before transitioning
+      wc.classList.add('coach-collapsing');
+      wc.style.maxHeight = '0px';                // triggers the max-height (bottom-up) collapse
+      var done = function (e) {
+        if (e && e.propertyName !== 'max-height') return;
+        wc.classList.remove('show', 'coach-collapsing');
+        wc.style.maxHeight = '';
+        wc.removeEventListener('transitionend', done);
+        fire();                                  // layout is settled — now launch the tour
+      };
+      wc.addEventListener('transitionend', done);
+      setTimeout(done, 480);                     // fallback if transitionend doesn't fire
+    }
+
+    function start(screen, steps, resumeIdx, fadeUp) {
+      if (!overlay) build();
+      curScreen = screen;
+      curSB = screen.querySelector('.screen-body');
+      curSteps = steps.filter(function (s) { return screen.querySelector(s.sel); });
+      if (!curSteps.length) return;
+      curIdx = Math.min(Math.max(0, resumeIdx || 0), curSteps.length - 1);
+      var _wc = screen.querySelector('.profile-welcome'); curWelcomeId = _wc ? _wc.id : null;
+      prevPos = screen.style.position;
+      screen.style.position = 'relative';  // bound the absolute overlay to the screen
+      screen.appendChild(overlay);
+      if (curSB) { prevOverflow = curSB.style.overflow; curSB.style.overflow = 'hidden'; }  // lock scroll; tour drives it
+      overlay.classList.add('on');
+      // Fade the first coach mark up into view (only when launched via "More", not on resume).
+      overlay.classList.remove('intro');
+      if (fadeUp) {
+        void overlay.offsetWidth; overlay.classList.add('intro');
+        var clrIntro = function () { overlay.classList.remove('intro'); overlay.removeEventListener('animationend', clrIntro); };
+        overlay.addEventListener('animationend', clrIntro);
+      }
+      render(false);   // initial placement — no hop (layout already settled: the card finished collapsing)
+      if (ro) ro.observe(screen);   // reposition on device/viewport resize
+      _returnFocus = screen.querySelector('.brand-logo-btn');   // where focus goes when the tour closes
+      setBackgroundInert(screen, true);
+      nextBtn.focus();
+      if (window._syncCoachLogo) window._syncCoachLogo(screen);
+    }
+    // completed=true → tour finished; false → ✕. Finishing OR ✕-ing the LAST step counts as done (no resume),
+    // so the next logo press shows the coach card at the top rather than sticking at the bottom.
+    function close(completed) {
+      if (_scrollRAF) { cancelAnimationFrame(_scrollRAF); _scrollRAF = null; }
+      if (overlay) overlay.classList.remove('on');
+      if (ro) ro.disconnect();
+      if (curSB) curSB.style.overflow = prevOverflow || '';
+      if (curScreen) {
+        curScreen.style.position = prevPos || '';
+        setBackgroundInert(curScreen, false);
+        var done = completed || (curIdx >= curSteps.length - 1);
+        if (done) delete tourPaused[curScreen.id]; else tourPaused[curScreen.id] = curIdx;
+        if (window._syncCoachLogo) window._syncCoachLogo(curScreen);
+      }
+      if (_returnFocus && _returnFocus.focus) _returnFocus.focus();   // focus back to the logo trigger
+    }
+    // Back from step 1 → close the tour and re-show the coach card (scrolled to the top).
+    function backToCard() {
+      if (_scrollRAF) { cancelAnimationFrame(_scrollRAF); _scrollRAF = null; }
+      if (overlay) overlay.classList.remove('on');
+      if (ro) ro.disconnect();
+      if (curSB) curSB.style.overflow = prevOverflow || '';
+      var scr = curScreen;
+      if (!scr) return;
+      scr.style.position = prevPos || '';
+      setBackgroundInert(scr, false);
+      delete tourPaused[scr.id];
+      var wc = curWelcomeId && document.getElementById(curWelcomeId);
+      if (wc) {
+        var sb = scr.querySelector('.screen-body'); if (sb) sb.scrollTop = 0;
+        if (wc.id && window._coachDismissed) delete window._coachDismissed[wc.id];
+        wc.classList.add('show'); void wc.offsetWidth; wc.classList.add('pop');
+        // Move focus into the reshown card (its "More" / ✕ control) rather than losing it to <body>.
+        var focusTarget = wc.querySelector('[data-coach-more]') || wc.querySelector('[data-coach-close]');
+        if (focusTarget) focusTarget.focus();
+      }
+      if (window._syncCoachLogo) window._syncCoachLogo(scr);
+    }
+
+    // Called by a coach card's "More" button (passes the welcome-card id) — starts the tour from step 1.
+    window._coachTour = function (welcomeId) {
+      var wc = document.getElementById(welcomeId);
+      var screen = wc ? wc.closest('.screen') : null;
+      if (!screen) return;
+      var steps = TOUR_STEPS[screen.id];
+      if (!steps || !steps.length) return;
+      // Collapse the onboarding card first; once it's gone (layout settled) fade the first coach mark up
+      // directly in its correct spot — so it never appears high and slides into place.
+      collapseCard(wc, function () { start(screen, steps, 0, true); });
+    };
+    // Called by the DataGOAT logo — resume a paused tour at the last step shown. Returns true if it did.
+    window._coachResumeTour = function (screen) {
+      if (!screen) return false;
+      var idx = tourPaused[screen.id];
+      if (idx == null) return false;
+      var steps = TOUR_STEPS[screen.id];
+      if (!steps || !steps.length) return false;
+      start(screen, steps, idx);
+      return true;
+    };
+  })();
 
   var allScreens = document.querySelectorAll('.screen');
 
@@ -6125,6 +6803,44 @@
     return null;
   }
 
+  // Coach-mark controls (delegated, registered once): ✕ dismisses the card and remembers it for the
+  // session; "More" will switch that screen into the anchored+spotlight tour (hook — tour built next).
+  window._coachDismissed = window._coachDismissed || {};
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest) return;
+    var closeBtn = e.target.closest('[data-coach-close]');
+    if (closeBtn) {
+      var card = closeBtn.closest('.profile-welcome');
+      if (card && !card.classList.contains('coach-closing')) {
+        var scr = card.closest('.screen');
+        if (card.id) window._coachDismissed[card.id] = true;
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // Cards with the animatable goat get the headbutt close; others close immediately.
+        if (card.querySelector('.goat-svg') && !reduce) {
+          card.classList.remove('pop');  // drop the entrance state so goatEnter stops overriding the headbutt
+          // Eat card: pin the first word's current width so it can collapse to 0 (rest of title reflows left).
+          var eatWord = card.classList.contains('coach-eat') ? card.querySelector('.coach-eat-word') : null;
+          if (eatWord) eatWord.style.width = eatWord.getBoundingClientRect().width + 'px';
+          card.classList.add('coach-closing');
+          // The fly close (Log) runs longer: headbutt → ~0.5s beat → title headbutts back → goat flies off.
+          var closeMs = card.classList.contains('coach-fly') ? 1560 : 1050;
+          setTimeout(function () { card.classList.remove('show', 'coach-closing'); if (eatWord) eatWord.style.width = ''; window._syncCoachLogo(scr); }, closeMs);
+        } else {
+          card.classList.remove('show', 'pop'); window._syncCoachLogo(scr);
+        }
+        // The ✕ is being removed with the card — send focus to the logo so it isn't lost to <body>.
+        var logoBtn = scr && scr.querySelector('.brand-logo-btn');
+        if (logoBtn && logoBtn.focus) logoBtn.focus();
+      }
+      return;
+    }
+    var moreBtn = e.target.closest('[data-coach-more]');
+    if (moreBtn) {
+      var mcard = moreBtn.closest('.profile-welcome');
+      if (window._coachTour) window._coachTour(mcard && mcard.id);  // anchored tour (next step)
+    }
+  });
+
   function showScreen(screenId) {
     // Mark onboarding complete once a new user reaches the Dashboard
     if (window.isNewUser && screenId === 'dashboard-screen') {
@@ -6140,15 +6856,17 @@
     };
     Object.keys(welcomeIds).forEach(function (sid) {
       var el = document.getElementById(welcomeIds[sid]);
-      if (el) el.classList.remove('show');
+      if (el) el.classList.remove('show', 'pop');
     });
     if (window.isNewUser) {
       var wId = welcomeIds[screenId];
-      if (wId) {
+      // Skip a coach mark the user has dismissed (✕) this session.
+      if (wId && !(window._coachDismissed && window._coachDismissed[wId])) {
         var wEl = document.getElementById(wId);
-        if (wEl) wEl.classList.add('show');
+        if (wEl) { wEl.classList.add('show'); void wEl.offsetWidth; wEl.classList.add('pop'); }
       }
     }
+    if (window._syncCoachLogo) window._syncCoachLogo(document.getElementById(screenId));
     // Lock/unlock the hamburger menu + dashboard home buttons on onboarding screens
     var onboardingScreens = ['profile-screen', 'tracked-metrics-setup-screen', 'gender-info-screen', 'athlete-type-info-screen', 'comp-term-info-screen'];
     var navUnlockedScreens = ['tracked-metrics-setup-screen'];
@@ -6409,19 +7127,7 @@
     dashScheduleNext();
   }
 
-  // Click goat logo on dashboard to skip to next slide
-  var dashboardHeader = document.getElementById('dashboard-header');
-  if (dashboardHeader) {
-    var dashLogo = dashboardHeader.querySelector('.brand-logo-img');
-    if (dashLogo) {
-      dashLogo.style.cursor = 'pointer';
-      dashLogo.addEventListener('click', function () {
-        if (document.getElementById('dashboard-screen').classList.contains('active')) {
-          dashAdvance();
-        }
-      });
-    }
-  }
+  // (The dashboard logo is now the coach-mark toggle — the header slides still auto-cycle on their timer.)
 
   function showHome() {
     // Hide all screens
