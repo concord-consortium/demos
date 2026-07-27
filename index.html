@@ -2110,8 +2110,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.14</div>
-      <div style="font-weight: 400;">Updated: 7/22/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.15</div>
+      <div style="font-weight: 400;">Updated: 7/26/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -2404,6 +2404,10 @@ function invalidateSimCache() {
   _simTitleBar = null;
   _simContent = null;
   _currentSim = null;
+  var tcb = document.getElementById("temp-combo-bar");
+  var tcn = document.getElementById("temp-combo-note");
+  if (tcb) tcb.style.display = "none";
+  if (tcn) tcn.style.display = "none";
   if (SIM._stopNorCloud) SIM._stopNorCloud();
   if (SIM._stopSnow) SIM._stopSnow();
   if (SIM._stopSun) SIM._stopSun();
@@ -2470,6 +2474,11 @@ const crossIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://
 const doubleArrowIconSVG = '<svg aria-hidden="true" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path fill="#FFFFFF" fill-rule="evenodd" d="M16.2,8.25 C16.3346077,8.25 16.4536688,8.30176503 16.5572144,8.40531062 L17.3337675,9.18186373 C17.4373131,9.28540932 17.4890782,9.40447044 17.4890782,9.53907816 C17.4890782,9.67368587 17.4373131,9.79274699 17.3337675,9.89629259 L11.2300601,16 L17.3337675,22.1037074 C17.4373131,22.207253 17.4890782,22.3263141 17.4890782,22.4609218 C17.4890782,22.5955296 17.4373131,22.7145907 17.3337675,22.8181363 L16.5572144,23.5946894 C16.4536688,23.698235 16.3346077,23.75 16.2,23.75 C16.0653923,23.75 15.9463312,23.698235 15.8427856,23.5946894 L8.60531062,16.3572144 C8.50176503,16.2536688 8.45,16.1346077 8.45,16 C8.45,15.8653923 8.50176503,15.7463312 8.60531062,15.6427856 L15.8427856,8.40531062 C15.9463312,8.30176503 16.0653923,8.25 16.2,8.25 Z M22.2,8.25 C22.3346077,8.25 22.4536688,8.30176503 22.5572144,8.40531062 L23.3337675,9.18186373 C23.4373131,9.28540932 23.4890782,9.40447044 23.4890782,9.53907816 C23.4890782,9.67368587 23.4373131,9.79274699 23.3337675,9.89629259 L17.2300601,16 L23.3337675,22.1037074 C23.4373131,22.207253 23.4890782,22.3263141 23.4890782,22.4609218 C23.4890782,22.5955296 23.4373131,22.7145907 23.3337675,22.8181363 L22.5572144,23.5946894 C22.4536688,23.698235 22.3346077,23.75 22.2,23.75 C22.0653923,23.75 21.9463312,23.698235 21.8427856,23.5946894 L14.6053106,16.3572144 C14.501765,16.2536688 14.45,16.1346077 14.45,16 C14.45,15.8653923 14.501765,15.7463312 14.6053106,15.6427856 L21.8427856,8.40531062 C21.9463312,8.30176503 22.0653923,8.25 22.2,8.25 Z"/></svg>';
 
 
+function setAriaDisabled(el, disabled) {
+  if (disabled) el.setAttribute("aria-disabled", "true");
+  else el.removeAttribute("aria-disabled");
+}
+
 function createSVGIcon(svgString) {
   const temp = document.createElement("div");
   temp.innerHTML = svgString;
@@ -2526,6 +2535,7 @@ function buildSimTitleBar() {
     const modal = document.createElement("div");
     modal.className = "info-modal";
     modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
     modal.setAttribute("tabindex", "-1");
     // Header
     const header = document.createElement("div");
@@ -2649,9 +2659,20 @@ function buildSimTitleBar() {
       modal.style.transform = "translate(" + modalX + "px, " + modalY + "px)";
     });
 
-    // Escape to close
+    // Escape to close + focus trap
     function onModalKeydown(e) {
-      if (e.key === "Escape") closeModal();
+      if (e.key === "Escape") { closeModal(); return; }
+      if (e.key === "Tab") {
+        var focusable = modal.querySelectorAll('button, [tabindex="0"]');
+        if (focusable.length === 0) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
     }
     document.addEventListener("keydown", onModalKeydown);
 
@@ -2685,6 +2706,7 @@ function buildSimContent() {
     const liveAnnounce = document.createElement("div");
     liveAnnounce.className = "sr-only";
     liveAnnounce.setAttribute("aria-live", "polite");
+    liveAnnounce.setAttribute("aria-atomic", "true");
     wrap.appendChild(liveAnnounce);
     SIM._suppressAnnounce = false;
     SIM.announce = function(msg) {
@@ -2815,7 +2837,7 @@ function buildSimContent() {
       if (p.name === "Trials") {
         panel.setAttribute("role", "region");
       } else {
-        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("role", "region");
         panel.id = p.name === "Simulation" ? simPanelId : dataPanelId;
       }
       panel.setAttribute("aria-label", p.name + " panel");
@@ -2825,7 +2847,7 @@ function buildSimContent() {
         panel.classList.add("has-scroll");
         const scrollWrap = document.createElement("div");
         scrollWrap.className = "trials-scroll";
-        scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("role", "listbox");
         scrollWrap.setAttribute("aria-orientation", "vertical");
         scrollWrap.setAttribute("aria-label", "Trials");
         function updateTrialsTabindex() {
@@ -2916,12 +2938,13 @@ function buildSimContent() {
             const h = allPlants.length - inf;
             ariaParts.push(allPlants.length + " offspring, " + h + " healthy, " + inf + " infected");
           }
+          if (st.fungusAfterCross !== null) ariaParts.push("Fungus active");
           cardEl.setAttribute("aria-label", ariaParts.join(". "));
 
           const resetBtn = cardEl.querySelector(".trial-card-reset");
           if (resetBtn) {
             const canReset = !!(st.p1 || st.p2 || st.locked);
-            resetBtn.setAttribute("aria-disabled", canReset ? "false" : "true");
+            setAriaDisabled(resetBtn, !canReset);
             const isSelected = cardEl.classList.contains("selected");
             resetBtn.setAttribute("tabindex", isSelected ? "0" : "-1");
           }
@@ -2932,10 +2955,9 @@ function buildSimContent() {
           trialState[letter] = { p1: null, p2: null, locked: false, crosses: [], fungusAfterCross: null };
           const card = document.createElement("div");
           card.className = "trial-card";
-          card.setAttribute("role", "tab");
+          card.setAttribute("role", "option");
           card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Trial " + letter);
-          card.setAttribute("aria-controls", simPanelId + " " + dataPanelId);
           card.style.cursor = "pointer";
           SIM.trialCards[letter] = card;
           function selectTrial() {
@@ -2954,11 +2976,12 @@ function buildSimContent() {
           const lbl = document.createElement("span");
           lbl.className = "trial-card-label";
           lbl.textContent = letter;
+          lbl.setAttribute("aria-hidden", "true");
           card.appendChild(lbl);
           const resetBtn = document.createElement("button");
           resetBtn.className = "trial-card-reset";
           resetBtn.setAttribute("aria-label", "Reset trial " + letter);
-          resetBtn.setAttribute("aria-disabled", "true");
+          setAriaDisabled(resetBtn, true);
           resetBtn.setAttribute("tabindex", "-1");
           const resetIcon = createSVGIcon(resetIconSVG);
           resetBtn.appendChild(resetIcon);
@@ -2967,7 +2990,7 @@ function buildSimContent() {
             if (resetBtn.getAttribute("aria-disabled") === "true") return;
             trialState[letter] = { p1: null, p2: null, locked: false, crosses: [], fungusAfterCross: null };
             updateTrialCardLabel(letter);
-            resetBtn.setAttribute("aria-disabled", "true");
+            setAriaDisabled(resetBtn, true);
             if (SIM.syncDropdownsToTrial) SIM.syncDropdownsToTrial(letter);
             if (SIM.renderOffspring) SIM.renderOffspring(letter);
             if (SIM.updateSimButtons) SIM.updateSimButtons();
@@ -3079,6 +3102,7 @@ function buildSimContent() {
             activeTrialCount++;
             const realCard = buildTrialCard(letter);
             scrollWrap.insertBefore(realCard, card);
+            updateTrialPositions();
             selectTrialByCard(realCard, letter);
             realCard.focus({ preventScroll: true });
             scrollItemIntoView(realCard, scrollWrap);
@@ -3117,6 +3141,14 @@ function buildSimContent() {
         if (rbA) rbA.setAttribute("tabindex", "0");
         scrollWrap.appendChild(cardA);
         scrollWrap.appendChild(buildNewCard());
+        function updateTrialPositions() {
+          var cards = scrollWrap.querySelectorAll('[role="option"]');
+          cards.forEach(function(c, i) {
+            c.setAttribute("aria-posinset", String(i + 1));
+            c.setAttribute("aria-setsize", String(cards.length));
+          });
+        }
+        updateTrialPositions();
 
         panel.appendChild(scrollWrap);
         const focusRing = document.createElement("div");
@@ -3709,7 +3741,7 @@ function buildSimContent() {
             row.setAttribute("role", "button");
             const crossInf = crossPlants.filter(p => p.infected).length;
             const crossH = crossPlants.length - crossInf;
-            row.setAttribute("aria-label", "Cross " + (gi + 1) + ", " + crossPlants.length + " offspring, " + crossH + " healthy, " + crossInf + " infected");
+            row.setAttribute("aria-label", "Cross " + trial + (gi + 1) + ", " + crossPlants.length + " offspring, " + crossH + " healthy, " + crossInf + " infected");
             // Roving tabindex: only selected row (or first row) gets tabindex="0"
             const isSelected = SIM.selectedCross[trial] === gi;
             if (isSelected) row.classList.add("selected");
@@ -3737,9 +3769,9 @@ function buildSimContent() {
                   const h = cp.length - inf;
                   const hP = Math.round((h / cp.length) * 100);
                   const iP = 100 - hP;
-                  SIM.announce("Cross " + (sel + 1) + ": " + hP + "% healthy, " + iP + "% infected");
+                  SIM.announce("Cross " + trial + (sel + 1) + ": " + hP + "% healthy, " + iP + "% infected");
                 } else {
-                  SIM.announce("All crosses selected");
+                  SIM.announce("No crosses selected. Charts reflect all crosses.");
                 }
               }
             });
@@ -3893,7 +3925,7 @@ function buildSimContent() {
         }
         hitArea.addEventListener("click", toggleFungus);
         fungusSwitch.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleFungus(); }
+          if ((e.key === "Enter" || e.key === " ") && !e.repeat) { e.preventDefault(); toggleFungus(); }
         });
         buttons.appendChild(fungusSwitch);
 
@@ -3914,7 +3946,7 @@ function buildSimContent() {
             btn.textContent = label;
           }
           if (label === "Cross Plants") {
-            btn.setAttribute("aria-disabled", "true");
+            setAriaDisabled(btn, true);
             SIM.crossBtn = btn;
             btn.addEventListener("click", () => {
               if (btn.getAttribute("aria-disabled") === "true") return;
@@ -3956,7 +3988,7 @@ function buildSimContent() {
             });
           }
           if (label === "Reset Trial") {
-            btn.setAttribute("aria-disabled", "true");
+            setAriaDisabled(btn, true);
             SIM.resetBtn = btn;
             btn.addEventListener("click", () => {
               if (btn.getAttribute("aria-disabled") === "true") return;
@@ -3982,7 +4014,7 @@ function buildSimContent() {
           const st = SIM.trialState[trial];
           if (!st) return;
           // Cross Plants: enabled only when both parents selected
-          if (SIM.crossBtn) SIM.crossBtn.setAttribute("aria-disabled", (!(st.p1 && st.p2) || st.crosses.length >= MAX_CROSSES) ? "true" : "false");
+          if (SIM.crossBtn) setAriaDisabled(SIM.crossBtn, !(st.p1 && st.p2) || st.crosses.length >= MAX_CROSSES);
           // Fungus switch: sync visual state and disabled
           if (SIM.fungusBtn) {
             const isOn = st.fungusAfterCross !== null;
@@ -3995,14 +4027,14 @@ function buildSimContent() {
             if (onLbl) onLbl.style.fontWeight = isOn ? "700" : "400";
             if (st.crosses.length > 0 || !(st.p1 && st.p2)) {
               SIM.fungusBtn.classList.add("disabled");
-              SIM.fungusBtn.setAttribute("aria-disabled", "true");
+              setAriaDisabled(SIM.fungusBtn, true);
             } else {
               SIM.fungusBtn.classList.remove("disabled");
-              SIM.fungusBtn.setAttribute("aria-disabled", "false");
+              setAriaDisabled(SIM.fungusBtn, false);
             }
           }
           // Reset Trial: enabled when at least one parent selected
-          if (SIM.resetBtn) SIM.resetBtn.setAttribute("aria-disabled", (!(st.p1 || st.p2 || st.crosses.length > 0)) ? "true" : "false");
+          if (SIM.resetBtn) setAriaDisabled(SIM.resetBtn, !(st.p1 || st.p2 || st.crosses.length > 0));
           // Update stats label and data panel
           updateStatsLabel();
           if (SIM.updateDataPanel) SIM.updateDataPanel();
@@ -4177,15 +4209,18 @@ function buildSimContent() {
           if (hasSelection) {
             plants = st.crosses[selCross];
             piePill.innerHTML = SIM.selectedTrial + (selCross + 1) + "&nbsp;<span style='font-weight:400'>(" + plants.length + " offspring)</span>";
+            piePill.setAttribute("aria-label", "Scroll to cross " + SIM.selectedTrial + (selCross + 1));
             piePill.appendChild(pillClose);
             piePill.classList.add("active");
           } else if (st.crosses.length > 0) {
             plants = st.crosses.flat();
             piePill.textContent = "All Crosses";
+            piePill.removeAttribute("aria-label");
             piePill.appendChild(pillClose);
             piePill.classList.remove("active");
           } else {
             piePill.textContent = "All Crosses";
+            piePill.removeAttribute("aria-label");
             piePill.appendChild(pillClose);
             piePill.classList.remove("active");
           }
@@ -4389,7 +4424,7 @@ function buildSimContent() {
           } else {
             const hPctLabel = Math.round((healthy / total) * 100);
             const iPctLabel = 100 - hPctLabel;
-            const crossLabel = (selCross !== null && selCross !== undefined) ? "cross " + (selCross + 1) : "all crosses";
+            const crossLabel = (selCross !== null && selCross !== undefined) ? "cross " + SIM.selectedTrial + (selCross + 1) : "all crosses";
             pieCanvas.setAttribute("aria-label", "Pie chart showing offspring phenotypes for " + crossLabel + ": " + hPctLabel + "% healthy, " + iPctLabel + "% infected");
             const lastHealthy = Math.round(healthyPcts[healthyPcts.length - 1]);
             const lastInfected = 100 - lastHealthy;
@@ -4476,7 +4511,7 @@ function buildSimContent() {
     });
 
     // Ctrl+Arrow: navigate between panels
-    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"], .sim-panel[role="tabpanel"]');
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
     if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
     SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
@@ -4510,6 +4545,7 @@ function buildSimContent() {
     const liveAnnounce = document.createElement("div");
     liveAnnounce.className = "sr-only";
     liveAnnounce.setAttribute("aria-live", "polite");
+    liveAnnounce.setAttribute("aria-atomic", "true");
     wrap.appendChild(liveAnnounce);
     SIM._suppressAnnounce = false;
     SIM.announce = function(msg) {
@@ -4565,7 +4601,7 @@ function buildSimContent() {
       if (p.name === "Trials") {
         panel.setAttribute("role", "region");
       } else {
-        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("role", "region");
         panel.id = p.name === "Simulation" ? simPanelId : dataPanelId;
       }
       panel.setAttribute("aria-label", p.name + " panel");
@@ -4575,7 +4611,7 @@ function buildSimContent() {
         panel.classList.add("has-scroll");
         const scrollWrap = document.createElement("div");
         scrollWrap.className = "trials-scroll nor-trials";
-        scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("role", "listbox");
         scrollWrap.setAttribute("aria-orientation", "vertical");
         scrollWrap.setAttribute("aria-label", "Trials");
         function updateTrialsTabindex() {
@@ -4671,9 +4707,9 @@ function buildSimContent() {
             } else if (st.outcome === "weak") {
               bannerText = "Weak<br>coastal storm";
               bannerAria = "Weak coastal storm";
-            } else if (st.outcome === "dry") {
-              bannerText = "Dry front<br>passes";
-              bannerAria = "Dry front passes";
+            } else if (st.outcome === "windy") {
+              bannerText = "Windy,<br>no storm";
+              bannerAria = "Windy, no storm";
             } else if (st.outcome === "humid") {
               bannerText = "Humid,<br>no storm";
               bannerAria = "Humid, no storm";
@@ -4714,7 +4750,7 @@ function buildSimContent() {
           cardEl.setAttribute("aria-label", ariaLabel);
           const resetBtn = cardEl.querySelector(".trial-card-reset");
           if (resetBtn) {
-            resetBtn.setAttribute("aria-disabled", canReset ? "false" : "true");
+            setAriaDisabled(resetBtn, !canReset);
             const isSelected = cardEl.classList.contains("selected");
             resetBtn.setAttribute("tabindex", isSelected ? "0" : "-1");
           }
@@ -4725,10 +4761,9 @@ function buildSimContent() {
           trialState[letter] = SIM._defaultNorTrialState ? SIM._defaultNorTrialState() : {};
           const card = document.createElement("div");
           card.className = "trial-card";
-          card.setAttribute("role", "tab");
+          card.setAttribute("role", "option");
           card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Trial " + letter);
-          card.setAttribute("aria-controls", simPanelId + " " + dataPanelId);
           card.style.cursor = "pointer";
           SIM.trialCards[letter] = card;
           function selectTrial() {
@@ -4747,11 +4782,12 @@ function buildSimContent() {
           const lbl = document.createElement("span");
           lbl.className = "trial-card-label";
           lbl.textContent = letter;
+          lbl.setAttribute("aria-hidden", "true");
           card.appendChild(lbl);
           const resetBtn = document.createElement("button");
           resetBtn.className = "trial-card-reset";
           resetBtn.setAttribute("aria-label", "Reset trial " + letter);
-          resetBtn.setAttribute("aria-disabled", "true");
+          setAriaDisabled(resetBtn, true);
           resetBtn.setAttribute("tabindex", "-1");
           const resetIcon = createSVGIcon(resetIconSVG);
           resetBtn.appendChild(resetIcon);
@@ -4855,6 +4891,7 @@ function buildSimContent() {
             activeTrialCount++;
             const realCard = buildTrialCard(letter);
             scrollWrap.insertBefore(realCard, card);
+            updateTrialPositions();
             selectTrialByCard(realCard, letter);
             realCard.focus({ preventScroll: true });
             scrollItemIntoView(realCard, scrollWrap);
@@ -4892,6 +4929,14 @@ function buildSimContent() {
         if (rbA) rbA.setAttribute("tabindex", "0");
         scrollWrap.appendChild(cardA);
         scrollWrap.appendChild(buildNewCard());
+        function updateTrialPositions() {
+          var cards = scrollWrap.querySelectorAll('[role="option"]');
+          cards.forEach(function(c, i) {
+            c.setAttribute("aria-posinset", String(i + 1));
+            c.setAttribute("aria-setsize", String(cards.length));
+          });
+        }
+        updateTrialPositions();
 
         panel.appendChild(scrollWrap);
         const focusRing = document.createElement("div");
@@ -5186,10 +5231,10 @@ function buildSimContent() {
           const anySelected = norDropdowns.some(dd => dd._hasSelection);
           const allSelected = norDropdowns.every(dd => dd._hasSelection);
           if (SIM.resetTrialBtn) {
-            SIM.resetTrialBtn.setAttribute("aria-disabled", anySelected ? "false" : "true");
+            setAriaDisabled(SIM.resetTrialBtn, !anySelected);
           }
           if (SIM.runBtn) {
-            SIM.runBtn.setAttribute("aria-disabled", allSelected ? "false" : "true");
+            setAriaDisabled(SIM.runBtn, !allSelected);
           }
           var showPrompt = allSelected && SIM.runBtn && SIM.runBtn.querySelector("span").textContent === "Run";
           if (SIM._norPromptWrap) {
@@ -5217,7 +5262,7 @@ function buildSimContent() {
               }
               if (oceanPath === "NE") return "weak";
             }
-            if (oceanHum === "Dry") return "dry";
+            if (oceanHum === "Dry") return "windy";
           }
           if (oceanPath === "S/SE" && oceanHum === "Humid") return "humid";
           return "fair";
@@ -5227,7 +5272,6 @@ function buildSimContent() {
           strong: {
             banner: "Strong nor’easter",
             "Sky": "Overcast, storm clouds",
-            "Pressure": "Low",
             "Wind": "From the NE, 45–60 mph",
             "Precipitation Type": "Rain (snow inland)",
             "Precipitation Amount": "Heavy",
@@ -5237,7 +5281,6 @@ function buildSimContent() {
           moderate: {
             banner: "Moderate nor’easter",
             "Sky": "Overcast, storm clouds",
-            "Pressure": "Low",
             "Wind": "From the NE, 25–35 mph",
             "Precipitation Type": "Rain (mix inland)",
             "Precipitation Amount": "Moderate",
@@ -5246,19 +5289,17 @@ function buildSimContent() {
           },
           weak: {
             banner: "Weak coastal storm",
-            "Sky": "Cloudy, raw",
-            "Pressure": "Slightly low",
+            "Sky": "Cloudy",
             "Wind": "From the NE, 15–20 mph",
             "Precipitation Type": "Light rain / wet snow",
             "Precipitation Amount": "Light",
             bars: 1,
             intensity: "Weak"
           },
-          dry: {
-            banner: "Dry front passes",
-            "Sky": "Clearing, breezy",
-            "Pressure": "Rising",
-            "Wind": "Gusty NW shift",
+          windy: {
+            banner: "Windy, no storm",
+            "Sky": "Clear, breezy",
+            "Wind": "From the NW, 15–25 mph",
             "Precipitation Type": "None",
             "Precipitation Amount": "None",
             bars: 0,
@@ -5267,18 +5308,16 @@ function buildSimContent() {
           humid: {
             banner: "Humid, no storm",
             "Sky": "Overcast, hazy",
-            "Pressure": "Near normal",
-            "Wind": "Light, S/SE",
-            "Precipitation Type": "Stray shower",
+            "Wind": "From the S/SE, 5–15 mph",
+            "Precipitation Type": "Scattered rain",
             "Precipitation Amount": "Trace",
             bars: 0,
             intensity: "None"
           },
           fair: {
             banner: "Fair weather",
-            "Sky": "Sunny and fair",
-            "Pressure": "High",
-            "Wind": "Calm, variable",
+            "Sky": "Sunny",
+            "Wind": "Variable, 0–10 mph",
             "Precipitation Type": "None",
             "Precipitation Amount": "None",
             bars: 0,
@@ -5288,17 +5327,12 @@ function buildSimContent() {
 
         var iconFillSim = (SIMS[activeSim].theme && SIMS[activeSim].theme.trialSelectedBg) || "#e0e0e0";
         SIM._standInIcon = '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="' + iconFillSim + '" stroke="none"/></svg>';
-        SIM._pressureIcons = {
-          high: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23.9501197,12.898483 L22.8533555,12.4784892 C22.4976522,12.3425806 22.151674,12.2107695 21.814942,12.0830806 C20.921728,7.47679014 16.8668879,4 12,4 C6.4771525,4 2,8.4771525 2,14 C2,15.7873724 2.46843629,17.500508 3.34465481,19.0008275 L20.6553452,19.0008275 C20.9190246,18.5493381 21.145776,18.0785766 21.3339464,17.5923193 C22.040836,17.4575372 22.7889745,17.3129208 23.5774143,17.1583953 C23.1994131,18.5572651 22.5719356,19.8547186 21.7473099,21.0008275 L2.25269008,21.0008275 C0.834995565,19.0304397 9.9475983e-14,16.6127317 9.9475983e-14,14 C9.9475983e-14,7.372583 5.372583,2 12,2 C18.2560634,2 23.3939771,6.78736811 23.9501197,12.898483 Z M12.2614672,11.0114159 C13.3618335,11.1076855 17.2594566,12.4525031 23.9543364,15.0458689 C16.9108336,16.4372819 12.8388991,17.0848537 11.7385328,16.9885841 C10.0879834,16.8441797 8.86701154,15.3890822 9.01141591,13.7385328 C9.15582027,12.0879834 10.6109178,10.8670115 12.2614672,11.0114159 Z M12,13 C11.4477153,13 11,13.4477153 11,14 C11,14.5522847 11.4477153,15 12,15 C12.5522847,15 13,14.5522847 13,14 C13,13.4477153 12.5522847,13 12,13 Z" fill="currentColor" fill-rule="nonzero"/></svg>',
-          low: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M0.419909122,17.1581187 L1.57501503,17.3827673 C1.94965545,17.4551417 2.31403391,17.5250186 2.66854917,17.5924311 C2.85422404,18.0785766 3.08097541,18.5493381 3.34465479,19.0008275 L20.6553452,19.0008275 C21.5315637,17.500508 22,15.7873724 22,14 C22,8.4771525 17.5228475,4 12,4 C7.13311207,4 3.07827198,7.47679014 2.1837253,12.0821249 C1.51039467,12.3389152 0.799566554,12.61093 0.0508610767,12.8996615 C0.605462817,6.78789002 5.74359559,2 12,2 C18.627417,2 24,7.372583 24,14 C24,16.6127317 23.1650044,19.0304397 21.7473099,21.0008275 L2.25269008,21.0008275 C1.42806444,19.8547186 0.800586891,18.5572651 0.419909122,17.1581187 Z M12.2614672,16.9885841 L12.1010892,16.9969226 C10.8014024,17.027137 6.78292716,16.3767857 0.0456636229,15.0458689 C6.74054344,12.4525031 10.6381665,11.1076855 11.7385328,11.0114159 C13.3890822,10.8670115 14.8441797,12.0879834 14.9885841,13.7385328 C15.1329885,15.3890822 13.9120166,16.8441797 12.2614672,16.9885841 Z M12,13 C11.4477153,13 11,13.4477153 11,14 C11,14.5522847 11.4477153,15 12,15 C12.5522847,15 13,14.5522847 13,14 C13,13.4477153 12.5522847,13 12,13 Z" fill="currentColor" fill-rule="nonzero"/></svg>',
-          rising: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.6712058,4.77178403 L18.5982361,5.24990573 C18.2504768,5.40529538 17.9125054,5.55679035 17.5839943,5.70465934 C15.9895986,4.6278057 14.0681152,4 12,4 C6.4771525,4 2,8.4771525 2,14 C2,15.7873724 2.46843629,17.500508 3.34465481,19.0008275 L20.6553452,19.0008275 C21.5315637,17.500508 22,15.7873724 22,14 C22,12.554326 21.6932274,11.1803026 21.1412284,9.93947587 C21.5457737,9.34345288 21.9722724,8.71255333 22.4202331,8.0461968 C23.4255118,9.79983581 24,11.8328284 24,14 C24,16.6127317 23.1650044,19.0304397 21.7473099,21.0008275 L2.25269008,21.0008275 C0.834995565,19.0304397 0,16.6127317 0,14 C0,7.372583 5.372583,2 12,2 C14.917274,2 17.5914103,3.04099579 19.6712058,4.77178403 Z M21.1925333,6.28654868 L20.4306837,7.41997104 C16.8867688,12.6750469 14.7193285,15.6344343 13.9283628,16.2981333 C12.6591388,17.3631387 10.7668721,17.1975868 9.70186667,15.9283628 C8.63686129,14.6591388 8.80241318,12.7668721 10.0716372,11.7018667 C10.9177865,10.9918631 14.6247519,9.18675709 21.1925333,6.28654868 Z M12,13 C11.4477153,13 11,13.4477153 11,14 C11,14.5522847 11.4477153,15 12,15 C12.5522847,15 13,14.5522847 13,14 C13,13.4477153 12.5522847,13 12,13 Z" fill="currentColor" fill-rule="nonzero"/></svg>',
-          nearNormal: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7.84424804,2.73909449 L7.72170483,3.90714449 C7.6823677,4.2860639 7.64456123,4.65465758 7.60834546,5.01324012 C4.28661447,6.64022275 2,10.0530777 2,14 C2,15.7873724 2.46843629,17.500508 3.34465481,19.0008275 L20.6553452,19.0008275 C21.5315637,17.500508 22,15.7873724 22,14 C22,8.83347626 18.0819259,4.58206776 13.0549913,4.05498807 C12.740866,3.40621953 12.4078215,2.72157103 12.054808,2.00061956 L12,2 C18.627417,2 24,7.372583 24,14 C24,16.6127317 23.1650044,19.0304397 21.7473099,21.0008275 L2.25269008,21.0008275 C0.834995565,19.0304397 0,16.6127317 0,14 C0,8.83351177 3.26501686,4.42960908 7.84424804,2.73909449 Z M9.91622187,2.18230696 L10.5168696,3.40879924 C13.2959414,9.10545752 14.7751259,12.4622096 14.9544233,13.4790555 C15.242133,15.1107384 14.1526274,16.6667135 12.5209445,16.9544233 C10.8892616,17.242133 9.33328646,16.1526274 9.04557674,14.5209445 C8.85377026,13.4331559 9.1439853,9.32027674 9.91622187,2.18230696 Z M12,13 C11.4477153,13 11,13.4477153 11,14 C11,14.5522847 11.4477153,15 12,15 C12.5522847,15 13,14.5522847 13,14 C13,13.4477153 12.5522847,13 12,13 Z" fill="currentColor" fill-rule="nonzero"/></svg>',
-          slightlyLow: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M0.171276431,11.9683147 L1.12211612,12.6599326 C1.43085271,12.8837919 1.73145882,13.1010419 2.02417291,13.3118944 C2.00787628,13.5385499 2,13.7683551 2,14 C2,15.7873724 2.46843629,17.500508 3.34465481,19.0008275 L20.6553452,19.0008275 C21.5315637,17.500508 22,15.7873724 22,14 C22,8.4771525 17.5228475,4 12,4 C8.67803984,4 5.73440705,5.61981205 3.91584734,8.11269045 C3.19672657,8.06155527 2.43646157,8.00759725 1.63468155,7.95277946 C3.71489643,4.39168314 7.57814445,2 12,2 C18.627417,2 24,7.372583 24,14 C24,16.6127317 23.1650044,19.0304397 21.7473099,21.0008275 L2.25269008,21.0008275 C0.834995565,19.0304397 0,16.6127317 0,14 C0,13.3075054 0.058658011,12.6287111 0.171276431,11.9683147 Z M0.723688551,9.89575828 L2.0861859,9.9888282 C8.40917255,10.4304106 12.0557974,10.8277753 13.0260604,11.1809221 C14.5829941,11.7475997 15.3857554,13.4691267 14.8190779,15.0260604 C14.2524003,16.5829941 12.5308733,17.3857554 10.9739396,16.8190779 C9.93598376,16.4412928 6.51923342,14.1335196 0.723688551,9.89575828 Z M12,13 C11.4477153,13 11,13.4477153 11,14 C11,14.5522847 11.4477153,15 12,15 C12.5522847,15 13,14.5522847 13,14 C13,13.4477153 12.5522847,13 12,13 Z" fill="currentColor" fill-rule="nonzero"/></svg>'
-        };
         SIM._windIcons = {
           neHigh: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.5623718,10.9594949 C9.39564564,12.1262211 7.48645733,12.1262211 6.31973114,10.9594949 C5.15300495,9.79276875 5.15300495,7.88358044 6.31973114,6.71685425 C7.48645733,5.55012806 9.39564564,5.55012806 10.5623718,6.71685425 L9.14815827,8.13106781 C8.75924954,7.74215908 8.12285344,7.74215908 7.73394471,8.13106781 C7.34503598,8.51997654 7.34503598,9.15637264 7.73394471,9.54528137 C8.12285344,9.9341901 8.75924954,9.9341901 9.14815827,9.54528137 L17.6334396,1.06 L19.0476532,2.47421356 L10.5623718,10.9594949 Z M6.67328453,19.0912229 C5.30856845,20.455939 3.08825315,20.455939 1.72353707,19.0912229 C0.358820978,17.7265068 0.358820978,15.5061915 1.72353707,14.1414755 C3.08825315,12.7767594 5.30856845,12.7767594 6.67328453,14.1414755 L5.25907097,15.555689 C4.67217234,14.9687904 3.72464926,14.9687904 3.13775063,15.555689 C2.550852,16.1425876 2.550852,17.0901107 3.13775063,17.6770094 C3.72464926,18.263908 4.67217234,18.263908 5.25907097,17.6770094 L19.75476,3.18132034 L21.1689735,4.59553391 L6.67328453,19.0912229 Z M10.2088184,21.91965 C11.5735345,23.2843661 13.7938498,23.2843661 15.1585659,21.91965 C16.523282,20.554934 16.523282,18.3346187 15.1585659,16.9699026 L13.7443523,18.3841161 C14.331251,18.9710148 14.331251,19.9185379 13.7443523,20.5054365 C13.1574537,21.0923351 12.2099306,21.0923351 11.623032,20.5054365 C11.0361334,19.9185379 11.0361334,18.9710148 11.623032,18.3841161 L23.2902939,6.71685425 L21.8760803,5.30264069 L10.2088184,16.9699026 C8.84410235,18.3346187 8.84410235,20.554934 10.2088184,21.91965 Z" fill="currentColor" fill-rule="nonzero"/></svg>',
           neMedium: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.2088184,21.91965 C11.5735345,23.2843661 13.7938498,23.2843661 15.1585659,21.91965 C16.523282,20.554934 16.523282,18.3346187 15.1585659,16.9699026 L13.7443523,18.3841161 C14.331251,18.9710148 14.331251,19.9185379 13.7443523,20.5054365 C13.1574537,21.0923351 12.2099306,21.0923351 11.623032,20.5054365 C11.0361334,19.9185379 11.0361334,18.9710148 11.623032,18.3841161 L23.2902939,6.71685425 L21.8760803,5.30264069 L10.2088184,16.9699026 C8.84410235,18.3346187 8.84410235,20.554934 10.2088184,21.91965 Z" fill="currentColor" fill-rule="nonzero"/><path d="M6.67328453,19.0912229 C5.30856845,20.455939 3.08825315,20.455939 1.72353707,19.0912229 C0.358820978,17.7265068 0.358820978,15.5061915 1.72353707,14.1414755 C3.08825315,12.7767594 5.30856845,12.7767594 6.67328453,14.1414755 L5.25907097,15.555689 C4.67217234,14.9687904 3.72464926,14.9687904 3.13775063,15.555689 C2.550852,16.1425876 2.550852,17.0901107 3.13775063,17.6770094 C3.72464926,18.263908 4.67217234,18.263908 5.25907097,17.6770094 L19.75476,3.18132034 L21.1689735,4.59553391 L6.67328453,19.0912229 Z" fill="currentColor" fill-rule="nonzero"/><path d="M10.5623718,10.9594949 C9.39564564,12.1262211 7.48645733,12.1262211 6.31973114,10.9594949 C5.15300495,9.79276875 5.15300495,7.88358044 6.31973114,6.71685425 C7.48645733,5.55012806 9.39564564,5.55012806 10.5623718,6.71685425 L9.14815827,8.13106781 C8.75924954,7.74215908 8.12285344,7.74215908 7.73394471,8.13106781 C7.34503598,8.51997654 7.34503598,9.15637264 7.73394471,9.54528137 C8.12285344,9.9341901 8.75924954,9.9341901 9.14815827,9.54528137 L17.6334396,1.06 L19.0476532,2.47421356 L10.5623718,10.9594949 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6"/></svg>',
           neLow: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.2088184,21.91965 C11.5735345,23.2843661 13.7938498,23.2843661 15.1585659,21.91965 C16.523282,20.554934 16.523282,18.3346187 15.1585659,16.9699026 L13.7443523,18.3841161 C14.331251,18.9710148 14.331251,19.9185379 13.7443523,20.5054365 C13.1574537,21.0923351 12.2099306,21.0923351 11.623032,20.5054365 C11.0361334,19.9185379 11.0361334,18.9710148 11.623032,18.3841161 L23.2902939,6.71685425 L21.8760803,5.30264069 L10.2088184,16.9699026 C8.84410235,18.3346187 8.84410235,20.554934 10.2088184,21.91965 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6"/><path d="M6.67328453,19.0912229 C5.30856845,20.455939 3.08825315,20.455939 1.72353707,19.0912229 C0.358820978,17.7265068 0.358820978,15.5061915 1.72353707,14.1414755 C3.08825315,12.7767594 5.30856845,12.7767594 6.67328453,14.1414755 L5.25907097,15.555689 C4.67217234,14.9687904 3.72464926,14.9687904 3.13775063,15.555689 C2.550852,16.1425876 2.550852,17.0901107 3.13775063,17.6770094 C3.72464926,18.263908 4.67217234,18.263908 5.25907097,17.6770094 L19.75476,3.18132034 L21.1689735,4.59553391 L6.67328453,19.0912229 Z" fill="currentColor" fill-rule="nonzero"/><path d="M10.5623718,10.9594949 C9.39564564,12.1262211 7.48645733,12.1262211 6.31973114,10.9594949 C5.15300495,9.79276875 5.15300495,7.88358044 6.31973114,6.71685425 C7.48645733,5.55012806 9.39564564,5.55012806 10.5623718,6.71685425 L9.14815827,8.13106781 C8.75924954,7.74215908 8.12285344,7.74215908 7.73394471,8.13106781 C7.34503598,8.51997654 7.34503598,9.15637264 7.73394471,9.54528137 C8.12285344,9.9341901 8.75924954,9.9341901 9.14815827,9.54528137 L17.6334396,1.06 L19.0476532,2.47421356 L10.5623718,10.9594949 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6"/></svg>',
+          variable: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient x1="0%" y1="50%" x2="100%" y2="50%" id="wv-lg1"><stop stop-color="currentColor" stop-opacity="0" offset="0%"/><stop stop-color="currentColor" stop-opacity="0.7" offset="100%"/></linearGradient><linearGradient x1="0%" y1="50%" x2="100%" y2="50%" id="wv-lg2"><stop stop-color="currentColor" stop-opacity="0" offset="0%"/><stop stop-color="currentColor" stop-opacity="0.7" offset="100%"/></linearGradient><linearGradient x1="0%" y1="50%" x2="100%" y2="50%" id="wv-lg3"><stop stop-color="currentColor" stop-opacity="0" offset="0%"/><stop stop-color="currentColor" stop-opacity="0.7" offset="100%"/></linearGradient></defs><path d="M20,7 C20,8.93 18.43,10.5 16.5,10.5 C14.57,10.5 13,8.93 13,7 L15,7 C15,7.83 15.67,8.5 16.5,8.5 C17.33,8.5 18,7.83 18,7 C18,6.17 17.33,5.5 16.5,5.5 L0,5.5 L0,3.5 L16.5,3.5 C18.43,3.5 20,5.07 20,7 Z" fill="url(#wv-lg1)" fill-rule="nonzero" transform="translate(10, 7) scale(1, -1) translate(-10, -7)"/><path d="M20.5,18.5 C22.43,18.5 24,16.93 24,15 C24,13.07 22.43,11.5 20.5,11.5 C18.57,11.5 17,13.07 17,15 L19,15 C19,14.17 19.67,13.5 20.5,13.5 C21.33,13.5 22,14.17 22,15 C22,15.83 21.33,16.5 20.5,16.5 L0,16.5 L0,18.5 L20.5,18.5 Z" fill="url(#wv-lg2)" fill-rule="nonzero" transform="translate(12, 15) scale(1, -1) translate(-12, -15)"/><path d="M12,20.5 C13.65,20.5 15,19.15 15,17.5 C15,15.85 13.65,14.5 12,14.5 C10.35,14.5 9,15.85 9,17.5 L11,17.5 C11,16.95 11.45,16.5 12,16.5 C12.55,16.5 13,16.95 13,17.5 C13,18.05 12.55,18.5 12,18.5 L0,18.5 L0,20.5 L12,20.5 Z" fill="url(#wv-lg3)" fill-rule="nonzero" transform="translate(7.5, 17.5) scale(1, -1) translate(-7.5, -17.5)"/></svg>',
+          nwLow: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14.1911816,21.91965 C12.8264655,23.2843661 10.6061502,23.2843661 9.24143409,21.91965 C7.876718,20.554934 7.876718,18.3346187 9.24143409,16.9699026 L10.6556477,18.3841161 C10.068749,18.9710148 10.068749,19.9185379 10.6556477,20.5054365 C11.2425463,21.0923351 12.1900694,21.0923351 12.776968,20.5054365 C13.3638666,19.9185379 13.3638666,18.9710148 12.776968,18.3841161 L1.10970611,6.71685425 L2.52391967,5.30264069 L14.1911816,16.9699026 C15.5558976,18.3346187 15.5558976,20.554934 14.1911816,21.91965 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6"/><path d="M17.7267155,19.0912229 C19.0914316,20.455939 21.3117468,20.455939 22.6764629,19.0912229 C24.041179,17.7265068 24.041179,15.5061915 22.6764629,14.1414755 C21.3117468,12.7767594 19.0914316,12.7767594 17.7267155,14.1414755 L19.140929,15.555689 C19.7278277,14.9687904 20.6753507,14.9687904 21.2622494,15.555689 C21.849148,16.1425876 21.849148,17.0901107 21.2622494,17.6770094 C20.6753507,18.263908 19.7278277,18.263908 19.140929,17.6770094 L4.64524001,3.18132034 L3.23102645,4.59553391 L17.7267155,19.0912229 Z" fill="currentColor" fill-rule="nonzero"/><path d="M13.8376282,10.9594949 C15.0043544,12.1262211 16.9135427,12.1262211 18.0802689,10.9594949 C19.246995,9.79276875 19.246995,7.88358044 18.0802689,6.71685425 C16.9135427,5.55012806 15.0043544,5.55012806 13.8376282,6.71685425 L15.2518417,8.13106781 C15.6407505,7.74215908 16.2771466,7.74215908 16.6660553,8.13106781 C17.054964,8.51997654 17.054964,9.15637264 16.6660553,9.54528137 C16.2771466,9.9341901 15.6407505,9.9341901 15.2518417,9.54528137 L6.76656036,1.06 L5.3523468,2.47421356 L13.8376282,10.9594949 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6"/></svg>',
           nwGusty: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient x1="0%" y1="50%" x2="100%" y2="50%" id="linearGradient-1"><stop stop-color="currentColor" stop-opacity="0" offset="0%"/><stop stop-color="currentColor" stop-opacity="0.7" offset="100%"/></linearGradient><linearGradient x1="0%" y1="50%" x2="100%" y2="50%" id="linearGradient-2"><stop stop-color="currentColor" stop-opacity="0" offset="0%"/><stop stop-color="currentColor" stop-opacity="0.7" offset="100%"/></linearGradient><linearGradient x1="0%" y1="50%" x2="100%" y2="50%" id="linearGradient-3"><stop stop-color="currentColor" stop-opacity="0" offset="0%"/><stop stop-color="currentColor" stop-opacity="0.7" offset="100%"/></linearGradient></defs><path d="M16.7059415,14.8470094 C16.7059415,16.7770094 15.1359415,18.3470094 13.2059415,18.3470094 C11.2759415,18.3470094 9.70594155,16.7770094 9.70594155,14.8470094 L11.7059415,14.8470094 C11.7059415,15.6770094 12.3759415,16.3470094 13.2059415,16.3470094 C14.0359415,16.3470094 14.7059415,15.6770094 14.7059415,14.8470094 C14.7059415,14.0170094 14.0359415,13.3470094 13.2059415,13.3470094 L-3.29405845,13.3470094 L-3.29405845,11.3470094 L13.2059415,11.3470094 C15.1359415,11.3470094 16.7059415,12.9170094 16.7059415,14.8470094 Z" fill="url(#linearGradient-1)" fill-rule="nonzero" transform="translate(6.7059, 14.847) rotate(45) translate(-6.7059, -14.847)"/><path d="M22.2770094,14.1043687 C24.2070094,14.1043687 25.7770094,12.5343687 25.7770094,10.6043687 C25.7770094,8.67436867 24.2070094,7.10436867 22.2770094,7.10436867 C20.3470094,7.10436867 18.7770094,8.67436867 18.7770094,10.6043687 L20.7770094,10.6043687 C20.7770094,9.77436867 21.4470094,9.10436867 22.2770094,9.10436867 C23.1070094,9.10436867 23.7770094,9.77436867 23.7770094,10.6043687 C23.7770094,11.4343687 23.1070094,12.1043687 22.2770094,12.1043687 L1.77700936,12.1043687 L1.77700936,14.1043687 L22.2770094,14.1043687 Z" fill="url(#linearGradient-2)" fill-rule="nonzero" transform="translate(13.777, 10.6044) rotate(45) translate(-13.777, -10.6044)"/><path d="M16.8627958,8.6546212 C18.5127958,8.6546212 19.8627958,7.3046212 19.8627958,5.6546212 C19.8627958,4.0046212 18.5127958,2.6546212 16.8627958,2.6546212 C15.2127958,2.6546212 13.8627958,4.0046212 13.8627958,5.6546212 L15.8627958,5.6546212 C15.8627958,5.1046212 16.3127958,4.6546212 16.8627958,4.6546212 C17.4127958,4.6546212 17.8627958,5.1046212 17.8627958,5.6546212 C17.8627958,6.2046212 17.4127958,6.6546212 16.8627958,6.6546212 L4.8627958,6.6546212 L4.8627958,8.6546212 L16.8627958,8.6546212 Z" fill="url(#linearGradient-3)" fill-rule="nonzero" transform="translate(12.3628, 5.6546) rotate(45) translate(-12.3628, -5.6546)"/></svg>',
           sseLight: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.5623718,10.9594949 C9.39564564,12.1262211 7.48645733,12.1262211 6.31973114,10.9594949 C5.15300495,9.79276875 5.15300495,7.88358044 6.31973114,6.71685425 C7.48645733,5.55012806 9.39564564,5.55012806 10.5623718,6.71685425 L9.14815827,8.13106781 C8.75924954,7.74215908 8.12285344,7.74215908 7.73394471,8.13106781 C7.34503598,8.51997654 7.34503598,9.15637264 7.73394471,9.54528137 C8.12285344,9.9341901 8.75924954,9.9341901 9.14815827,9.54528137 L17.6334396,1.06 L19.0476532,2.47421356 L10.5623718,10.9594949 Z M6.67328453,19.0912229 C5.30856845,20.455939 3.08825315,20.455939 1.72353707,19.0912229 C0.358820978,17.7265068 0.358820978,15.5061915 1.72353707,14.1414755 C3.08825315,12.7767594 5.30856845,12.7767594 6.67328453,14.1414755 L5.25907097,15.555689 C4.67217234,14.9687904 3.72464926,14.9687904 3.13775063,15.555689 C2.550852,16.1425876 2.550852,17.0901107 3.13775063,17.6770094 C3.72464926,18.263908 4.67217234,18.263908 5.25907097,17.6770094 L19.75476,3.18132034 L21.1689735,4.59553391 L6.67328453,19.0912229 Z M10.2088184,21.91965 C11.5735345,23.2843661 13.7938498,23.2843661 15.1585659,21.91965 C16.523282,20.554934 16.523282,18.3346187 15.1585659,16.9699026 L13.7443523,18.3841161 C14.331251,18.9710148 14.331251,19.9185379 13.7443523,20.5054365 C13.1574537,21.0923351 12.2099306,21.0923351 11.623032,20.5054365 C11.0361334,19.9185379 11.0361334,18.9710148 11.623032,18.3841161 L23.2902939,6.71685425 L21.8760803,5.30264069 L10.2088184,16.9699026 C8.84410235,18.3346187 8.84410235,20.554934 10.2088184,21.91965 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6" transform="translate(11.9951, 12.0016) scale(1, -1) translate(-11.9951, -12.0016)"/></svg>',
           none: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1.39339828,4.22182541 L2.80761184,2.80761184 L21.1923882,21.1923882 L19.7781746,22.6066017 L14.9838962,17.8108314 C14.8271108,19.3162184 13.5450867,20.5 12,20.5 C10.35,20.5 9,19.15 9,17.5 L11,17.5 C11,18.05 11.45,18.5 12,18.5 C12.55,18.5 13,18.05 13,17.5 C13,16.95 12.55,16.5 12,16.5 L0,16.5 L0,14.5 L11.671,14.4991068 L10.671,13.4991068 L0,13.5 L0,11.5 L8.671,11.4991068 L7.671,10.4991068 L0,10.5 L0,8.5 L5.671,8.49910678 L1.39339828,4.22182541 Z M14.327,11.4988932 L20.5,11.5 C22.43,11.5 24,13.07 24,15 C24,16.6733698 22.819764,18.0761122 21.2479508,18.4195683 L17.828,14.9998932 L19,15 C19,15.83 19.67,16.5 20.5,16.5 C21.33,16.5 22,15.83 22,15 C22,14.17 21.33,13.5 20.5,13.5 L16.327,13.4988932 L14.327,11.4988932 Z M16.5,3.5 C18.43,3.5 20,5.07 20,7 C20,8.93 18.43,10.5 16.5,10.5 L13.327,10.4988932 L11.327,8.49889322 L16.5,8.5 C17.2811765,8.5 17.9206228,7.90650519 17.9931488,7.14470588 L18,7 C18,6.17 17.33,5.5 16.5,5.5 C15.67,5.5 15,6.17 15,7 L13,7 C13,5.07 14.57,3.5 16.5,3.5 Z" fill="currentColor" fill-rule="nonzero"/></svg>'
@@ -5327,133 +5361,158 @@ function buildSimContent() {
           overcast: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13.5,10.5 C15.6876193,10.5 17.5505787,12.0488767 17.9690025,14.1717618 L18.2651833,15.6744441 L19.7931191,15.7802243 C21.038808,15.8664643 22,16.8850409 22,18.125 C22,19.4354305 20.9354305,20.5 19.625,20.5 L8.25,20.5 C6.4583195,20.5 5,19.0416805 5,17.25 C5,15.5883252 6.25660306,14.197728 7.8926831,14.0237926 L8.95950114,13.9103767 L9.45507817,12.9588688 C10.2359301,11.4596331 11.7835074,10.5 13.5,10.5 Z M10.5,3.5 C12.2164926,3.5 13.7640699,4.4596331 14.5449218,5.95886884 L15.0404989,6.91037674 L16.1073169,7.02379261 C17.7433969,7.19772803 19,8.58832517 19,10.25 C19,10.6000985 18.9443184,10.9374686 18.8413482,11.2537171 C17.6518042,9.5848679 15.7036568,8.5 13.5,8.5 C10.97125,8.5 8.775,9.935 7.68125,12.035 C6.4777293,12.162949 5.39662536,12.6983449 4.5773699,13.5000861 L4.375,13.5000861 C3.0645695,13.5000861 2,12.4354305 2,11.125 C2,9.88504088 2.96119202,8.86646426 4.20688091,8.78022426 L5.73481666,8.67444409 L6.03099751,7.17176183 C6.44942125,5.04887666 8.31238066,3.5 10.5,3.5 Z" fill="currentColor" fill-rule="nonzero" opacity="0.3"/><path d="M19.869089,13.5027883 L19.8550748,13.4460985 C19.8833477,13.5579368 19.9087669,13.6709312 19.93125,13.785 C22.20625,13.9425 24,15.815 24,18.125 C24,20.54 22.04,22.5 19.625,22.5 L8.25,22.5 C5.35375,22.5 3,20.14625 3,17.25 C3,16.5702757 3.12940659,15.9204145 3.36500185,15.3239124 L3.3444113,15.3768891 C1.42640869,14.9142856 0,13.1852081 0,11.125 C0,8.815 1.79375,6.9425 4.06875,6.785 C4.66375,3.76625 7.315,1.5 10.5,1.5 C13.02875,1.5 15.225,2.935 16.31875,5.035 C18.9525,5.315 21,7.54625 21,10.25 C21,11.4777385 20.5770393,12.6079916 19.869089,13.5027883 Z M13.5,10.5 C11.7835074,10.5 10.2359301,11.4596331 9.45507817,12.9588688 L8.95950114,13.9103767 L7.8926831,14.0237926 C6.25660306,14.197728 5,15.5883252 5,17.25 C5,19.0416805 6.4583195,20.5 8.25,20.5 L19.625,20.5 C20.9354305,20.5 22,19.4354305 22,18.125 C22,16.8850409 21.038808,15.8664643 19.7931191,15.7802243 L18.2651833,15.6744441 L17.9690025,14.1717618 C17.5505787,12.0488767 15.6876193,10.5 13.5,10.5 Z M18.7118361,11.0791873 L18.8401747,11.2532344 C18.9443184,10.9374686 19,10.6000985 19,10.25 C19,8.58832517 17.7433969,7.19772803 16.1073169,7.02379261 L15.0404989,6.91037674 L14.5449218,5.95886884 C13.7640699,4.4596331 12.2164926,3.5 10.5,3.5 C8.31238066,3.5 6.44942125,5.04887666 6.03099751,7.17176183 L5.73481666,8.67444409 L4.20688091,8.78022426 C2.96119202,8.86646426 2,9.88504088 2,11.125 C2,12.4354305 3.0645695,13.5000861 4.375,13.5000861 L4.5773699,13.5000861 C5.39662536,12.6983449 6.4777293,12.162949 7.68125,12.035 C8.775,9.935 10.97125,8.5 13.5,8.5 C15.6260617,8.5 17.5142912,9.50981235 18.7118361,11.0791873 Z" fill="currentColor" fill-rule="nonzero"/></svg>',
           cloudy: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19,18 L6,18 C3.79,18 2,16.21 2,14 C2,11.79 3.79,10 6,10 L6.71,10 C7.37,7.69 9.48,6 12,6 C15.04,6 17.5,8.46 17.5,11.5 L17.5,12 L19,12 C20.66,12 22,13.34 22,15 C22,16.66 20.66,18 19,18 Z" fill="currentColor" fill-rule="evenodd" opacity="0.3"/><path d="M19.35,10.04 C18.67,6.59 15.64,4 12,4 C9.11,4 6.6,5.64 5.35,8.04 C2.34,8.36 0,10.91 0,14 C0,17.31 2.69,20 6,20 L19,20 C21.76,20 24,17.76 24,15 C24,12.36 21.95,10.22 19.35,10.04 Z M19,18 L6,18 C3.79,18 2,16.21 2,14 C2,11.79 3.79,10 6,10 L6.71,10 C7.37,7.69 9.48,6 12,6 C15.04,6 17.5,8.46 17.5,11.5 L17.5,12 L19,12 C20.66,12 22,13.34 22,15 C22,16.66 20.66,18 19,18 Z" fill="currentColor" fill-rule="nonzero"/></svg>',
           overcastHazy: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19,14 L6,14 C3.79,14 2,12.21 2,10 C2,7.79 3.79,6 6,6 L6.71,6 C7.37,3.69 9.48,2 12,2 C15.04,2 17.5,4.46 17.5,7.5 L17.5,8 L19,8 C20.66,8 22,9.34 22,11 C22,12.66 20.66,14 19,14 Z" fill="currentColor" fill-rule="evenodd" opacity="0.3"/><path d="M19.35,6.04 C18.67,2.59 15.64,0 12,0 C9.11,0 6.6,1.64 5.35,4.04 C2.34,4.36 0,6.91 0,10 C0,13.31 2.69,16 6,16 L19,16 C21.76,16 24,13.76 24,11 C24,8.36 21.95,6.22 19.35,6.04 Z M19,14 L6,14 C3.79,14 2,12.21 2,10 C2,7.79 3.79,6 6,6 L6.71,6 C7.37,3.69 9.48,2 12,2 C15.04,2 17.5,4.46 17.5,7.5 L17.5,8 L19,8 C20.66,8 22,9.34 22,11 C22,12.66 20.66,14 19,14 Z" fill="currentColor" fill-rule="nonzero"/><path d="M13,19 C13,19.5522847 12.5522847,20 12,20 L1,20 C0.44771525,20 0,19.5522847 0,19 C0,18.4477153 0.44771525,18 1,18 L12,18 C12.5522847,18 13,18.4477153 13,19 Z M24,19 C24,19.5522847 23.5522847,20 23,20 L17,20 C16.4477153,20 16,19.5522847 16,19 C16,18.4477153 16.4477153,18 17,18 L23,18 C23.5522847,18 24,18.4477153 24,19 Z M8,23 C8,23.5522847 7.55228475,24 7,24 L1,24 C0.44771525,24 0,23.5522847 0,23 C0,22.4477153 0.44771525,22 1,22 L7,22 C7.55228475,22 8,22.4477153 8,23 Z M24,23 C24,23.5522847 23.5522847,24 23,24 L12,24 C11.4477153,24 11,23.5522847 11,23 C11,22.4477153 11.4477153,22 12,22 L23,22 C23.5522847,22 24,22.4477153 24,23 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6"/></svg>',
-          clearingBreezy: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.96852312,10.6179029 C3.34962303,11.1707292 3.82927078,11.650377 4.38209707,12.0314769 L2.90380592,13.5104076 L1.48959236,12.0961941 L2.96852312,10.6179029 Z M7.5,3.25 C8.60076064,3.25 9.6037805,3.66847801 10.3586449,4.35501932 C9.30683701,5.19184161 8.53200373,6.35925126 8.19132804,7.70140977 C6.53073391,7.94089802 5.17946394,9.1236112 4.69364913,10.6899518 C3.80810961,9.9120608 3.25,8.77120714 3.25,7.5 C3.25,5.15278981 5.15278981,3.25 7.5,3.25 Z M2.09083579,6.49919636 C2.03117474,6.82372403 2,7.15822139 2,7.5 C2,7.84177861 2.03117474,8.17627597 2.09083579,8.50080364 L0,8.5 L0,6.5 L2.09083579,6.49919636 Z M2.90380592,1.48959236 L4.38209707,2.96852312 C3.82960241,3.34939442 3.35019852,3.82869535 2.96920907,4.38110226 L1.48959236,2.90380592 L2.90380592,1.48959236 Z M12.0961941,1.48959236 L13.5104076,2.90380592 L13.3484231,3.06432022 C12.6708098,3.1618885 12.0284253,3.36782786 11.4394767,3.66407369 C11.1899149,3.40566674 10.913971,3.17252661 10.616908,2.96783739 L12.0961941,1.48959236 Z M8.5,0 L8.49980813,2.09065287 C8.17559192,2.03111102 7.84142914,2 7.5,2 C7.15857086,2 6.82440808,2.03111102 6.50019187,2.09065287 L6.5,0 L8.5,0 Z" fill="#B08C00" fill-rule="nonzero"/><path d="M8.50463338,13.7836234 L8.5,14 C8.5,14.0328884 8.50032009,14.0657042 8.50095733,14.0984444 C7.3310578,13.6563236 6.5,12.5256602 6.5,11.2 C6.5,9.48725 7.88725,8.1 9.6,8.1 L10.15025,8.1 C10.66175,6.30975 12.297,5 14.25,5 C16.606,5 18.5125,6.9065 18.5125,9.2625 L18.5125,9.65 L19.675,9.65 C20.9615,9.65 22,10.6885 22,11.975 C22,12.3435286 21.9147824,12.6917068 21.7629289,13.0009528 L18.3990114,13 C17.934012,10.7219882 15.9122317,9 13.5,9 C10.8179192,9 8.61853314,11.128805 8.50463338,13.7836234 Z" fill="currentColor" fill-rule="evenodd" opacity="0.3" transform="translate(14.25, 9.5492) scale(-1, 1) translate(-14.25, -9.5492)"/><path d="M14.25,3 C16.5527059,3 18.601518,4.25080776 19.6905601,6.16736113 C22.133304,6.54178496 24,8.65228797 24,11.2 C24,13.830046 22.0107031,15.9941679 19.4536036,16.2695834 C19.7887363,15.6153581 19.9838635,14.8783309 19.9991347,14.0996821 C21.1689422,13.6563236 22,12.5256602 22,11.2 C22,9.48725 20.61275,8.1 18.9,8.1 L18.34975,8.1 C17.83825,6.30975 16.203,5 14.25,5 C11.894,5 9.9875,6.9065 9.9875,9.2625 L9.9875,9.65 L8.825,9.65 C7.5385,9.65 6.5,10.6885 6.5,11.975 C6.5,12.3435286 6.58521762,12.6917068 6.73707114,13.0009528 L4.62199213,13.0005603 C4.54225382,12.6718743 4.5,12.3284311 4.5,11.975 C4.5,9.79981634 6.10047291,8.00294958 8.19132804,7.70140977 C8.87813896,4.9955838 11.3295224,3 14.25,3 Z" fill="currentColor" fill-rule="nonzero"/><path d="M19,18 C20.65,18 22,19.35 22,21 C22,22.65 20.65,24 19,24 C17.35,24 16,22.65 16,21 L18,21 C18,21.55 18.45,22 19,22 C19.55,22 20,21.55 20,21 C20,20.45 19.55,20 19,20 L2,20 L2,18 L19,18 Z M15,11 C16.65,11 18,12.35 18,14 C18,15.65 16.65,17 15,17 L6,17 L6,15 L15,15 C15.55,15 16,14.55 16,14 C16,13.45 15.55,13 15,13 C14.45,13 14,13.45 14,14 L12,14 C12,12.35 13.35,11 15,11 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6"/></svg>'
+          clearingBreezy: '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.5,5 C13.1832067,5 15.4176427,6.9214158 15.9024602,9.4633996 C14.4823834,10.1228992 13.4216145,11.429273 13.1009886,13 L5.59939174,12.9993781 C5.21615914,12.2494625 5,11.3999746 5,10.5 C5,7.46243388 7.46243388,5 10.5,5 Z M3.57089004,9.49999177 C3.52417237,9.82659738 3.5,10.1604758 3.5,10.4999918 C3.5,10.8398714 3.52422183,11.1740854 3.57103341,11.5010101 L0,11.4999918 L0,9.49999177 L3.57089004,9.49999177 Z M3.78248558,2.36827202 L6.30779665,4.8936395 C5.77205613,5.29488872 5.29572911,5.77113231 4.8943868,6.30679906 L2.36827202,3.78248558 L3.78248558,2.36827202 Z M17.2175144,2.36827202 L18.631728,3.78248558 L16.1056132,6.30679906 C15.7042709,5.77113231 15.2279439,5.29488872 14.6922034,4.8936395 L17.2175144,2.36827202 Z M11.4999918,0 L11.5010101,3.57103341 C11.1740854,3.52422183 10.8398714,3.5 10.4999918,3.5 C10.1604758,3.5 9.82659738,3.52417237 9.49999177,3.57089004 L9.49999177,0 L11.4999918,0 Z" fill="#B08C00" fill-rule="nonzero"/><path d="M21,18 C22.65,18 24,19.35 24,21 C24,22.65 22.65,24 21,24 C19.35,24 18,22.65 18,21 L20,21 C20,21.55 20.45,22 21,22 C21.55,22 22,21.55 22,21 C22,20.45 21.55,20 21,20 L4,20 L4,18 L21,18 Z M18,11 C19.65,11 21,12.35 21,14 C21,15.65 19.65,17 18,17 L7,17 L7,15 L18,15 C18.55,15 19,14.55 19,14 C19,13.45 18.55,13 18,13 C17.45,13 17,13.45 17,14 L15,14 C15,12.35 16.35,11 18,11 Z" fill="currentColor" fill-rule="nonzero" opacity="0.6"/></svg>'
         };
 
-        function fillDataPanel(outcome) {
+        function fillDataPanel(outcome, instant) {
           var d = SIM._OUTCOME_DATA[outcome];
           if (!d || !SIM._outcomeBar) return;
-          SIM._outcomeBar.textContent = d.banner;
+          var isRepeat = SIM._lastFilledOutcome === outcome;
+          SIM._lastFilledOutcome = outcome;
+          if (isRepeat) return;
+          function setIcon(el, svg) { el.innerHTML = svg; }
+          function setText(el, text) { el.textContent = text; }
+          if (!instant) {
+            setText = function(el, text) {
+              el.style.transition = "opacity 0.3s ease";
+              el.style.opacity = "0";
+              SIM._norRunTimeouts.push(setTimeout(function() {
+                el.textContent = text;
+                el.style.opacity = "1";
+                if (SIM._checkNorDataLabels) SIM._checkNorDataLabels();
+              }, 300));
+            };
+            setIcon = function(el, newSVG) {
+              var old = document.createElement("span");
+              old.style.cssText = "position:absolute;inset:0;transition:opacity 0.6s ease;";
+              old.innerHTML = el.innerHTML;
+              el.innerHTML = "";
+              el.style.position = "relative";
+              el.appendChild(old);
+              var inc = document.createElement("span");
+              inc.style.cssText = "position:absolute;inset:0;opacity:0;transition:opacity 0.3s ease 0.3s;";
+              inc.innerHTML = newSVG;
+              el.appendChild(inc);
+              void inc.offsetWidth;
+              old.style.opacity = "0";
+              inc.style.opacity = "1";
+              SIM._norRunTimeouts.push(setTimeout(function() {
+                el.innerHTML = newSVG;
+                el.style.position = "";
+              }, 620));
+            };
+          }
+          if (instant) {
+            SIM._outcomeBarLabel.textContent = d.banner;
+          } else {
+            var incoming = document.createElement("span");
+            incoming.style.cssText = "position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:1;opacity:0;transition:opacity 0.6s ease;";
+            incoming.textContent = d.banner;
+            SIM._outcomeBar.appendChild(incoming);
+            SIM._outcomeBarLabel.style.transition = "opacity 0.6s ease";
+            SIM._outcomeBarLabel.style.opacity = "0";
+            void incoming.offsetWidth;
+            incoming.style.opacity = "1";
+            SIM._norRunTimeouts.push(setTimeout(function() {
+              SIM._outcomeBarLabel.textContent = d.banner;
+              SIM._outcomeBarLabel.style.transition = "none";
+              SIM._outcomeBarLabel.style.opacity = "1";
+              SIM._outcomeBarLabel.style.webkitTextStrokeColor = "transparent";
+              if (incoming.parentNode) incoming.parentNode.removeChild(incoming);
+            }, 620));
+          }
           SIM._outcomeBar.style.color = "#333";
           SIM._outcomeBar.style.fontWeight = SIM._outcomePillCondensed ? "500" : "700";
+          var skyIconMap = {
+            "Overcast, storm clouds": SIM._skyIcons.overcast,
+            "Overcast, hazy": SIM._skyIcons.overcastHazy,
+            "Cloudy": SIM._skyIcons.cloudy,
+            "Clear, breezy": SIM._skyIcons.clearingBreezy,
+            "Sunny": SIM._skyIcons.sunny
+          };
+          var windIconMap = {
+            "From the NE, 45–60 mph": SIM._windIcons.neHigh,
+            "From the NE, 25–35 mph": SIM._windIcons.neMedium,
+            "From the NE, 15–20 mph": SIM._windIcons.neLow,
+            "From the NW, 15–25 mph": SIM._windIcons.nwLow,
+            "From the S/SE, 5–15 mph": SIM._windIcons.sseLight,
+            "Variable, 0–10 mph": SIM._windIcons.variable
+          };
+          var precipTypeIconMap = {
+            "Rain (snow inland)": SIM._precipTypeIcons.rain,
+            "Rain (mix inland)": SIM._precipTypeIcons.rain,
+            "Light rain / wet snow": SIM._precipTypeIcons.lightRain,
+            "Scattered rain": SIM._precipTypeIcons.strayShower,
+            "None": SIM._precipTypeIcons.none
+          };
+          var precipAmtIconMap = {
+            "Heavy": SIM._precipAmtIcons.heavy,
+            "Moderate": SIM._precipAmtIcons.moderate,
+            "Light": SIM._precipAmtIcons.light,
+            "Trace": SIM._precipAmtIcons.trace,
+            "None": SIM._precipAmtIcons.none
+          };
+          var stormIconMap = {
+            "Strong": SIM._stormIcons.strong,
+            "Moderate": SIM._stormIcons.moderate,
+            "Weak": SIM._stormIcons.weak
+          };
+          var siVal = d.intensity || "";
+          var rowData = [
+            { valKey: "Sky", text: d["Sky"], iconEl: SIM._skyIcon, svg: skyIconMap[d["Sky"]] || SIM._skyIcons.sunny },
+            { valKey: "Wind", text: d["Wind"], iconEl: SIM._windIcon, svg: windIconMap[d["Wind"]] || SIM._windIcons.none },
+            { valKey: "Precipitation Type", text: d["Precipitation Type"], iconEl: SIM._precipTypeIcon, svg: precipTypeIconMap[d["Precipitation Type"]] || SIM._precipTypeIcons.none },
+            { valKey: "Precipitation Amount", text: d["Precipitation Amount"], iconEl: SIM._precipAmtIcon, svg: precipAmtIconMap[d["Precipitation Amount"]] || SIM._precipAmtIcons.none },
+            { valKey: "Storm Intensity", text: siVal, iconEl: SIM._stormIcon, svg: stormIconMap[siVal] || SIM._stormIcons.none }
+          ];
           var vals = SIM._dataValueEls;
-          if (vals) {
-            ["Sky", "Pressure", "Wind", "Precipitation Type", "Precipitation Amount"].forEach(function(key) {
-              if (vals[key]) {
-                vals[key].textContent = d[key];
-                vals[key].style.color = "#333";
-                vals[key].style.fontWeight = "400";
+          var stagger = instant ? 0 : 150;
+          rowData.forEach(function(r, i) {
+            var delay = i * stagger;
+            function doUpdate() {
+              if (vals && vals[r.valKey]) {
+                setText(vals[r.valKey], r.text);
+                vals[r.valKey].style.color = "#333";
+                vals[r.valKey].style.fontWeight = "400";
               }
-            });
-            if (vals["Storm Intensity"]) {
-              vals["Storm Intensity"].textContent = d.intensity;
-              vals["Storm Intensity"].style.color = "#333";
-              vals["Storm Intensity"].style.fontWeight = "400";
+              if (r.iconEl) {
+                setIcon(r.iconEl, r.svg);
+              }
             }
-          }
-          if (SIM._skyIcon) {
-            var skyVal = (d["Sky"] || "").toLowerCase();
-            if (skyVal.indexOf("hazy") >= 0) {
-              SIM._skyIcon.innerHTML = SIM._skyIcons.overcastHazy;
-            } else if (skyVal.indexOf("clearing") >= 0 || skyVal.indexOf("breezy") >= 0) {
-              SIM._skyIcon.innerHTML = SIM._skyIcons.clearingBreezy;
-            } else if (skyVal.indexOf("cloudy") >= 0 && skyVal.indexOf("raw") >= 0) {
-              SIM._skyIcon.innerHTML = SIM._skyIcons.cloudy;
-            } else if (skyVal.indexOf("overcast") >= 0) {
-              SIM._skyIcon.innerHTML = SIM._skyIcons.overcast;
-            } else {
-              SIM._skyIcon.innerHTML = SIM._skyIcons.sunny;
-            }
-          }
-          if (SIM._pressureIcon) {
-            var presVal = (d["Pressure"] || "").toLowerCase();
-            if (presVal.indexOf("near normal") >= 0) {
-              SIM._pressureIcon.innerHTML = SIM._pressureIcons.nearNormal;
-            } else if (presVal.indexOf("slightly") >= 0) {
-              SIM._pressureIcon.innerHTML = SIM._pressureIcons.slightlyLow;
-            } else if (presVal.indexOf("rising") >= 0) {
-              SIM._pressureIcon.innerHTML = SIM._pressureIcons.rising;
-            } else if (presVal.indexOf("low") >= 0) {
-              SIM._pressureIcon.innerHTML = SIM._pressureIcons.low;
-            } else {
-              SIM._pressureIcon.innerHTML = SIM._pressureIcons.high;
-            }
-          }
-          if (SIM._windIcon) {
-            var windVal = (d["Wind"] || "").toLowerCase();
-            if (windVal.indexOf("45") >= 0) {
-              SIM._windIcon.innerHTML = SIM._windIcons.neHigh;
-            } else if (windVal.indexOf("25") >= 0) {
-              SIM._windIcon.innerHTML = SIM._windIcons.neMedium;
-            } else if (windVal.indexOf("15") >= 0) {
-              SIM._windIcon.innerHTML = SIM._windIcons.neLow;
-            } else if (windVal.indexOf("gusty") >= 0 || windVal.indexOf("nw") >= 0) {
-              SIM._windIcon.innerHTML = SIM._windIcons.nwGusty;
-            } else if (windVal.indexOf("s/se") >= 0 || (windVal.indexOf("light") >= 0 && windVal.indexOf("calm") < 0)) {
-              SIM._windIcon.innerHTML = SIM._windIcons.sseLight;
-            } else {
-              SIM._windIcon.innerHTML = SIM._windIcons.none;
-            }
-          }
-          if (SIM._precipTypeIcon) {
-            var ptVal = (d["Precipitation Type"] || "").toLowerCase();
-            if (ptVal.indexOf("light rain") >= 0 || ptVal.indexOf("wet snow") >= 0) {
-              SIM._precipTypeIcon.innerHTML = SIM._precipTypeIcons.lightRain;
-            } else if (ptVal.indexOf("stray") >= 0) {
-              SIM._precipTypeIcon.innerHTML = SIM._precipTypeIcons.strayShower;
-            } else if (ptVal.indexOf("rain") >= 0) {
-              SIM._precipTypeIcon.innerHTML = SIM._precipTypeIcons.rain;
-            } else {
-              SIM._precipTypeIcon.innerHTML = SIM._precipTypeIcons.none;
-            }
-          }
-          if (SIM._precipAmtIcon) {
-            var paVal = (d["Precipitation Amount"] || "").toLowerCase();
-            if (paVal.indexOf("heavy") >= 0) {
-              SIM._precipAmtIcon.innerHTML = SIM._precipAmtIcons.heavy;
-            } else if (paVal.indexOf("moderate") >= 0) {
-              SIM._precipAmtIcon.innerHTML = SIM._precipAmtIcons.moderate;
-            } else if (paVal === "light") {
-              SIM._precipAmtIcon.innerHTML = SIM._precipAmtIcons.light;
-            } else if (paVal.indexOf("trace") >= 0) {
-              SIM._precipAmtIcon.innerHTML = SIM._precipAmtIcons.trace;
-            } else {
-              SIM._precipAmtIcon.innerHTML = SIM._precipAmtIcons.none;
-            }
-          }
-          if (SIM._stormIcon) {
-            var siVal = (d.intensity || "").toLowerCase();
-            if (siVal.indexOf("strong") >= 0) {
-              SIM._stormIcon.innerHTML = SIM._stormIcons.strong;
-            } else if (siVal.indexOf("moderate") >= 0) {
-              SIM._stormIcon.innerHTML = SIM._stormIcons.moderate;
-            } else if (siVal.indexOf("weak") >= 0) {
-              SIM._stormIcon.innerHTML = SIM._stormIcons.weak;
-            } else {
-              SIM._stormIcon.innerHTML = SIM._stormIcons.none;
-            }
-          }
+            if (delay === 0) { doUpdate(); }
+            else { SIM._norRunTimeouts.push(setTimeout(doUpdate, delay)); }
+          });
           if (SIM._checkNorDataLabels) SIM._checkNorDataLabels();
-          if (SIM._stopSnow) SIM._stopSnow();
-          if (SIM._stopSun) SIM._stopSun();
-          if (SIM._stopWind) SIM._stopWind();
-          if (SIM._stopHaze) SIM._stopHaze();
-          if ((outcome === "strong" || outcome === "moderate" || outcome === "weak") && SIM._startSnow) {
-            SIM._startSnow(outcome);
-          } else if (outcome === "fair" && SIM._startSun) {
-            SIM._startSun();
-          } else if (outcome === "dry" && SIM._startWind) {
-            SIM._startWind();
-          } else if (outcome === "humid" && SIM._startHaze) {
-            SIM._startHaze();
+          if (!isRepeat) {
+            if (SIM._stopSnow) SIM._stopSnow();
+            if (SIM._stopSun) SIM._stopSun();
+            if (SIM._stopWind) SIM._stopWind();
+            if (SIM._stopHaze) SIM._stopHaze();
+            if ((outcome === "strong" || outcome === "moderate" || outcome === "weak") && SIM._startSnow) {
+              SIM._startSnow(outcome, instant);
+            } else if (outcome === "fair" && SIM._startSun) {
+              SIM._startSun(instant);
+            } else if (outcome === "windy" && SIM._startWind) {
+              SIM._startWind(instant);
+            } else if (outcome === "humid" && SIM._startHaze) {
+              SIM._startHaze(instant);
+            }
           }
         }
 
         function clearDataPanel() {
+          SIM._lastFilledOutcome = null;
+          if (SIM._progressFill) {
+            SIM._progressFill.style.transition = "none";
+            SIM._progressFill.style.width = "0";
+            SIM._progressFill.style.left = "0";
+          }
           if (SIM._outcomeBar) {
-            SIM._outcomeBar.textContent = "–";
+            SIM._outcomeBarLabel.textContent = "–";
             SIM._outcomeBar.style.color = "#333";
             SIM._outcomeBar.style.fontWeight = "";
+            SIM._outcomeBarLabel.style.transition = "none";
+            SIM._outcomeBarLabel.style.webkitTextStrokeColor = "transparent";
           }
           var vals = SIM._dataValueEls;
           if (vals) {
@@ -5465,9 +5524,6 @@ function buildSimContent() {
           }
           if (SIM._skyIcon) {
             SIM._skyIcon.innerHTML = SIM._standInIcon;
-          }
-          if (SIM._pressureIcon) {
-            SIM._pressureIcon.innerHTML = SIM._standInIcon;
           }
           if (SIM._windIcon) {
             SIM._windIcon.innerHTML = SIM._standInIcon;
@@ -5532,26 +5588,25 @@ function buildSimContent() {
               else dd._setSelection(null);
             });
             setNorPillMode(true);
-            fillDataPanel(st.outcome);
+            fillDataPanel(st.outcome, true);
             if (SIM._norPromptWrap) SIM._norPromptWrap.style.display = "none";
             SIM._norPromptVisible = false;
 
             if (SIM._stopNorCloud) SIM._stopNorCloud();
             if (SIM._stopWxFx) SIM._stopWxFx();
-            if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
-            if ((st.outcome === "strong" || st.outcome === "moderate" || st.outcome === "weak" || st.outcome === "humid" || st.outcome === "dry") && SIM._showNorCloudFinal) {
+            if ((st.outcome === "strong" || st.outcome === "moderate" || st.outcome === "weak" || st.outcome === "humid") && SIM._showNorCloudFinal) {
               SIM._showNorCloudFinal(st.outcome);
-            } else if (st.outcome === "fair") {
-              if (SIM._showHighPressureLabel) SIM._showHighPressureLabel();
             }
 
             stage.style.transition = "none";
             stage.style.backgroundColor = "#d8d8d8";
             if (SIM.runBtn) {
               SIM.runBtn.querySelector("span").textContent = "Replay";
-              SIM.runBtn.setAttribute("aria-disabled", "false");
+              setAriaDisabled(SIM.runBtn, false);
             }
-            if (SIM.resetTrialBtn) SIM.resetTrialBtn.setAttribute("aria-disabled", "false");
+            if (SIM.resetTrialBtn) setAriaDisabled(SIM.resetTrialBtn, false);
+            var syncOd = SIM._OUTCOME_DATA ? SIM._OUTCOME_DATA[st.outcome] : null;
+            stage.setAttribute("aria-label", "Weather map, " + (syncOd ? syncOd.banner.toLowerCase() : "simulation complete"));
           } else {
             setNorPillMode(false);
             norDropdowns.forEach(function(dd) {
@@ -5561,10 +5616,10 @@ function buildSimContent() {
             });
             clearDataPanel();
             if (SIM._stopNorCloud) SIM._stopNorCloud();
-            if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
 
             stage.style.transition = "none";
             stage.style.backgroundColor = "#ebebeb";
+            stage.setAttribute("aria-label", "Weather map");
             if (SIM.runBtn) SIM.runBtn.querySelector("span").textContent = "Run";
             updateNorButtons();
           }
@@ -5579,8 +5634,8 @@ function buildSimContent() {
           parts.push("Land Air Mass Humidity: " + (st.landHum || "not selected"));
           parts.push("Land Air Mass Temperature: " + (st.landTemp || "not selected"));
           parts.push("Ocean Air Mass Pathway: " + (st.oceanPath ? NOR_PATH_NUM[st.oceanPath] + " " + st.oceanPath : "not selected"));
-          parts.push("Ocean Air Mass Temperature: " + (st.oceanPath ? (st.oceanPath === "S/SE" ? "Warm" : "Cool") : "not selected"));
           parts.push("Ocean Air Mass Humidity: " + (st.oceanHum || "not selected"));
+          parts.push("Ocean Air Mass Temperature: " + (st.oceanPath ? (st.oceanPath === "S/SE" ? "Warm" : "Cool") : "not selected"));
           if (st.hasRun && SIM._OUTCOME_DATA && SIM._OUTCOME_DATA[st.outcome]) {
             parts.push("Weather Outcome: " + SIM._OUTCOME_DATA[st.outcome].banner);
           } else {
@@ -5603,7 +5658,6 @@ function buildSimContent() {
             if (SIM._stopWind) SIM._stopWind();
             if (SIM._stopHaze) SIM._stopHaze();
             if (SIM._stopWxFx) SIM._stopWxFx();
-            if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
 
             stage.style.transition = "none";
             stage.style.backgroundColor = "#ebebeb";
@@ -5611,12 +5665,13 @@ function buildSimContent() {
             SIM._norPromptVisible = false;
             SIM._norRunning = false;
             stage.removeAttribute("aria-busy");
+            stage.setAttribute("aria-label", "Weather map");
 
             if (SIM.runBtn) {
               SIM.runBtn.querySelector("span").textContent = "Run";
-              SIM.runBtn.setAttribute("aria-disabled", "true");
+              setAriaDisabled(SIM.runBtn, true);
             }
-            if (SIM.resetTrialBtn) SIM.resetTrialBtn.setAttribute("aria-disabled", "true");
+            if (SIM.resetTrialBtn) setAriaDisabled(SIM.resetTrialBtn, true);
             if (SIM.updateOceanTemp) SIM.updateOceanTemp();
             if (SIM.updateAMColors) SIM.updateAMColors();
             if (SIM.updateArrowColors) SIM.updateArrowColors();
@@ -5720,7 +5775,6 @@ function buildSimContent() {
         grid.appendChild(oceanHumDD);
         const oceanTempDisplay = document.createElement("div");
         oceanTempDisplay.className = "nor-temp-display";
-        oceanTempDisplay.setAttribute("role", "status");
         oceanTempDisplay.setAttribute("aria-label", "Temperature for Ocean Air Mass");
         oceanTempDisplay.style.borderRadius = "999px";
         oceanTempDisplay.style.border = "2px solid transparent";
@@ -5793,6 +5847,7 @@ function buildSimContent() {
         inner.appendChild(topControls);
 
         // TODO: Remove temp-combo-bar once trial card work is done
+        if (typeof window._testBarExpanded === "undefined") window._testBarExpanded = true;
         (function() {
           var wrapper = document.querySelector(".viewport-wrapper");
           if (!wrapper) return;
@@ -5802,23 +5857,71 @@ function buildSimContent() {
           if (existingNote) existingNote.remove();
           var bar = document.createElement("div");
           bar.id = "temp-combo-bar";
-          bar.style.cssText = "position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:999999;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;padding:6px 12px;background:#D3E8FD;border:1px solid #4680B8;border-radius:6px;font-family:'Roboto Condensed',sans-serif;font-size:13px;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.15);box-sizing:border-box;min-width:772px;";
-          var label = document.createElement("span");
-          label.style.cssText = "font-weight:700;color:#1E3F6E;";
-          label.textContent = "Test:";
-          bar.appendChild(label);
+          bar.style.cssText = "position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:999999;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;padding:6px 12px 6px 36px;background:#D3E8FD;border:1px solid #4680B8;border-radius:6px;font-family:'Roboto Condensed',sans-serif;font-size:13px;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.15);box-sizing:border-box;min-width:772px;";
+          var collapseBtn = document.createElement("button");
+          collapseBtn.style.cssText = "background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;color:#1E3F6E;padding:11px 8px 13px 12px;position:absolute;left:0;top:0;";
+          collapseBtn.innerHTML = "<span style='display:inline-block;width:12px;text-align:center;'>&#9662;</span> Test:";
+          var barExpanded = window._testBarExpanded;
+          var barChildren = [];
+          collapseBtn.addEventListener("click", function() {
+            barExpanded = !barExpanded;
+            window._testBarExpanded = barExpanded;
+            collapseBtn.innerHTML = barExpanded ? "<span style='display:inline-block;width:12px;text-align:center;'>&#9662;</span> Test:" : "<span style='display:inline-block;width:12px;text-align:center;'>&#9656;</span> Test";
+            barChildren.forEach(function(c) { c.style.display = barExpanded ? (c._showDisplay || "") : "none"; });
+            var tcn = document.getElementById("temp-combo-note");
+            if (barExpanded) {
+              collapseBtn.style.position = "absolute";
+              collapseBtn.style.padding = "11px 8px 13px 12px";
+              collapseBtn.style.left = "0";
+              collapseBtn.style.top = "0";
+              bar.style.justifyContent = "center";
+              bar.style.padding = "6px 12px 6px 36px";
+              bar.style.minWidth = "772px";
+              var ca = document.querySelector(".content-area");
+              var wr = document.querySelector(".viewport-wrapper");
+              if (ca && wr) {
+                var caRect = ca.getBoundingClientRect();
+                var wrRect = wr.getBoundingClientRect();
+                bar.style.transform = "none";
+                bar.style.left = (caRect.left - wrRect.left) + "px";
+                bar.style.width = caRect.width + "px";
+                if (tcn) {
+                  tcn.style.display = "";
+                  tcn.style.transform = "none";
+                  tcn.style.left = (caRect.left - wrRect.left) + "px";
+                  tcn.style.width = caRect.width + "px";
+                  tcn.style.top = (50 + bar.offsetHeight + 6) + "px";
+                }
+              } else {
+                bar.style.left = "50%";
+                bar.style.transform = "translateX(-50%)";
+                bar.style.width = "";
+                if (tcn) { tcn.style.display = ""; tcn.style.left = "50%"; tcn.style.transform = "translateX(-50%)"; tcn.style.width = ""; }
+              }
+            } else {
+              collapseBtn.style.position = "static";
+              collapseBtn.style.padding = "11px 14px 13px 12px";
+              bar.style.justifyContent = "flex-start";
+              bar.style.padding = "0";
+              bar.style.minWidth = "";
+              bar.style.width = "";
+              bar.style.transform = "none";
+              if (tcn) tcn.style.display = "none";
+            }
+          });
+          bar.appendChild(collapseBtn);
           var combos = {
             strong:   { label: "Strong nor’easter", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Dry", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Humid" } },
             moderate: { label: "Moderate nor’easter", vals: { "Pathway for Land Air Mass": "W", "Humidity for Land Air Mass": "Dry", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Humid" } },
             weak:     { label: "Weak coastal storm", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Dry", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "NE", "Humidity for Ocean Air Mass": "Humid" } },
             humid:    { label: "Humid, no storm", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Humid", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Humid" } },
-            dry:      { label: "Dry front passes", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Dry", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Dry" } },
+            windy:    { label: "Windy, no storm", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Dry", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Dry" } },
             fair:     { label: "Fair weather", vals: { "Pathway for Land Air Mass": "N/NW", "Humidity for Land Air Mass": "Humid", "Temperature for Land Air Mass": "Cold", "Pathway for Ocean Air Mass": "S/SE", "Humidity for Ocean Air Mass": "Dry" } }
           };
           Object.keys(combos).forEach(function(key) {
             var btn = document.createElement("button");
             btn.textContent = combos[key].label;
-            btn.style.cssText = "padding:4px 10px;border:1px solid #4680B8;border-radius:4px;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;";
+            btn.style.cssText = "padding:4px 8px;border:1px solid #4680B8;border-radius:4px;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;";
             btn.addEventListener("mouseenter", function() { btn.style.background = "#D3E8FD"; });
             btn.addEventListener("mouseleave", function() { btn.style.background = "#fff"; });
             btn.addEventListener("mousedown", function() { btn.style.background = "#9CC9F7"; });
@@ -5833,36 +5936,80 @@ function buildSimContent() {
               });
             });
             bar.appendChild(btn);
+            barChildren.push(btn);
           });
+          var row2 = document.createElement("div");
+          row2.style.cssText = "display:flex;align-items:center;flex-basis:100%;justify-content:center;";
+          var r2label = document.createElement("span");
+          r2label.style.cssText = "font-weight:700;color:#1E3F6E;margin-right:8px;";
+          r2label.textContent = "Boston label:";
+          row2.appendChild(r2label);
+          ["Below clouds", "Above clouds"].forEach(function(mode) {
+            var b = document.createElement("button");
+            b.textContent = mode;
+            var radius = mode === "Below clouds" ? "4px 0 0 4px" : "0 4px 4px 0";
+            var ml = mode === "Above clouds" ? "margin-left:-1px;" : "";
+            b.style.cssText = "padding:4px 8px;border:1px solid #4680B8;border-radius:" + radius + ";background:" + (mode === "Above clouds" ? "#D3E8FD" : "#fff") + ";cursor:pointer;font-family:inherit;font-size:13px;position:relative;" + ml;
+            b.addEventListener("focus", function() { b.style.zIndex = "1"; });
+            b.addEventListener("blur", function() { b.style.zIndex = ""; });
+            b.addEventListener("mouseenter", function() { if (!b.classList.contains("active")) b.style.background = "#D3E8FD"; });
+            b.addEventListener("mouseleave", function() { if (!b.classList.contains("active")) b.style.background = "#fff"; });
+            b.addEventListener("mousedown", function() { if (!b.classList.contains("active")) b.style.background = "#9CC9F7"; });
+            b.addEventListener("mouseup", function() { if (!b.classList.contains("active")) b.style.background = "#D3E8FD"; });
+            b.addEventListener("click", function() {
+              if (b.classList.contains("active")) return;
+              row2.querySelectorAll("button").forEach(function(x) { x.classList.remove("active"); x.style.background = "#fff"; });
+              b.classList.add("active");
+              b.style.background = "#D3E8FD";
+              if (SIM._bostonMarker) SIM._bostonMarker.style.zIndex = mode === "Above clouds" ? "11" : "9";
+            });
+            if (mode === "Above clouds") b.classList.add("active");
+            row2.appendChild(b);
+          });
+          bar.appendChild(row2);
+          row2._showDisplay = "flex";
+          barChildren.push(row2);
           var note = document.createElement("div");
           note.id = "temp-combo-note";
           note.style.cssText = "position:absolute;top:97px;left:50%;transform:translateX(-50%);z-index:999999;text-align:center;font-size:14px;color:#333;font-family:'Roboto Condensed',sans-serif;box-sizing:border-box;min-width:772px;white-space:nowrap;";
           note.textContent = "These are temporary controls to populate the sim with the 6 possible Weather Outcomes. These will be removed in the final version.";
           wrapper.insertBefore(bar, wrapper.firstChild);
           wrapper.insertBefore(note, bar.nextSibling);
+          if (!barExpanded) {
+            collapseBtn.innerHTML = "<span style='display:inline-block;width:12px;text-align:center;'>&#9656;</span> Test";
+            collapseBtn.style.position = "static";
+            collapseBtn.style.padding = "11px 14px 13px 12px";
+            bar.style.justifyContent = "flex-start";
+            bar.style.padding = "0";
+            bar.style.minWidth = "";
+            barChildren.forEach(function(c) { c.style.display = "none"; });
+            note.style.display = "none";
+          }
           SIM._syncComboBar = function() {
             var tcb = document.getElementById("temp-combo-bar");
             var tcn = document.getElementById("temp-combo-note");
             if (!tcb) return;
             var show = activeSim === "noreaster";
             tcb.style.display = show ? "flex" : "none";
-            if (tcn) tcn.style.display = show ? "" : "none";
+            if (tcn) tcn.style.display = (show && barExpanded) ? "" : "none";
             if (!show) return;
-            requestAnimationFrame(function() {
-              var ca = document.querySelector(".content-area.standalone");
+            requestAnimationFrame(function() { requestAnimationFrame(function() {
+              var ca = document.querySelector(".content-area");
               var wr = document.querySelector(".viewport-wrapper");
               if (!ca || !wr) return;
               var caRect = ca.getBoundingClientRect();
               var wrRect = wr.getBoundingClientRect();
-              var centerX = caRect.left + caRect.width / 2 - wrRect.left;
-              tcb.style.left = centerX + "px";
+              tcb.style.transform = "none";
+              tcb.style.left = (caRect.left - wrRect.left) + "px";
+              if (!barExpanded) return;
               tcb.style.width = caRect.width + "px";
               if (tcn) {
-                tcn.style.left = centerX + "px";
+                tcn.style.transform = "none";
+                tcn.style.left = (caRect.left - wrRect.left) + "px";
                 tcn.style.width = caRect.width + "px";
                 tcn.style.top = (50 + tcb.offsetHeight + 6) + "px";
               }
-            });
+            }); });
           };
           if (activeSim !== "noreaster") { bar.style.display = "none"; note.style.display = "none"; }
           else { SIM._syncComboBar(); }
@@ -6085,7 +6232,7 @@ function buildSimContent() {
             });
           }
         }
-        SIM.updateNorDropdownSize = function() { updateNorDropdownSize(); if (SIM._positionBostonMarker) SIM._positionBostonMarker(); if (SIM._positionNoreasterGraphic) SIM._positionNoreasterGraphic(); if (SIM._positionHighPressureLabel) SIM._positionHighPressureLabel(); if (SIM._positionArrows) SIM._positionArrows(); if (SIM._positionPills) SIM._positionPills(); };
+        SIM.updateNorDropdownSize = function() { updateNorDropdownSize(); if (SIM._positionBostonMarker) SIM._positionBostonMarker(); if (SIM._positionNoreasterGraphic) SIM._positionNoreasterGraphic(); if (SIM._positionArrows) SIM._positionArrows(); if (SIM._positionPills) SIM._positionPills(); };
         SIM.updateNorDropdownSize();
         document.fonts.ready.then(function() {
           if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
@@ -6113,7 +6260,9 @@ function buildSimContent() {
            No explicit z-index values — order depends entirely on DOM position. */
         const stage = document.createElement("div");
         stage.className = "nor-stage";
-        stage.style.cssText = "flex:1;min-height:0;background-color:#ebebeb;background-image:url('ICONS/Map_Street_2x.png');background-size:auto 100%;background-position:center;background-repeat:no-repeat;overflow:hidden;position:relative;";
+        stage.setAttribute("role", "img");
+        stage.setAttribute("aria-label", "Weather map");
+        stage.style.cssText = "flex:1;min-height:0;background-color:#ebebeb;background-image:url('ICONS/Map_Street_2x.png');background-size:auto 100%;background-position:center;background-repeat:no-repeat;overflow:hidden;position:relative;z-index:1;";
         inner.appendChild(stage);
         SIM._stage = stage;
 
@@ -6234,19 +6383,6 @@ function buildSimContent() {
           wxFxRAF = requestAnimationFrame(animateWxFx);
         }
 
-        function startWxFx(mode) {
-          if (wxFxRAF && wxFxMode === mode) return;
-          stopWxFx();
-          wxFxMode = mode;
-          wxFxParticles = [];
-          wxFxLastTime = null;
-          wxFxCanvas.style.display = "";
-          wxFxCanvas.style.zIndex = "4";
-          console.log("[wxFx] startWxFx called with mode:", mode, "canvas size:", wxFxCanvas.width, wxFxCanvas.height, "parent:", wxFxCanvas.parentNode ? wxFxCanvas.parentNode.className : "none");
-          if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-          wxFxRAF = requestAnimationFrame(animateWxFx);
-        }
-
         function stopWxFx() {
           if (wxFxRAF) cancelAnimationFrame(wxFxRAF);
           wxFxRAF = null;
@@ -6256,7 +6392,6 @@ function buildSimContent() {
           wxFxCtx.clearRect(0, 0, wxFxW, wxFxH);
         }
 
-        SIM._startWxFx = startWxFx;
         SIM._stopWxFx = stopWxFx;
 
         const noreasterGraphic = document.createElement("div");
@@ -6265,6 +6400,7 @@ function buildSimContent() {
 
         // Cloud particle canvas — appended after innerHTML below
         var norCanvas = document.createElement("canvas");
+        norCanvas.setAttribute("aria-hidden", "true");
         var NOR_SCALE = 4, NOR_PAD = 200;
         var NOR_SIZE = 1192 + NOR_PAD * 2;
         norCanvas.width = NOR_SIZE; norCanvas.height = NOR_SIZE;
@@ -6368,17 +6504,10 @@ function buildSimContent() {
           norCtx.globalAlpha = norAnimMode === "weak" ? 0.15 + (t || 0) * 0.25 : 0.35 + (t || 0) * 0.55;
           norCtx.drawImage(norOffCanvas, 0, 0);
           norCtx.restore();
+          norCtx.save();
+          norCtx.filter = "blur(" + (0.25 * NOR_SCALE) + "px)";
           norCtx.drawImage(norOffCanvas, 0, 0);
-          var labelSize = 36 * NOR_SCALE;
-          norCtx.font = "900 " + labelSize + "px Lato, sans-serif";
-          norCtx.textAlign = "center";
-          norCtx.textBaseline = "middle";
-          norCtx.strokeStyle = "#fff";
-          norCtx.lineWidth = 4 * NOR_SCALE;
-          norCtx.lineJoin = "round";
-          norCtx.strokeText("L", NOR_CX, NOR_CY);
-          norCtx.fillStyle = "#534AB7";
-          norCtx.fillText("L", NOR_CX, NOR_CY);
+          norCtx.restore();
         }
         noreasterGraphic.appendChild(norCanvas);
         stage.appendChild(noreasterGraphic);
@@ -6425,7 +6554,7 @@ function buildSimContent() {
           if (elapsed < norDuration) {
             norSpinRAF = requestAnimationFrame(animateNorCloud);
           } else {
-            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[norAnimMode] = snapImg;
+            if (!norFinalSnapshots[norAnimMode]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[norAnimMode] = snapImg; }
             if (norFinishCallback) {
               norFinishCallback();
               norFinishCallback = null;
@@ -6554,37 +6683,36 @@ function buildSimContent() {
           var eased = 1 - Math.pow(1 - t, 1.3);
           norCtx.clearRect(0, 0, NOR_SIZE, NOR_SIZE);
           norOffCtx.clearRect(0, 0, NOR_SIZE, NOR_SIZE);
+          var weakFadeR = (120 + t * 80) * NOR_SCALE;
+          var weakFadeRSq = weakFadeR * weakFadeR;
+          var weakFadeInnerSq = weakFadeRSq * 0.49;
+          var weakFadeOuterSq = weakFadeRSq * 0.51;
           for (var j = 0; j < weakBand.length; j++) {
             var p = weakBand[j];
             var pLife = p.life || weakBandLife;
-            var fade = 1 - p.age / pLife;
-            if (fade <= 0) continue;
-            var alpha = p.op * fade;
+            var fadeOut = 1 - p.age / pLife;
+            if (fadeOut <= 0) continue;
+            var fadeIn = Math.min(1, p.age / 0.5);
+            var fade = fadeIn * fadeOut;
+            var dx = p.x - NOR_CX;
+            var dy = p.y - NOR_CY;
+            var distSq = dx * dx + dy * dy;
+            var edgeFade = distSq < weakFadeInnerSq ? 1 : Math.max(0, 1 - (distSq - weakFadeInnerSq) / weakFadeOuterSq);
+            var alpha = p.op * fade * edgeFade;
             norOffCtx.fillStyle = "rgba(" + p.tone + "," + p.tone + "," + p.tone + "," + alpha.toFixed(3) + ")";
             norOffCtx.beginPath();
             norOffCtx.arc(p.x, p.y, p.size * NOR_SCALE / 4, 0, Math.PI * 2);
             norOffCtx.fill();
           }
           norCtx.save();
-          var weakShadowBlur = 2 + t * 1;
-          norCtx.filter = "blur(" + (weakShadowBlur * NOR_SCALE) + "px) brightness(0)";
+          norCtx.filter = "blur(" + ((8 + t * 4) * NOR_SCALE) + "px) brightness(0)";
           norCtx.globalAlpha = 0.35 + t * 0.55;
           norCtx.drawImage(norOffCanvas, 0, 0);
           norCtx.restore();
+          norCtx.save();
+          norCtx.filter = "blur(" + (0.25 * NOR_SCALE) + "px)";
           norCtx.drawImage(norOffCanvas, 0, 0);
-
-
-
-          var labelSize = 36 * NOR_SCALE;
-          norCtx.font = "900 " + labelSize + "px Lato, sans-serif";
-          norCtx.textAlign = "center";
-          norCtx.textBaseline = "middle";
-          norCtx.strokeStyle = "#fff";
-          norCtx.lineWidth = 4 * NOR_SCALE;
-          norCtx.lineJoin = "round";
-          norCtx.strokeText("L", NOR_CX, NOR_CY);
-          norCtx.fillStyle = "#534AB7";
-          norCtx.fillText("L", NOR_CX, NOR_CY);
+          norCtx.restore();
         }
 
         function animateWeakBand(now) {
@@ -6605,8 +6733,8 @@ function buildSimContent() {
           for (var j = 0; j < weakBand.length; j++) {
             var p = weakBand[j];
             var curl = Math.min(p.age / 1.5, 1);
-            p.vx += curl * -6 * NOR_SCALE * dt;
-            p.vy += curl * 8 * NOR_SCALE * dt;
+            p.vx += curl * -3 * NOR_SCALE * dt;
+            p.vy += curl * 2 * NOR_SCALE * dt;
             p.x += p.vx * dt + shiftX;
             p.y += p.vy * dt + shiftY;
             p.age += dt;
@@ -6621,7 +6749,7 @@ function buildSimContent() {
           if (elapsed < weakBandDuration) {
             weakBandRAF = requestAnimationFrame(animateWeakBand);
           } else {
-            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["weak"] = snapImg;
+            if (!norFinalSnapshots["weak"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["weak"] = snapImg; }
             if (weakBandFinish) { weakBandFinish(); weakBandFinish = null; }
           }
         }
@@ -6648,7 +6776,7 @@ function buildSimContent() {
               weakBand = weakBand.filter(function(p) { return p.age < weakBandLife; });
             }
             drawWeakBand(1);
-            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["weak"] = snapImg;
+            if (!norFinalSnapshots["weak"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["weak"] = snapImg; }
             noreasterGraphic.style.opacity = 1;
             positionNoreasterGraphic(0);
             if (onFinish) onFinish();
@@ -6720,7 +6848,7 @@ function buildSimContent() {
                 y: sp.y + (humidRand() - 0.5) * (15 + humidRand() * 40) * NOR_SCALE,
                 vx: Math.cos(toShore) * speed,
                 vy: Math.sin(toShore) * speed,
-                size: (1.5 + humidRand() * 6) * 0.8,
+                size: 1.5 + humidRand() * 6,
                 tone: 230 + Math.floor(humidRand() * 26),
                 op: 0.4 + humidRand() * 0.4,
                 age: 0,
@@ -6733,23 +6861,35 @@ function buildSimContent() {
         function drawHumidCloud(t) {
           norCtx.clearRect(0, 0, NOR_SIZE, NOR_SIZE);
           norOffCtx.clearRect(0, 0, NOR_SIZE, NOR_SIZE);
+          var humidFadeR = (120 + t * 80) * NOR_SCALE;
+          var humidFadeRSq = humidFadeR * humidFadeR;
+          var humidFadeInnerSq = humidFadeRSq * 0.49;
+          var humidFadeOuterSq = humidFadeRSq * 0.51;
           for (var j = 0; j < humidParticles.length; j++) {
             var p = humidParticles[j];
-            var fade = 1 - p.age / p.life;
-            if (fade <= 0) continue;
-            var alpha = p.op * fade;
+            var fadeOut = 1 - p.age / p.life;
+            if (fadeOut <= 0) continue;
+            var fadeIn = Math.min(1, p.age / 0.5);
+            var fade = fadeIn * fadeOut;
+            var dx = p.x - NOR_CX;
+            var dy = p.y - NOR_CY;
+            var distSq = dx * dx + dy * dy;
+            var edgeFade = distSq < humidFadeInnerSq ? 1 : Math.max(0, 1 - (distSq - humidFadeInnerSq) / humidFadeOuterSq);
+            var alpha = p.op * fade * edgeFade;
             norOffCtx.fillStyle = "rgba(" + p.tone + "," + p.tone + "," + p.tone + "," + alpha.toFixed(3) + ")";
             norOffCtx.beginPath();
             norOffCtx.arc(p.x, p.y, p.size * NOR_SCALE / 4, 0, Math.PI * 2);
             norOffCtx.fill();
           }
           norCtx.save();
-          var humidShadowBlur = 2 + t * 1;
-          norCtx.filter = "blur(" + (humidShadowBlur * NOR_SCALE) + "px) brightness(0)";
+          norCtx.filter = "blur(" + ((8 + t * 4) * NOR_SCALE) + "px) brightness(0)";
           norCtx.globalAlpha = 0.35 + t * 0.55;
           norCtx.drawImage(norOffCanvas, 0, 0);
           norCtx.restore();
+          norCtx.save();
+          norCtx.filter = "blur(" + (0.5 * NOR_SCALE) + "px)";
           norCtx.drawImage(norOffCanvas, 0, 0);
+          norCtx.restore();
 
         }
 
@@ -6776,7 +6916,7 @@ function buildSimContent() {
           if (elapsed < humidDuration) {
             humidRAF = requestAnimationFrame(animateHumidCloud);
           } else {
-            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["humid"] = snapImg;
+            if (!norFinalSnapshots["humid"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["humid"] = snapImg; }
             if (humidFinish) { humidFinish(); humidFinish = null; }
           }
         }
@@ -6804,7 +6944,7 @@ function buildSimContent() {
               humidParticles = humidParticles.filter(function(p) { return p.age < p.life; });
             }
             drawHumidCloud(1);
-            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["humid"] = snapImg;
+            if (!norFinalSnapshots["humid"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["humid"] = snapImg; }
             noreasterGraphic.style.opacity = 1;
             positionNoreasterGraphic(0);
             if (onFinish) onFinish();
@@ -6866,7 +7006,7 @@ function buildSimContent() {
                 y: sp.y + (dryRand() - 0.5) * (15 + dryRand() * 40) * NOR_SCALE,
                 vx: Math.cos(toShore) * speed,
                 vy: Math.sin(toShore) * speed,
-                size: (1.5 + dryRand() * 6) * 0.8,
+                size: 1.5 + dryRand() * 6,
                 tone: 230 + Math.floor(dryRand() * 26),
                 op: 0.4 + dryRand() * 0.4,
                 age: 0,
@@ -6879,23 +7019,35 @@ function buildSimContent() {
         function drawDryFront(t) {
           norCtx.clearRect(0, 0, NOR_SIZE, NOR_SIZE);
           norOffCtx.clearRect(0, 0, NOR_SIZE, NOR_SIZE);
+          var dryFadeR = (120 + t * 80) * NOR_SCALE;
+          var dryFadeRSq = dryFadeR * dryFadeR;
+          var dryFadeInnerSq = dryFadeRSq * 0.49;
+          var dryFadeOuterSq = dryFadeRSq * 0.51;
           for (var j = 0; j < dryParticles.length; j++) {
             var p = dryParticles[j];
-            var fade = 1 - p.age / p.life;
-            if (fade <= 0) continue;
-            var alpha = p.op * fade;
+            var fadeOut = 1 - p.age / p.life;
+            if (fadeOut <= 0) continue;
+            var fadeIn = Math.min(1, p.age / 0.5);
+            var fade = fadeIn * fadeOut;
+            var dx = p.x - NOR_CX;
+            var dy = p.y - NOR_CY;
+            var distSq = dx * dx + dy * dy;
+            var edgeFade = distSq < dryFadeInnerSq ? 1 : Math.max(0, 1 - (distSq - dryFadeInnerSq) / dryFadeOuterSq);
+            var alpha = p.op * fade * edgeFade;
             norOffCtx.fillStyle = "rgba(" + p.tone + "," + p.tone + "," + p.tone + "," + alpha.toFixed(3) + ")";
             norOffCtx.beginPath();
             norOffCtx.arc(p.x, p.y, p.size * NOR_SCALE / 4, 0, Math.PI * 2);
             norOffCtx.fill();
           }
           norCtx.save();
-          var dryShadowBlur = 2 + t * 1;
-          norCtx.filter = "blur(" + (dryShadowBlur * NOR_SCALE) + "px) brightness(0)";
+          norCtx.filter = "blur(" + ((8 + t * 4) * NOR_SCALE) + "px) brightness(0)";
           norCtx.globalAlpha = 0.35 + t * 0.55;
           norCtx.drawImage(norOffCanvas, 0, 0);
           norCtx.restore();
+          norCtx.save();
+          norCtx.filter = "blur(" + (0.5 * NOR_SCALE) + "px)";
           norCtx.drawImage(norOffCanvas, 0, 0);
+          norCtx.restore();
         }
 
         function animateDryFront(now) {
@@ -6921,7 +7073,7 @@ function buildSimContent() {
           if (elapsed < dryDuration) {
             dryRAF = requestAnimationFrame(animateDryFront);
           } else {
-            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["dry"] = snapImg;
+            if (!norFinalSnapshots["windy"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["windy"] = snapImg; }
             if (dryFinish) { dryFinish(); dryFinish = null; }
           }
         }
@@ -6929,7 +7081,7 @@ function buildSimContent() {
         function startDryFront(onFinish) {
           if (dryRAF) cancelAnimationFrame(dryRAF);
           if (norSpinRAF) cancelAnimationFrame(norSpinRAF);
-          norAnimMode = "dry";
+          norAnimMode = "windy";
           dryParticles = [];
           dryRand = norMulberry32(44821);
           dryLastTime = null;
@@ -6949,7 +7101,7 @@ function buildSimContent() {
               dryParticles = dryParticles.filter(function(p) { return p.age < p.life; });
             }
             drawDryFront(1);
-            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["dry"] = snapImg;
+            if (!norFinalSnapshots["windy"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["windy"] = snapImg; }
             noreasterGraphic.style.opacity = 1;
             positionNoreasterGraphic(0);
             if (onFinish) onFinish();
@@ -6979,7 +7131,7 @@ function buildSimContent() {
             startHumidCloud(onFinish);
             return;
           }
-          if (mode === "dry") {
+          if (mode === "windy") {
             startDryFront(onFinish);
             return;
           }
@@ -6990,7 +7142,7 @@ function buildSimContent() {
             norMoves = true;
             norOmegaScale = 1;
           } else {
-            norMaxR = 59.4;
+            norMaxR = mode === "moderate" ? 71.28 : 59.4;
             norDuration = 7;
             norMoves = true;
             norOmegaScale = 0.7;
@@ -7016,7 +7168,7 @@ function buildSimContent() {
               stepNorCloud(simDt, simR);
             }
             drawNorCloud(norMaxR, 1);
-            var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[mode] = snapImg;
+            if (!norFinalSnapshots[mode]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[mode] = snapImg; }
             noreasterGraphic.style.opacity = 1;
             positionNoreasterGraphic(1);
             if (onFinish) onFinish();
@@ -7056,66 +7208,26 @@ function buildSimContent() {
             norCtx.clearRect(0, 0, NOR_SIZE, NOR_SIZE);
             norCtx.drawImage(norFinalSnapshots[mode], 0, 0);
           }
-          positionNoreasterGraphic(mode === "humid" || mode === "dry" ? 0 : 1);
+          positionNoreasterGraphic(mode === "humid" || mode === "windy" ? 0 : 1);
         }
         SIM._showNorCloudFinal = showNorCloudFinal;
 
-        // High pressure "H" label for fair weather
-        var highPressureLabel = document.createElement("div");
-        highPressureLabel.setAttribute("role", "img");
-        highPressureLabel.setAttribute("aria-label", "High Pressure");
-        highPressureLabel.style.cssText = "position:absolute;display:none;font-family:'Lato',sans-serif;font-weight:900;font-size:36px;color:#0F6E56;z-index:5;pointer-events:none;text-align:center;line-height:1;-webkit-text-stroke:4px #fff;paint-order:stroke fill;";
-        highPressureLabel.textContent = "H";
-        stage.appendChild(highPressureLabel);
-        function positionHighPressureLabel() {
-          var sw = stage.offsetWidth, sh = stage.offsetHeight;
-          if (!sw || !sh) return;
-          var imgW = sh * (2667 / 1334);
-          var imgLeft = (sw - imgW) / 2;
-          var cx = imgLeft + imgW / 2 + norStartOffX;
-          var cy = sh / 2 + norStartOffY;
-          highPressureLabel.style.left = cx + "px";
-          highPressureLabel.style.top = cy + "px";
-          highPressureLabel.style.transform = "translate(-50%, -50%)";
-        }
-        function showHighPressureLabel(animate) {
-          highPressureLabel.style.transition = "none";
-          highPressureLabel.style.opacity = 0;
-          highPressureLabel.style.display = "";
-          positionHighPressureLabel();
-          if (SIM.announce) SIM.announce("High pressure developing, no nor’easter forming");
-          if (animate) {
-            requestAnimationFrame(function() {
-              requestAnimationFrame(function() {
-                highPressureLabel.style.transition = "opacity 1s";
-                highPressureLabel.style.opacity = 1;
-              });
-            });
-          } else {
-            highPressureLabel.style.opacity = 1;
-          }
-        }
-        function hideHighPressureLabel() {
-          highPressureLabel.style.display = "none";
-        }
-        SIM._showHighPressureLabel = showHighPressureLabel;
-        SIM._hideHighPressureLabel = hideHighPressureLabel;
-        SIM._positionHighPressureLabel = positionHighPressureLabel;
 
         const bostonMarker = document.createElement("div");
         bostonMarker.setAttribute("aria-hidden", "true");
-        bostonMarker.style.cssText = "position:absolute;pointer-events:none;display:flex;align-items:center;gap:4px;";
-        bostonMarker.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:#fff;border:2px solid #333;flex-shrink:0;box-shadow:0 0 0 2px #fff;"></div><span style="font:500 16px \'Roboto Condensed\',sans-serif;color:#333;white-space:nowrap;position:relative;top:-6px;left:-2px;-webkit-text-stroke:4px #fff;paint-order:stroke fill;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.35));">Boston</span>';
+        bostonMarker.style.cssText = "position:absolute;pointer-events:none;display:flex;align-items:center;gap:4px;z-index:11;";
+        bostonMarker.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:#fff;border:2px solid #333;flex-shrink:0;box-shadow:0 0 0 2px #fff;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.35));"></div><span style="font:500 18px \'Roboto Condensed\',sans-serif;color:#333;white-space:nowrap;position:relative;top:-6px;left:-1px;-webkit-text-stroke:4px #fff;paint-order:stroke fill;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.35));">Boston</span>';
         stage.appendChild(bostonMarker);
         function positionBostonMarker() {
           var sw = stage.offsetWidth, sh = stage.offsetHeight;
           var imgW = sh * (2667 / 1334);
           var imgLeft = (sw - imgW) / 2;
           bostonMarker.style.left = (imgLeft + 0.36 * imgW - 6 + 81.5) + "px";
-          bostonMarker.style.top = (0.16 * sh - 6 + 14) + "px";
+          bostonMarker.style.top = (0.16 * sh - 6 + 13) + "px";
         }
         positionBostonMarker();
         SIM._positionBostonMarker = positionBostonMarker;
+        SIM._bostonMarker = bostonMarker;
 
         const pathwayArrows = document.createElement("div");
         pathwayArrows.setAttribute("aria-hidden", "true");
@@ -7169,7 +7281,7 @@ function buildSimContent() {
         ];
         var pillContainer = document.createElement("div");
         pillContainer.setAttribute("aria-hidden", "true");
-        pillContainer.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:1;";
+        pillContainer.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:11;";
         pillData.forEach(function(p) {
           var pill = document.createElement("div");
           pill.dataset.pathway = p.num;
@@ -7381,7 +7493,7 @@ function buildSimContent() {
         mapSwitch.appendChild(mapHit);
         norMapHit = mapHit;
         var satLayer = document.createElement("div");
-        satLayer.style.cssText = "position:absolute;inset:0;background-image:url('ICONS/Map_Satellite_2x.png');background-size:auto 100%;background-position:center;background-repeat:no-repeat;opacity:0;pointer-events:none;";
+        satLayer.style.cssText = "position:absolute;inset:0;background-image:url('ICONS/Map_Satellite_2x.png');background-size:auto 100%;background-position:center;background-repeat:no-repeat;opacity:0;pointer-events:none;transition:opacity .3s;";
         stage.insertBefore(satLayer, stage.firstChild);
         let mapIsSatellite = false;
         function toggleMapView() {
@@ -7396,7 +7508,7 @@ function buildSimContent() {
         }
         mapSwitch.addEventListener("click", toggleMapView);
         mapSwitch.addEventListener("keydown", function(e) {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleMapView(); }
+          if ((e.key === "Enter" || e.key === " ") && !e.repeat) { e.preventDefault(); toggleMapView(); }
         });
         bottomControls.appendChild(mapSwitch);
 
@@ -7411,17 +7523,18 @@ function buildSimContent() {
           const span = document.createElement("span");
           span.textContent = label;
           btn.appendChild(span);
-          btn.setAttribute("aria-disabled", "true");
+          setAriaDisabled(btn, true);
           if (label === "Run") {
             SIM.runBtn = btn;
             SIM._norRunTimeouts = [];
             btn.addEventListener("click", function() {
               if (btn.getAttribute("aria-disabled") === "true") return;
-              btn.setAttribute("aria-disabled", "true");
+              setAriaDisabled(btn, true);
               if (SIM._norPromptWrap) SIM._norPromptWrap.style.display = "none";
               SIM._norPromptVisible = false;
               SIM._norRunning = true;
               stage.setAttribute("aria-busy", "true");
+              stage.setAttribute("aria-label", "Weather map, simulating");
               SIM._norRunTimeouts.forEach(clearTimeout);
               SIM._norRunTimeouts.length = 0;
 
@@ -7432,14 +7545,47 @@ function buildSimContent() {
 
               if (SIM._stopNorCloud) SIM._stopNorCloud();
               if (SIM._stopWxFx) SIM._stopWxFx();
-              if (SIM._hideHighPressureLabel) SIM._hideHighPressureLabel();
               if (SIM._resetArrowPositions) SIM._resetArrowPositions();
               stage.style.transition = "none";
               stage.style.backgroundColor = "#ebebeb";
               void stage.offsetWidth;
               var outcome = evaluateOutcome();
-              var hasCloud = outcome === "strong" || outcome === "moderate" || outcome === "weak" || outcome === "humid" || outcome === "dry";
+              var hasCloud = outcome === "strong" || outcome === "moderate" || outcome === "weak" || outcome === "humid";
               var bgDur = outcome === "strong" ? 11.5 : outcome === "moderate" ? 8.5 : 2;
+              var totalDur = outcome === "strong" ? 11.5 : outcome === "moderate" ? 8.5 : outcome === "weak" ? 6.5 : outcome === "humid" ? 9.5 : 3;
+              SIM._progressStart = Date.now();
+              SIM._progressDur = totalDur;
+              if (SIM._progressFill) {
+                var barH = SIM._progressFill.parentElement.offsetHeight;
+                SIM._progressFill.style.transition = "none";
+                SIM._progressFill.style.left = "-" + barH + "px";
+                SIM._progressFill.style.width = barH + "px";
+                void SIM._progressFill.offsetWidth;
+                SIM._progressFill.style.transition = "width " + totalDur + "s linear";
+                SIM._progressFill.style.width = "calc(100% + " + barH + "px)";
+              }
+              var isReplay = btn.querySelector("span").textContent === "Replay";
+              if (SIM._outcomeBarLabel && isReplay) {
+                SIM._outcomeBarLabel.style.transition = "-webkit-text-stroke-color 0.6s ease";
+                SIM._outcomeBarLabel.style.webkitTextStrokeColor = "#fff";
+              }
+              if (SIM._outcomeBarLabel && !isReplay) {
+                var simIncoming = document.createElement("span");
+                simIncoming.style.cssText = "position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:1;opacity:0;transition:opacity 0.6s ease;-webkit-text-stroke:4px #fff;paint-order:stroke fill;";
+                simIncoming.textContent = "Simulating…";
+                SIM._outcomeBar.appendChild(simIncoming);
+                SIM._outcomeBarLabel.style.transition = "opacity 0.6s ease";
+                SIM._outcomeBarLabel.style.opacity = "0";
+                void simIncoming.offsetWidth;
+                simIncoming.style.opacity = "1";
+                SIM._norRunTimeouts.push(setTimeout(function() {
+                  SIM._outcomeBarLabel.textContent = "Simulating…";
+                  SIM._outcomeBarLabel.style.transition = "none";
+                  SIM._outcomeBarLabel.style.opacity = "1";
+                  SIM._outcomeBarLabel.style.webkitTextStrokeColor = "#fff";
+                  if (simIncoming.parentNode) simIncoming.parentNode.removeChild(simIncoming);
+                }, 620));
+              }
               stage.style.transition = "background-color " + bgDur + "s linear";
               stage.style.backgroundColor = "#d8d8d8";
 
@@ -7447,7 +7593,6 @@ function buildSimContent() {
               var landDesc = ((rs && rs.landTemp) || "").toLowerCase() + " " + ((rs && rs.landHum) || "").toLowerCase();
               var oceanTemp = (rs && rs.oceanPath) === "S/SE" ? "warm" : "cool";
               var oceanDesc = oceanTemp + " " + ((rs && rs.oceanHum) || "").toLowerCase();
-              var isReplay = btn.querySelector("span").textContent === "Replay";
               var startMsg = (isReplay ? "Replaying simulation, " : "Running simulation, ") + landDesc.trim() + " air mass from the " + (rs && rs.landPath) + " and " + oceanDesc.trim() + " air mass from the " + (rs && rs.oceanPath) + " converging";
               if (SIM.announce) SIM.announce(startMsg);
 
@@ -7455,6 +7600,29 @@ function buildSimContent() {
                 if (SIM.selectedTrial !== trial) return;
                 SIM._norRunning = false;
                 stage.removeAttribute("aria-busy");
+                var od2 = SIM._OUTCOME_DATA ? SIM._OUTCOME_DATA[outcome] : null;
+                stage.setAttribute("aria-label", "Weather map, " + (od2 ? od2.banner.toLowerCase() : "simulation complete"));
+                if (SIM._progressFill) {
+                  SIM._progressFill.style.transition = "opacity 0.6s ease";
+                  SIM._progressFill.style.opacity = "0";
+                  (function(pf) {
+                    SIM._norRunTimeouts.push(setTimeout(function() {
+                      pf.style.transition = "none";
+                      pf.style.width = "0";
+                      pf.style.left = "0";
+                      pf.style.opacity = "";
+                    }, 620));
+                  })(SIM._progressFill);
+                }
+                if (isReplay) {
+                  if (SIM._outcomeBarLabel) {
+                    SIM._outcomeBarLabel.style.transition = "-webkit-text-stroke-color 0.6s ease";
+                    SIM._outcomeBarLabel.style.webkitTextStrokeColor = "transparent";
+                  }
+                  setAriaDisabled(btn, false);
+                  if (SIM.resetTrialBtn) setAriaDisabled(SIM.resetTrialBtn, false);
+                  return;
+                }
                 fillDataPanel(outcome);
                 if (SIM.trialState && SIM.trialState[trial]) {
                   SIM.trialState[trial].outcome = outcome;
@@ -7463,8 +7631,8 @@ function buildSimContent() {
                 }
                 stage.style.transition = "none";
 
-                if (SIM.resetTrialBtn) SIM.resetTrialBtn.setAttribute("aria-disabled", "false");
-                btn.setAttribute("aria-disabled", "false");
+                if (SIM.resetTrialBtn) setAriaDisabled(SIM.resetTrialBtn, false);
+                setAriaDisabled(btn, false);
                 btn.querySelector("span").textContent = "Replay";
                 if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
                 if (SIM.updateArrowColors) SIM.updateArrowColors();
@@ -7473,7 +7641,6 @@ function buildSimContent() {
                   var finishParts = ["Weather Outcome: " + (od ? od.banner : "Simulation finished")];
                   if (od) {
                     finishParts.push("Sky: " + od["Sky"]);
-                    finishParts.push("Pressure: " + od["Pressure"]);
                     finishParts.push("Wind: " + od["Wind"]);
                     finishParts.push("Precipitation Type: " + od["Precipitation Type"]);
                     finishParts.push("Precipitation Amount: " + od["Precipitation Amount"]);
@@ -7492,40 +7659,37 @@ function buildSimContent() {
                   var wkOcean = NOR_PATH_NUM[rs && rs.oceanPath];
                   SIM._animateArrowsToStart(2, [wkLand, wkOcean].filter(function(n) { return n !== undefined; }));
                 }
-                if ((outcome === "humid" || outcome === "dry") && SIM._animateArrowsToStart) {
+                if (outcome === "humid" && SIM._animateArrowsToStart) {
                   var hdLand = NOR_PATH_NUM[rs && rs.landPath];
                   var hdOcean = NOR_PATH_NUM[rs && rs.oceanPath];
                   SIM._animateArrowsToStart(2, [hdLand, hdOcean].filter(function(n) { return n !== undefined; }));
+                }
+                if (outcome === "weak") {
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    if (SIM.announce) SIM.announce("Clouds building, weak coastal storm developing");
+                  }, 1500));
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    if (SIM.announce) SIM.announce("Damp, light/wintry conditions and light precipitation along the coast");
+                  }, 3000));
+                } else if (outcome === "humid") {
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    if (SIM.announce) SIM.announce("Warm moist air drifting onshore, overcast and hazy, scattered rain");
+                  }, 1500));
+                } else {
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    if (SIM.announce) SIM.announce("Nor’easter forming");
+                  }, 1500));
+                  var midDelay = outcome === "strong" ? 5000 : 4000;
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    var strength = outcome === "strong" ? "strong" : "moderate";
+                    if (SIM.announce) SIM.announce("Nor’easter growing into a " + strength + " nor’easter, moving northeast along the coast, offshore");
+                  }, midDelay));
                 }
                 if (reducedMotion) {
                   stage.style.transition = "none";
                   stage.style.backgroundColor = "#d8d8d8";
                   SIM._startNorCloud(outcome, finishRun);
                 } else {
-                  if (outcome === "weak") {
-                    SIM._norRunTimeouts.push(setTimeout(function() {
-                      if (SIM.announce) SIM.announce("Clouds building, weak coastal storm developing");
-                    }, 1500));
-                    SIM._norRunTimeouts.push(setTimeout(function() {
-                      if (SIM.announce) SIM.announce("Raw conditions and light precipitation along the coast");
-                    }, 3000));
-                  } else if (outcome === "humid") {
-                    SIM._norRunTimeouts.push(setTimeout(function() {
-                      if (SIM.announce) SIM.announce("Warm moist air drifting onshore, overcast and hazy");
-                    }, 1500));
-                  } else if (outcome === "dry") {
-                    SIM._norRunTimeouts.push(setTimeout(function() {
-                      if (SIM.announce) SIM.announce("Cold front passing through, clearing skies behind it");
-                    }, 1500));
-                  } else {
-                    SIM._norRunTimeouts.push(setTimeout(function() {
-                      if (SIM.announce) SIM.announce("Low pressure developing, nor’easter forming");
-                    }, 1500));
-                    var midDelay = outcome === "strong" ? 5000 : 4000;
-                    SIM._norRunTimeouts.push(setTimeout(function() {
-                      if (SIM.announce) SIM.announce("Nor’easter growing, moving northeast along the coast, offshore");
-                    }, midDelay));
-                  }
                   SIM._norRunTimeouts.push(setTimeout(function() {
                     SIM._startNorCloud(outcome, finishRun);
                   }, 1500));
@@ -7537,17 +7701,23 @@ function buildSimContent() {
                 var fairLandNum = NOR_PATH_NUM[fairLand];
                 var fairOceanNum = NOR_PATH_NUM[fairOcean];
                 var fairArrows = [fairLandNum, fairOceanNum].filter(function(n) { return n !== undefined; });
-                var showH = outcome === "fair";
+                if (outcome === "fair") {
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    if (SIM.announce) SIM.announce("Fair weather, no nor’easter or storm forms");
+                  }, 1500));
+                } else {
+                  SIM._norRunTimeouts.push(setTimeout(function() {
+                    if (SIM.announce) SIM.announce("Clear, breezy, no nor’easter or storm forms");
+                  }, 1500));
+                }
                 if (reducedMotion) {
                   stage.style.transition = "none";
                   stage.style.backgroundColor = "#d8d8d8";
                   if (fairArrows.length === 2) SIM._animateArrowsToStart(2, fairArrows);
-                  if (showH && SIM._showHighPressureLabel) SIM._showHighPressureLabel(false);
                   SIM._norRunTimeouts.push(setTimeout(finishRun, 1500));
                 } else if (fairArrows.length === 2) {
                   SIM._animateArrowsToStart(2, fairArrows);
                   SIM._norRunTimeouts.push(setTimeout(function() {
-                    if (showH && SIM._showHighPressureLabel) SIM._showHighPressureLabel(true);
                     SIM._norRunTimeouts.push(setTimeout(finishRun, 1500));
                   }, 1500));
                 } else {
@@ -7588,20 +7758,30 @@ function buildSimContent() {
         heading.textContent = "Weather Outcome";
         dataInner.appendChild(heading);
 
+        var dataRowTarget = dataInner;
         function addRule() {
           const rule = document.createElement("div");
           rule.style.cssText = "border-top:1px solid " + rc + ";position:relative;z-index:1;";
-          dataInner.appendChild(rule);
+          dataRowTarget.appendChild(rule);
         }
 
         const outcomeBar = document.createElement("div");
-        outcomeBar.style.cssText = "background:var(--sim-trial-selected-bg,#f0f0f0);border-radius:999px;padding:8px 0;text-align:center;font-family:'Lato',sans-serif;font-size:16px;color:#333;margin:1px 0 2px;position:relative;z-index:1;";
-        outcomeBar.textContent = "–";
+        outcomeBar.style.cssText = "background:var(--sim-trial-selected-bg,#f0f0f0);border-radius:999px;padding:8px 0;text-align:center;font-family:'Lato',sans-serif;font-size:16px;color:#333;margin:1px 0 2px;position:relative;z-index:1;overflow:hidden;";
+        var outcomeBarLabel = document.createElement("span");
+        outcomeBarLabel.style.cssText = "position:relative;z-index:1;-webkit-text-stroke:4px transparent;paint-order:stroke fill;transition:-webkit-text-stroke-color 0.6s ease;";
+        outcomeBarLabel.textContent = "–";
+        outcomeBar.appendChild(outcomeBarLabel);
+        var progressFill = document.createElement("div");
+        progressFill.style.cssText = "position:absolute;left:0;top:0;bottom:0;width:0;background:var(--sim-btn-border,#555);border-radius:999px;transition:none;";
+        outcomeBar.appendChild(progressFill);
         dataInner.appendChild(outcomeBar);
+
+        var dataRowsWrap = document.createElement("div");
+        dataInner.appendChild(dataRowsWrap);
+        dataRowTarget = dataRowsWrap;
 
         const dataRows = [
           { label: "Sky" },
-          { label: "Pressure" },
           { label: "Wind" },
           { label: "Precipitation Type", shortLabel: "Precip Type" },
           { label: "Precipitation Amount", shortLabel: "Precip Amount" },
@@ -7623,7 +7803,6 @@ function buildSimContent() {
           icon.style.cssText = "flex-shrink:0;width:24px;height:24px;color:" + tc + ";";
           icon.innerHTML = SIM._standInIcon;
           if (r.label === "Sky") SIM._skyIcon = icon;
-          if (r.label === "Pressure") SIM._pressureIcon = icon;
           if (r.label === "Wind") SIM._windIcon = icon;
           if (r.label === "Precipitation Type") SIM._precipTypeIcon = icon;
           if (r.label === "Precipitation Amount") SIM._precipAmtIcon = icon;
@@ -7656,10 +7835,13 @@ function buildSimContent() {
           textWrap.appendChild(topLine);
           row.appendChild(textWrap);
 
-          dataInner.appendChild(row);
+          dataRowsWrap.appendChild(row);
         });
 
         SIM._outcomeBar = outcomeBar;
+        SIM._outcomeBarLabel = outcomeBarLabel;
+        SIM._progressFill = progressFill;
+        SIM._dataRowsWrap = dataRowsWrap;
         SIM._dataValueEls = dataValueEls;
 
         var snowCanvas = document.createElement("canvas");
@@ -7706,7 +7888,7 @@ function buildSimContent() {
               len = depth < 0.3 ? (4 + Math.random() * 5) : depth < 0.7 ? (6 + Math.random() * 8) : (9 + Math.random() * 10);
               thick = depth < 0.3 ? (0.8 + Math.random() * 0.4) : depth < 0.7 ? (1.2 + Math.random() * 0.5) : (1.6 + Math.random() * 0.6);
               op = depth < 0.3 ? (0.2 + Math.random() * 0.15) : depth < 0.7 ? (0.4 + Math.random() * 0.25) : (0.6 + Math.random() * 0.3);
-              baseSpeed = depth < 0.3 ? (200 + Math.random() * 80) : depth < 0.7 ? (300 + Math.random() * 120) : (380 + Math.random() * 150);
+              baseSpeed = depth < 0.3 ? (200 + Math.random() * 80) : depth < 0.7 ? (300 + Math.random() * 120) : (380 + Math.random() * 200);
             }
             var speed = gust ? baseSpeed * (isMod ? 1.5 : 1.8) : baseSpeed;
             var normAng = isMod ? 250 : 238;
@@ -7843,7 +8025,7 @@ function buildSimContent() {
         var snowAnimStart = 0;
         var snowIntensity = 1;
         var snowActiveMode = null;
-        function startSnow(mode) {
+        function startSnow(mode, skipFade) {
           if (snowRAF && snowActiveMode === mode) return;
           snowActiveMode = mode;
           snowIntensity = mode === "weak" ? 0.3 : mode === "moderate" ? 0.68 : 1;
@@ -7854,6 +8036,15 @@ function buildSimContent() {
           snowNextGust = Math.random() * 1.2;
           snowAnimStart = performance.now();
           snowCanvas.style.display = "";
+          if (skipFade) {
+            snowCanvas.style.transition = "none";
+            snowCanvas.style.opacity = "1";
+          } else {
+            snowCanvas.style.opacity = "0";
+            void snowCanvas.offsetWidth;
+            snowCanvas.style.transition = "opacity 0.6s ease";
+            snowCanvas.style.opacity = "1";
+          }
           if (snowRAF) cancelAnimationFrame(snowRAF);
 
           if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -7878,6 +8069,8 @@ function buildSimContent() {
           snowActiveMode = null;
           snowFlakes = [];
           snowCanvas.style.display = "none";
+          snowCanvas.style.transition = "none";
+          snowCanvas.style.opacity = "0";
           snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
         }
 
@@ -7984,12 +8177,21 @@ function buildSimContent() {
           sunRAF = requestAnimationFrame(animateSun);
         }
 
-        function startSun() {
+        function startSun(skipFade) {
           if (sunRAF) return;
           sizeSunCanvas();
           initSunRays();
           sunAnimStart = performance.now();
           sunCanvas.style.display = "";
+          if (skipFade) {
+            sunCanvas.style.transition = "none";
+            sunCanvas.style.opacity = "1";
+          } else {
+            sunCanvas.style.opacity = "0";
+            void sunCanvas.offsetWidth;
+            sunCanvas.style.transition = "opacity 0.6s ease";
+            sunCanvas.style.opacity = "1";
+          }
 
           if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
             sunCtx.clearRect(0, 0, sunFixedW, sunFixedH);
@@ -8008,123 +8210,194 @@ function buildSimContent() {
           if (sunRAF) cancelAnimationFrame(sunRAF);
           sunRAF = null;
           sunCanvas.style.display = "none";
+          sunCanvas.style.transition = "none";
+          sunCanvas.style.opacity = "0";
           sunCtx.clearRect(0, 0, sunCanvas.width, sunCanvas.height);
         }
 
         SIM._startSun = startSun;
         SIM._stopSun = stopSun;
 
-        // Wind animation (dry front — gusty NW streaks)
+        // Wind animation (Windy, no storm — sun rays, matching Fair Weather as baseline)
         var windCanvas = document.createElement("canvas");
         windCanvas.setAttribute("aria-hidden", "true");
         windCanvas.style.cssText = "position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:0;display:none;border-radius:6px 6px 0 0;";
         dataInner.insertBefore(windCanvas, dataInner.firstChild);
         var windCtx = windCanvas.getContext("2d");
+        var windCurlBuffer = null;
+        var windCurlBufferCtx = null;
         var windRAF = null;
+        var windSeq = null;
+        var windPositions = [];
+        var windParsedPairs = [];
         var windAnimStart = 0;
         var windFixedW = 400;
         var windFixedH = 120;
-        var windSunRays = [];
+        var WIND_RAY_COUNT = 11;
+        var windRays = [];
+        var windCurls = [];
+
+        function sampleCurlBezier(seg, n) {
+          var pts = [];
+          for (var i = 0; i <= n; i++) {
+            var t = i / n, u = 1 - t;
+            pts.push({
+              x: u*u*u*seg[0] + 3*u*u*t*seg[2] + 3*u*t*t*seg[4] + t*t*t*seg[6],
+              y: u*u*u*seg[1] + 3*u*u*t*seg[3] + 3*u*t*t*seg[5] + t*t*t*seg[7]
+            });
+          }
+          return pts;
+        }
+        var WIND_SVG_PAIRS = [
+          [
+            "M0,27.46308c57.82767,7.76785,85.86575-8.19098,140.26462-8.16173,29.73222.01598,61.96061,10.55801,82.98509,12.39621,36.91986,3.22797,51.41359-11.01557,61.99526-11.01557,5.15466,0,9.33333,4.17868,9.33333,9.33333,0,4.12373-3.34294,7.46667-7.46667,7.46667-3.29898,0-5.97333-2.67435-5.97333-5.97333,0-2.63918,2.13948-4.77867,4.77867-4.77867,2.11135,0,3.82293,1.71159,3.82293,3.82293",
+            "M0,11.87387c31.31385,11.55019,97.70231-.9527,128.58059-1.21264,35.96744-.30279,67.24364,8.8609,86.18295,13.07701,20.78785,4.62762,40.0104,2.4683,51.78973-2.49889,8.16271-3.44211,14.2106-8.02701,14.2106-14.83935C280.76387,2.86538,277.89849,0,274.36387,0c-2.8277,0-5.12,2.2923-5.12,5.12,0,2.26216,1.83384,4.096,4.096,4.096,1.80973,0,3.2768-1.46707,3.2768-3.2768"
+          ],
+          [
+            "M0,29.67376c5.09891-1.24784,59.80742-9.1836,113.21522-7.76684,39.04353,1.03571,75.07484,11.21798,106.50772,12.88927,31.7945,1.69052,54.03517-9.91183,63.68348-9.5662,4.17014.14939,7.55556,3.38274,7.55556,7.55556,0,3.33825-2.70619,6.04444-6.04444,6.04444-2.6706,0-4.83556-2.16495-4.83556-4.83556,0-2.13648,1.73196-3.86844,3.86844-3.86844",
+            "M0,25.00029c10.67878-2.82081,62.17857-15.326,114.29856-12.77166,40.84732,2.00188,70.71762,13.82308,104.72032,15.60629,31.70296,1.6626,63.58691-6.32295,70.95574-10.17297,4.56867-2.387,9.77984-4.94613,9.98171-10.19528C300.11479,3.34599,296.61338,0,292.48966,0c-3.29898,0-5.97333,2.67435-5.97333,5.97333,0,2.63918,2.13948,4.77867,4.77867,4.77867"
+          ],
+          [
+            "M0,13.21805c16.54896,4.76735,41.94695,11.90528,87.29231,11.80579,47.31277-.10381,84.94369-7.18901,127.93617-8.67364,31.85222-1.09993,61.73281,6.76884,73.92234,10.36389,4.49728,1.32638,8.88889,3.97969,8.88889,8.88889,0,3.92736-3.18375,7.11111-7.11111,7.11111-3.14189,0-5.68889-2.547-5.68889-5.68889,0-2.51351,2.0376-4.55111,4.55111-4.55111,2.01081,0,3.64089,1.63008,3.64089,3.64089",
+            "M0,4.29278c28.00349,4.17753,58.14304,8.83354,103.51514,9.90885,47.8752,1.13463,75.01222-6.47108,118.36498-4.42195,32.10021,1.51726,49.2839,11.13195,67.07777,7.82032,5.75812-1.07165,9.77778-4.37766,9.77778-9.77778,0-4.32009-3.50213-7.82222-7.82222-7.82222-3.45608,0-6.25778,2.8017-6.25778,6.25778,0,2.76486,2.24136,5.00622,5.00622,5.00622,2.21189,0,4.00498-1.79309,4.00498-4.00498"
+          ]
+        ];
+        function parseSVGCurvePoints(d) {
+          var tokens = [];
+          var re = /([A-Za-z])|([-+]?(?:\d+\.?\d*|\.\d+))/g;
+          var m;
+          while ((m = re.exec(d)) !== null) tokens.push(m[1] || parseFloat(m[2]));
+          var pts = [], cx = 0, cy = 0, i = 0, cmd = '';
+          while (i < tokens.length) {
+            var t = tokens[i];
+            if (typeof t === 'string') { cmd = t; i++; if (cmd === 'Z' || cmd === 'z') break; continue; }
+            if (cmd === 'M') { cx = tokens[i++]; cy = tokens[i++]; pts.push({x:cx,y:cy}); cmd = 'L'; }
+            else if (cmd === 'm') { cx += tokens[i++]; cy += tokens[i++]; pts.push({x:cx,y:cy}); cmd = 'l'; }
+            else if (cmd === 'c') {
+              var seg = [cx, cy, cx+tokens[i], cy+tokens[i+1], cx+tokens[i+2], cy+tokens[i+3], cx+tokens[i+4], cy+tokens[i+5]];
+              var sp = sampleCurlBezier(seg, 20);
+              for (var k = (pts.length > 0 ? 1 : 0); k < sp.length; k++) pts.push(sp[k]);
+              cx += tokens[i+4]; cy += tokens[i+5]; i += 6;
+            }
+            else if (cmd === 'C') {
+              var seg = [cx, cy, tokens[i], tokens[i+1], tokens[i+2], tokens[i+3], tokens[i+4], tokens[i+5]];
+              var sp = sampleCurlBezier(seg, 20);
+              for (var k = 1; k < sp.length; k++) pts.push(sp[k]);
+              cx = tokens[i+4]; cy = tokens[i+5]; i += 6;
+            }
+            else if (cmd === 'l') { cx += tokens[i++]; cy += tokens[i++]; pts.push({x:cx,y:cy}); }
+            else if (cmd === 'L') { cx = tokens[i++]; cy = tokens[i++]; pts.push({x:cx,y:cy}); }
+            else if (cmd === 'h') { cx += tokens[i++]; pts.push({x:cx,y:cy}); }
+            else if (cmd === 'H') { cx = tokens[i++]; pts.push({x:cx,y:cy}); }
+            else { i++; }
+          }
+          return pts;
+        }
+
+        var windBufferH = 200;
         function sizeWindCanvas() {
           var firstRule = dataInner.querySelector("div[style*='border-top']");
           windFixedH = firstRule ? firstRule.offsetTop : 120;
           var dpr = window.devicePixelRatio || 1;
           windCanvas.width = windFixedW * dpr;
-          windCanvas.height = windFixedH * dpr;
+          windCanvas.height = windBufferH * dpr;
           windCanvas.style.height = windFixedH + "px";
           windCanvas.style.objectFit = "cover";
           windCanvas.style.objectPosition = "right top";
           windCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
 
-        function initWindSunRays() {
-          windSunRays = [];
+        function initWindRays() {
+          windRays = [];
           var arcStart = Math.PI * 0.45;
           var arcSpan = Math.PI * 1.05;
-          var count = 11;
-          var step = arcSpan / count;
-          for (var i = 0; i < count; i++) {
-            windSunRays.push({
+          var step = arcSpan / WIND_RAY_COUNT;
+          for (var i = 0; i < WIND_RAY_COUNT; i++) {
+            windRays.push({
               angle: arcStart + step * (i + 0.5) + (Math.random() - 0.5) * step * 0.3,
               width: 0.1 + Math.random() * 0.08,
-              onDur: 1 + Math.random() * 4,
-              offDur: 2 + Math.random() * 5,
-              fadeIn: 0.5 + Math.random() * 2,
-              fadeOut: 1 + Math.random() * 3,
-              delay: 1 + Math.random() * 2,
-              phase: 0,
-              maxOp: 0.15 + Math.random() * 0.25,
-              whiteOp: 0.24 + Math.random() * 0.4
+              onDur: 1.5 + Math.random() * 4,
+              offDur: 1 + Math.random() * 4,
+              phase: Math.random() * 6,
+              maxOp: 0.15 + Math.random() * 0.25
             });
+          }
+          windCurls = [];
+          windSeq = null;
+          windPositions = [
+            {ox: (windFixedW - 295) / 2 + 35, oy: (windBufferH - 38) / 2 + 20},
+            {ox: (windFixedW - 295) / 2 - 55, oy: (windBufferH - 38) / 2 + 5},
+            {ox: (windFixedW - 295) / 2 - 140, oy: (windBufferH - 38) / 2 + 15},
+            {ox: (windFixedW - 295) / 2 + 45, oy: (windBufferH - 38) / 2 - 80},
+            {ox: (windFixedW - 295) / 2 - 20, oy: (windBufferH - 38) / 2 - 65},
+            {ox: (windFixedW - 295) / 2 - 95, oy: (windBufferH - 38) / 2 - 50},
+            {ox: (windFixedW - 295) / 2 - 175, oy: (windBufferH - 38) / 2 - 70}
+          ];
+          windParsedPairs = [];
+          for (var pp = 0; pp < WIND_SVG_PAIRS.length; pp++) {
+            var pair = [];
+            for (var pi = 0; pi < WIND_SVG_PAIRS[pp].length; pi++) {
+              pair.push(parseSVGCurvePoints(WIND_SVG_PAIRS[pp][pi]));
+            }
+            windParsedPairs.push(pair);
+          }
+          for (var wp = 0; wp < windPositions.length; wp++) {
+            var initPair = Math.floor(Math.random() * windParsedPairs.length);
+            for (var pi = 0; pi < 2; pi++) {
+              windCurls.push({
+                rawPts: windParsedPairs[initPair][pi], baseOx: windPositions[wp].ox, baseOy: windPositions[wp].oy,
+                pts: null, jitterX: Math.random() * 20, jitterY: Math.random() * 20,
+                lastCycle: -1, delay: pi * 0.15, maxW: 2,
+                traceDur: 1.15, segFrac: 0.30, group: wp
+              });
+            }
           }
         }
 
         function animateWind(now) {
-          var dt = windLastTime ? Math.min((now - windLastTime) / 1000, 0.05) : 0.016;
-          windLastTime = now;
           var elapsed = (now - windAnimStart) / 1000;
+          var firstRule = dataInner.querySelector("div[style*='border-top']");
+          windFixedH = firstRule ? firstRule.offsetTop : 120;
+          windCanvas.style.height = windFixedH + "px";
           var dpr = window.devicePixelRatio || 1;
           var neededH = Math.round(windFixedH * dpr);
           if (neededH !== windCanvas.height) {
             windCanvas.height = neededH;
             windCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
           }
-          var w = windFixedW, h = windFixedH;
+          windCtx.clearRect(0, 0, windFixedW, windFixedH);
 
-          windCtx.clearRect(0, 0, w, h);
+          var grad = windCtx.createLinearGradient(0, 0, 0, windFixedH);
+          grad.addColorStop(0, "rgba(255,220,100,0.35)");
+          grad.addColorStop(1, "rgba(255,235,160,0)");
+          windCtx.fillStyle = grad;
+          windCtx.fillRect(0, 0, windFixedW, windFixedH);
 
-          var baseGrad = windCtx.createLinearGradient(0, 0, 0, h);
-          baseGrad.addColorStop(0, "rgba(66,79,96,0.35)");
-          baseGrad.addColorStop(1, "rgba(66,79,96,0)");
-          windCtx.fillStyle = baseGrad;
-          windCtx.fillRect(0, 0, w, h);
+          var cx = windFixedW + 30, cy = -30;
+          var maxR = Math.sqrt(windFixedW * windFixedW + windFixedH * windFixedH);
 
-          var cx = w + 30, cy = -30;
-          var maxR = Math.sqrt(w * w + h * h);
-
-          for (var ri = 0; ri < windSunRays.length; ri++) {
-            var ray = windSunRays[ri];
-            var rayElapsed = elapsed - ray.delay;
-            if (rayElapsed < 0) continue;
-            var fullDur = ray.fadeIn + ray.onDur + ray.fadeOut;
-            var cycle = fullDur + ray.offDur;
-            var t = ((rayElapsed + ray.phase) % cycle);
+          for (var i = 0; i < windRays.length; i++) {
+            var r = windRays[i];
+            var a = r.angle;
+            var cycle = r.onDur + r.offDur;
+            var t = ((elapsed + r.phase) % cycle);
             var op;
-            if (t < ray.fadeIn) op = t / ray.fadeIn;
-            else if (t < ray.fadeIn + ray.onDur) op = 1;
-            else if (t < fullDur) op = (fullDur - t) / ray.fadeOut;
+            if (t < 0.4) op = t / 0.4;
+            else if (t < r.onDur - 0.4) op = 1;
+            else if (t < r.onDur) op = (r.onDur - t) / 0.4;
             else op = 0;
+            op *= r.maxOp;
             if (op <= 0) continue;
-            var wOp = op * ray.whiteOp;
-            op *= ray.maxOp;
-
-            var ww = ray.width * 1.3;
-            windCtx.save();
-            windCtx.globalAlpha = wOp;
-            windCtx.filter = "blur(4px)";
-            windCtx.beginPath();
-            windCtx.moveTo(cx, cy);
-            windCtx.lineTo(cx + Math.cos(ray.angle - ww) * maxR, cy + Math.sin(ray.angle - ww) * maxR);
-            windCtx.lineTo(cx + Math.cos(ray.angle + ww) * maxR, cy + Math.sin(ray.angle + ww) * maxR);
-            windCtx.closePath();
-            var wGrad = windCtx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.8);
-            wGrad.addColorStop(0, "rgba(255,255,255,0)");
-            wGrad.addColorStop(0.2, "rgba(255,255,255,0.5)");
-            wGrad.addColorStop(0.4, "rgba(255,255,255,1)");
-            wGrad.addColorStop(0.6, "rgba(255,255,255,1)");
-            wGrad.addColorStop(0.8, "rgba(255,255,255,0.5)");
-            wGrad.addColorStop(1, "rgba(255,255,255,0)");
-            windCtx.fillStyle = wGrad;
-            windCtx.fill();
-            windCtx.restore();
+            var halfW = r.width;
 
             windCtx.save();
             windCtx.globalAlpha = op;
             windCtx.beginPath();
             windCtx.moveTo(cx, cy);
-            windCtx.lineTo(cx + Math.cos(ray.angle - ray.width) * maxR, cy + Math.sin(ray.angle - ray.width) * maxR);
-            windCtx.lineTo(cx + Math.cos(ray.angle + ray.width) * maxR, cy + Math.sin(ray.angle + ray.width) * maxR);
+            windCtx.lineTo(cx + Math.cos(a - halfW) * maxR, cy + Math.sin(a - halfW) * maxR);
+            windCtx.lineTo(cx + Math.cos(a + halfW) * maxR, cy + Math.sin(a + halfW) * maxR);
             windCtx.closePath();
+
             var rGrad = windCtx.createRadialGradient(cx, cy, 0, cx, cy, maxR * 0.8);
             rGrad.addColorStop(0, "rgba(255,180,0,1)");
             rGrad.addColorStop(0.3, "rgba(255,200,40,0.7)");
@@ -8135,22 +8408,135 @@ function buildSimContent() {
             windCtx.restore();
           }
 
+          if (!windCurlBuffer) {
+            windCurlBuffer = document.createElement("canvas");
+            windCurlBuffer.width = windCanvas.width;
+            windCurlBuffer.height = windCanvas.height;
+            windCurlBufferCtx = windCurlBuffer.getContext("2d");
+          }
+          if (windCurlBuffer.width !== windCanvas.width || windCurlBuffer.height !== windCanvas.height) {
+            windCurlBuffer.width = windCanvas.width;
+            windCurlBuffer.height = windCanvas.height;
+          }
+          windCurlBufferCtx.clearRect(0, 0, windCurlBuffer.width, windCurlBuffer.height);
+          var windWhiteParts = [];
+          if (!windSeq) {
+            windSeq = {slots: [], phase: "wait", waitStart: elapsed - 10, gap: 0};
+          }
+          windSeq.slots = windSeq.slots.filter(function(s) {
+            var sc = windCurls[s.group * 2];
+            var slotMaxVis = sc.traceDur * (1 + sc.segFrac) + windCurls[s.group * 2 + 1].delay;
+            return (elapsed - s.startT) <= slotMaxVis;
+          });
+          if (windSeq.slots.length === 0 && windSeq.phase === "play") {
+            windSeq.phase = "wait";
+            windSeq.waitStart = elapsed;
+            windSeq.gap = 0.5 + Math.random() * 3.75;
+          }
+          if (windSeq.phase === "wait" && (elapsed - windSeq.waitStart) > windSeq.gap) {
+            var count = 1 + Math.floor(Math.random() * 3);
+            var used = windSeq.lastUsed || [];
+            var picked = [];
+            for (var si = 0; si < count; si++) {
+              var pick;
+              do { pick = Math.floor(Math.random() * windPositions.length); } while (picked.indexOf(pick) >= 0 || used.indexOf(pick) >= 0);
+              picked.push(pick);
+              var pairIdx = Math.floor(Math.random() * windParsedPairs.length);
+              var ci0 = pick * 2;
+              windCurls[ci0].rawPts = windParsedPairs[pairIdx][0];
+              windCurls[ci0 + 1].rawPts = windParsedPairs[pairIdx][1];
+              var speedVar = 0.75 + Math.random() * 0.75;
+              windCurls[ci0].traceDur = 1.15 * speedVar;
+              windCurls[ci0 + 1].traceDur = 1.15 * speedVar;
+              var stagger = si * (0.3 + Math.random() * 0.4);
+              windSeq.slots.push({group: pick, startT: elapsed + stagger});
+            }
+            windSeq.lastUsed = picked;
+            windSeq.phase = "play";
+          }
+          for (var sli = 0; sli < windSeq.slots.length; sli++) {
+            var slot = windSeq.slots[sli];
+          for (var ci = slot.group * 2; ci < slot.group * 2 + 2 && ci < windCurls.length; ci++) {
+            var wc = windCurls[ci];
+            if (wc.lastCycle !== slot.startT) {
+              wc.lastCycle = slot.startT;
+              var jx = Math.random() * 20;
+              var jy = Math.random() * 20;
+              if (wc.delay > 0) {
+                var prev = windCurls[ci - 1];
+                jx = prev.jitterX;
+                jy = prev.jitterY;
+              }
+              wc.jitterX = jx;
+              wc.jitterY = jy;
+              wc.pts = [];
+              for (var j = 0; j < wc.rawPts.length; j++) {
+                wc.pts.push({x: wc.rawPts[j].x + wc.baseOx + wc.jitterX, y: wc.rawPts[j].y + wc.baseOy + wc.jitterY});
+              }
+            }
+            if (windSeq.phase !== "play") continue;
+            var totalVis = wc.traceDur * (1 + wc.segFrac);
+            var ct = (elapsed - slot.startT) - wc.delay;
+            if (ct < 0 || ct > totalVis) continue;
+            var headLin = Math.min(1, ct / wc.traceDur);
+            var headFrac = headLin * headLin * headLin;
+            var tailLin = Math.min(1, Math.max(0, (ct - wc.segFrac * wc.traceDur) / wc.traceDur));
+            var tailFrac = tailLin * tailLin * tailLin;
+            if (headFrac - tailFrac < 0.01) continue;
+            var tailIdx = Math.floor(tailFrac * (wc.pts.length - 1));
+            var headIdx = Math.min(Math.ceil(headFrac * (wc.pts.length - 1)), wc.pts.length - 1);
+            if (headIdx - tailIdx < 2) continue;
+            var segLen = headIdx - tailIdx;
+            var subSteps = 3;
+            var totalParticles = segLen * subSteps;
+            for (var si = 0; si <= totalParticles; si++) {
+              var fIdx = tailIdx + si / subSteps;
+              var pi0 = Math.floor(fIdx);
+              var pi1 = Math.min(pi0 + 1, wc.pts.length - 1);
+              var lerp = fIdx - pi0;
+              var px = wc.pts[pi0].x + (wc.pts[pi1].x - wc.pts[pi0].x) * lerp;
+              var py = wc.pts[pi0].y + (wc.pts[pi1].y - wc.pts[pi0].y) * lerp;
+              var localFrac = si / totalParticles;
+              var radius = 1.2 + Math.sin(localFrac * Math.PI) * 1.5;
+              windCtx.fillStyle = "#949494";
+              windCtx.beginPath();
+              windCtx.arc(px, py, radius, 0, Math.PI * 2);
+              windCtx.fill();
+              windWhiteParts.push({x: px, y: py, r: 0.5 + Math.sin(localFrac * Math.PI) * 1.0});
+            }
+          }
+          }
+          windCtx.fillStyle = "#fff";
+          for (var wi = 0; wi < windWhiteParts.length; wi++) {
+            var wp = windWhiteParts[wi];
+            windCtx.beginPath();
+            windCtx.arc(wp.x, wp.y, wp.r, 0, Math.PI * 2);
+            windCtx.fill();
+          }
+
           windRAF = requestAnimationFrame(animateWind);
         }
 
-        var windLastTime = null;
-        function startWind() {
+        function startWind(skipFade) {
           if (windRAF) return;
           sizeWindCanvas();
-          windLastTime = null;
+          initWindRays();
           windAnimStart = performance.now();
-          initWindSunRays();
           windCanvas.style.display = "";
+          if (skipFade) {
+            windCanvas.style.transition = "none";
+            windCanvas.style.opacity = "1";
+          } else {
+            windCanvas.style.opacity = "0";
+            void windCanvas.offsetWidth;
+            windCanvas.style.transition = "opacity 0.6s ease";
+            windCanvas.style.opacity = "1";
+          }
           if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
             windCtx.clearRect(0, 0, windFixedW, windFixedH);
             var grad = windCtx.createLinearGradient(0, 0, 0, windFixedH);
-            grad.addColorStop(0, "rgba(66,79,96,0.35)");
-            grad.addColorStop(1, "rgba(66,79,96,0)");
+            grad.addColorStop(0, "rgba(255,220,100,0.35)");
+            grad.addColorStop(1, "rgba(255,235,160,0)");
             windCtx.fillStyle = grad;
             windCtx.fillRect(0, 0, windFixedW, windFixedH);
             return;
@@ -8161,8 +8547,10 @@ function buildSimContent() {
         function stopWind() {
           if (windRAF) cancelAnimationFrame(windRAF);
           windRAF = null;
-          windSunRays = [];
+          windRays = [];
           windCanvas.style.display = "none";
+          windCanvas.style.transition = "none";
+          windCanvas.style.opacity = "0";
           windCtx.clearRect(0, 0, windCanvas.width, windCanvas.height);
         }
 
@@ -8357,7 +8745,7 @@ function buildSimContent() {
         }
 
         var hazeLastTime = null;
-        function startHaze() {
+        function startHaze(skipFade) {
           if (hazeRAF) return;
           sizeHazeCanvas();
           hazeDots = [];
@@ -8367,6 +8755,15 @@ function buildSimContent() {
           hazeGapEnd = 0.5 + Math.random() * 4;
           initHazeWisps(hazeFixedW, hazeFixedH);
           hazeCanvas.style.display = "";
+          if (skipFade) {
+            hazeCanvas.style.transition = "none";
+            hazeCanvas.style.opacity = "1";
+          } else {
+            hazeCanvas.style.opacity = "0";
+            void hazeCanvas.offsetWidth;
+            hazeCanvas.style.transition = "opacity 0.6s ease";
+            hazeCanvas.style.opacity = "1";
+          }
           if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
             hazeCtx.clearRect(0, 0, hazeFixedW, hazeFixedH);
             var grad = hazeCtx.createLinearGradient(0, 0, 0, hazeFixedH);
@@ -8384,6 +8781,8 @@ function buildSimContent() {
           hazeRAF = null;
           hazeDots = [];
           hazeCanvas.style.display = "none";
+          hazeCanvas.style.transition = "none";
+          hazeCanvas.style.opacity = "0";
           hazeCtx.clearRect(0, 0, hazeCanvas.width, hazeCanvas.height);
         }
 
@@ -8485,7 +8884,7 @@ function buildSimContent() {
     });
 
     // Ctrl+Arrow: navigate between panels
-    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"], .sim-panel[role="tabpanel"]');
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
     if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
     SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
@@ -8518,6 +8917,7 @@ function buildSimContent() {
     const liveAnnounce = document.createElement("div");
     liveAnnounce.className = "sr-only";
     liveAnnounce.setAttribute("aria-live", "polite");
+    liveAnnounce.setAttribute("aria-atomic", "true");
     wrap.appendChild(liveAnnounce);
     SIM.announce = function(msg) {
       liveAnnounce.textContent = "";
@@ -8567,7 +8967,7 @@ function buildSimContent() {
       if (p.name === "Trials") {
         panel.setAttribute("role", "region");
       } else {
-        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("role", "region");
         panel.id = p.name === "Simulation" ? simPanelId : dataPanelId;
       }
       panel.setAttribute("aria-label", p.name + " panel");
@@ -8577,7 +8977,7 @@ function buildSimContent() {
         panel.classList.add("has-scroll");
         const scrollWrap = document.createElement("div");
         scrollWrap.className = "trials-scroll";
-        scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("role", "listbox");
         scrollWrap.setAttribute("aria-orientation", "vertical");
         scrollWrap.setAttribute("aria-label", "Trials");
         function updateTrialsTabindex() {
@@ -8608,7 +9008,7 @@ function buildSimContent() {
           cardEl.setAttribute("aria-label", "Trial " + letter);
           const resetBtn = cardEl.querySelector(".trial-card-reset");
           if (resetBtn) {
-            resetBtn.setAttribute("aria-disabled", "true");
+            setAriaDisabled(resetBtn, true);
             const isSelected = cardEl.classList.contains("selected");
             resetBtn.setAttribute("tabindex", (isSelected) ? "0" : "-1");
           }
@@ -8619,10 +9019,9 @@ function buildSimContent() {
           trialState[letter] = {};
           const card = document.createElement("div");
           card.className = "trial-card";
-          card.setAttribute("role", "tab");
+          card.setAttribute("role", "option");
           card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Trial " + letter);
-          card.setAttribute("aria-controls", simPanelId + " " + dataPanelId);
           card.style.cursor = "pointer";
           SIM.trialCards[letter] = card;
           function selectTrial() {
@@ -8641,11 +9040,12 @@ function buildSimContent() {
           const lbl = document.createElement("span");
           lbl.className = "trial-card-label";
           lbl.textContent = letter;
+          lbl.setAttribute("aria-hidden", "true");
           card.appendChild(lbl);
           const resetBtn = document.createElement("button");
           resetBtn.className = "trial-card-reset";
           resetBtn.setAttribute("aria-label", "Reset trial " + letter);
-          resetBtn.setAttribute("aria-disabled", "true");
+          setAriaDisabled(resetBtn, true);
           resetBtn.setAttribute("tabindex", "-1");
           const resetIcon = createSVGIcon(resetIconSVG);
           resetBtn.appendChild(resetIcon);
@@ -8744,6 +9144,7 @@ function buildSimContent() {
             activeTrialCount++;
             const realCard = buildTrialCard(letter);
             scrollWrap.insertBefore(realCard, card);
+            updateTrialPositions();
             selectTrialByCard(realCard, letter);
             realCard.focus({ preventScroll: true });
             scrollItemIntoView(realCard, scrollWrap);
@@ -8781,6 +9182,14 @@ function buildSimContent() {
         if (rbA) rbA.setAttribute("tabindex", "0");
         scrollWrap.appendChild(cardA);
         scrollWrap.appendChild(buildNewCard());
+        function updateTrialPositions() {
+          var cards = scrollWrap.querySelectorAll('[role="option"]');
+          cards.forEach(function(c, i) {
+            c.setAttribute("aria-posinset", String(i + 1));
+            c.setAttribute("aria-setsize", String(cards.length));
+          });
+        }
+        updateTrialPositions();
 
         panel.appendChild(scrollWrap);
         const focusRing = document.createElement("div");
@@ -8837,7 +9246,7 @@ function buildSimContent() {
           const span = document.createElement("span");
           span.textContent = label;
           btn.appendChild(span);
-          btn.setAttribute("aria-disabled", "true");
+          setAriaDisabled(btn, true);
           if (label === "Run") SIM.runBtn = btn;
           if (label === "Reset Trial") SIM.resetTrialBtn = btn;
           bottomControls.appendChild(btn);
@@ -8905,7 +9314,7 @@ function buildSimContent() {
     });
 
     // Ctrl+Arrow: navigate between panels
-    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"], .sim-panel[role="tabpanel"]');
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
     if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
     SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
@@ -8938,6 +9347,7 @@ function buildSimContent() {
     const liveAnnounce = document.createElement("div");
     liveAnnounce.className = "sr-only";
     liveAnnounce.setAttribute("aria-live", "polite");
+    liveAnnounce.setAttribute("aria-atomic", "true");
     wrap.appendChild(liveAnnounce);
     SIM.announce = function(msg) {
       liveAnnounce.textContent = "";
@@ -8987,7 +9397,7 @@ function buildSimContent() {
       if (p.name === "Trials") {
         panel.setAttribute("role", "region");
       } else {
-        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("role", "region");
         panel.id = p.name === "Simulation" ? simPanelId : dataPanelId;
       }
       panel.setAttribute("aria-label", p.name + " panel");
@@ -8997,7 +9407,7 @@ function buildSimContent() {
         panel.classList.add("has-scroll");
         const scrollWrap = document.createElement("div");
         scrollWrap.className = "trials-scroll";
-        scrollWrap.setAttribute("role", "tablist");
+        scrollWrap.setAttribute("role", "listbox");
         scrollWrap.setAttribute("aria-orientation", "vertical");
         scrollWrap.setAttribute("aria-label", "Trials");
         function updateTrialsTabindex() {
@@ -9028,7 +9438,7 @@ function buildSimContent() {
           cardEl.setAttribute("aria-label", "Trial " + letter);
           const resetBtn = cardEl.querySelector(".trial-card-reset");
           if (resetBtn) {
-            resetBtn.setAttribute("aria-disabled", "true");
+            setAriaDisabled(resetBtn, true);
             const isSelected = cardEl.classList.contains("selected");
             resetBtn.setAttribute("tabindex", (isSelected) ? "0" : "-1");
           }
@@ -9039,10 +9449,9 @@ function buildSimContent() {
           trialState[letter] = {};
           const card = document.createElement("div");
           card.className = "trial-card";
-          card.setAttribute("role", "tab");
+          card.setAttribute("role", "option");
           card.setAttribute("tabindex", "-1");
           card.setAttribute("aria-label", "Trial " + letter);
-          card.setAttribute("aria-controls", simPanelId + " " + dataPanelId);
           card.style.cursor = "pointer";
           SIM.trialCards[letter] = card;
           function selectTrial() {
@@ -9061,11 +9470,12 @@ function buildSimContent() {
           const lbl = document.createElement("span");
           lbl.className = "trial-card-label";
           lbl.textContent = letter;
+          lbl.setAttribute("aria-hidden", "true");
           card.appendChild(lbl);
           const resetBtn = document.createElement("button");
           resetBtn.className = "trial-card-reset";
           resetBtn.setAttribute("aria-label", "Reset trial " + letter);
-          resetBtn.setAttribute("aria-disabled", "true");
+          setAriaDisabled(resetBtn, true);
           resetBtn.setAttribute("tabindex", "-1");
           const resetIcon = createSVGIcon(resetIconSVG);
           resetBtn.appendChild(resetIcon);
@@ -9164,6 +9574,7 @@ function buildSimContent() {
             activeTrialCount++;
             const realCard = buildTrialCard(letter);
             scrollWrap.insertBefore(realCard, card);
+            updateTrialPositions();
             selectTrialByCard(realCard, letter);
             realCard.focus({ preventScroll: true });
             scrollItemIntoView(realCard, scrollWrap);
@@ -9201,6 +9612,14 @@ function buildSimContent() {
         if (rbA) rbA.setAttribute("tabindex", "0");
         scrollWrap.appendChild(cardA);
         scrollWrap.appendChild(buildNewCard());
+        function updateTrialPositions() {
+          var cards = scrollWrap.querySelectorAll('[role="option"]');
+          cards.forEach(function(c, i) {
+            c.setAttribute("aria-posinset", String(i + 1));
+            c.setAttribute("aria-setsize", String(cards.length));
+          });
+        }
+        updateTrialPositions();
 
         panel.appendChild(scrollWrap);
         const focusRing = document.createElement("div");
@@ -9257,7 +9676,7 @@ function buildSimContent() {
           const span = document.createElement("span");
           span.textContent = label;
           btn.appendChild(span);
-          btn.setAttribute("aria-disabled", "true");
+          setAriaDisabled(btn, true);
           if (label === "Run") SIM.runBtn = btn;
           if (label === "Reset Trial") SIM.resetTrialBtn = btn;
           bottomControls.appendChild(btn);
@@ -9325,7 +9744,7 @@ function buildSimContent() {
     });
 
     // Ctrl+Arrow: navigate between panels
-    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"], .sim-panel[role="tabpanel"]');
+    const panelEls = wrap.querySelectorAll('.sim-panel[role="region"]');
     if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
     SIM.panelNavHandler = (e) => {
       if (!e.ctrlKey || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
@@ -10281,6 +10700,7 @@ function _updateStandaloneDeviceFrameNow() {
   if (SIM.updateDataPanel) SIM.updateDataPanel();
   if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
   checkFungusStack();
+  if (SIM._syncComboBar) SIM._syncComboBar();
 }
 
 window.addEventListener("resize", () => {
@@ -10294,6 +10714,22 @@ window.addEventListener("resize", () => {
   if (activeLayout === "standalone" && activeDevice === "none") {
     // Teacher Desktop — full rebuild (responsive content)
     buildViewport();
+    if (SIM._norRunning && SIM._progressFill && SIM._progressStart) {
+      var elapsed = (Date.now() - SIM._progressStart) / 1000;
+      var remaining = SIM._progressDur - elapsed;
+      if (remaining > 0) {
+        var barH = SIM._progressFill.parentElement.offsetHeight;
+        var frac = elapsed / SIM._progressDur;
+        var fullW = SIM._progressFill.parentElement.offsetWidth + barH;
+        var currentW = barH + frac * (fullW - barH);
+        SIM._progressFill.style.transition = "none";
+        SIM._progressFill.style.left = "-" + barH + "px";
+        SIM._progressFill.style.width = currentW + "px";
+        void SIM._progressFill.offsetWidth;
+        SIM._progressFill.style.transition = "width " + remaining + "s linear";
+        SIM._progressFill.style.width = "calc(100% + " + barH + "px)";
+      }
+    }
   } else if (activeLayout === "standalone" && activeDevice !== "none") {
     // Device frame — lightweight update (no rebuild)
     updateStandaloneDeviceFrame();
@@ -10339,6 +10775,7 @@ window.addEventListener("resize", () => {
   // Redraw charts at new size
   if (SIM.updateDataPanel) SIM.updateDataPanel();
   if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
+  if (SIM._syncComboBar) SIM._syncComboBar();
 });
 
 </script>
