@@ -2110,8 +2110,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.15</div>
-      <div style="font-weight: 400;">Updated: 7/26/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.16</div>
+      <div style="font-weight: 400;">Updated: 7/27/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -6554,7 +6554,7 @@ function buildSimContent() {
           if (elapsed < norDuration) {
             norSpinRAF = requestAnimationFrame(animateNorCloud);
           } else {
-            if (!norFinalSnapshots[norAnimMode]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[norAnimMode] = snapImg; }
+            { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[norAnimMode] = snapImg; }
             if (norFinishCallback) {
               norFinishCallback();
               norFinishCallback = null;
@@ -6749,7 +6749,7 @@ function buildSimContent() {
           if (elapsed < weakBandDuration) {
             weakBandRAF = requestAnimationFrame(animateWeakBand);
           } else {
-            if (!norFinalSnapshots["weak"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["weak"] = snapImg; }
+            { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["weak"] = snapImg; }
             if (weakBandFinish) { weakBandFinish(); weakBandFinish = null; }
           }
         }
@@ -6776,7 +6776,7 @@ function buildSimContent() {
               weakBand = weakBand.filter(function(p) { return p.age < weakBandLife; });
             }
             drawWeakBand(1);
-            if (!norFinalSnapshots["weak"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["weak"] = snapImg; }
+            { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["weak"] = snapImg; }
             noreasterGraphic.style.opacity = 1;
             positionNoreasterGraphic(0);
             if (onFinish) onFinish();
@@ -6916,7 +6916,7 @@ function buildSimContent() {
           if (elapsed < humidDuration) {
             humidRAF = requestAnimationFrame(animateHumidCloud);
           } else {
-            if (!norFinalSnapshots["humid"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["humid"] = snapImg; }
+            { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["humid"] = snapImg; }
             if (humidFinish) { humidFinish(); humidFinish = null; }
           }
         }
@@ -6944,7 +6944,7 @@ function buildSimContent() {
               humidParticles = humidParticles.filter(function(p) { return p.age < p.life; });
             }
             drawHumidCloud(1);
-            if (!norFinalSnapshots["humid"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["humid"] = snapImg; }
+            { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["humid"] = snapImg; }
             noreasterGraphic.style.opacity = 1;
             positionNoreasterGraphic(0);
             if (onFinish) onFinish();
@@ -7073,7 +7073,7 @@ function buildSimContent() {
           if (elapsed < dryDuration) {
             dryRAF = requestAnimationFrame(animateDryFront);
           } else {
-            if (!norFinalSnapshots["windy"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["windy"] = snapImg; }
+            { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["windy"] = snapImg; }
             if (dryFinish) { dryFinish(); dryFinish = null; }
           }
         }
@@ -7101,7 +7101,7 @@ function buildSimContent() {
               dryParticles = dryParticles.filter(function(p) { return p.age < p.life; });
             }
             drawDryFront(1);
-            if (!norFinalSnapshots["windy"]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["windy"] = snapImg; }
+            { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots["windy"] = snapImg; }
             noreasterGraphic.style.opacity = 1;
             positionNoreasterGraphic(0);
             if (onFinish) onFinish();
@@ -7168,7 +7168,7 @@ function buildSimContent() {
               stepNorCloud(simDt, simR);
             }
             drawNorCloud(norMaxR, 1);
-            if (!norFinalSnapshots[mode]) { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[mode] = snapImg; }
+            { var snapImg = new Image(); snapImg.src = norCanvas.toDataURL("image/png"); norFinalSnapshots[mode] = snapImg; }
             noreasterGraphic.style.opacity = 1;
             positionNoreasterGraphic(1);
             if (onFinish) onFinish();
