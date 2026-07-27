@@ -1,55 +1,23 @@
-# Demos
+# CODAP "About" Modal — Design Mockup
 
-A shared repository for creating quick demos that are automatically deployed to S3.
+An interactive prototype and implementation spec for a proposed **"About CODAP"** experience: a Help‑menu entry that opens an About dialog surfacing CODAP's branding, version, licensing (MIT for the software, CC BY‑NC 4.0 for educational content), and a discoverable‑but‑tucked‑away list of third‑party libraries.
 
-## How It Works
+## Launch the mockup
 
-Each branch is deployed to its own folder on S3. To create a demo:
+Once this branch's CI has deployed, open:
 
-1. Clone this repository.
-2. Create a new branch for your demo (e.g. `git checkout -b my-demo-name`).
-3. Add your HTML, CSS, and JavaScript files.
-4. Push your branch.
+**https://models-resources.concord.org/demos/branch/codap-about-modal/**
 
-Your demo will be automatically deployed to:
-```
-https://models-resources.concord.org/demos/branch/<your-branch-name>/
-```
+In the mockup: click **Help** (top‑right of the header) → **About CODAP…**. From the About dialog you can open the **"Open‑source libraries & acknowledgements"** drill‑in (searchable list) and expand **"What counts as commercial use?"**. A **Preview startup modal** control sits in the dark demo bar at the very top.
 
-The entry point is `index.html` at the root of your branch.
+> The dark bar across the top and the "Mockup" labels are prototype scaffolding, not part of the proposed UI. The app chrome behind the dialog is a simplified stand‑in to show placement of the Help menu and About dialog.
 
-## Instructions for using this repo with Claude
-- Make a new directory and run Claude in this directory
-- Tell Claude: "Clone https://github.com/concord-consortium/demos into the current directory"
-- Tell Claude: "Create a new branch named something-cool" (The branch name will be the path where the demo is available when it is deployed.)
-- Copy your HTML, CSS, and JS files into this directory if you've already got them. Or work with Claude to make your demo.
-- Tell Claude: "Commit and push these changes, setting upstream if needed"
+## Files
 
-Your demo will be automatically deployed to:
-```
-https://models-resources.concord.org/demos/branch/<your-branch-name>/
-```
+- **`index.html`** — self‑contained interactive mockup. No build step, no dependencies; the CODAP logo is embedded as a data URI.
+- **`CODAP-About-Spec.md`** — implementation spec for developers: entry points, component architecture, the license copy, build‑time acknowledgements generation, accessibility, and open questions.
 
-If you have an `index.html` file, it will be loaded from the link above. If you name your file something else, you need to add it to the end of the URL above.
+## Status / notes
 
-## Deploying a Subfolder Instead of the Whole Repo
-
-If your demo has a build step or you only want to deploy a specific folder, you can
-modify the workflow in `.github/workflows/ci.yml` on your branch:
-
-- Change `build` from `"true"` to your build command (e.g. `npm run build`).
-- Change `folderToDeploy` from `"."` to the output folder (e.g. `dist`).
-
-For example, if you have a Vite project:
-```yaml
-      - uses: actions/setup-node@v4
-      # add this step before the s3-deploy-action step
-      - name: Install Dependencies
-        run: npm ci
-      # then update the s3-deploy-action inputs:
-      - uses: concord-consortium/s3-deploy-action@v1
-        with:
-          build: npm run build
-          folderToDeploy: dist
-          # ... keep other inputs the same
-```
+- The license wording in the spec (§6) is a strong draft and should be reviewed by Concord legal/licensing before shipping.
+- The version string in the mockup mirrors the app's existing format (e.g. `Version 3.0.5 · build 2957`).
