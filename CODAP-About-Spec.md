@@ -38,14 +38,9 @@ Reusing one component keeps styling and a11y in one place; the two modes differ 
 ## 6. License copy (final draft — **legal review required**)
 > **CODAP is free, open‑source software**, released under the MIT License. You're welcome to use, modify, and build on the CODAP application.
 >
-> Educational content from the Concord Consortium — activities, curriculum, and sample documents — is licensed **CC BY‑NC 4.0**. You may use and share it freely for **non‑commercial** purposes, with proper attribution. Using it commercially — including selling it, or bundling it into paid, subscription, or otherwise revenue‑generating products — requires a separate license from the Concord Consortium.
+> Our Terms of Use allows you to use codap.concord.org freely for **non‑commercial** purposes. Using codap.concord.org commercially — including bundling it into paid, subscription, or otherwise revenue‑generating products — requires a commercial license from the Concord Consortium. For more information, visit concord.org/licensing or contact us at licensing@concord.org.
 
-Expandable: **"What counts as commercial use?"** (restriction‑first phrasing — chosen so the NC boundary lands before the reassurance)
-> **Commercial use of Concord Consortium content requires a separate license** — it is not granted by CC BY‑NC 4.0. "Commercial use" means any use that provides commercial advantage or monetary compensation, including: selling or licensing the content to a publisher, district, or partner; bundling it into a paid product, subscription, or app; ad‑supported, sponsored, or otherwise monetized distribution; and fee‑based services or trainings built around it.
->
-> **This applies even when a free version also exists:** if a downstream partner sells or packages the content, that step needs its own license from the Concord Consortium. Non‑commercial educational use — using and sharing the content free of charge, with attribution — remains free for everyone, including companies. Questions: licensing@concord.org.
-
-Rationale: the two licenses are stated distinctly (MIT = software, CC BY‑NC = content) so users don't infer the whole app is NC‑restricted. The expander leads with the obligation and makes the "even when a free version exists / downstream partner packages it" clause the emphasized point — addressing the OpenSciEd‑style case directly without naming anyone — then closes with reassurance for legitimate free users.
+Wording per Scott Cytacki's review: the license section is framed around the site **Terms of Use** for `codap.concord.org` rather than the CC BY‑NC content license, and is limited to these two paragraphs — the earlier "What counts as commercial use?" expander has been removed. In the modal, `codap.concord.org`, `concord.org/licensing`, and `licensing@concord.org` are links.
 
 ## 7. Startup modal changes
 - Add persistent **"Don't show this again"** (store in user prefs / document CFM settings — persists across sessions; a plain page reload should not re‑show it once dismissed).
