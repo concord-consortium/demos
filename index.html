@@ -2110,8 +2110,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.16</div>
-      <div style="font-weight: 400;">Updated: 7/27/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.17</div>
+      <div style="font-weight: 400;">Updated: 7/28/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -5949,7 +5949,7 @@ function buildSimContent() {
             b.textContent = mode;
             var radius = mode === "Below clouds" ? "4px 0 0 4px" : "0 4px 4px 0";
             var ml = mode === "Above clouds" ? "margin-left:-1px;" : "";
-            b.style.cssText = "padding:4px 8px;border:1px solid #4680B8;border-radius:" + radius + ";background:" + (mode === "Above clouds" ? "#D3E8FD" : "#fff") + ";cursor:pointer;font-family:inherit;font-size:13px;position:relative;" + ml;
+            b.style.cssText = "padding:4px 8px;border:1px solid #4680B8;border-radius:" + radius + ";background:" + (mode === "Below clouds" ? "#D3E8FD" : "#fff") + ";cursor:pointer;font-family:inherit;font-size:13px;position:relative;" + ml;
             b.addEventListener("focus", function() { b.style.zIndex = "1"; });
             b.addEventListener("blur", function() { b.style.zIndex = ""; });
             b.addEventListener("mouseenter", function() { if (!b.classList.contains("active")) b.style.background = "#D3E8FD"; });
@@ -5963,7 +5963,7 @@ function buildSimContent() {
               b.style.background = "#D3E8FD";
               if (SIM._bostonMarker) SIM._bostonMarker.style.zIndex = mode === "Above clouds" ? "11" : "9";
             });
-            if (mode === "Above clouds") b.classList.add("active");
+            if (mode === "Below clouds") b.classList.add("active");
             row2.appendChild(b);
           });
           bar.appendChild(row2);
@@ -6039,12 +6039,24 @@ function buildSimContent() {
 
         function updateNorDropdownSize() {
           let t = 1;
+          let gridExtra = 0; // extra width to add to the dropdown columns when the sim panel grows past its calibrated max (AP Full Width), so the right margin stays 10px
           if (simPanelWrap && dataPanelWrap && wrap.clientWidth > 0) {
             const F = wrap.clientWidth - 195;
             t = Math.max(0, Math.min(1, (F - NOR_F_MIN) / (NOR_F_MAX - NOR_F_MIN)));
-            const simW = NOR_SIM_MIN + t * (NOR_SIM_MAX - NOR_SIM_MIN);
-            const dataW = NOR_DATA_MIN + t * (NOR_DATA_MAX - NOR_DATA_MIN);
+            // Panel widths always fill F exactly so the right margin stays correct (10px gap).
+            // Both the sim and data panels scale continuously with an unclamped ratio, so
+            // outside the calibrated range they grow together (AP Full Width) or narrow
+            // together (AP 2-Column narrow). The visual interpolation `t` above stays clamped
+            // [0,1] for fonts/dropdown sizing.
+            const tW = (F - NOR_F_MIN) / (NOR_F_MAX - NOR_F_MIN);
+            const simW = NOR_SIM_MIN + tW * (NOR_SIM_MAX - NOR_SIM_MIN);
+            const dataW = F - simW;
+            // Above the calibrated range (AP Full Width) the panel is wider than the dropdown
+            // grid was designed to fill; hand that surplus to the dropdown columns below so the
+            // right margin to the right of Temperature stays 10px. Zero in every in-range case.
+            gridExtra = Math.max(0, simW - NOR_SIM_MAX);
             simPanelWrap.style.flex = "none";
+            simPanelWrap.style.minWidth = "0"; // width is set explicitly below; allows sub-px grow/narrow outside the calibrated range
             simPanelWrap.style.width = simW + "px";
             dataPanelWrap.style.flex = "none";
             dataPanelWrap.style.width = dataW + "px";
@@ -6057,7 +6069,8 @@ function buildSimContent() {
           if (SIM._bgExtension) SIM._bgExtension.style.height = (SIM._norPromptVisible ? 18 : 0) + "px";
 
           const autoW = NOR_AUTO_COND + t * (NOR_AUTO_LATO - NOR_AUTO_COND);
-          const colW = NOR_COND_W.map((cw, i) => cw + t * (NOR_LATO_W[i] - cw));
+          const latoSumW = NOR_LATO_W[0] + NOR_LATO_W[1] + NOR_LATO_W[2];
+          const colW = NOR_COND_W.map((cw, i) => cw + t * (NOR_LATO_W[i] - cw) + gridExtra * (NOR_LATO_W[i] / latoSumW));
           const colGap = NOR_GAP_COND + t * (NOR_GAP_LATO - NOR_GAP_COND);
           grid.style.gridTemplateColumns = autoW + "px " + colW[0] + "px " + colW[1] + "px " + colW[2] + "px";
           grid.style.gap = "5px " + colGap + "px";
@@ -6520,7 +6533,7 @@ function buildSimContent() {
           if (t !== undefined) norCurrentT = t;
           var sw = stage.offsetWidth, sh = stage.offsetHeight;
           if (!sw || !sh) return;
-          var imgW = sh * (2667 / 1334);
+          var imgW = sh * (2667 / 1334); // fixed overlay reference frame = ORIGINAL map width; do NOT change to the display asset aspect or Boston/arrows/labels/animations shift as the art widens
           var imgLeft = (sw - imgW) / 2;
           var frac = norCurrentT;
           var eased = 1 - Math.pow(1 - frac, 1.3);
@@ -7215,15 +7228,15 @@ function buildSimContent() {
 
         const bostonMarker = document.createElement("div");
         bostonMarker.setAttribute("aria-hidden", "true");
-        bostonMarker.style.cssText = "position:absolute;pointer-events:none;display:flex;align-items:center;gap:4px;z-index:11;";
-        bostonMarker.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:#fff;border:2px solid #333;flex-shrink:0;box-shadow:0 0 0 2px #fff;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.35));"></div><span style="font:500 18px \'Roboto Condensed\',sans-serif;color:#333;white-space:nowrap;position:relative;top:-6px;left:-1px;-webkit-text-stroke:4px #fff;paint-order:stroke fill;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.35));">Boston</span>';
+        bostonMarker.style.cssText = "position:absolute;pointer-events:none;display:flex;align-items:center;gap:4px;z-index:9;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.35));"; // shadow on the group (not per child) so the label's shadow sits behind the dot instead of on top of it
+        bostonMarker.innerHTML = '<div style="width:10px;height:10px;border-radius:50%;background:#fff;border:3px solid #333;flex-shrink:0;box-shadow:0 0 0 2px #fff;"></div><span style="font:700 21px \'Roboto Condensed\',sans-serif;color:#333;white-space:nowrap;position:relative;top:-7px;left:0.5px;-webkit-text-stroke:4px #fff;paint-order:stroke fill;">Boston</span>';
         stage.appendChild(bostonMarker);
         function positionBostonMarker() {
           var sw = stage.offsetWidth, sh = stage.offsetHeight;
-          var imgW = sh * (2667 / 1334);
+          var imgW = sh * (2667 / 1334); // fixed overlay reference frame = ORIGINAL map width; do NOT change to the display asset aspect or Boston/arrows/labels/animations shift as the art widens
           var imgLeft = (sw - imgW) / 2;
-          bostonMarker.style.left = (imgLeft + 0.36 * imgW - 6 + 81.5) + "px";
-          bostonMarker.style.top = (0.16 * sh - 6 + 13) + "px";
+          bostonMarker.style.left = (imgLeft + 0.36 * imgW - 7 + 81.5) + "px"; // -7 = half the dot's 10px border-box (was -6 for the old 8px dot); keeps the dot centered on the coast
+          bostonMarker.style.top = (0.16 * sh - 6 + 11.25) + "px"; // 11.25 (was 13 at 18px) keeps the dot on the coast after the label grew 18px→21px (taller line-box recenters the dot)
         }
         positionBostonMarker();
         SIM._positionBostonMarker = positionBostonMarker;
@@ -7259,7 +7272,7 @@ function buildSimContent() {
         stage.appendChild(pathwayArrows);
         function positionArrows() {
           var sw = stage.offsetWidth, sh = stage.offsetHeight;
-          var imgW = sh * (2667 / 1334);
+          var imgW = sh * (2667 / 1334); // fixed overlay reference frame = ORIGINAL map width; do NOT change to the display asset aspect or Boston/arrows/labels/animations shift as the art widens
           var imgLeft = (sw - imgW) / 2;
           var scale = sh / 265;
           NOR_ARROW_IMG.forEach(function(a) {
@@ -7293,7 +7306,7 @@ function buildSimContent() {
         function positionPills() {
           var sw = stage.offsetWidth, sh = stage.offsetHeight;
           if (!sw || !sh) return;
-          var imgW = sh * (2667 / 1334);
+          var imgW = sh * (2667 / 1334); // fixed overlay reference frame = ORIGINAL map width; do NOT change to the display asset aspect or Boston/arrows/labels/animations shift as the art widens
           var imgLeft = (sw - imgW) / 2;
           pillData.forEach(function(p) {
             var pill = pillContainer.querySelector('[data-pathway="' + p.num + '"]');
@@ -7363,7 +7376,7 @@ function buildSimContent() {
         function animateArrowsToStart(duration, nums) {
           var arrowNums = nums || [1, 2];
           var sw = stage.offsetWidth, sh = stage.offsetHeight;
-          var imgW = sh * (2667 / 1334);
+          var imgW = sh * (2667 / 1334); // fixed overlay reference frame = ORIGINAL map width; do NOT change to the display asset aspect or Boston/arrows/labels/animations shift as the art widens
           var imgLeft = (sw - imgW) / 2;
           var scale = sh / 265;
           var targetX = imgLeft + imgW / 2 + norStartOffX;
