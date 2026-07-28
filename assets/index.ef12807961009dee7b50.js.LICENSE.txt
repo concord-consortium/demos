@@ -1,0 +1,469 @@
+/* @preserve
+ * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
+ * (c) 2010-2023 Vladimir Agafonkin, (c) 2010-2011 CloudMade
+ */
+
+/*!
+ * EventEmitter2
+ * https://github.com/hij1nx/EventEmitter2
+ *
+ * Copyright (c) 2013 hij1nx
+ * Licensed under the MIT license.
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+/*!
+ * jQuery JavaScript Library v4.0.0
+ * https://jquery.com/
+ *
+ * Copyright OpenJS Foundation and other contributors
+ * Released under the MIT license
+ * https://jquery.com/license/
+ *
+ * Date: 2026-01-18T00:20Z
+ */
+
+/*! ../interactive-api-shared/types */
+
+/*! ../shared/accessibility */
+
+/*! ./../../process/browser.js */
+
+/*! ./../../timers-browserify/main.js */
+
+/*! ./../../webpack/buildin/global.js */
+
+/*! ./../process/browser.js */
+
+/*! ./../webpack/buildin/global.js */
+
+/*! ./api */
+
+/*! ./client */
+
+/*! ./default-server */
+
+/*! ./hooks */
+
+/*! ./html-tools */
+
+/*! ./iframe-endpoint */
+
+/*! ./in-frame */
+
+/*! ./lib/iframe-endpoint */
+
+/*! ./lib/iframe-phone-rpc-endpoint */
+
+/*! ./lib/parent-endpoint */
+
+/*! ./lib/structured-clone */
+
+/*! ./managed-state */
+
+/*! ./md5.js */
+
+/*! ./metadata-types */
+
+/*! ./nil.js */
+
+/*! ./package.json */
+
+/*! ./parent-endpoint */
+
+/*! ./parse.js */
+
+/*! ./pubsub */
+
+/*! ./regex.js */
+
+/*! ./replace-blobs-with-data-urls */
+
+/*! ./rng.js */
+
+/*! ./sha1.js */
+
+/*! ./shutterbug-worker */
+
+/*! ./stringify.js */
+
+/*! ./structured-clone */
+
+/*! ./types */
+
+/*! ./url-alphabet/index.js */
+
+/*! ./v1.js */
+
+/*! ./v3.js */
+
+/*! ./v35.js */
+
+/*! ./v4.js */
+
+/*! ./v5.js */
+
+/*! ./validate.js */
+
+/*! ./version.js */
+
+/*! deep-freeze */
+
+/*! eventemitter2 */
+
+/*! exports provided: DNS, URL, default */
+
+/*! exports provided: default */
+
+/*! exports provided: name, version, description, main, types, repository, author, license, bugs, homepage, dependencies, peerDependencies, default */
+
+/*! exports provided: nanoid, customAlphabet, customRandom, urlAlphabet, random */
+
+/*! exports provided: urlAlphabet */
+
+/*! exports provided: v1, v3, v4, v5, NIL, version, validate, stringify, parse */
+
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+/*! iframe-phone */
+
+/*! jquery */
+
+/*! nanoid */
+
+/*! no static exports found */
+
+/*! react */
+
+/*! resize-observer-polyfill */
+
+/*! setimmediate */
+
+/*! uuid */
+
+/*!*********************!*\
+  !*** ./js/index.js ***!
+  \*********************/
+
+/*!************************!*\
+  !*** external "react" ***!
+  \************************/
+
+/*!**************************!*\
+  !*** ./js/html-tools.js ***!
+  \**************************/
+
+/*!******************************!*\
+  !*** ./js/default-server.js ***!
+  \******************************/
+
+/*!*********************************!*\
+  !*** ./js/shutterbug-worker.js ***!
+  \*********************************/
+
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+
+/*!*************************************!*\
+  !*** ./src/shared/accessibility.ts ***!
+  \*************************************/
+
+/*!*****************************************!*\
+  !*** ./node_modules/process/browser.js ***!
+  \*****************************************/
+
+/*!*******************************************!*\
+  !*** ./node_modules/deep-freeze/index.js ***!
+  \*******************************************/
+
+/*!*******************************************!*\
+  !*** ./src/interactive-api-client/api.ts ***!
+  \*******************************************/
+
+/*!********************************************!*\
+  !*** ./js/replace-blobs-with-data-urls.js ***!
+  \********************************************/
+
+/*!*********************************************!*\
+  !*** ./src/interactive-api-client/hooks.ts ***!
+  \*********************************************/
+
+/*!*********************************************!*\
+  !*** ./src/interactive-api-client/index.ts ***!
+  \*********************************************/
+
+/*!*********************************************!*\
+  !*** ./src/interactive-api-client/types.ts ***!
+  \*********************************************/
+
+/*!*********************************************!*\
+  !*** ./src/interactive-api-shared/types.ts ***!
+  \*********************************************/
+
+/*!**********************************************!*\
+  !*** ./src/interactive-api-client/client.ts ***!
+  \**********************************************/
+
+/*!**********************************************!*\
+  !*** ./src/interactive-api-client/pubsub.ts ***!
+  \**********************************************/
+
+/*!************************************************!*\
+  !*** ./node_modules/timers-browserify/main.js ***!
+  \************************************************/
+
+/*!************************************************!*\
+  !*** ./src/interactive-api-client/in-frame.ts ***!
+  \************************************************/
+
+/*!*************************************************!*\
+  !*** ./src/interactive-api-client/package.json ***!
+  \*************************************************/
+
+/*!**************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/v1.js ***!
+  \**************************************************/
+
+/*!**************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/v3.js ***!
+  \**************************************************/
+
+/*!**************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/v4.js ***!
+  \**************************************************/
+
+/*!**************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/v5.js ***!
+  \**************************************************/
+
+/*!***************************************************!*\
+  !*** ./node_modules/setimmediate/setImmediate.js ***!
+  \***************************************************/
+
+/*!***************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/md5.js ***!
+  \***************************************************/
+
+/*!***************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/nil.js ***!
+  \***************************************************/
+
+/*!***************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/rng.js ***!
+  \***************************************************/
+
+/*!***************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/v35.js ***!
+  \***************************************************/
+
+/*!****************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/sha1.js ***!
+  \****************************************************/
+
+/*!*****************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/index.js ***!
+  \*****************************************************/
+
+/*!*****************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/parse.js ***!
+  \*****************************************************/
+
+/*!*****************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/regex.js ***!
+  \*****************************************************/
+
+/*!*****************************************************!*\
+  !*** ./src/interactive-api-client/managed-state.ts ***!
+  \*****************************************************/
+
+/*!******************************************************!*\
+  !*** ./src/interactive-api-client/metadata-types.ts ***!
+  \******************************************************/
+
+/*!*******************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/version.js ***!
+  \*******************************************************/
+
+/*!********************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/validate.js ***!
+  \********************************************************/
+
+/*!*********************************************************!*\
+  !*** ./node_modules/eventemitter2/lib/eventemitter2.js ***!
+  \*********************************************************/
+
+/*!*********************************************************!*\
+  !*** ./node_modules/uuid/dist/esm-browser/stringify.js ***!
+  \*********************************************************/
+
+/*!**********************************************************************!*\
+  !*** ./src/interactive-api-client/node_modules/iframe-phone/main.js ***!
+  \**********************************************************************/
+
+/*!*************************************************************************!*\
+  !*** ./node_modules/resize-observer-polyfill/dist/ResizeObserver.es.js ***!
+  \*************************************************************************/
+
+/*!*************************************************************************!*\
+  !*** ./src/interactive-api-client/node_modules/nanoid/index.browser.js ***!
+  \*************************************************************************/
+
+/*!******************************************************************************!*\
+  !*** ./src/interactive-api-client/node_modules/nanoid/url-alphabet/index.js ***!
+  \******************************************************************************/
+
+/*!*************************************************************************************!*\
+  !*** ./src/interactive-api-client/node_modules/iframe-phone/lib/iframe-endpoint.js ***!
+  \*************************************************************************************/
+
+/*!*************************************************************************************!*\
+  !*** ./src/interactive-api-client/node_modules/iframe-phone/lib/parent-endpoint.js ***!
+  \*************************************************************************************/
+
+/*!**************************************************************************************!*\
+  !*** ./src/interactive-api-client/node_modules/iframe-phone/lib/structured-clone.js ***!
+  \**************************************************************************************/
+
+/*!******************************************************************************************!*\
+  !*** external {"root":"jQuery","commonjs2":"jquery","commonjs":"jquery","amd":"jquery"} ***!
+  \******************************************************************************************/
+
+/*!***********************************************************************************************!*\
+  !*** ./src/interactive-api-client/node_modules/iframe-phone/lib/iframe-phone-rpc-endpoint.js ***!
+  \***********************************************************************************************/
+
+/**
+ * @license React
+ * react-dom.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react-is.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react-is.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react-jsx-runtime.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * scheduler.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * use-sync-external-store-shim.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @mui/private-theming v9.0.1
+ *
+ * @license MIT
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @mui/styled-engine v9.0.0
+ *
+ * @license MIT
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @mui/system v9.0.1
+ *
+ * @license MIT
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * k-d Tree JavaScript - V 1.01
+ *
+ * https://github.com/ubilabs/kd-tree-javascript
+ *
+ * @author Mircea Pricop <pricop@ubilabs.net>, 2012
+ * @author Martin Kleppe <kleppe@ubilabs.net>, 2012
+ * @author Ubilabs http://ubilabs.net, 2012
+ * @license MIT License <http://www.opensource.org/licenses/mit-license.php>
+ */
+
+/**
+ * tiny-lru
+ *
+ * @copyright 2026 Jason Mulligan <jason.mulligan@avoidwork.com>
+ * @license BSD-3-Clause
+ * @version 11.4.7
+ */
+
+/** @license React v16.13.1
+ * react-is.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
