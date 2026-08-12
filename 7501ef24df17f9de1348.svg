@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="42px" height="42px" viewBox="0 0 42 42" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Fullscreen Exit ICON</title>
+    <g id="Fullscreen-Exit-ICON" stroke="none" fill="none" fill-rule="evenodd" stroke-width="1">
+        <g id="Fullscreen-Exit-Icon" transform="translate(0, -0.0003)">
+            <rect id="Triangle" x="0" y="0.0003" width="42" height="42"></rect>
+            <path d="M31.5,42.0003 L31.5,35.2013 L37.512,41.2393 L41.24,37.5113 L35.202,31.5013 L42,31.5013 L42,26.2503 L26.25,26.2503 L26.25,42.0003 L31.5,42.0003 Z M15.75,42.0003 L15.75,26.2503 L0,26.2503 L0,31.5013 L6.799,31.5013 L0.761,37.5113 L4.489,41.2393 L10.499,35.2013 L10.499,42.0003 L15.75,42.0003 Z M42,15.75 L42,10.5 L35.201,10.5 L41.24,4.488 L37.512,0.76 L31.5,6.799 L31.5,0 L26.25,0 L26.25,15.75 L42,15.75 Z M15.75,15.75 L15.75,0 L10.499,0 L10.499,6.799 L4.489,0.76 L0.761,4.488 L6.799,10.5 L0,10.5 L0,15.75 L15.75,15.75 Z" id="Icon" fill="#797979"></path>
+        </g>
+    </g>
+</svg>
