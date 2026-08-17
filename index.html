@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Storm Explorer</title><meta name="description" content="Storm Explorer"><link rel="shortcut icon" href="favicon.ico"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet"><style>html, body, #app {
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Storm Explorer</title><meta name="description" content="Storm Explorer"><link rel="shortcut icon" href="favicon.ico"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Roboto+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet"><style>html, body, #app {
         margin: 0;
         padding: 0;
         height: 100%;
@@ -6,4 +6,8 @@
       body {
         font-family: 'Lato', sans-serif;
         user-select: none;
-      }</style><script defer="defer" src="assets/index.d5a992564d4f939838ec.js"></script><link href="assets/index.ea73c946b65472990054.css" rel="stylesheet"></head><body><div id="app"></div></body></html>
+        /* Grayscale antialiasing so text stroke weight matches the Sketch specs (browsers default to
+           a heavier macOS rasterization that reads as slightly bolder). WebKit/macOS only. */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }</style><script defer="defer" src="assets/index.e392a9fa011a927a8f9b.js"></script><link href="assets/index.a02cdf61a1dfb117b0bf.css" rel="stylesheet"></head><body><div id="app"></div></body></html>
