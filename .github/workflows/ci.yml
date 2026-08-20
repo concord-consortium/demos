@@ -1,0 +1,27 @@
+name: Deploy
+
+on: push
+
+jobs:
+  s3-deploy:
+    name: S3 Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::612297603577:role/demos
+          aws-region: us-east-1
+      - uses: concord-consortium/s3-deploy-action@v1
+        id: s3-deploy
+        with:
+          bucket: models-resources
+          prefix: demos
+          build: "true"
+          folderToDeploy: "."
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          deployRunUrl: https://models-resources.concord.org/demos/__deployPath__/index.html
