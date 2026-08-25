@@ -1,0 +1,4212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Net Maker</title>
+<style>
+/* Self-hosted fonts */
+/* Barlow 400 */ @font-face { font-family: 'Barlow'; font-style: normal; font-weight: 400; src: url('fonts/17ef8a066a33.woff2') format('woff2'); }
+/* Barlow Condensed 400 */ @font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 400; src: url('fonts/343e6c738440.woff2') format('woff2'); }
+/* Barlow Condensed 600 */ @font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; src: url('fonts/07c3c732a90e.woff2') format('woff2'); }
+/* Lato 400 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 400; src: url('fonts/d5b18a30a456.woff2') format('woff2'); }
+/* Lato 400i */ @font-face { font-family: 'Lato'; font-style: italic; font-weight: 400; src: url('fonts/lato-italic-400.woff2') format('woff2'); }
+/* Lato 700 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 700; src: url('fonts/a658a6a6ab26.woff2') format('woff2'); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    background: #ededed;
+    color: #333;
+    letter-spacing: 0.02em;
+    padding: 20px;
+  }
+
+  /* Main layout: left buttons | viewport | right buttons */
+  .main-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  /* Button columns */
+  .btn-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 150px;
+    flex-shrink: 0;
+    padding-top: 0;
+  }
+
+  .btn-column [role="group"] {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-column-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: -2px;
+  }
+
+  /* Day sub-heading inside the Interactives group */
+  .day-sublabel {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #6B7280;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 2px;
+  }
+  .day-sublabel::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #C4C9D2;
+  }
+  .day-sublabel:first-child { margin-top: 0; }
+  body.teal-bg .day-sublabel { color: rgba(255,255,255,0.85); }
+  body.teal-bg .day-sublabel::after { background: rgba(255,255,255,0.4); }
+
+  .toggle-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    /* Prototype chrome, not a student touch target — the 44px minimum doesn't
+       apply here. padding + line-height set the real floor, so both move together. */
+    padding: 5px 14px;
+    min-height: 32px;
+    font-size: 18px;
+    line-height: 20px;
+    font-weight: 600;
+    color: #333;
+    background: #f0f0f0;
+    border: 1px solid #333;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .toggle-btn:hover,
+  .toggle-btn:focus-visible {
+    background: #d8d8d8;
+    color: #333;
+  }
+
+  .toggle-btn:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #fff;
+  }
+  .toggle-btn:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+  .toggle-btn:focus-visible {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #fff;
+  }
+
+  body.teal-bg .toggle-btn {
+    border-color: #fff;
+  }
+
+  body.teal-bg .toggle-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px #fff, 0 0 0 3px #005FCC, 0 0 0 4px #fff;
+  }
+  body.teal-bg .toggle-btn:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
+  body.teal-bg .toggle-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1px #fff, 0 0 0 3px #005FCC, 0 0 0 4px #fff;
+  }
+
+  .toggle-btn:active:not(.active) {
+    background: #c0c0c0;
+  }
+
+  .toggle-btn.active {
+    background: #333;
+    color: #fff;
+    border-color: #333;
+  }
+
+  body.teal-bg .toggle-btn.active {
+    border-color: #fff;
+  }
+  /* Viewport display area */
+  .viewport-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-left: 1px solid #858585;
+    align-self: stretch;
+    min-height: calc(100vh - 40px);
+    position: relative;
+  }
+
+  .viewport-info {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: #333;
+    margin-bottom: 12px;
+    text-align: center;
+    min-height: 2.6em;
+    position: relative;
+    z-index: 1;
+  }
+
+  .viewport-info strong {
+    font-weight: 600;
+    color: #333;
+  }
+
+  /* Device frame */
+  .device-frame {
+    position: relative;
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+    box-sizing: content-box;
+    border: 2px solid #333;
+    transition: width 0.3s ease, height 0.3s ease;
+  }
+
+  .device-frame.no-limit {
+    border-color: #ccc;
+    border-style: dashed;
+    background: transparent;
+  }
+
+  /* Browser / OS chrome bars */
+  .chrome-top {
+    background: #1A2832;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    position: relative;
+  }
+
+  .chrome-top::after {
+    content: attr(data-label);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    color: #b0b0b0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .chrome-bottom {
+    background: #1A2832;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .chrome-bottom::after {
+    content: attr(data-label);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    color: #b0b0b0;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Available viewport area */
+  .viewport-area {
+    background: #0481A0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  /* AP container — floated centered unit */
+  .ap-container {
+    background: transparent;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ap-right-column {
+    display: flex;
+    flex-direction: column;
+    width: 767px;
+    box-sizing: content-box;
+    border: 1px solid #858585;
+    margin-right: 26px;
+  }
+
+  .ap-header {
+    background: #047a99;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+
+  .ap-header-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-left: 10px;
+    line-height: 1;
+  }
+
+  .ap-body {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Left column for 2-column layout */
+  .ap-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-left: 28px;
+    margin-right: 10px;
+    transition: width 0.25s ease;
+    overflow: hidden;
+  }
+
+  .ap-left-toggle {
+    background: #3f3f3f;
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .ap-left-toggle:hover,
+  .ap-left-toggle:focus-visible {
+    background: #4a4a4a;
+  }
+
+  .ap-left-toggle:active {
+    background: #3a3a3a;
+  }
+
+  .ap-left-toggle-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #dfdfdf;
+    position: absolute;
+    left: 181px;
+    white-space: nowrap;
+  }
+
+  .ap-left-toggle-icon {
+    position: absolute;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .ap-left-toggle-icon-collapsed {
+    width: 32px;
+    height: 32px;
+    margin-top: 5px;
+    transform: scaleX(-1);
+  }
+
+  .ap-left-toggle-label-collapsed {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #dfdfdf;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin-top: 12px;
+    white-space: nowrap;
+  }
+
+  .ap-left-toggle:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px #005FCC, inset 0 0 0 4px #fff;
+  }
+  .ap-left-toggle:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
+  .ap-left-toggle:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px #005FCC, inset 0 0 0 4px #fff;
+  }
+
+  .ap-left-resources {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .ap-left-resources-header {
+    background: #dfdfdf;
+    height: 37px;
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .ap-left-resources-header-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  .ap-left-resources-body {
+    flex: 1;
+    background: #f4f4f4;
+    padding: 25px 20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    color: #333;
+    line-height: 1.5;
+    overflow: auto;
+  }
+
+  .ap-left-resources-body p {
+    margin: 0 0 16px 0;
+  }
+
+  .ap-left-resources-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .ap-left-resources-body ul {
+    margin: 0 0 16px 0;
+    padding-left: 40px;
+  }
+
+  .ap-left-resources-body li {
+    margin-bottom: 12px;
+  }
+
+  .ap-left-resources-body li:last-child {
+    margin-bottom: 0;
+  }
+  /* Sim title bar */
+  .sim-title-bar {
+    height: 50px;
+    background: var(--sim-title-bar-bg, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px 0 20px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .sim-title-bar::after {
+    content: "";
+    position: absolute;
+    bottom: calc(-1 * var(--sim-title-accent, 0px));
+    left: 0;
+    right: 0;
+    height: var(--sim-title-accent, 0px);
+    background: inherit;
+  }
+
+  .sim-title-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sim-title-name {
+    font-family: 'Lato', sans-serif;
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--sim-title-text, #333);
+    margin: 0;
+    font-synthesis: none;
+    display: flex;
+    align-items: center;
+    height: 28px;
+  }
+
+  .sim-title-desc {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+    color: var(--sim-title-desc, #333);
+  }
+
+  .sim-title-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .sim-title-logo {
+    display: block;
+  }
+
+  .sim-info-btn {
+    margin-left: 5px;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 700;
+    padding: 3px 12px 3px 8px;
+    height: 34px;
+    box-sizing: border-box;
+    border: 2px solid var(--sim-about-border, #555);
+    border-radius: 6px;
+    background: var(--sim-surface, #fff);
+    color: var(--sim-about-text, #333);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .sim-info-btn::after {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 0;
+    right: 0;
+    bottom: -7px;
+  }
+
+  .sim-info-btn.compact-hit::after {
+    top: 0;
+    bottom: 0;
+  }
+
+  .sim-info-btn svg {
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+  }
+
+  .sim-info-btn:hover,
+  .sim-info-btn:focus-visible {
+    background: var(--sim-btn-hover, #f0f0f0);
+  }
+
+  .sim-info-btn:active {
+    background: var(--sim-btn-active, #d0d0d0);
+  }
+
+  .sim-info-btn:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+  .sim-info-btn:focus:not(:focus-visible) {
+    outline: none;
+  }
+  .sim-info-btn:focus-visible {
+    outline: 2px solid #005FCC;
+    outline-offset: 2px;
+  }
+
+  /* Info modal */
+  .info-modal {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    width: 400px;
+    max-height: 70%;
+    background: #fff;
+    border: 2px solid var(--sim-about-border, #555);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    z-index: 101;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .info-modal-header {
+    display: flex;
+    align-items: center;
+    padding: 3px 3px 3px 12px;
+    height: 52px;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--sim-modal-border, #555);
+    cursor: grab;
+    flex-shrink: 0;
+    user-select: none;
+    touch-action: none;
+    background: var(--sim-surface, #fff);
+  }
+
+  .info-modal-header:active {
+    cursor: grabbing;
+  }
+
+  .info-modal-header-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    margin-right: 10px;
+  }
+
+  .info-modal-header-title {
+    font-family: 'Lato', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    flex: 1;
+    margin: 0;
+  }
+
+  .info-modal-close {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sim-surface, #fff);
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+  }
+
+  .info-modal-close:hover,
+  .info-modal-close:focus-visible {
+    background: var(--sim-btn-hover, #f0f0f0);
+  }
+
+  .info-modal-close:active {
+    background: var(--sim-btn-active, #d0d0d0);
+  }
+
+  .info-modal-close:focus {
+    outline: 2px solid #005FCC;
+    outline-offset: -2px;
+  }
+  .info-modal-close:focus:not(:focus-visible) {
+    outline: none;
+  }
+  .info-modal-close:focus-visible {
+    outline: 2px solid #005FCC;
+    outline-offset: -2px;
+  }
+
+  .info-modal-close svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .info-modal-body {
+    padding: 16px 20px 20px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    line-height: 22px;
+    color: #333;
+    user-select: text;
+  }
+
+  .info-modal-body-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .info-modal-body:focus {
+    outline: none;
+  }
+  .info-modal-body:focus-visible {
+    outline: 2px solid transparent;
+  }
+
+  .info-modal-body-wrap .scroll-focus-ring {
+    border-radius: 0 0 6px 6px;
+  }
+
+  .info-modal-body:focus ~ .scroll-focus-ring {
+    display: block;
+  }
+  .info-modal-body:focus:not(:focus-visible) ~ .scroll-focus-ring {
+    display: none;
+  }
+  .info-modal-body:focus-visible ~ .scroll-focus-ring {
+    display: block;
+  }
+
+  .info-modal-body h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 16px 0 6px;
+    color: #333;
+  }
+
+  .info-modal-body h3:first-child {
+    margin-top: 0;
+  }
+
+  .info-modal-body p {
+    margin: 0 0 12px;
+  }
+
+  .info-modal-body ul,
+  .info-modal-body ol {
+    margin: 0 0 12px;
+    padding-left: 20px;
+  }
+
+  .info-modal-body li {
+    margin-bottom: 4px;
+  }
+
+  /* Question containers below sim content */
+  .question-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 0 27px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .question-container {
+    width: 517px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #858585;
+    box-sizing: content-box;
+  }
+
+  .question-header {
+    background: #047a99;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+
+  .question-header-label {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    margin-left: 10px;
+    line-height: 1;
+  }
+
+  .question-body {
+    background: #fff;
+    flex: 1;
+    min-height: 200px;
+    padding: 20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  .question-input {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    height: 200px;
+    margin-top: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-style: italic;
+    color: #767676;
+    line-height: 1.5;
+  }
+  .content-area.standalone {
+    border: 2px solid var(--sim-panel-border, #555);
+    border-radius: 10px;
+    box-sizing: content-box;
+    overflow: hidden;
+  }
+
+  /* Content area */
+  .content-area {
+    font-family: 'Lato', sans-serif;
+    background: var(--sim-content-bg, #fff);
+    position: relative;
+    flex-shrink: 0;
+    transition: width 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    overflow: hidden;
+  }
+
+  /* Sim content containers */
+  .sim-content {
+    display: flex;
+    gap: 10px;
+    padding: 0 10px 10px 10px;
+    flex: 1;
+    min-height: 0;
+  }
+
+
+  .sim-info-btn svg,
+  .info-modal-close svg,
+  .info-modal-header-icon {
+    color: var(--sim-icon-color, #000);
+  }
+
+  #demo-site-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* Demo Site entry point is hidden for now. The demo view itself is untouched —
+     buildDemoView() / exitDemoView() still work. Delete this one rule to bring it back. */
+  #demo-site-divider,
+  #demo-site-btn {
+    display: none;
+  }
+
+  /* ============================================================
+     Neural Net Maker interactives
+     Signed values are orange-positive / blue-negative throughout.
+     ============================================================ */
+  .sim-content {
+    --nnm-pos: #D9722E;
+    --nnm-pos-soft: #FAE6D6;
+    --nnm-neg: #3A72BE;
+    --nnm-neg-soft: #DCE7F7;
+    --nnm-ink: #1E242C;
+    --nnm-ink-2: #58616F;
+    --nnm-ink-3: #838C99;
+    --nnm-rule: #CCD3DD;
+    --nnm-rule-soft: #E4E9F0;
+    --nnm-surface: #F4F6FA;
+    --nnm-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  .nnm-stack { display: flex; flex-direction: column; width: 100%; min-height: 0; flex: 1; padding-top: 9px; }
+  .nnm { display: flex; gap: 10px; width: 100%; min-height: 0; flex: 1; }
+
+  /* --- shared query filter --- */
+  .nnm-filterwrap { position: relative; flex-shrink: 0; }
+  .nnm-filterbar {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: #fff;
+    border: 1px solid var(--nnm-rule);
+    border-radius: 7px;
+    padding: 0 8px 0 12px;
+    height: 36px;
+    box-sizing: border-box;
+  }
+  .nnm-filterbar.bad { border-color: #C0503E; }
+  .nnm-filter-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--nnm-ink-3);
+    flex-shrink: 0;
+  }
+  .nnm-filter-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--nnm-mono);
+    font-size: 13px;
+    color: var(--nnm-ink);
+    padding: 3px 0;
+  }
+  .nnm-filter-input::placeholder { color: #A6AEBA; }
+  .nnm-filter-input:focus-visible { outline: none; }
+  .nnm-filterbar:focus-within { border-color: var(--nnm-neg); box-shadow: 0 0 0 2px var(--nnm-neg-soft); }
+  .nnm-filter-count {
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--nnm-mono);
+    font-size: 11.5px;
+    color: var(--nnm-ink-3);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .nnm-filter-count.err { color: #C0503E; }
+  .nnm-filter-help {
+    width: 22px; height: 22px;
+    flex-shrink: 0;
+    border: 1px solid var(--nnm-rule);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--nnm-ink-2);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .nnm-filter-help:hover { background: var(--nnm-surface); }
+  .nnm-filter-help:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  .nnm-filter-helpbox {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 5px);
+    right: 0;
+    width: min(430px, 100%);
+    background: #fff;
+    border: 1px solid var(--nnm-rule);
+    border-radius: 7px;
+    box-shadow: 0 6px 20px -8px rgba(30,36,44,0.35);
+    padding: 11px 13px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--nnm-ink-2);
+    max-height: 300px;
+    overflow: auto;
+  }
+  .nnm-filter-helpbox b {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--nnm-ink-3);
+    margin: 8px 0 4px;
+  }
+  .nnm-filter-helpbox b:first-child { margin-top: 0; }
+  .nnm-filter-helpbox ul { margin: 0; padding-left: 17px; }
+  .nnm-filter-helpbox li { margin-bottom: 3px; }
+  .nnm-filter-helpbox code,
+  .nnm-fieldlist code {
+    font-family: var(--nnm-mono);
+    font-size: 11.5px;
+    background: var(--nnm-surface);
+    border: 1px solid var(--nnm-rule-soft);
+    border-radius: 3px;
+    padding: 0 4px;
+    white-space: nowrap;
+  }
+  .nnm-fieldlist { display: flex; flex-wrap: wrap; gap: 4px; }
+  /* A class-level `display` beats the UA rule for [hidden], so state it back. */
+  .nnm-empty[hidden] { display: none; }
+  .nnm-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--nnm-ink-3);
+    font-size: 15px;
+  }
+  .nnm-panel {
+    background: #fff;
+    border: 1px solid var(--nnm-rule);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+  }
+  .nnm-panel-head {
+    min-height: 44px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--nnm-ink-2);
+    padding: 9px 14px 8px;
+    border-bottom: 1px solid var(--nnm-rule-soft);
+    background: var(--nnm-surface);
+    border-radius: 7px 7px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .nnm-panel-body { padding: 12px 14px; overflow: auto; min-height: 0; flex: 1; }
+
+  /* --- case navigator --- */
+  .nnm-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .nnm-navbtn {
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--nnm-rule);
+    background: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    color: var(--nnm-ink-2);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+  }
+  .nnm-navbtn:hover:not([aria-disabled="true"]) { background: var(--nnm-surface); }
+  .nnm-navbtn:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  .nnm-navbtn[aria-disabled="true"] { opacity: 0.35; cursor: default; }
+  .nnm-count {
+    font-family: var(--nnm-mono);
+    font-size: 11.5px;
+    color: var(--nnm-ink-3);
+    font-variant-numeric: tabular-nums;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* --- alien conversation --- */
+  .nnm-alien {
+    font-family: var(--nnm-mono);
+    font-size: 14px;
+    line-height: 1.85;
+    color: var(--nnm-ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .nnm-caseid {
+    font-family: var(--nnm-mono);
+    font-size: 11px;
+    color: var(--nnm-ink-3);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .nnm-decidewrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .nnm-deciderow { position: relative; display: flex; align-items: stretch; }
+  /* Sits under the sum and the outcome it is being compared against, in a narrow
+     column, so the two facts stack rather than running side by side. */
+  /* Out of the flow, like the sum's caption before it. Left in, the wrapper
+     centres the sum row plus these labels as one group, which lifts the sum
+     half the labels' height above the centre of the three pathways. */
+  .nnm-labels {
+    position: absolute;
+    top: calc(100% + 16px);
+    left: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  /* In the narrow layout the labels rejoin the flow, so the row must wrap or they
+     sit alongside the sum and push the panel wide. */
+  .nnm-flowbody.narrow .nnm-deciderow { flex-wrap: wrap; }
+  .nnm-flowbody.narrow .nnm-labels {
+    position: static;
+    width: 100%;
+    margin-top: 12px;
+    padding-left: 0;
+  }
+  .nnm-label-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--nnm-ink-2);
+  }
+  .nnm-label-row b {
+    font-weight: 400;
+    color: var(--nnm-ink-3);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .nnm-pill {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 11px;
+    border: 1px solid currentColor;
+  }
+  .nnm-pill.approach { color: var(--nnm-pos); background: var(--nnm-pos-soft); }
+  .nnm-pill.wait { color: var(--nnm-neg); background: var(--nnm-neg-soft); }
+  .nnm-flag {
+    font-size: 12px;
+    font-weight: 700;
+    color: #A03A2B;
+    background: #FBE3DF;
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+
+  .nnm-tok {
+    border-radius: 3px;
+    padding: 1px 2px;
+    margin: 0 -1px;
+    /* The scan rule is an inset shadow, not an outline or a border. An outline is
+       drawn outside the box, so adjacent words' outlines overlapped in the ~3.6px
+       of a space; a border would reflow the sentence as each word gained one.
+       Inset draws within the padding, so words can sit as tight as they like. */
+    box-shadow: inset 0 0 0 0 transparent;
+    transition: background-color 0.22s ease, color 0.22s ease, box-shadow 0.18s ease;
+  }
+  .nnm-tok.scanning { box-shadow: inset 0 0 0 1.5px var(--nnm-ink); }
+  /* A scored word carries its colour but does not show it until it is lit —
+     the Words step lights them one at a time, in sentence order. */
+  .nnm-tok.scored.lit {
+    background: var(--tok-bg);
+    color: var(--tok-fg);
+  }
+  /* Clones that travel from the reading into the activation cell they feed.
+     Fixed to the body so they are not clipped by either panel. */
+  /* The travelling chip carries the word and the score it is about to add. */
+  .nnm-fly {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    border-radius: 4px;
+    padding: 2px 6px;
+    white-space: nowrap;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    box-shadow: 0 2px 8px -2px rgba(30,36,44,0.4);
+    will-change: transform, opacity;
+  }
+  /* A small kick each time the running total takes on another word. */
+  .nnm-tick { animation: nnm-tick 0.26s ease-out; }
+  @keyframes nnm-tick {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.09); }
+    100% { transform: scale(1); }
+  }
+  .nnm-scale {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 10px;
+    font-family: var(--nnm-mono);
+    font-size: 10.5px;
+    color: var(--nnm-ink-3);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+  .nnm-scale-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, var(--nnm-neg), #fff, var(--nnm-pos));
+    border: 1px solid var(--nnm-rule-soft);
+  }
+  .nnm-reading {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--nnm-ink-2);
+    margin-bottom: 7px;
+    flex-shrink: 0;
+  }
+  .nnm-reading b { color: var(--nnm-ink); font-weight: 600; }
+
+  /* --- left: three readings in one card, per the sketch --- */
+  /* 470 tipped the flow into its stacked fallback at AP Full Width: the flow needs
+     ~556px and the row only has ~1014 to share. 440 leaves the flow enough. */
+  /* Two columns, each a toolbar over a card: find over the conversation,
+     the steps over the pathways. Both toolbars are the same height so the
+     two panels start on the same line. */
+  .nnm-rightcol {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    flex: 1 1 560px;
+    min-width: 318px;
+    min-height: 0;
+  }
+  /* No card behind these — just the buttons. The 36px height stays so the panel
+     below still starts level with the conversation panel. */
+  .nnm-steprow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+  .nnm-leftcol {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    flex: 1 1 440px;
+    min-width: 236px;
+    min-height: 0;
+  }
+  .nnm-readings { flex: 1; min-height: 0; }
+  .nnm-readhead {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    line-height: 1.25;
+    color: var(--nnm-ink-2);
+    height: 30px;              /* matches .nnm-flowhead's two-line captions */
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+  }
+  .nnm-readscroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .nnm-read { border-radius: 5px; padding: 0 5px; box-sizing: border-box; }
+  .nnm-read-name {
+    font-family: 'Lato', sans-serif;
+    font-size: 12.5px;
+    color: var(--nnm-ink-2);
+    padding-bottom: 4px;
+    border-bottom: 1px solid #B9CBE4;
+    margin-bottom: 5px;
+  }
+  .nnm-read-scale {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--nnm-mono);
+    font-size: 9.5px;
+    color: var(--nnm-ink-3);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 6px;
+  }
+  .nnm-read-scale .grad {
+    flex: 1;
+    height: 9px;
+    border-radius: 2px;
+    background: linear-gradient(to right, #1F4E8F, #C8D6E9, #FFFFFF, #EFD3C4, #A84A2C);
+  }
+  .nnm-read-text {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    line-height: 1.85;
+    color: var(--nnm-ink);
+    word-break: break-word;
+  }
+
+  /* --- right: the flow diagram --- */
+  .nnm-flowpanel { flex: 1; min-height: 0; }
+  .nnm-flowouter { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  /* min-height:0 is required — without it a flex child refuses to shrink below its
+     content and overflow-y:auto never engages, so the bar escaped the card. */
+  .nnm-flowbodywrap {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+    scrollbar-gutter: stable;
+    padding: 5px 0 5px 6px;
+    margin: -5px 0 -5px -6px;
+  }
+  .nnm-flowhead {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    height: 30px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    box-sizing: content-box;
+  }
+  /* Positioned against measured centres rather than flex order. */
+  .nnm-flowhead .c.far {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: auto;
+    white-space: nowrap;
+  }
+  .nnm-flowhead .c {
+    width: 82px;
+    flex-shrink: 0;
+    text-align: center;
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    line-height: 1.25;
+    color: var(--nnm-ink-2);
+  }
+  .nnm-flowhead .g { width: 30px; flex-shrink: 0; }
+  .nnm-flowbody { display: flex; align-items: stretch; flex-shrink: 0; min-width: 0; }
+  .nnm-frows { display: flex; flex-direction: column; gap: 14px; flex-shrink: 0; }
+  .nnm-frow { display: flex; align-items: center; gap: 0; border-radius: 5px; box-sizing: border-box; }
+  .nnm-cell {
+    width: 82px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(30,36,44,0.14);
+    border-radius: 6px;
+    font-family: var(--nnm-mono);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+    background: #fff;
+    transition: background-color 0.35s ease, color 0.35s ease, opacity 0.3s ease;
+  }
+  /* Importance stays grey: it is the one number that does not change
+     from conversation to conversation. */
+  .nnm-cell.imp { background: #EFF1F4 !important; color: var(--nnm-ink) !important; border-color: #D3D8E0 !important; }
+  .nnm-cell.sum { width: 62px; height: 40px; }
+  /* A stage that has not run yet is a stand-in: the box is there so the shape of
+     the calculation is visible from the start, but it holds no value and no colour. */
+  .nnm-cell.empty, .nnm-out.empty {
+    background: repeating-linear-gradient(-45deg, #FAFBFC 0 5px, #F1F3F6 5px 10px) !important;
+    border-color: #D8DDE5 !important;
+    border-style: dashed !important;
+    color: transparent !important;
+  }
+  .nnm-pop { animation: nnm-pop 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3); }
+  @keyframes nnm-pop {
+    from { opacity: 0; transform: scale(0.90); }
+    60%  { opacity: 1; }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .nnm-reset {
+    width: 36px; height: 36px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--nnm-rule);
+    background: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    color: var(--nnm-ink-2);
+    font-size: 21px;
+    line-height: 1;
+    padding: 0 0 2px;
+  }
+  .nnm-reset:hover { background: var(--nnm-surface); }
+
+  .nnm-animtoggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    margin-left: 6px;
+    padding: 0 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--nnm-ink-2);
+    cursor: pointer;
+    user-select: none;
+  }
+  .nnm-animtoggle input { width: 15px; height: 15px; margin: 0; cursor: pointer; accent-color: var(--nnm-neg); }
+  .nnm-animtoggle:hover { color: var(--nnm-ink); }
+  .nnm-animtoggle:focus-within { outline: 2px solid var(--nnm-neg); outline-offset: 2px; border-radius: 4px; }
+
+  /* The non-animated version: same screen, every stage arriving at once. */
+  .nnm-nomotion .nnm-pop,
+  .nnm-nomotion .nnm-tick { animation: none !important; }
+  .nnm-nomotion .nnm-cell,
+  .nnm-nomotion .nnm-cell.wgt,
+  .nnm-nomotion .nnm-tok { transition: none !important; }
+  .nnm-reset:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  /* A fixed-width track for the weighted box, so the box can change size with
+     its value without moving the flow's overall width. */
+  .nnm-slot {
+    width: 82px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+  /* Resting width sits between the widest and narrowest a value can produce, so
+     the Weigh step is seen to widen some boxes and narrow others rather than only
+     ever shrinking them. */
+  .nnm-cell.wgt {
+    width: 58px;
+    transition: width 0.45s cubic-bezier(.3,0,.3,1), background-color 0.35s ease, color 0.35s ease;
+  }
+  .nnm-op {
+    width: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+  }
+  .nnm-glyph { width: 22px; height: 22px; display: block; }
+  .nnm-glyph.arr { width: 24px; height: 18px; }
+  /* The operators darken as the Weigh step reaches them, one row at a time. */
+  .nnm-glyph path { transition: fill 0.3s ease, stroke 0.3s ease; }
+  .nnm-frow.lit-mul .mul .nnm-glyph path { fill: #BFC7D2; stroke: #7E8895; }
+  .nnm-frow.lit-arr .arr .nnm-glyph path { fill: #BFC7D2; stroke: #7E8895; }
+
+  .nnm-conv {
+    flex-shrink: 0;
+    transition: opacity 0.3s ease;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .nnm-tail {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.3s ease;
+  }
+  /* Lifted out of the flow so only the cell is centred. Left in it, the tail
+     centres label-plus-cell as a group, which pushes the cell below the midpoint
+     the two answers are centred on — 40px above it and 6px below. */
+  .nnm-taillabel {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--nnm-ink-2);
+    text-align: center;
+  }
+  .nnm-flowbody.narrow .nnm-taillabel {
+    position: static;
+    transform: none;
+    white-space: normal;
+  }
+  .nnm-fan { width: 40px; flex-shrink: 0; transition: opacity 0.3s ease; overflow: visible; }
+  .nnm-outs {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 14px;
+    flex-shrink: 0;
+    transition: opacity 0.3s ease;
+  }
+  .nnm-out {
+    width: 74px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid rgba(30,36,44,0.14);
+    background: #fff;
+    color: var(--nnm-ink-3);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .nnm-out.approach.on { background: #EFD3C4; color: #1E242C; }
+  .nnm-out.wait.on { background: #1F4E8F; color: #fff; }
+
+  .nnm-flowbody.narrow { flex-wrap: wrap; }
+  .nnm-flowbody.narrow .nnm-cell { width: 74px; height: 36px; font-size: 12px; }
+  .nnm-flowbody.narrow .nnm-slot { width: 74px; }
+  .nnm-flowbody.narrow .nnm-cell.sum { width: 58px; }
+  .nnm-flowbody.narrow .nnm-op { width: 26px; }
+  .nnm-flowpanel:has(.nnm-flowbody.narrow) .nnm-flowhead .c { width: 74px; }
+  .nnm-flowpanel:has(.nnm-flowbody.narrow) .nnm-flowhead .g { width: 26px; }
+  .nnm-flowbody.narrow .nnm-out { width: 68px; height: 34px; font-size: 12.5px; }
+  .nnm-flowbody.narrow .nnm-conv, .nnm-flowbody.narrow .nnm-fan { display: none; }
+  .nnm-flowbody.narrow .nnm-decidewrap { width: 100%; padding-top: 12px; }
+  .nnm-flowbody.narrow .nnm-deciderow { align-items: center; gap: 10px; }
+  .nnm-flowbody.narrow .nnm-tail { flex-direction: row; gap: 8px; }
+  .nnm-flowbody.narrow .nnm-outs { flex-direction: row; gap: 8px; }
+  .nnm-flowbody.narrow .nnm-labels { flex-direction: row; gap: 6px 20px; align-items: center; }
+
+
+  /* --- verdict --- */
+  .nnm-verdict {
+    margin-top: 14px;
+    padding: 11px 13px;
+    border: 1px solid var(--nnm-rule);
+    border-radius: 7px;
+    background: var(--nnm-surface);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    flex-shrink: 0;
+  }
+  .nnm-verdict-main {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--nnm-ink-2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nnm-note {
+    min-width: 0;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--nnm-ink-2);
+    font-style: italic;
+    margin-top: 11px;
+  }
+  .nnm-note:empty { display: none; }
+  .nnm-outs { display: flex; gap: 6px; }
+  .nnm-out {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 3px 11px;
+    border-radius: 11px;
+    border: 1px solid var(--nnm-rule);
+    color: var(--nnm-ink-3);
+    background: #fff;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+  .nnm-out.approach.on { color: var(--nnm-pos); border-color: var(--nnm-pos); background: var(--nnm-pos-soft); }
+  .nnm-out.wait.on { color: var(--nnm-neg); border-color: var(--nnm-neg); background: var(--nnm-neg-soft); }
+
+  /* --- step control --- */
+  .nnm-step {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0 12px;
+    height: 36px;
+    box-sizing: border-box;
+    border: 1px solid var(--nnm-rule);
+    background: #fff;
+    color: var(--nnm-ink-2);
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .nnm-step:hover { background: var(--nnm-surface); }
+  .nnm-step.on {
+    background: var(--nnm-ink);
+    border-color: var(--nnm-ink);
+    color: #fff;
+  }
+  .nnm-step:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  .nnm-step[aria-disabled="true"] { opacity: 0.35; cursor: default; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+</style>
+<body>
+
+<div class="main-layout">
+  <!-- Left: Sims + Device + Layout buttons -->
+  <nav class="btn-column" aria-label="Simulation controls">
+    <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
+      <div style="font-weight: 600;">Neural Net Maker</div>
+      <div style="font-weight: 600;">v0.1</div>
+      <div style="font-weight: 400;">Updated: 8/25/26</div>
+    </div>
+    <div role="group" aria-labelledby="interactives-label">
+      <div class="btn-column-label" id="interactives-label">Interactives</div>
+
+      <div role="group" aria-labelledby="day1-label">
+        <div class="day-sublabel" id="day1-label">Day 1</div>
+        <button class="toggle-btn" data-sim="d1a" aria-pressed="false">Trace a Case</button>
+        <button class="toggle-btn" data-sim="d1b" aria-pressed="false">Extract Pathways</button>
+      </div>
+
+      <div role="group" aria-labelledby="day2-label">
+        <div class="day-sublabel" id="day2-label">Day 2</div>
+        <button class="toggle-btn active" data-sim="d2b" aria-pressed="true">Decision Chain</button>
+      </div>
+
+      <div role="group" aria-labelledby="day3-label">
+        <div class="day-sublabel" id="day3-label">Day 3</div>
+        <button class="toggle-btn" data-sim="d3a" aria-pressed="false">Correlations</button>
+        <button class="toggle-btn" data-sim="d3b" aria-pressed="false">Investigate P2</button>
+      </div>
+    </div>
+
+    <div role="group" aria-labelledby="device-label" style="margin-top: 16px;">
+      <div class="btn-column-label" id="device-label">Device</div>
+      <button class="toggle-btn" data-device="none" aria-pressed="false">Teacher Desktop</button>
+      <button class="toggle-btn active" data-device="chromebook" aria-pressed="true">Chromebook</button>
+      <button class="toggle-btn" data-device="ipad" aria-pressed="false">iPad (&le; 9th gen)</button>
+      <button class="toggle-btn" data-device="ipad10" aria-pressed="false">iPad (10th gen)</button>
+      <button class="toggle-btn" data-device="android" aria-pressed="false">Android Tablet</button>
+    </div>
+
+    <div role="group" aria-labelledby="layout-label" style="margin-top: 16px;">
+      <div class="btn-column-label" id="layout-label">Layout</div>
+      <button class="toggle-btn" data-layout="standalone" aria-pressed="false">Standalone</button>
+      <button class="toggle-btn active" data-layout="ap-full" aria-pressed="true">AP Full Width</button>
+      <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false">AP 2-Column</button>
+      <hr id="demo-site-divider" style="border: none; border-top: 1px solid #858585; margin: 16px 0 14px;">
+      <button class="toggle-btn" id="demo-site-btn">
+        Demo Site
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22,12 C22,6.48 17.52,2 12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 Z M4,12 C4,7.58 7.58,4 12,4 C16.42,4 20,7.58 20,12 C20,16.42 16.42,20 12,20 C7.58,20 4,16.42 4,12 Z M16,12 L12,16 L10.59,14.59 L12.17,13 L8,13 L8,11 L12.17,11 L10.58,9.41 L12,8 L16,12 Z" fill="currentColor" fill-rule="nonzero"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Center: Viewport -->
+  <main class="viewport-wrapper">
+    <div id="browserWidthLabel" style="position: absolute; top: 0; left: 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; line-height: 1.3; color: #333; background: rgba(0,0,0,0.15); padding: 4px 8px; border-radius: 4px;">
+      <div style="font-weight: 600;">Browser Width: <span id="browserWidthValue" style="font-weight: 400;">0</span></div>
+    </div>
+    <div class="viewport-info" id="viewportInfo"></div>
+    <div id="viewportContainer"></div>
+  </main>
+
+</div>
+
+<script src="data/nnm-data.js"></script>
+<script>
+const DEVICES = {
+  none: {
+    name: "Teacher Desktop",
+    screenW: null, screenH: null,
+    topChrome: 0, bottomChrome: 0,
+    topLabel: "", bottomLabel: ""
+  },
+  chromebook: {
+    name: "Chromebook",
+    screenW: 1366, screenH: 768,
+    topChrome: 111, bottomChrome: 48,
+    topLabel: "Chrome tabs + address + bookmarks: 111px",
+    bottomLabel: "ChromeOS shelf: 48px"
+  },
+  ipad: {
+    name: "iPad (\u2264 9th gen, landscape)",
+    screenW: 1024, screenH: 768,
+    topChrome: 70, bottomChrome: 0,
+    topLabel: "Safari address + tab bar: 70px",
+    bottomLabel: ""
+  },
+  ipad10: {
+    name: "iPad (10th gen, landscape)",
+    screenW: 1180, screenH: 820,
+    topChrome: 70, bottomChrome: 0,
+    topLabel: "Safari address + tab bar: 70px",
+    bottomLabel: ""
+  },
+  android: {
+    name: "Android Tablet (landscape)",
+    screenW: 1280, screenH: 800,
+    topChrome: 56, bottomChrome: 48,
+    topLabel: "Chrome: 56px",
+    bottomLabel: "Nav bar: 48px"
+  }
+};
+
+const AP_WIDTH = 1100;
+const AP_CONTENT_W_EXPANDED = 767;
+const AP_CONTENT_W_COLLAPSED = AP_WIDTH - 28 - 45 - 10 - 2 - 26;
+const AP_HEADER_H = 36;
+const AP_CONTENT_H = 562;
+
+const LAYOUTS = {
+  standalone: { name: "Standalone", hasAP: false, contentWidth: null },
+  "ap-full": { name: "AP Full Width", hasAP: true, contentWidth: 1044, sidebar: false },
+  "ap-2col": { name: "AP 2-Column", hasAP: true, contentWidth: 833, sidebar: true, sidebarExpanded: true }
+};
+
+// Placeholder neutral theme shared by all three days. Each interactive gets its own
+// styling later; these values only keep the shell chrome legible in the meantime.
+const PLACEHOLDER_THEME = {
+  titleBarBg: "#EDEFF2",
+  titleText: "#2B3038",
+  titleDesc: "#333",
+  surface: "#F7F8FA",
+  panelBorder: "#6B7280",
+  btnBorder: "#6B7280",
+  btnText: "#333",
+  btnHover: "#EDEFF2",
+  btnActive: "#DCE0E6",
+  aboutBorder: "#6B7280",
+  aboutText: "#333",
+  modalBorder: "#6B7280",
+  iconColor: "#2B3038",
+  contentBg: "#FFFFFF",
+  titleAccent: "7px"
+};
+
+const SIMS = {
+  d1a: {
+    day: 1, id: "1A",
+    name: "Trace a Case",
+    description: "Follow one conversation through the network",
+    theme: PLACEHOLDER_THEME,
+    about:
+      '<p>Placeholder. Students follow a single alien conversation through the model: text to embedding, through two hidden layers, out to a prediction.</p>' +
+      '<h3>The point</h3>' +
+      '<p>This is what actually happens inside the model \u2014 and it is unreadable. No single neuron means anything on its own.</p>'
+  },
+  d1b: {
+    day: 1, id: "1B",
+    name: "Extract the Pathways",
+    description: "Find the neurons that fire together",
+    theme: PLACEHOLDER_THEME,
+    about:
+      '<p>Placeholder. Students stack many cases\u2019 activations, look for neurons that keep firing together, then extract the pathways and watch them settle on top of the network.</p>' +
+      '<h3>The point</h3>' +
+      '<p>Meaning lives above the individual neuron. A pathway is a group of neurons acting as one factor.</p>'
+  },
+  d2b: {
+    day: 2, id: "2B",
+    name: "The Decision Chain",
+    description: "How the pathways combine into one decision",
+    theme: PLACEHOLDER_THEME,
+    about:
+      '<p>Placeholder. Activation times importance gives a weighted value; the weighted values sum to a score, the score becomes a probability, and the probability becomes Approach or Wait.</p>' +
+      '<h3>The point</h3>' +
+      '<p>Importance is fixed for the whole model. Only activation changes from case to case.</p>'
+  },
+  d3a: {
+    day: 3, id: "3A",
+    name: "Correlations",
+    description: "What each pathway lines up with",
+    theme: PLACEHOLDER_THEME,
+    about:
+      '<p>Placeholder. A matrix of pathways against known attributes, in a graph view and a correlation view. Students choose pairs and run the correlation.</p>' +
+      '<h3>The point</h3>' +
+      '<p>You cannot read a pathway directly. You interpret it indirectly, through things you already know how to name.</p>'
+  },
+  d3b: {
+    day: 3, id: "3B",
+    name: "Investigate P2",
+    description: "The pathway that matches nothing",
+    theme: PLACEHOLDER_THEME,
+    about:
+      '<p>Placeholder. P2 lines up with none of the given attributes, but it tracks the model being wrong. Students filter to the errors, read the observation notes, and commission new attribute coding.</p>' +
+      '<h3>The point</h3>' +
+      '<p>A model can get the right answer for a reason nobody would endorse.</p>'
+  }
+};
+
+let activeSim = "d2b";
+let activeDevice = "chromebook";
+let activeLayout = "ap-full";
+let sidebarExpanded = true;
+let demoMode = false;
+let _savedDevice = null;
+let _savedLayout = null;
+
+// Cached sim DOM elements — persist across layout switches
+const SIM = {};
+let _simTitleBar = null;
+let _simContent = null;
+let _currentSim = null; // tracks which sim the cached elements belong to
+
+// The sim title bar (name, description, logo, About) is off for now. One flag
+// so it comes back without unpicking the append sites.
+const SHOW_SIM_TITLE_BAR = false;
+
+function getSimTitleBar() {
+  if (!SHOW_SIM_TITLE_BAR) return null;
+  if (!_simTitleBar || _currentSim !== activeSim) {
+    _simTitleBar = buildSimTitleBar();
+    _simContent = buildSimContent();
+    _currentSim = activeSim;
+  }
+  return _simTitleBar;
+}
+
+function getSimContent() {
+  if (!_simContent || _currentSim !== activeSim) {
+    _simTitleBar = buildSimTitleBar();
+    _simContent = buildSimContent();
+    _currentSim = activeSim;
+  }
+  return _simContent;
+}
+
+// Tear down anything the outgoing interactive registered on SIM before switching.
+// Each interactive is responsible for parking its own stop/disconnect handles here.
+function invalidateSimCache() {
+  _simTitleBar = null;
+  _simContent = null;
+  _currentSim = null;
+  if (Array.isArray(SIM._timeouts)) { SIM._timeouts.forEach(clearTimeout); SIM._timeouts.length = 0; }
+  if (Array.isArray(SIM._observers)) { SIM._observers.forEach(o => o.disconnect()); SIM._observers.length = 0; }
+  if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
+  for (var key in SIM) delete SIM[key];
+}
+
+function applySimTheme(contentEl) {
+  const theme = SIMS[activeSim].theme;
+  const props = {
+    "--sim-title-bar-bg": theme ? theme.titleBarBg : "",
+    "--sim-title-text": theme ? theme.titleText : "",
+    "--sim-title-desc": theme ? theme.titleDesc : "",
+    "--sim-panel-border": theme ? theme.panelBorder : "",
+    "--sim-btn-hover": theme ? theme.btnHover : "",
+    "--sim-btn-active": theme ? theme.btnActive : "",
+    "--sim-about-border": theme ? theme.aboutBorder : "",
+    "--sim-about-text": theme ? theme.aboutText : "",
+    "--sim-modal-border": theme ? theme.modalBorder : "",
+    "--sim-content-bg": theme ? theme.contentBg : "",
+    "--sim-title-accent": theme ? theme.titleAccent : "",
+    "--sim-icon-color": theme ? theme.iconColor : "",
+    "--sim-surface": theme ? theme.surface : ""
+  };
+  for (const [k, v] of Object.entries(props)) {
+    if (v) contentEl.style.setProperty(k, v);
+    else contentEl.style.removeProperty(k);
+  }
+}
+
+const infoIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M11,7 L13,7 L13,9 L11,9 L11,7 Z M11,11 L13,11 L13,17 L11,17 L11,11 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z"/></svg>';
+const closeIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" points="19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12"/></svg>';
+const doubleArrowIconSVG = '<svg aria-hidden="true" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path fill="#FFFFFF" fill-rule="evenodd" d="M16.2,8.25 C16.3346077,8.25 16.4536688,8.30176503 16.5572144,8.40531062 L17.3337675,9.18186373 C17.4373131,9.28540932 17.4890782,9.40447044 17.4890782,9.53907816 C17.4890782,9.67368587 17.4373131,9.79274699 17.3337675,9.89629259 L11.2300601,16 L17.3337675,22.1037074 C17.4373131,22.207253 17.4890782,22.3263141 17.4890782,22.4609218 C17.4890782,22.5955296 17.4373131,22.7145907 17.3337675,22.8181363 L16.5572144,23.5946894 C16.4536688,23.698235 16.3346077,23.75 16.2,23.75 C16.0653923,23.75 15.9463312,23.698235 15.8427856,23.5946894 L8.60531062,16.3572144 C8.50176503,16.2536688 8.45,16.1346077 8.45,16 C8.45,15.8653923 8.50176503,15.7463312 8.60531062,15.6427856 L15.8427856,8.40531062 C15.9463312,8.30176503 16.0653923,8.25 16.2,8.25 Z M22.2,8.25 C22.3346077,8.25 22.4536688,8.30176503 22.5572144,8.40531062 L23.3337675,9.18186373 C23.4373131,9.28540932 23.4890782,9.40447044 23.4890782,9.53907816 C23.4890782,9.67368587 23.4373131,9.79274699 23.3337675,9.89629259 L17.2300601,16 L23.3337675,22.1037074 C23.4373131,22.207253 23.4890782,22.3263141 23.4890782,22.4609218 C23.4890782,22.5955296 23.4373131,22.7145907 23.3337675,22.8181363 L22.5572144,23.5946894 C22.4536688,23.698235 22.3346077,23.75 22.2,23.75 C22.0653923,23.75 21.9463312,23.698235 21.8427856,23.5946894 L14.6053106,16.3572144 C14.501765,16.2536688 14.45,16.1346077 14.45,16 C14.45,15.8653923 14.501765,15.7463312 14.6053106,15.6427856 L21.8427856,8.40531062 C21.9463312,8.30176503 22.0653923,8.25 22.2,8.25 Z"/></svg>';
+
+function setAriaDisabled(el, disabled) {
+  if (disabled) el.setAttribute("aria-disabled", "true");
+  else el.removeAttribute("aria-disabled");
+}
+
+function createSVGIcon(svgString) {
+  const temp = document.createElement("div");
+  temp.innerHTML = svgString;
+  return temp.firstChild;
+}
+
+function buildSimTitleBar() {
+  const bar = document.createElement("div");
+  bar.className = "sim-title-bar";
+
+  const left = document.createElement("div");
+  left.className = "sim-title-left";
+  const name = document.createElement("h1");
+  name.className = "sim-title-name";
+  name.textContent = SIMS[activeSim].name.toUpperCase();
+  if (SIMS[activeSim].titleFont) {
+    name.style.fontFamily = SIMS[activeSim].titleFont;
+    if (SIMS[activeSim].titleLetterSpacing) {
+      name.style.letterSpacing = SIMS[activeSim].titleLetterSpacing;
+    }
+    if (SIMS[activeSim].titleOffset) {
+      name.style.position = "relative";
+      name.style.top = SIMS[activeSim].titleOffset;
+    }
+  }
+
+  const desc = document.createElement("span");
+  desc.className = "sim-title-desc";
+  desc.textContent = SIMS[activeSim].description;
+  left.appendChild(name);
+  left.appendChild(desc);
+
+  const right = document.createElement("div");
+  right.className = "sim-title-right";
+  const ccLogo = document.createElement("img");
+  ccLogo.src = "icons/CC Logo.svg";
+  ccLogo.alt = "Concord Consortium";
+  ccLogo.className = "sim-title-logo";
+  const infoBtn = document.createElement("button");
+  infoBtn.className = "sim-info-btn";
+  const infoBtnIcon = createSVGIcon(infoIconSVG);
+  infoBtn.appendChild(infoBtnIcon);
+  infoBtn.appendChild(document.createTextNode("About"));
+  infoBtn.addEventListener("click", () => {
+    // Remove existing modal if any
+    const existing = document.querySelector(".info-modal");
+    if (existing) { existing._closeModal(); return; }
+
+    // Create modal
+    const modal = document.createElement("div");
+    modal.className = "info-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("tabindex", "-1");
+    // Header
+    const header = document.createElement("div");
+    header.className = "info-modal-header";
+    const hIcon = createSVGIcon(infoIconSVG);
+    hIcon.classList.add("info-modal-header-icon");
+    const hTitle = document.createElement("h2");
+    hTitle.className = "info-modal-header-title";
+    hTitle.id = "info-modal-title";
+    hTitle.textContent = "About the " + SIMS[activeSim].name + " Simulation";
+    modal.setAttribute("aria-labelledby", "info-modal-title");
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "info-modal-close";
+    closeBtn.setAttribute("aria-label", "Close");
+    const closeIcon = createSVGIcon(closeIconSVG);
+    closeBtn.appendChild(closeIcon);
+    function closeModal() {
+      modal.style.opacity = "0";
+      modal.addEventListener("transitionend", function handler() {
+        modal.removeEventListener("transitionend", handler);
+        modal.remove();
+      });
+      document.removeEventListener("keydown", onModalKeydown);
+      infoBtn.focus();
+    }
+    modal._closeModal = closeModal;
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeModal();
+    });
+    header.appendChild(hIcon);
+    header.appendChild(hTitle);
+    header.appendChild(closeBtn);
+
+    // Body
+    const body = document.createElement("div");
+    body.className = "info-modal-body";
+    body.innerHTML = SIMS[activeSim].about || "";
+
+    body.setAttribute("tabindex", "0");
+    const bodyWrap = document.createElement("div");
+    bodyWrap.className = "info-modal-body-wrap";
+    bodyWrap.appendChild(body);
+    const bodyFocusRing = document.createElement("div");
+    bodyFocusRing.className = "scroll-focus-ring";
+    bodyWrap.appendChild(bodyFocusRing);
+    modal.appendChild(header);
+    modal.appendChild(bodyWrap);
+    // Append to content-area (parent of title bar)
+    const contentArea = bar.parentElement;
+    if (contentArea) contentArea.appendChild(modal);
+    requestAnimationFrame(() => { modal.style.opacity = "1"; });
+
+    // Dragging (pointer events: mouse + touch + pen)
+    let dragX = 0, dragY = 0, modalX = 0, modalY = 0, dragging = false;
+    header.addEventListener("pointerdown", (e) => {
+      if (e.target === closeBtn || closeBtn.contains(e.target)) return;
+      dragging = true;
+      dragX = e.clientX - modalX;
+      dragY = e.clientY - modalY;
+      header.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    header.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      modalX = e.clientX - dragX;
+      modalY = e.clientY - dragY;
+      modal.style.transform = "translate(" + modalX + "px, " + modalY + "px)";
+    });
+    header.addEventListener("pointerup", () => { if (dragging) modal.focus(); dragging = false; });
+    header.addEventListener("pointercancel", () => { dragging = false; });
+
+    // Keyboard dragging (Alt+Arrow)
+    modal.addEventListener("keydown", (e) => {
+      if (!e.altKey) return;
+      const step = e.shiftKey ? 40 : 10;
+      let dx = 0, dy = 0;
+      if (e.key === "ArrowLeft") dx = -step;
+      else if (e.key === "ArrowRight") dx = step;
+      else if (e.key === "ArrowUp") dy = -step;
+      else if (e.key === "ArrowDown") dy = step;
+      else return;
+      e.preventDefault();
+      modalX += dx;
+      modalY += dy;
+      modal.style.transform = "translate(" + modalX + "px, " + modalY + "px)";
+    });
+
+    // Escape to close + focus trap
+    function onModalKeydown(e) {
+      if (e.key === "Escape") { closeModal(); return; }
+      if (e.key === "Tab") {
+        var focusable = modal.querySelectorAll('button, [tabindex="0"]');
+        if (focusable.length === 0) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+    }
+    document.addEventListener("keydown", onModalKeydown);
+
+    closeBtn.focus();
+  });
+
+  right.appendChild(ccLogo);
+  right.appendChild(infoBtn);
+
+  bar.appendChild(left);
+  bar.appendChild(right);
+  return bar;
+}
+
+let _cachedDDTriggerW = null;
+let _cachedDDTriggerWCondensed = null;
+
+
+// =====================================================================
+// Shared query filter — "consistently available in all interfaces"
+// (Day 2 spec). The deployed Pathway Explorer parses these with liqe,
+// a Lucene-like parser. A prototype in one HTML file cannot pull that
+// dependency, so this implements the subset the curriculum actually
+// uses, with the same syntax, so queries copy across between the two:
+//
+//   model_correct:0            voices_raised:1 AND pathway_0:>1
+//   pathway_2:>2               yandor                (bare word = text)
+//   NOT near_water:1           target_label:approach OR pathway_1:<-2
+// =====================================================================
+const NNM_FILTER = (function () {
+  const D = window.NNM_DATA;
+
+  // resource_stressed is deliberately absent: on Day 3 it is the planted
+  // bias, hidden until students commission the coding. Exposing it in the
+  // Day 2 search box would give the answer away before the investigation.
+  const HIDDEN_FIELDS = ["resource_stressed"];
+
+  const attrKeys = D.attributeKeys.filter(function (k) { return HIDDEN_FIELDS.indexOf(k) < 0; });
+  const attrLabel = {};
+  D.attributes.forEach(function (a) { attrLabel[a.key] = a.label; });
+
+  const FIELDS = ["text", "target", "target_label", "prediction", "model_correct"]
+    .concat(attrKeys)
+    .concat(D.items.length ? Array.from({ length: D.nPathways }, function (_, i) { return "pathway_" + i; }) : []);
+
+  function flatten(it) {
+    const o = {
+      text: it.text.replace(/\n/g, " "),
+      target: it.target,
+      target_label: it.target === 1 ? "approach" : "wait",
+      prediction: it.pred,
+      model_correct: it.pred === it.target ? 1 : 0
+    };
+    for (let p = 0; p < D.nPathways; p++) o["pathway_" + p] = it.act[p];
+    D.attributeKeys.forEach(function (k, i) {
+      if (HIDDEN_FIELDS.indexOf(k) < 0) o[k] = it.attrs[i];
+    });
+    return o;
+  }
+  const FLAT = D.items.map(flatten);
+
+  // ---- tokenizer ----
+  function lex(s) {
+    const out = [];
+    const re = /\s*(\(|\)|"[^"]*"|[^\s()]+)/g;
+    let m;
+    while ((m = re.exec(s)) !== null) out.push(m[1]);
+    return out;
+  }
+
+  // ---- recursive descent ----
+  function parse(str) {
+    const toks = lex(str);
+    let i = 0;
+    const peek = function () { return toks[i]; };
+    const isKw = function (t, kw) { return t && t.toUpperCase() === kw; };
+
+    function parseOr() {
+      let left = parseAnd();
+      while (isKw(peek(), "OR")) { i++; const right = parseAnd(); left = or(left, right); }
+      return left;
+    }
+    function parseAnd() {
+      let left = parseNot();
+      while (peek() && peek() !== ")" && !isKw(peek(), "OR")) {
+        if (isKw(peek(), "AND")) i++;
+        if (!peek() || peek() === ")" || isKw(peek(), "OR")) break;
+        const right = parseNot();
+        left = and(left, right);
+      }
+      return left;
+    }
+    function parseNot() {
+      if (isKw(peek(), "NOT")) { i++; const inner = parseNot(); return function (o) { return !inner(o); }; }
+      if (peek() && peek()[0] === "-" && peek().length > 1) {
+        toks[i] = toks[i].slice(1);
+        const inner = parseNot();
+        return function (o) { return !inner(o); };
+      }
+      return parsePrimary();
+    }
+    function parsePrimary() {
+      if (peek() === "(") { i++; const e = parseOr(); if (peek() === ")") i++; return e; }
+      const t = toks[i++];
+      if (t === undefined) return function () { return true; };
+      return term(t);
+    }
+    function and(a, b) { return function (o) { return a(o) && b(o); }; }
+    function or(a, b) { return function (o) { return a(o) || b(o); }; }
+
+    function term(t) {
+      const c = t.indexOf(":");
+      if (c < 1) {                                   // bare word -> text search
+        const needle = t.replace(/^"|"$/g, "").toLowerCase();
+        return function (o) { return String(o.text).toLowerCase().indexOf(needle) >= 0; };
+      }
+      const field = t.slice(0, c);
+      let raw = t.slice(c + 1).replace(/^"|"$/g, "");
+      if (FIELDS.indexOf(field) < 0) throw new Error("unknown field “" + field + "”");
+      const cmp = raw.match(/^(>=|<=|>|<)(.*)$/);
+      if (cmp) {
+        const n = parseFloat(cmp[2]);
+        if (isNaN(n)) throw new Error("“" + cmp[2] + "” is not a number");
+        const op = cmp[1];
+        return function (o) {
+          const v = o[field];
+          if (typeof v !== "number") return false;
+          return op === ">" ? v > n : op === "<" ? v < n : op === ">=" ? v >= n : v <= n;
+        };
+      }
+      const num = parseFloat(raw);
+      const isNum = raw !== "" && !isNaN(num) && /^-?[\d.]+$/.test(raw);
+      const needle = raw.toLowerCase();
+      return function (o) {
+        const v = o[field];
+        if (isNum && typeof v === "number") return v === num;
+        return String(v).toLowerCase().indexOf(needle) >= 0;
+      };
+    }
+
+    const fn = parseOr();
+    if (i < toks.length) throw new Error("could not read “" + toks.slice(i).join(" ") + "”");
+    return fn;
+  }
+
+  function run(query) {
+    if (!query.trim()) return { items: D.items.slice(), error: null };
+    let fn;
+    try { fn = parse(query); }
+    catch (e) { return { items: null, error: e.message }; }
+    const out = [];
+    for (let k = 0; k < FLAT.length; k++) if (fn(FLAT[k])) out.push(D.items[k]);
+    return { items: out, error: null };
+  }
+
+  // ---- the bar ----
+  function buildBar(onChange) {
+    const bar = document.createElement("div");
+    bar.className = "nnm-filterbar";
+
+    const label = document.createElement("label");
+    label.className = "nnm-filter-label";
+    label.textContent = "Find";
+    const id = "nnm-q-" + Math.floor(performance.now() * 1000 % 1e9);
+    label.setAttribute("for", id);
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.id = id;
+    input.className = "nnm-filter-input";
+    input.placeholder = "model_correct:0";
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("spellcheck", "false");
+
+    const count = document.createElement("span");
+    count.className = "nnm-filter-count";
+
+    const helpBtn = document.createElement("button");
+    helpBtn.className = "nnm-filter-help";
+    helpBtn.textContent = "?";
+    helpBtn.setAttribute("aria-label", "Show what you can search for");
+    helpBtn.setAttribute("aria-expanded", "false");
+
+    const help = document.createElement("div");
+    help.className = "nnm-filter-helpbox";
+    help.hidden = true;
+    help.innerHTML =
+      '<b>Fields</b><div class="nnm-fieldlist">' +
+      FIELDS.map(function (f) { return '<code>' + f + '</code>'; }).join(" ") +
+      '</div><b>Examples</b><ul>' +
+      '<li><code>model_correct:0</code> — the ones the model got wrong</li>' +
+      '<li><code>pathway_2:&gt;2</code> — a high score on P2</li>' +
+      '<li><code>voices_raised:1 AND pathway_0:&lt;0</code></li>' +
+      '<li><code>yandor</code> — conversations containing that word</li>' +
+      '<li><code>NOT near_water:1</code></li>' +
+      '</ul>';
+
+    bar.appendChild(label);
+    bar.appendChild(input);
+    bar.appendChild(count);
+    bar.appendChild(helpBtn);
+
+    const wrapEl = document.createElement("div");
+    wrapEl.className = "nnm-filterwrap";
+    wrapEl.appendChild(bar);
+    wrapEl.appendChild(help);
+
+    helpBtn.addEventListener("click", function () {
+      help.hidden = !help.hidden;
+      helpBtn.setAttribute("aria-expanded", help.hidden ? "false" : "true");
+    });
+
+    let last = D.items.slice();
+    let live = false;
+    function apply() {
+      const r = run(input.value);
+      if (r.error) {
+        bar.classList.add("bad");
+        count.textContent = r.error;
+        count.classList.add("err");
+        return;
+      }
+      bar.classList.remove("bad");
+      count.classList.remove("err");
+      last = r.items;
+      count.textContent = r.items.length === D.items.length
+        ? String(D.items.length)
+        : r.items.length + " of " + D.items.length;
+      if (live) onChange(r.items);
+    }
+    input.addEventListener("input", apply);
+    apply();
+    live = true;   // the caller renders the initial state itself
+
+    return { el: wrapEl, input: input, current: function () { return last; } };
+  }
+
+  return { buildBar: buildBar, run: run, FIELDS: FIELDS };
+})();
+
+// Each day's interactive is built here, branching on activeSim.
+// Screens not yet built fall through to the blank wrap at the bottom.
+function buildSimContent() {
+
+  // ---------------------------------------------------------------
+  // 2B — The Decision Chain.  Laid out to match Design Sketches p.3:
+  // left, one card holding all three pathway readings; right, the flow
+  // activation x importance => weighted, the three converging on a sum,
+  // the sum choosing between two outcomes, and the stacked bar beneath.
+  // Probability is omitted on purpose (spec: "not visible, for internal").
+  // ---------------------------------------------------------------
+  if (activeSim === "d2b") {
+    const D = window.NNM_DATA;
+    const NP = D.nPathways;
+    const IMP = D.importance;
+    const PATH_NAMES = ["Pathway 0", "Pathway 1", "Pathway 2"];
+    const SVGNS = "http://www.w3.org/2000/svg";
+
+    // Fills are quantised into five steps rather than a smooth ramp. Every
+    // continuous ramp has a band where neither dark nor light text reaches
+    // 4.5:1; stepping over it keeps each level legible, and it also matches
+    // the handful of distinct tints in the sketch. Verified per level.
+    const FILL_NEG = ["#C8D6E9", "#A9BDD8", "#8DA6CA", "#7694BD", "#1F4E8F"];
+    const FILL_POS = ["#EFD3C4", "#E0B6A4", "#D29A84", "#C6836C", "#A84A2C"];
+    const CUTS = [0.12, 0.30, 0.50, 0.75];
+    function level(t) {
+      for (let i = 0; i < CUTS.length; i++) if (t < CUTS[i]) return i;
+      return 4;
+    }
+    function paint(el, v, scale) {
+      const L = level(Math.min(1, Math.abs(v) / scale));
+      el.style.background = (v >= 0 ? FILL_POS : FILL_NEG)[L];
+      el.style.color = L === 4 ? "#fff" : "#1E242C";
+      el.style.borderColor = L === 4 ? "transparent" : "rgba(30,36,44,0.14)";
+    }
+
+    const SUM_SCALE = 40;
+    const ACT_SCALE = Math.max.apply(null, D.scoreMin.map(Math.abs).concat(D.scoreMax.map(Math.abs)));
+    const IMP_MAX = Math.max.apply(null, IMP.map(Math.abs));
+    const TOK_MAX = [0, 0, 0];
+    Object.keys(D.vocabulary).forEach(function (w) {
+      const v = D.vocabulary[w];
+      TOK_MAX[v[0]] = Math.max(TOK_MAX[v[0]], Math.abs(v[1]));
+    });
+
+    let cases = D.items.slice();
+    let idx = 0;
+    let step = 0;      // 0 = empty skeleton; the four buttons fill it in
+
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content";
+    const liveAnnounce = document.createElement("div");
+    liveAnnounce.className = "sr-only";
+    liveAnnounce.setAttribute("aria-live", "polite");
+    liveAnnounce.setAttribute("aria-atomic", "true");
+    wrap.appendChild(liveAnnounce);
+    SIM.announce = function (msg) {
+      liveAnnounce.textContent = "";
+      requestAnimationFrame(function () { liveAnnounce.textContent = msg; });
+    };
+    SIM._timeouts = []; SIM._observers = [];
+
+    const stack = document.createElement("div");
+    stack.className = "nnm-stack";
+    wrap.appendChild(stack);
+
+    const root = document.createElement("div");
+    root.className = "nnm";
+    stack.appendChild(root);
+
+    // The find bar sits over the conversation list it filters, so it takes the
+    // left column's width and the flow panel runs the full height beside it.
+    const leftCol = document.createElement("div");
+    leftCol.className = "nnm-leftcol";
+    root.appendChild(leftCol);
+
+    const filter = NNM_FILTER.buildBar(function (items) { cancelAnim(); cases = items; idx = 0; render(); });
+    leftCol.appendChild(filter.el);
+
+    const emptyMsg = document.createElement("div");
+    emptyMsg.className = "nnm-empty";
+    emptyMsg.textContent = "No conversations match that search.";
+    emptyMsg.hidden = true;
+
+    // ================= left: the three readings =================
+    const casePanel = document.createElement("div");
+    casePanel.className = "nnm-panel nnm-readings";
+    casePanel.setAttribute("role", "region");
+    casePanel.setAttribute("aria-label", "Conversation");
+
+    const caseHead = document.createElement("div");
+    caseHead.className = "nnm-panel-head";
+    const caseIdEl = document.createElement("span");
+    caseIdEl.textContent = "Conversation";
+    caseHead.appendChild(caseIdEl);
+    const nav = document.createElement("div");
+    nav.className = "nnm-nav";
+    const countEl = document.createElement("span");
+    countEl.className = "nnm-count";
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "nnm-navbtn"; prevBtn.innerHTML = "&#9664;";
+    prevBtn.setAttribute("aria-label", "Previous conversation");
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "nnm-navbtn"; nextBtn.innerHTML = "&#9654;";
+    nextBtn.setAttribute("aria-label", "Next conversation");
+    nav.appendChild(countEl); nav.appendChild(prevBtn); nav.appendChild(nextBtn);
+    caseHead.appendChild(nav);
+    casePanel.appendChild(caseHead);
+
+    const caseBody = document.createElement("div");
+    caseBody.className = "nnm-panel-body";
+    caseBody.style.display = "flex";
+    caseBody.style.flexDirection = "column";
+    caseBody.style.overflow = "hidden";
+    // An empty spacer, not a heading: it exists only to match the height of the
+    // flow's column captions so reading 1 and flow row 1 start on the same line.
+    const readHead = document.createElement("div");
+    readHead.className = "nnm-readhead";
+    readHead.setAttribute("aria-hidden", "true");
+    caseBody.appendChild(readHead);
+
+    const readScroll = document.createElement("div");
+    readScroll.className = "nnm-readscroll";
+    caseBody.appendChild(readScroll);
+
+    const readings = [];
+    for (let p = 0; p < NP; p++) {
+      const r = document.createElement("div");
+      r.className = "nnm-read";
+      r.innerHTML =
+        '<div class="nnm-read-name">' + PATH_NAMES[p] + '</div>' +
+        '<div class="nnm-read-scale"><span class="lo"></span>' +
+          '<span class="grad"></span><span class="hi"></span></div>' +
+        '<div class="nnm-read-text"></div>';
+      readScroll.appendChild(r);
+      readings.push(r);
+    }
+
+    casePanel.appendChild(caseBody);
+    leftCol.appendChild(casePanel);
+    leftCol.appendChild(emptyMsg);
+
+    // ================= right: the flow =================
+    const rightCol = document.createElement("div");
+    rightCol.className = "nnm-rightcol";
+    root.appendChild(rightCol);
+
+    const chainPanel = document.createElement("div");
+    chainPanel.className = "nnm-panel nnm-flowpanel";
+    chainPanel.setAttribute("role", "region");
+    chainPanel.setAttribute("aria-label", "How the pathways decide");
+
+    const chainHead = document.createElement("div");
+    chainHead.className = "nnm-panel-head";
+    const chainHeadTitle = document.createElement("span");
+    chainHeadTitle.textContent = "Neural pathways";
+    chainHead.appendChild(chainHeadTitle);
+
+    const STEP_LABELS = ["Words", "Weigh", "Add up", "Decide"];
+    let prevStep = 0;
+    let wordAnim = false;          // true while the Words sequence is in flight
+    let weighAnim = false;         // true while the Weigh sequence is in flight
+    let addUpAnim = false;         // true while the three lines are converging
+    let decideAnim = false;        // true while the answer line is being drawn
+    let decidePending = true;      // the answer line is hidden until Decide runs
+    let animateOn = true;          // the Animate checkbox
+    // The non-animated version is the same screen with every stage arriving at
+    // once. Reduced-motion users get it whether or not the box is ticked.
+    function motionOff() {
+      return !animateOn || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+    const CONV_W = 46;             // the conv SVG's real layout contribution
+    let animSeq = 0;               // bumped to invalidate anything still queued
+    const animTimers = [];
+
+    function cancelAnim() {
+      animSeq++;
+      animTimers.forEach(clearTimeout);
+      animTimers.length = 0;
+      document.querySelectorAll(".nnm-fly").forEach(function (e) { e.remove(); });
+      if (trackRaf) { cancelAnimationFrame(trackRaf); trackRaf = null; }
+      for (let i = 0; i < solidPending.length; i++) solidPending[i] = false;
+      decidePending = true;
+      wordAnim = false;
+      weighAnim = false;
+      addUpAnim = false;
+      decideAnim = false;
+    }
+    function later(fn, ms) {
+      const mine = animSeq;
+      const t = setTimeout(function () { if (mine === animSeq) fn(); }, ms);
+      animTimers.push(t);
+      SIM._timeouts.push(t);
+    }
+
+    // One word at a time: it lights where it sits, travels to the activation
+    // cell carrying its own score, and on arrival that score is added to the
+    // running total in the cell. The number a student watches climb IS the sum
+    // that defines the pathway activation.
+    function flyOne(el, target, v) {
+      const r = el.getBoundingClientRect();
+      const tr = target.getBoundingClientRect();
+      const c = document.createElement("span");
+      c.className = "nnm-fly";
+      c.style.left = r.left + "px";
+      c.style.top = r.top + "px";
+      // Colours come from the token's own custom properties, not getComputedStyle:
+      // `lit` animates the background, so the computed value can still be the
+      // un-lit one and the chip would come out transparent.
+      c.style.background = el.style.getPropertyValue("--tok-bg") || "#DDE3EC";
+      c.style.color = el.style.getPropertyValue("--tok-fg") || "#1E242C";
+      c.textContent = el.textContent;
+      document.body.appendChild(c);
+
+      // Aim at the top edge of the cell, centred, so the chips pour in over the
+      // rim rather than converging on the middle of the number.
+      // Measure the CHIP, not the word. The chip is placed at the word's top-left
+      // but is a different size — it carries the score as well — so offsetting by
+      // the word's centre leaves the chip landing about 20px right of target.
+      const cr = c.getBoundingClientRect();
+      const dx = (tr.left + tr.width / 2) - (cr.left + cr.width / 2);
+      const dy = tr.top - (cr.top + cr.height / 2);
+
+      // A sampled quadratic Bézier rather than a few waypoints: the control point
+      // sits above the midpoint, so the path is a real parabola into the cell.
+      // Easing is baked into the sampling and the animation runs linear, because
+      // an easing in the options would be re-applied between every keyframe.
+      const lift = Math.min(150, Math.abs(dx) * 0.30 + 60);
+      const cx = dx * 0.42;
+      const cy = Math.min(0, dy) - lift;
+      const STEPS = 20;
+      const frames = [];
+      for (let i = 0; i <= STEPS; i++) {
+        const u = i / STEPS;
+        const s2 = u * u * (3 - 2 * u);               // smoothstep
+        const mt = 1 - s2;
+        const x = 2 * mt * s2 * cx + s2 * s2 * dx;
+        const y = 2 * mt * s2 * cy + s2 * s2 * dy;
+        const sc = 1 - 0.56 * Math.pow(s2, 1.5);
+        const rot = (1 - s2) * (dx < 0 ? 5 : -5);
+        const op = s2 < 0.74 ? 1 : Math.max(0, 1 - (s2 - 0.74) / 0.26);
+        frames.push({
+          offset: u,
+          transform: "translate(" + x.toFixed(2) + "px," + y.toFixed(2) + "px) rotate(" +
+            rot.toFixed(2) + "deg) scale(" + sc.toFixed(3) + ")",
+          opacity: op
+        });
+      }
+      c.animate(frames, { duration: FLY, easing: "linear", fill: "forwards" });
+      later(function () { c.remove(); }, FLY + 120);
+    }
+
+    function showZero(cell) {
+      cell.textContent = fmt(0, 3);
+      cell.style.background = "#fff";
+      cell.style.color = "var(--nnm-ink-3)";
+      cell.style.borderColor = "rgba(30,36,44,0.14)";
+    }
+
+    function showRunning(cell, v) {
+      cell.textContent = fmt(v, 3);
+      cell.style.color = "";
+      paint(cell, v, ACT_SCALE);
+      cell.classList.remove("nnm-tick");
+      void cell.offsetWidth;
+      cell.classList.add("nnm-tick");
+    }
+
+    const SCAN_HOLD = 300;   // how long a word wears the outline before resolving
+    const FLY = 1440;        // a chip's journey
+    const PAUSE = 100;       // after the sentence is lit, before the cell opens
+    const TO_FLY = 110;      // base held before the first word sets off
+    const TAIL = 170;        // after the last arrival, before the next pathway
+
+    function playWords() {
+      const it = cases[idx];
+      const groups = readings.map(function (r) {
+        return Array.prototype.slice.call(r.querySelectorAll(".nnm-tok.scored"));
+      });
+      const allWords = readings.map(function (r) {
+        return Array.prototype.slice.call(r.querySelectorAll(".nnm-tok"));
+      });
+      if (motionOff()) {
+        allWords.forEach(function (g) { g.forEach(function (e) { e.classList.add("lit"); }); });
+        rows.forEach(function (r, p) { revealCell(r.querySelector(".act"), 0); });
+        wordAnim = false;
+        return;
+      }
+      let t = 0;
+      for (let p = 0; p < NP; p++) {
+        const toks = groups[p];
+        const all = allWords[p];
+        const cell = rows[p].querySelector(".act");
+        const n = toks.length;
+        // Longer conversations send words faster, so a pathway takes roughly the
+        // same time to build whether it has four words or fourteen.
+        const gap = Math.max(80, Math.min(170, 1100 / Math.max(1, n)));
+        const start = t;
+
+        // 1. every word in the sentence is scanned in turn — outlined, then
+        //    resolved to a colour if this pathway knows it, or left white if not.
+        //    Scanning all of them, not just the scoring ones, is the point: the
+        //    model reads the whole sentence.
+        const scanGap = Math.max(55, Math.min(120, 1400 / Math.max(1, all.length)));
+        all.forEach(function (el, i) {
+          later(function () { el.classList.add("scanning"); }, start + i * scanGap);
+          later(function () {
+            el.classList.remove("scanning");
+            if (el.classList.contains("scored")) el.classList.add("lit");
+          }, start + i * scanGap + SCAN_HOLD);
+        });
+
+        // 2. the cell opens empty, at zero
+        const opened = start + all.length * scanGap + SCAN_HOLD + PAUSE;
+        later(function () { cell.classList.remove("empty"); showZero(cell); }, opened);
+
+        // 3. the words, one at a time. The pathway's constant base value rides in
+        //    with the first of them rather than appearing on its own beforehand:
+        //    it is 0.2-0.9% of each pathway's range, and the thing it was meant to
+        //    stand for — the length of the text — is not in this data, since it is
+        //    the same value for a 12-word conversation and a 40-word one.
+        //    Ten of the 800 conversations leave some pathway with no words at all;
+        //    there is nothing to fold into, so those cells open on their answer.
+        let running = 0;
+        const flyFrom = opened + TO_FLY;
+        toks.forEach(function (el, i) {
+          const v = D.vocabulary[el.textContent][1];
+          const add = i === 0 ? v + D.baseValues[p] : v;
+          later(function () { flyOne(el, cell, v); }, flyFrom + i * gap);
+          later(function () { running += add; showRunning(cell, running); }, flyFrom + i * gap + FLY);
+        });
+        if (n === 0) {
+          later(function () { showRunning(cell, it.act[p]); }, flyFrom);
+        }
+
+        // land on the stored activation, not the accumulated float, so the cell
+        // agrees to the last digit with every other number on screen
+        later(function () {
+          cell.textContent = fmt(it.act[p], 3);
+          paint(cell, it.act[p], ACT_SCALE);
+        }, flyFrom + n * gap + FLY + 40);
+
+        t = flyFrom + n * gap + FLY + TAIL;
+      }
+      later(function () { wordAnim = false; }, t);
+    }
+
+    const WGT_MIN = 46;      // narrowest a weighted box gets, still fits its number
+
+    // Weighted boxes are sized against the largest weighted value in THIS
+    // conversation, so the row shows how much of this decision each pathway is
+    // responsible for. On most conversations P0 fills its slot and the other two
+    // are slivers — which is the point, and is what the stacked bar used to say.
+    function weightedWidth(w, maxAbs, full) {
+      if (!maxAbs) return full;
+      return WGT_MIN + (full - WGT_MIN) * Math.min(1, Math.abs(w) / maxAbs);
+    }
+
+    function playWeigh() {
+      const it = cases[idx];
+      const wgt = it.act.map(function (a, p) { return a * IMP[p]; });
+      const maxAbs = Math.max.apply(null, wgt.map(Math.abs));
+      const full = rows[0].querySelector(".nnm-slot").getBoundingClientRect().width;
+      const apply = function (p) {
+        const cell = rows[p].querySelector(".wgt");
+        cell.style.width = Math.round(weightedWidth(wgt[p], maxAbs, full)) + "px";
+        cell.textContent = fmt(wgt[p], 2);
+        paint(cell, wgt[p], SUM_SCALE);
+        revealCell(cell, 0);
+        trackConnectors(motionOff() ? 0 : 520);
+      };
+
+      if (motionOff()) {
+        rows.forEach(function (r) { r.classList.add("lit-mul", "lit-arr"); });
+        for (let p = 0; p < NP; p++) apply(p);
+        weighAnim = false;
+        return;
+      }
+
+      let t = 0;
+      for (let p = 0; p < NP; p++) {
+        (function (pi, start) {
+          const r = rows[pi];
+          later(function () { r.classList.add("lit-mul"); }, start);
+          later(function () { r.querySelector(".imp").classList.add("nnm-tick"); }, start + 260);
+          later(function () { r.classList.add("lit-arr"); }, start + 560);
+          later(function () { apply(pi); }, start + 820);
+        })(p, t);
+        t += 1040;
+      }
+      later(function () { weighAnim = false; }, t);
+    }
+
+    // The three lines converge together, not one after another, and the sum only
+    // appears once they have all arrived — it is what they add up to, so it should
+    // not be sitting there before they land.
+    const DRAW = 620;
+
+    function playAddUp() {
+      if (motionOff()) {
+        for (let i = 0; i < NP; i++) solidPending[i] = false;
+        addUpAnim = false;
+        trackConnectors(0);
+        return;
+      }
+      for (let i = 0; i < NP; i++) solidPending[i] = true;
+      trackConnectors(0);
+
+      later(function () {
+        for (let i = 0; i < NP; i++) solidPending[i] = false;
+        // Redraw first so the resting attribute reads "drawn": the animation has
+        // no fill, so when it ends the attribute is what keeps the line visible.
+        drawConnectors(lastChosen);
+        convSolid.forEach(function (sol) {
+          const len = parseFloat(sol.getAttribute("stroke-dasharray")) || 0;
+          sol.animate(
+            [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+            { duration: DRAW, easing: "cubic-bezier(.3,0,.35,1)" }
+          );
+        });
+      }, 60);
+
+      later(function () {
+        addUpAnim = false;
+        sumCell.classList.remove("empty");
+        revealCell(sumCell, 0);
+      }, 60 + DRAW + 90);
+    }
+
+    // The two answers are on screen from the start, plain. Decide draws the line
+    // to the one the sum picked, and only when it arrives does that answer take
+    // its colour — the line delivers the result rather than confirming it.
+    function playDecide() {
+      if (motionOff()) {
+        decidePending = false;
+        decideAnim = false;
+        trackConnectors(0);
+        return;
+      }
+      decidePending = true;
+      trackConnectors(0);
+      later(function () {
+        decidePending = false;
+        drawConnectors(lastChosen);
+        const flen = fanSolid.getTotalLength ? fanSolid.getTotalLength() : 0;
+        fanSolid.animate(
+          [{ strokeDashoffset: flen }, { strokeDashoffset: 0 }],
+          { duration: DRAW, easing: "cubic-bezier(.3,0,.35,1)" }
+        );
+      }, 60);
+      later(function () {
+        decideAnim = false;
+        outEls.forEach(function (o) {
+          o.el.classList.toggle("on", o.v === lastChosen);
+        });
+      }, 60 + DRAW + 60);
+    }
+
+    function setStep(n) {
+      cancelAnim();
+      const from = step;
+      step = n;
+      wordAnim = (n === 1);
+      weighAnim = (n === 2);
+      // Must be set before render(), not after: render decides whether the sum
+      // cell is filled or left as a stand-in, and it reads this.
+      addUpAnim = (n >= 3 && from < 3 && !motionOff());
+      decideAnim = (n >= 4 && from < 4 && !motionOff());
+      render();
+      if (wordAnim) playWords();
+      if (weighAnim) playWeigh();
+      if (n >= 3 && from < 3) playAddUp();
+      if (n >= 4 && from < 4) playDecide();
+    }
+    const steps = document.createElement("div");
+    steps.className = "nnm-steprow";
+    const stepBtns = STEP_LABELS.map(function (label, i) {
+      const b = document.createElement("button");
+      b.className = "nnm-step"; b.textContent = label;
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", function () { setStep(i + 1); });
+      steps.appendChild(b);
+      return b;
+    });
+    const resetBtn = document.createElement("button");
+    resetBtn.className = "nnm-reset";
+    resetBtn.innerHTML = "&#8634;";
+    resetBtn.setAttribute("aria-label", "Clear the steps and start over");
+    resetBtn.addEventListener("click", function () { setStep(0); });
+    steps.appendChild(resetBtn);
+
+    const animWrap = document.createElement("label");
+    animWrap.className = "nnm-animtoggle";
+    const animBox = document.createElement("input");
+    animBox.type = "checkbox";
+    animBox.checked = true;
+    const animText = document.createElement("span");
+    animText.textContent = "Animate";
+    animWrap.appendChild(animBox);
+    animWrap.appendChild(animText);
+    animBox.addEventListener("change", function () {
+      animateOn = animBox.checked;
+      wrap.classList.toggle("nnm-nomotion", !animateOn);
+      // Whatever was mid-flight is abandoned and the current step is re-drawn in
+      // whichever mode we just switched to.
+      cancelAnim();
+      setStep(step);
+    });
+    steps.appendChild(animWrap);
+
+    rightCol.appendChild(steps);
+    chainPanel.appendChild(chainHead);
+
+    const chainOuter = document.createElement("div");
+    chainOuter.className = "nnm-panel-body nnm-flowouter";
+    chainPanel.appendChild(chainOuter);
+    const chainBody = document.createElement("div");
+    chainBody.className = "nnm-flowbodywrap";
+    chainOuter.appendChild(chainBody);
+    rightCol.appendChild(chainPanel);
+
+    const flowHead = document.createElement("div");
+    flowHead.className = "nnm-flowhead";
+    flowHead.innerHTML =
+      '<span class="c act">Pathway<br>Activation</span>' +
+      '<span class="g"></span>' +
+      '<span class="c imp">Pathway<br>Importance</span>' +
+      '<span class="g"></span>' +
+      '<span class="c wgt">Weighted<br>Value</span>' +
+      '<span class="c far sum">Weighted<br>Sum</span>' +
+      '<span class="c far dec">Decision</span>';
+    chainBody.appendChild(flowHead);
+
+    const flowBody = document.createElement("div");
+    flowBody.className = "nnm-flowbody";
+    chainBody.appendChild(flowBody);
+
+    const rowsEl = document.createElement("div");
+    rowsEl.className = "nnm-frows";
+    flowBody.appendChild(rowsEl);
+
+    function glyphX() {
+      return '<svg class="nnm-glyph" viewBox="0 0 32 32" aria-hidden="true">' +
+        '<path d="M6 2 L16 12 L26 2 L30 6 L20 16 L30 26 L26 30 L16 20 L6 30 L2 26 L12 16 L2 6 Z" ' +
+        'fill="#E3E7ED" stroke="#CBD2DC" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+    }
+    function glyphArrow() {
+      return '<svg class="nnm-glyph arr" viewBox="0 0 32 24" aria-hidden="true">' +
+        '<path d="M2 8 H18 V2 L30 12 L18 22 V16 H2 Z" ' +
+        'fill="#F1F3F6" stroke="#CBD2DC" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+    }
+
+    const rows = [];
+    for (let p = 0; p < NP; p++) {
+      const r = document.createElement("div");
+      r.className = "nnm-frow";
+      r.innerHTML =
+        '<span class="nnm-cell act"></span>' +
+        '<span class="nnm-op mul">' + glyphX() + '</span>' +
+        '<span class="nnm-cell imp"></span>' +
+        '<span class="nnm-op arr">' + glyphArrow() + '</span>' +
+        '<span class="nnm-slot"><span class="nnm-cell wgt"></span></span>';
+      rowsEl.appendChild(r);
+      rows.push(r);
+    }
+
+    // three weighted values converging on one score
+    const conv = document.createElementNS(SVGNS, "svg");
+    conv.setAttribute("class", "nnm-conv");
+    const convPaths = [];
+    for (let p = 0; p < NP; p++) {
+      const ln = document.createElementNS(SVGNS, "line");
+      ln.setAttribute("stroke", "#9AA3B0");
+      ln.setAttribute("stroke-width", "1.3");
+      ln.setAttribute("stroke-dasharray", "5 4");
+      ln.setAttribute("stroke-linecap", "round");
+      conv.appendChild(ln);
+      convPaths.push(ln);
+    }
+    // A solid line over each dashed guide. It is hidden by holding its dash
+    // offset at the full length, and drawn by running that offset to zero — from
+    // the weighted value towards the sum, which is the direction of x1 to x2.
+    // While a line is waiting its turn to be drawn it must read as hidden, not as
+    // finished. An animation delay cannot do that job: during the delay the
+    // animation is not in effect, so the resting "fully drawn" value applies and
+    // the line flashes in complete before snapping back. Each line's turn is
+    // scheduled instead, and this records which are still waiting.
+    const solidPending = [false, false, false];
+    const convSolid = [];
+    for (let p = 0; p < NP; p++) {
+      const ln = document.createElementNS(SVGNS, "line");
+      ln.setAttribute("stroke", "#3E4753");
+      ln.setAttribute("stroke-width", "2");
+      ln.setAttribute("stroke-linecap", "round");
+      conv.appendChild(ln);
+      convSolid.push(ln);
+    }
+    flowBody.appendChild(conv);
+
+    const decideWrap = document.createElement("div");
+    decideWrap.className = "nnm-decidewrap";
+    const decideRow = document.createElement("div");
+    decideRow.className = "nnm-deciderow";
+    decideWrap.appendChild(decideRow);
+    flowBody.appendChild(decideWrap);
+
+    const tail = document.createElement("div");
+    tail.className = "nnm-tail";
+    const sumLabel = document.createElement("div");
+    sumLabel.className = "nnm-taillabel";
+    sumLabel.hidden = true;   // the caption now lives in the header row
+    const sumCell = document.createElement("div");
+    sumCell.className = "nnm-cell sum";
+    tail.appendChild(sumLabel);
+    tail.appendChild(sumCell);
+    decideRow.appendChild(tail);
+
+    // sum -> one of two outcomes
+    const fan = document.createElementNS(SVGNS, "svg");
+    fan.setAttribute("class", "nnm-fan");
+    const fanUp = document.createElementNS(SVGNS, "path");
+    const fanDown = document.createElementNS(SVGNS, "path");
+    [fanUp, fanDown].forEach(function (pth) {
+      pth.setAttribute("fill", "none");
+      pth.setAttribute("stroke", "#B9C0CA");
+      pth.setAttribute("stroke-width", "1.3");
+      pth.setAttribute("stroke-dasharray", "5 4");
+      pth.setAttribute("stroke-linecap", "round");
+      fan.appendChild(pth);
+    });
+    // Drawn along whichever route the sum picks, the same way the converging
+    // lines are: hidden by holding its dash offset at full length, then run to
+    // zero so it fills from the sum towards the answer.
+    const fanSolid = document.createElementNS(SVGNS, "path");
+    fanSolid.setAttribute("fill", "none");
+    fanSolid.setAttribute("stroke", "#3E4753");
+    fanSolid.setAttribute("stroke-width", "2.2");
+    fanSolid.setAttribute("stroke-linecap", "round");
+    fan.appendChild(fanSolid);
+    decideRow.appendChild(fan);
+
+    const outs = document.createElement("div");
+    outs.className = "nnm-outs";
+    const outEls = [1, 0].map(function (v) {
+      const o = document.createElement("span");
+      o.className = "nnm-out " + (v === 1 ? "approach" : "wait");
+      o.textContent = v === 1 ? "Approach" : "Wait";
+      outs.appendChild(o);
+      return { v: v, el: o };
+    });
+    decideRow.appendChild(outs);
+
+    const labelsEl = document.createElement("div");
+    labelsEl.className = "nnm-labels";
+    decideRow.appendChild(labelsEl);
+
+    const noteEl = document.createElement("div");
+    noteEl.className = "nnm-note";
+    chainBody.appendChild(noteEl);
+
+    // ---------- helpers ----------
+    function fmt(v, dp) { return (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(dp === undefined ? 2 : dp); }
+    function pill(v) {
+      const s = document.createElement("span");
+      s.className = "nnm-pill " + (v === 1 ? "approach" : "wait");
+      s.textContent = v === 1 ? "Approach" : "Wait";
+      return s;
+    }
+
+    // Whether the wide arrangement fits must be re-decided every render:
+    // measuring it once caught whatever layout happened to be up at build time.
+    // Dropping the class first makes the browser report the wide widths.
+    function fitFlow() {
+      flowBody.classList.remove("narrow");
+      // getBoundingClientRect, not offsetWidth: conv and fan are SVG elements and
+      // SVGElement has no offsetWidth, so the sum came out NaN and never compared true.
+      const wOf = function (el) { return el.getBoundingClientRect().width; };
+      // conv's canvas reaches back over the slot via a negative margin, so its
+      // rect is wider than the space it actually occupies. Use the constant, or
+      // the flow measures itself as needing the slot width twice and goes narrow.
+      // The labels are positioned out of the flow, so decideWrap no longer reports
+      // their width — measure them alongside the row, since both still have to fit.
+      const need = wOf(rowsEl) + CONV_W + Math.max(wOf(decideRow), wOf(labelsEl));
+      // Measure against the panel's inner width, not flowBody's own: when the
+      // row overflows, flowBody stretches with it and reports the inflated size,
+      // so comparing need to that always says "it fits".
+      const cs = getComputedStyle(chainOuter);
+      const avail = chainOuter.clientWidth
+        - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      if (avail > 0 && need > avail) flowBody.classList.add("narrow");
+    }
+
+    // Reading p on the left and flow row p on the right must sit on the same line.
+    // Readings vary with text length, so both are cleared, measured, then set to
+    // the taller of the pair — clearing first keeps it from ratcheting upward.
+    // The flow panel starts at the top of the card while the readings start below
+    // the find bar, so the captions absorb the difference and the first row still
+    // lands on the first reading. Cleared before measuring so it cannot ratchet.
+    function alignTops() {
+      flowHead.style.height = "";
+      const base = flowHead.getBoundingClientRect().height;
+      const delta = readScroll.getBoundingClientRect().top - rowsEl.getBoundingClientRect().top;
+      if (delta > 0) flowHead.style.height = (base + delta) + "px";
+    }
+
+    // The last two captions sit over elements the header row cannot reach by
+    // flex order — the conv SVG's negative margin means header widths and body
+    // positions do not correspond. They are placed against the measured centres
+    // of the sum cell and the pair of answers instead.
+    function alignHeadCaptions() {
+      const hr = flowHead.getBoundingClientRect();
+      if (hr.width < 2) return;
+      const place = function (cap, target) {
+        const t = target.getBoundingClientRect();
+        if (t.width < 1) { cap.style.display = "none"; return; }
+        cap.style.display = "";
+        cap.style.left = Math.round(t.left + t.width / 2 - hr.left) + "px";
+      };
+      place(flowHead.querySelector(".sum"), sumCell);
+      place(flowHead.querySelector(".dec"), outs);
+    }
+
+    function syncRows() {
+      readings.forEach(function (r) { r.style.minHeight = ""; });
+      rows.forEach(function (r) { r.style.minHeight = ""; });
+      const h = readings.map(function (r, i) {
+        return Math.max(r.offsetHeight, rows[i].offsetHeight);
+      });
+      readings.forEach(function (r, i) { r.style.minHeight = h[i] + "px"; });
+      rows.forEach(function (r, i) { r.style.minHeight = h[i] + "px"; });
+    }
+
+    // The weighted boxes change width over a 0.45s transition, and the converging
+    // lines are anchored to their right edges — so a single redraw would catch the
+    // box mid-move. This follows the edge frame by frame until the box settles.
+    let lastChosen = 0;
+    let trackRaf = null;
+    function trackConnectors(ms) {
+      if (trackRaf) cancelAnimationFrame(trackRaf);
+      const until = performance.now() + ms;
+      (function frame() {
+        drawConnectors(lastChosen);
+        if (performance.now() < until) {
+          trackRaf = requestAnimationFrame(frame);
+        } else {
+          trackRaf = null;
+        }
+      })();
+    }
+
+    // Fills a cell in and kicks it, without the stand-in hatching.
+    function revealCell(el, delay) {
+      el.classList.remove("empty", "nnm-pop");
+      void el.offsetWidth;
+      el.style.animationDelay = (delay || 0) + "ms";
+      el.classList.add("nnm-pop");
+    }
+
+    // The converging lines start at the right EDGE of each weighted box, not at a
+    // fixed column, so they stay attached as the boxes change width. That means the
+    // SVG has to reach back over the slot: it is given a negative left margin equal
+    // to the slot width and the same amount of extra width, so its canvas covers the
+    // slot while its contribution to the row's layout is unchanged.
+
+    function drawConnectors(chosen) {
+      const slotW = rows[0].querySelector(".nnm-slot").getBoundingClientRect().width;
+      conv.style.marginLeft = (-slotW) + "px";
+      conv.style.width = (CONV_W + slotW) + "px";
+
+      const cr0 = conv.getBoundingClientRect();
+      if (cr0.width < 2) {
+        conv.style.visibility = "hidden";
+      } else {
+        conv.style.visibility = "";
+        conv.setAttribute("viewBox", "0 0 " + cr0.width + " " + cr0.height);
+        const sc = sumCell.getBoundingClientRect();
+        const ty = sc.top + sc.height / 2 - cr0.top;
+        rows.forEach(function (r, i) {
+          const rr = r.querySelector(".wgt").getBoundingClientRect();
+          const y = rr.top + rr.height / 2 - cr0.top;
+          const x = rr.right - cr0.left;
+          const ln = convPaths[i];
+          ln.setAttribute("x1", x);
+          ln.setAttribute("y1", y);
+          ln.setAttribute("x2", cr0.width);
+          ln.setAttribute("y2", ty);
+
+          const sol = convSolid[i];
+          sol.setAttribute("x1", x);
+          sol.setAttribute("y1", y);
+          sol.setAttribute("x2", cr0.width);
+          sol.setAttribute("y2", ty);
+          const len = Math.hypot(cr0.width - x, ty - y);
+          sol.setAttribute("stroke-dasharray", len);
+          // Resting state: fully drawn once Add up has run, fully hidden before.
+          // A running animation still overrides this, so redraws during the draw
+          // reposition the line without cutting the animation short.
+          sol.setAttribute("stroke-dashoffset", (step >= 3 && !solidPending[i]) ? 0 : len);
+        });
+      }
+
+      const fr = fan.getBoundingClientRect();
+      if (fr.width < 2) { fan.style.visibility = "hidden"; return; }
+      fan.style.visibility = "";
+      fan.setAttribute("viewBox", "0 0 " + fr.width + " " + fr.height);
+      const sc2 = sumCell.getBoundingClientRect();
+      const sy = sc2.top + sc2.height / 2 - fr.top;
+      outEls.forEach(function (o, i) {
+        const orr = o.el.getBoundingClientRect();
+        const oy = orr.top + orr.height / 2 - fr.top;
+        const pth = i === 0 ? fanUp : fanDown;
+        pth.setAttribute("d", "M0 " + sy + " C " + (fr.width * 0.55) + " " + sy + ", " +
+          (fr.width * 0.45) + " " + oy + ", " + fr.width + " " + oy);
+      });
+
+      const chosenPath = chosen === 1 ? fanUp : fanDown;
+      fanSolid.setAttribute("d", chosenPath.getAttribute("d") || "");
+      const flen = fanSolid.getTotalLength ? fanSolid.getTotalLength() : 0;
+      fanSolid.setAttribute("stroke-dasharray", flen);
+      fanSolid.setAttribute("stroke-dashoffset", (step >= 4 && !decidePending) ? 0 : flen);
+    }
+
+    // ---------- render ----------
+    function render() {
+      const empty = cases.length === 0;
+      casePanel.style.display = empty ? "none" : "";
+      chainPanel.style.visibility = empty ? "hidden" : "";
+      emptyMsg.hidden = !empty;
+      if (empty) return;
+      if (idx >= cases.length) idx = cases.length - 1;
+      const it = cases[idx];
+
+      countEl.textContent = (idx + 1) + " / " + cases.length;
+      setAriaDisabled(prevBtn, idx === 0);
+      setAriaDisabled(nextBtn, idx === cases.length - 1);
+      caseIdEl.title = "#" + it.id;   // id kept for cross-referencing the explorer
+
+      // all three readings, each on its own colour scale
+      readings.forEach(function (r, p) {
+        r.querySelector(".lo").textContent = (-TOK_MAX[p]).toFixed(4);
+        r.querySelector(".hi").textContent = TOK_MAX[p].toFixed(4);
+        const txt = r.querySelector(".nnm-read-text");
+        txt.innerHTML = "";
+        it.text.split(/\s+/).forEach(function (w, wi) {
+          if (wi) txt.appendChild(document.createTextNode(" "));
+          const span = document.createElement("span");
+          span.className = "nnm-tok";
+          span.textContent = w;
+          const v = D.vocabulary[w];
+          if (v && v[0] === p) {
+            const L = level(Math.min(1, Math.abs(v[1]) / TOK_MAX[p]));
+            span.classList.add("scored");
+            span.style.setProperty("--tok-bg", (v[1] >= 0 ? FILL_POS : FILL_NEG)[L]);
+            span.style.setProperty("--tok-fg", L === 4 ? "#fff" : "#1E242C");
+            span.title = w + ": " + fmt(v[1], 4);
+            // Lit straight away unless the Words sequence is about to light them
+            // one at a time.
+            if (step >= 1 && !wordAnim) span.classList.add("lit");
+          }
+          txt.appendChild(span);
+        });
+      });
+
+      labelsEl.innerHTML = "";
+      [["Actually", it.target], ["Model said", it.pred]].forEach(function (pair) {
+        const row = document.createElement("div");
+        row.className = "nnm-label-row";
+        const b = document.createElement("b"); b.textContent = pair[0];
+        row.appendChild(b); row.appendChild(pill(pair[1]));
+        labelsEl.appendChild(row);
+      });
+      if (it.pred !== it.target) {
+        const f = document.createElement("div");
+        f.className = "nnm-label-row";
+        const sp = document.createElement("span");
+        sp.className = "nnm-flag"; sp.textContent = "MODEL WAS WRONG";
+        f.appendChild(sp); labelsEl.appendChild(f);
+      }
+
+      // the flow
+      const wgt = []; let sum = 0;
+      const revealed = function (el, on, wasOn, delay) {
+        el.classList.toggle("empty", !on);
+        el.classList.remove("nnm-pop");
+        if (on && !wasOn) {
+          void el.offsetWidth;                 // restart the animation
+          el.style.animationDelay = (delay || 0) + "ms";
+          el.classList.add("nnm-pop");
+        }
+      };
+      for (let p = 0; p < NP; p++) {
+        const a = it.act[p], w = a * IMP[p];
+        wgt.push(w); sum += w;
+        const r = rows[p];
+        const actC = r.querySelector(".act"), impC = r.querySelector(".imp"), wgtC = r.querySelector(".wgt");
+        actC.textContent = fmt(a, 3); paint(actC, a, ACT_SCALE);
+        impC.textContent = fmt(IMP[p], 2);
+        wgtC.textContent = fmt(w, 2); paint(wgtC, w, SUM_SCALE);
+        revealed(actC, step >= 1 && !wordAnim, prevStep >= 1 && !wordAnim, p * 90);
+        // Importance is never revealed: it is not produced by the step before it.
+        // It is a property of the model — the same three numbers on all 800
+        // conversations, unchanged by any step — so it is on screen from the
+        // start, and staying put while everything around it moves is the point.
+        impC.classList.remove("empty");
+        revealed(wgtC, step >= 2 && !weighAnim, prevStep >= 2 && !weighAnim, p * 90 + 140);
+        if (step >= 2 && !weighAnim) {
+          const slot = r.querySelector(".nnm-slot").getBoundingClientRect().width;
+          const maxAbs = Math.max.apply(null, it.act.map(function (a, k) { return Math.abs(a * IMP[k]); }));
+          wgtC.style.width = Math.round(weightedWidth(w, maxAbs, slot)) + "px";
+        } else if (step < 2) {
+          wgtC.style.width = "";
+        }
+        if (!weighAnim) {
+          r.classList.toggle("lit-mul", step >= 2);
+          r.classList.toggle("lit-arr", step >= 2);
+        } else {
+          r.classList.remove("lit-mul", "lit-arr");
+        }
+      }
+      conv.style.visibility = step >= 3 ? "" : "hidden";
+      fan.style.visibility = step >= 4 ? "" : "hidden";
+
+      sumCell.textContent = fmt(sum, 1);
+      paint(sumCell, sum, SUM_SCALE);
+      revealed(sumCell, step >= 3 && !addUpAnim, prevStep >= 3 && !addUpAnim, 260);
+
+      const chosen = sum > 0 ? 1 : 0;
+      lastChosen = chosen;
+      outEls.forEach(function (o) {
+        o.el.classList.remove("empty");
+        o.el.classList.toggle("on", o.v === chosen && step >= 4 && !decideAnim);
+      });
+
+      // Held back until the Decide animation has finished, so the answer lands
+      // before the comparison against it appears.
+      if (step >= 4) {
+        if (prevStep < 4) {
+          labelsEl.style.visibility = "hidden";
+          const t = setTimeout(function () {
+            labelsEl.style.visibility = "";
+            labelsEl.classList.remove("nnm-pop"); void labelsEl.offsetWidth;
+            labelsEl.classList.add("nnm-pop");
+          }, 560);
+          SIM._timeouts.push(t);
+        } else {
+          labelsEl.style.visibility = "";
+        }
+      } else {
+        labelsEl.style.visibility = "hidden";
+      }
+
+      noteEl.textContent = (step >= 4 && chosen !== it.pred)
+        ? "The pathways and the model point different ways on this one. The pathways are a "
+          + "summary of the model, not a copy of it — they land on the same answer in about "
+          + "9 cases out of 10." : "";
+
+      stepBtns.forEach(function (b, i) {
+        b.classList.toggle("on", i + 1 === step);
+        b.setAttribute("aria-pressed", i + 1 === step ? "true" : "false");
+      });
+
+      fitFlow();
+
+      alignTops();
+      syncRows();
+      alignHeadCaptions();
+      // Widths may have just changed here too, so follow them rather than drawing once.
+      trackConnectors(motionOff() ? 0 : 520);
+      prevStep = step;
+
+      SIM.announce("Conversation " + (idx + 1) + " of " + cases.length +
+        ". Weighted sum " + fmt(sum) + ". Pathways say " + (chosen ? "approach" : "wait") + ".");
+    }
+
+    // The readings and the flow rows are aligned line for line, so they have to
+    // scroll as one. The right side is taller (bar, hint, note sit below the rows),
+    // so its scrollTop simply clamps when the left runs out — the guard stops the
+    // two handlers bouncing the value back and forth.
+    let syncingScroll = false;
+    function linkScroll(a, b) {
+      a.addEventListener("scroll", function () {
+        if (syncingScroll) return;
+        syncingScroll = true;
+        b.scrollTop = a.scrollTop;
+        requestAnimationFrame(function () { syncingScroll = false; });
+      }, { passive: true });
+    }
+    linkScroll(readScroll, chainBody);
+    linkScroll(chainBody, readScroll);
+
+    prevBtn.addEventListener("click", function () { if (idx > 0) { cancelAnim(); idx--; render(); } });
+    nextBtn.addEventListener("click", function () { if (idx < cases.length - 1) { cancelAnim(); idx++; render(); } });
+
+    SIM.onResize = function () { requestAnimationFrame(render); };
+    requestAnimationFrame(render);
+    render();
+
+    return wrap;
+  }
+
+  // ---- not yet built: blank content area ----
+  const wrap = document.createElement("div");
+  wrap.className = "sim-content";
+
+  // Polite live region for screen-reader announcements. Call SIM.announce("...")
+  // from anywhere in the interactive.
+  const liveAnnounce = document.createElement("div");
+  liveAnnounce.className = "sr-only";
+  liveAnnounce.setAttribute("aria-live", "polite");
+  liveAnnounce.setAttribute("aria-atomic", "true");
+  wrap.appendChild(liveAnnounce);
+  SIM._suppressAnnounce = false;
+  SIM.announce = function(msg) {
+    if (SIM._suppressAnnounce) return;
+    liveAnnounce.textContent = "";
+    requestAnimationFrame(() => { liveAnnounce.textContent = msg; });
+  };
+
+  // Handles invalidateSimCache() tears down when the sim is switched.
+  SIM._timeouts = [];
+  SIM._observers = [];
+
+  return wrap;
+}
+
+function buildDemoView() {
+  const wrapper = document.querySelector(".viewport-wrapper");
+  const container = document.getElementById("viewportContainer");
+  const info = document.getElementById("viewportInfo");
+  const bwLabel = document.getElementById("browserWidthLabel");
+
+  // Detach cached sim elements before clearing
+  if (_simTitleBar && _simTitleBar.parentNode) _simTitleBar.remove();
+  if (_simContent && _simContent.parentNode) _simContent.remove();
+  container.innerHTML = "";
+
+  // Pull btn-column out of flow so centering uses full width
+  const btnColumn = document.querySelector(".btn-column");
+  btnColumn.style.position = "absolute";
+  btnColumn.style.left = "20px";
+  btnColumn.style.top = "20px";
+  btnColumn.style.zIndex = "10";
+  btnColumn.style.pointerEvents = "none";
+  document.getElementById("app-title").style.pointerEvents = "auto";
+
+  // Hide Sims and Device groups; in Layout group hide everything except hr + Demo Site btn
+  const groups = document.querySelectorAll(".btn-column [role='group']");
+  groups[0].style.visibility = "hidden"; // Sims
+  groups[1].style.visibility = "hidden"; // Device
+  const layoutGroup = groups[2];
+  layoutGroup.querySelector(".btn-column-label").style.visibility = "hidden";
+  layoutGroup.querySelectorAll("[data-layout]").forEach(b => b.style.visibility = "hidden");
+  layoutGroup.querySelector("hr").style.visibility = "hidden";
+
+  // Swap Demo Site button to Prototypes back button
+  const demoBtn = document.getElementById("demo-site-btn");
+  demoBtn.style.pointerEvents = "auto";
+  demoBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)"><path d="M22,12 C22,6.48 17.52,2 12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 Z M4,12 C4,7.58 7.58,4 12,4 C16.42,4 20,7.58 20,12 C20,16.42 16.42,20 12,20 C7.58,20 4,16.42 4,12 Z M16,12 L12,16 L10.59,14.59 L12.17,13 L8,13 L8,11 L12.17,11 L10.58,9.41 L12,8 L16,12 Z" fill="currentColor" fill-rule="nonzero"/></svg>Prototypes';
+
+  // Reset teal-bg styling from Prototypes page
+  document.body.classList.remove("teal-bg");
+  document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "");
+  const msTitle = document.getElementById("app-title");
+  if (msTitle) msTitle.style.color = "";
+  const demoHr = document.querySelector(".btn-column hr");
+  if (demoHr) demoHr.style.borderColor = "";
+  wrapper.style.borderColor = "";
+
+  // Hide viewport chrome
+  wrapper.style.borderLeft = "none";
+  if (bwLabel) bwLabel.style.display = "none";
+  info.style.display = "none";
+  document.body.style.background = "#ededed";
+  document.body.style.padding = "20px 0";
+  wrapper.style.alignItems = "stretch";
+  container.style.paddingTop = "";
+  container.style.alignSelf = "";
+  container.style.maxWidth = "";
+  container.style.flex = "1";
+  container.style.display = "flex";
+
+  // Center area: title above, sim buttons + sim content side by side below
+  const demoWrap = document.createElement("div");
+  demoWrap.id = "demo-wrap";
+  demoWrap.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;width:100%;padding:0 20px;";
+
+  const demoRow = document.createElement("div");
+  demoRow.setAttribute("data-demo-row", "");
+  demoRow.style.cssText = "display:flex;align-items:center;justify-content:center;gap:24px;width:100%;";
+
+  // Sim buttons column
+  const simBtns = document.createElement("div");
+  simBtns.id = "demo-sim-btns";
+  simBtns.style.cssText = "display:flex;flex-direction:column;gap:8px;flex-shrink:0;";
+  const sims = Object.keys(SIMS).map(k => ({ key: k, label: SIMS[k].name }));
+  function applyDemoBtnStyle(btn, simKey, isActive) {
+    const simData = SIMS[simKey];
+    const theme = simData && simData.theme;
+    if (theme) {
+      btn.style.borderWidth = "2px";
+      if (isActive) {
+        btn.style.background = theme.btnActive;
+        btn.style.color = theme.titleText;
+        btn.style.borderColor = theme.btnBorder;
+      } else {
+        btn.style.background = theme.surface;
+        btn.style.color = theme.titleText;
+        btn.style.borderColor = theme.btnBorder;
+      }
+    } else {
+      btn.style.borderWidth = "2px";
+      if (isActive) {
+        btn.style.background = "#d0d0d0";
+        btn.style.color = "#333";
+        btn.style.borderColor = "#555";
+      } else {
+        btn.style.background = "#fff";
+        btn.style.color = "#333";
+        btn.style.borderColor = "#555";
+      }
+    }
+  }
+
+  sims.forEach(s => {
+    const btn = document.createElement("button");
+    btn.className = "toggle-btn" + (activeSim === s.key ? " active" : "");
+    btn.setAttribute("aria-pressed", activeSim === s.key ? "true" : "false");
+    btn.dataset.simKey = s.key;
+    btn.textContent = s.label.toUpperCase();
+    const simData = SIMS[s.key];
+    if (simData && simData.titleFont) btn.style.fontFamily = simData.titleFont;
+    if (simData && simData.titleLetterSpacing) btn.style.letterSpacing = simData.titleLetterSpacing;
+    if (simData && simData.titleOffset) { btn.innerHTML = '<span style="position:relative;top:' + simData.titleOffset + '">' + btn.textContent + '</span>'; }
+    btn.style.fontSize = "24px";
+    btn.style.fontWeight = "700";
+    btn.style.padding = "8px 10px";
+    btn.style.minHeight = "50px";
+    applyDemoBtnStyle(btn, s.key, activeSim === s.key);
+
+    const theme = simData && simData.theme;
+    btn.addEventListener("mouseenter", () => {
+      if (btn.classList.contains("active")) return;
+      btn.style.background = theme ? theme.btnHover : "#f0f0f0";
+    });
+    btn.addEventListener("mouseleave", () => {
+      if (btn.classList.contains("active")) return;
+      btn.style.background = theme ? theme.surface : "#fff";
+    });
+    btn.addEventListener("mousedown", () => {
+      if (btn.classList.contains("active")) return;
+      btn.style.background = theme ? theme.btnActive : "#d0d0d0";
+    });
+    btn.addEventListener("mouseup", () => {
+      if (btn.classList.contains("active")) return;
+      btn.style.background = theme ? theme.btnHover : "#f0f0f0";
+    });
+
+    btn.addEventListener("click", () => {
+      if (activeSim === s.key) return;
+      activeSim = s.key;
+      invalidateSimCache();
+      simBtns.querySelectorAll(".toggle-btn").forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
+        applyDemoBtnStyle(b, b.dataset.simKey, false);
+      });
+      btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
+      applyDemoBtnStyle(btn, s.key, true);
+      document.querySelectorAll("[data-sim]").forEach(b => {
+        b.classList.toggle("active", b.dataset.sim === s.key);
+        b.setAttribute("aria-pressed", b.dataset.sim === s.key ? "true" : "false");
+      });
+      rebuildDemoContent(demoWrap, simBtns);
+    });
+    simBtns.appendChild(btn);
+  });
+  demoWrap.appendChild(simBtns);
+
+  // Append buttons first so we can measure
+  demoRow.appendChild(simBtns);
+  demoWrap.appendChild(demoRow);
+  container.appendChild(demoWrap);
+
+  // Equalize button widths to the widest
+  const btns = simBtns.querySelectorAll(".toggle-btn");
+  let maxW = 0;
+  btns.forEach(b => { if (b.offsetWidth > maxW) maxW = b.offsetWidth; });
+  btns.forEach(b => { b.style.width = maxW + "px"; b.style.textAlign = "center"; });
+
+  // Sim content (TD/Standalone: responsive 768–1024 x 562)
+  const standaloneMax = 1024;
+  const standaloneMin = 768;
+  const standaloneBorder = 4;
+  const demoPad = 40;
+  const simBtnsActualW = maxW + 24; // measured buttons + gap
+  const availW = window.innerWidth - simBtnsActualW - demoPad - standaloneBorder;
+  const demoContentW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, availW)));
+
+  const contentCol = document.createElement("div");
+  contentCol.setAttribute("data-content-col", "");
+  contentCol.style.cssText = "display:flex;flex-direction:column;align-items:center;";
+
+  const demoTitle = document.createElement("h1");
+  demoTitle.style.cssText = "font-family:'Lato',sans-serif;font-size:28px;font-weight:700;color:#333;margin:0 0 24px;text-align:center;";
+  demoTitle.textContent = "Neural Net Maker";
+  contentCol.appendChild(demoTitle);
+
+  const content = document.createElement("div");
+  content.className = "content-area standalone";
+  content.setAttribute("role", "main");
+  content.style.width = demoContentW + "px";
+  content.style.height = "562px";
+  applySimTheme(content);
+  { const tb = getSimTitleBar(); if (tb) content.appendChild(tb); }
+  const sc = getSimContent();
+  if (sc) content.appendChild(sc);
+
+  contentCol.appendChild(content);
+  demoRow.appendChild(contentCol);
+
+  if (SIM.onResize) SIM.onResize();
+}
+
+function rebuildDemoContent(demoWrap, simBtns) {
+  if (_simTitleBar && _simTitleBar.parentNode) _simTitleBar.remove();
+  if (_simContent && _simContent.parentNode) _simContent.remove();
+  const demoRow = demoWrap.querySelector("[data-demo-row]");
+  const contentCol = demoRow.querySelector("[data-content-col]");
+  const oldContent = contentCol.querySelector(".content-area.standalone");
+  if (oldContent) oldContent.remove();
+
+  const standaloneMax = 1024;
+  const standaloneMin = 768;
+  const standaloneBorder = 4;
+  const demoPad = 40;
+  const measuredBtnW = simBtns.querySelector(".toggle-btn").offsetWidth;
+  const simBtnsActualW = measuredBtnW + 24;
+  const availW = window.innerWidth - simBtnsActualW - demoPad - standaloneBorder;
+  const demoContentW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, availW)));
+
+  const content = document.createElement("div");
+  content.className = "content-area standalone";
+  content.setAttribute("role", "main");
+  content.style.width = demoContentW + "px";
+  content.style.height = "562px";
+  applySimTheme(content);
+  { const tb = getSimTitleBar(); if (tb) content.appendChild(tb); }
+  const sc = getSimContent();
+  if (sc) content.appendChild(sc);
+
+  contentCol.appendChild(content);
+  if (SIM.onResize) SIM.onResize();
+}
+
+function exitDemoView() {
+  const wrapper = document.querySelector(".viewport-wrapper");
+  const bwLabel = document.getElementById("browserWidthLabel");
+  const info = document.getElementById("viewportInfo");
+
+  // Restore btn-column to flow
+  const btnColumn = document.querySelector(".btn-column");
+  btnColumn.style.position = "";
+  btnColumn.style.left = "";
+  btnColumn.style.top = "";
+  btnColumn.style.zIndex = "";
+  btnColumn.style.pointerEvents = "";
+  document.getElementById("app-title").style.pointerEvents = "";
+  document.getElementById("demo-site-btn").style.pointerEvents = "";
+
+  // Restore sidebar groups
+  const groups = document.querySelectorAll(".btn-column [role='group']");
+  groups[0].style.visibility = ""; // Sims
+  groups[1].style.visibility = ""; // Device
+  const layoutGroup = groups[2];
+  layoutGroup.querySelector(".btn-column-label").style.visibility = "";
+  layoutGroup.querySelectorAll("[data-layout]").forEach(b => b.style.visibility = "");
+  layoutGroup.querySelector("hr").style.visibility = "";
+
+  // Restore Demo Site button
+  const demoBtn = document.getElementById("demo-site-btn");
+  demoBtn.innerHTML = 'Demo Site<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,12 C22,6.48 17.52,2 12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 Z M4,12 C4,7.58 7.58,4 12,4 C16.42,4 20,7.58 20,12 C20,16.42 16.42,20 12,20 C7.58,20 4,16.42 4,12 Z M16,12 L12,16 L10.59,14.59 L12.17,13 L8,13 L8,11 L12.17,11 L10.58,9.41 L12,8 L16,12 Z" fill="currentColor" fill-rule="nonzero"/></svg>';
+
+  // Restore viewport chrome
+  wrapper.style.borderLeft = "";
+  if (bwLabel) bwLabel.style.display = "";
+  info.style.display = "";
+  document.body.style.padding = "";
+  const container = document.getElementById("viewportContainer");
+  wrapper.style.alignItems = "";
+  container.style.flex = "";
+  container.style.display = "";
+
+  // Restore saved device/layout
+  activeDevice = _savedDevice || "none";
+  activeLayout = _savedLayout || "standalone";
+  if (activeLayout === "ap-2col") sidebarExpanded = true;
+  document.querySelectorAll("[data-device]").forEach(b => {
+    b.classList.toggle("active", b.dataset.device === activeDevice);
+    b.setAttribute("aria-pressed", b.dataset.device === activeDevice ? "true" : "false");
+  });
+  document.querySelectorAll("[data-layout]").forEach(b => {
+    b.classList.toggle("active", b.dataset.layout === activeLayout);
+    b.setAttribute("aria-pressed", b.dataset.layout === activeLayout ? "true" : "false");
+  });
+
+  buildViewport();
+}
+
+function buildViewport() {
+  if (demoMode) { buildDemoView(); return; }
+  const device = DEVICES[activeDevice];
+  const layout = LAYOUTS[activeLayout];
+  const container = document.getElementById("viewportContainer");
+  const info = document.getElementById("viewportInfo");
+  // Detach cached sim elements before clearing container so they survive
+  if (_simTitleBar && _simTitleBar.parentNode) _simTitleBar.remove();
+  if (_simContent && _simContent.parentNode) _simContent.remove();
+  container.innerHTML = "";
+  container.style.paddingTop = "";
+  container.style.alignSelf = "";
+  container.style.maxWidth = "";
+  container.style.overflow = "";
+  document.body.style.background = "";
+  document.body.classList.remove("teal-bg");
+  document.body.style.overflow = "";
+  document.body.style.paddingRight = "0";
+  const wrapperEl = document.querySelector(".viewport-wrapper");
+  if (wrapperEl) { wrapperEl.style.overflow = ""; wrapperEl.style.borderColor = ""; }
+  const bwLabel = document.getElementById("browserWidthLabel");
+  if (bwLabel) { bwLabel.style.color = ""; bwLabel.style.zIndex = ""; bwLabel.style.background = "rgba(0,0,0,0.15)"; }
+  document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "");
+  const demoHr = document.querySelector(".btn-column hr");
+  if (demoHr) demoHr.style.borderColor = "";
+  const msTitle = document.getElementById("app-title");
+  if (msTitle) msTitle.style.color = "";
+  info.style.textAlign = "";
+  info.style.alignSelf = "";
+  info.style.minWidth = "";
+
+  // Update browser width label
+  const bwEl = document.getElementById("browserWidthValue");
+  const bwWrapper = document.querySelector(".viewport-wrapper");
+  if (bwEl && bwWrapper) bwEl.textContent = Math.round(window.innerWidth - bwWrapper.getBoundingClientRect().left) + "px";
+
+  const isNoLimit = activeDevice === "none";
+  const availW = isNoLimit ? (layout.hasAP ? AP_WIDTH : 1200) : device.screenW;
+  const availH = isNoLimit ? 700 : device.screenH - device.topChrome - device.bottomChrome;
+
+  // Content width
+  let contentW;
+  if (activeLayout === "ap-2col") {
+    // 28 left margin + sidebar + 10 right margin + 1 border + content + 1 border + 26 right margin = 1100
+    contentW = sidebarExpanded ? AP_CONTENT_W_EXPANDED : AP_CONTENT_W_COLLAPSED;
+  } else if (activeLayout === "ap-full") {
+    contentW = 1044;
+  } else {
+    contentW = 1024;
+  }
+
+  const contentH = AP_CONTENT_H;
+
+  // Info line
+  if (isNoLimit) {
+    info.innerHTML = `<strong>Teacher Desktop / ${layout.name}</strong><br><strong>Content:</strong> ${contentW}w × ${contentH}h`;
+  } else {
+    const wrapperClientW = document.querySelector(".viewport-wrapper").clientWidth;
+    const frameAvailW = (activeDevice === "chromebook") ? Math.min(device.screenW, wrapperClientW) : device.screenW;
+    info.innerHTML = `<strong>${device.name} / ${layout.name}</strong><br><strong>Screen:</strong> ${device.screenW}w × ${device.screenH}h • <strong>Available:</strong> ${frameAvailW}w × ${availH}h • <strong>Content:</strong> ${contentW}w × ${contentH}h`;
+    // Label freeze when frame is clipped
+    if (wrapperClientW < device.screenW) {
+      info.style.alignSelf = "flex-start";
+      const infoMinW = (activeDevice === "chromebook") ? Math.max(frameAvailW, 1100) : device.screenW;
+      info.style.minWidth = infoMinW + "px";
+    }
+  }
+
+  // Device frame
+  const frame = document.createElement("div");
+  frame.className = "device-frame" + (isNoLimit ? " no-limit" : "");
+
+  if (isNoLimit && layout.hasAP) {
+    // Teacher Desktop + AP: white page, full height, no border
+    document.body.style.background = "#0481A0";
+    document.body.classList.add("teal-bg");
+    document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "#fff");
+    const demoHrAP = document.querySelector(".btn-column hr");
+    if (demoHrAP) demoHrAP.style.borderColor = "#fff";
+    const msTitle = document.getElementById("app-title");
+    if (msTitle) msTitle.style.color = "#fff";
+    const bwLabelAP = document.getElementById("browserWidthLabel");
+    if (bwLabelAP) { bwLabelAP.style.zIndex = "10"; bwLabelAP.style.background = "rgba(255,255,255,0.5)"; }
+    const wrapperAP = document.querySelector(".viewport-wrapper");
+    if (wrapperAP) wrapperAP.style.borderColor = "#fff";
+    frame.classList.remove("no-limit");
+    frame.style.width = AP_WIDTH + "px";
+    frame.style.border = "none";
+    frame.style.background = "#fff";
+    frame.style.borderRadius = "0";
+    frame.style.margin = "0 auto";
+    frame.style.height = "100vh";
+    frame.style.overflow = "hidden";
+    frame.style.marginTop = "-" + container.getBoundingClientRect().top + "px";
+    frame.style.paddingTop = container.getBoundingClientRect().top + "px";
+    document.body.style.overflow = "hidden";
+  } else if (isNoLimit) {
+    const frameW = 1200;
+    const frameH = 700;
+    frame.style.width = frameW + "px";
+    frame.style.height = frameH + "px";
+  } else {
+    container.style.maxWidth = "100%";
+    const wrapperForOverflow = document.querySelector(".viewport-wrapper");
+    const deviceFrameW = (activeDevice === "chromebook")
+      ? Math.min(device.screenW, wrapperForOverflow ? wrapperForOverflow.clientWidth : device.screenW)
+      : device.screenW;
+    frame.style.width = deviceFrameW + "px";
+    frame.style.height = device.screenH + "px";
+    frame.style.margin = "0 -2px";
+    if (wrapperForOverflow) wrapperForOverflow.style.overflow = "hidden";
+    if (activeDevice !== "chromebook") {
+      frame.style.boxShadow = "0 2px 12px rgba(0, 0, 0, 0.3)";
+    }
+  }
+
+  // Top chrome
+  if (!isNoLimit && device.topChrome > 0) {
+    const top = document.createElement("div");
+    top.className = "chrome-top";
+    top.style.height = device.topChrome + "px";
+    top.setAttribute("data-label", device.topLabel);
+
+    frame.appendChild(top);
+  }
+
+  // Viewport area
+  const viewport = document.createElement("div");
+  viewport.className = "viewport-area";
+  viewport.style.alignItems = "flex-start";
+  if (isNoLimit && layout.hasAP) {
+    viewport.style.height = "auto";
+    viewport.style.minHeight = "100%";
+    viewport.style.background = "#ededed";
+  } else {
+    viewport.style.height = availH + "px";
+  }
+
+  if (layout.hasAP) {
+    // Page container — 1100 x availH, centered, flush with chrome
+    const page = document.createElement("div");
+    page.style.width = "1100px";
+    page.style.minHeight = isNoLimit ? "100%" : availH + "px";
+    page.style.background = "#fff";
+    page.style.display = "flex";
+    page.style.flexDirection = "column";
+    page.style.alignItems = "center";
+    page.style.position = "relative";
+
+    // Activity container — same width as content, centered, with border
+    const ap = document.createElement("div");
+    ap.className = "ap-container";
+    ap.style.marginTop = "4px";
+    const apW = activeLayout === "ap-2col" ? AP_WIDTH : contentW;
+    ap.style.width = apW + "px";
+
+    if (activeLayout === "ap-2col") {
+      // 2-column: left column + right side (header above content only)
+      const apBody = document.createElement("div");
+      apBody.className = "ap-body";
+
+      // Left column
+      const sidebarW = sidebarExpanded ? 267 : 45;
+      const leftCol = document.createElement("div");
+      leftCol.className = "ap-left-column";
+      leftCol.style.width = sidebarW + "px";
+
+      // Toggle button
+      const toggleBtn = document.createElement("div");
+      toggleBtn.className = "ap-left-toggle";
+      toggleBtn.title = sidebarExpanded ? "Click to hide column" : "Click to show column";
+      toggleBtn.setAttribute("role", "button");
+      toggleBtn.setAttribute("tabindex", "0");
+      toggleBtn.setAttribute("aria-expanded", sidebarExpanded ? "true" : "false");
+      toggleBtn.setAttribute("aria-label", sidebarExpanded ? "Collapse left column" : "Expand left column");
+
+      if (sidebarExpanded) {
+        toggleBtn.style.height = "40px";
+
+        const toggleLabel = document.createElement("span");
+        toggleLabel.className = "ap-left-toggle-label";
+        toggleLabel.textContent = "Hide";
+        toggleBtn.appendChild(toggleLabel);
+
+        const toggleIcon = createSVGIcon(doubleArrowIconSVG);
+        toggleIcon.classList.add("ap-left-toggle-icon");
+        toggleBtn.appendChild(toggleIcon);
+      } else {
+        toggleBtn.style.height = (350) + "px";
+        toggleBtn.style.flexDirection = "column";
+        toggleBtn.style.alignItems = "center";
+        toggleBtn.style.justifyContent = "flex-start";
+
+        const toggleIcon = createSVGIcon(doubleArrowIconSVG);
+        toggleIcon.classList.add("ap-left-toggle-icon-collapsed");
+        toggleBtn.appendChild(toggleIcon);
+
+        const toggleLabel = document.createElement("span");
+        toggleLabel.className = "ap-left-toggle-label-collapsed";
+        toggleLabel.textContent = "Show";
+        toggleBtn.appendChild(toggleLabel);
+      }
+
+      function toggleSidebar() {
+        sidebarExpanded = !sidebarExpanded;
+        buildViewport();
+        const newToggle = document.querySelector(".ap-left-toggle");
+        if (newToggle) newToggle.focus();
+      }
+      toggleBtn.addEventListener("click", toggleSidebar);
+      toggleBtn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleSidebar();
+        }
+      });
+
+      leftCol.appendChild(toggleBtn);
+
+      // Resources container (fills remaining height)
+      if (sidebarExpanded) {
+        const resources = document.createElement("div");
+        resources.className = "ap-left-resources";
+
+        const resHeader = document.createElement("div");
+        resHeader.className = "ap-left-resources-header";
+        const resLabel = document.createElement("span");
+        resLabel.className = "ap-left-resources-header-label";
+        resLabel.textContent = "Instructions";
+        resHeader.appendChild(resLabel);
+        resources.appendChild(resHeader);
+
+        const resBody = document.createElement("div");
+        resBody.className = "ap-left-resources-body";
+        resBody.setAttribute("role", "region");
+        resBody.setAttribute("aria-label", "Resources content");
+        resBody.innerHTML = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+          <ul>
+            <li>Ut eu eros nec tortor tincidunt consequat eget eu eros.</li>
+            <li>Nullam in massa turpis.</li>
+            <li>Morbi ut libero nec nibh lacinia mollis.</li>
+            <li>Vestibulum vestibulum vestibulum placerat.</li>
+          </ul>
+          <p>Quisque dictum a justo eget semper. Pellentesque viverra augue a euismod consequat.</p>
+          <p>Have fun!</p>`;
+        resources.appendChild(resBody);
+
+        leftCol.appendChild(resources);
+      }
+
+      apBody.appendChild(leftCol);
+
+      // Right side: header + content (with border)
+      const rightSide = document.createElement("div");
+      rightSide.className = "ap-right-column";
+      rightSide.style.width = (contentW) + "px";
+
+      // AP header (above content only)
+      const apHeader = document.createElement("div");
+      apHeader.className = "ap-header";
+      apHeader.style.height = (AP_HEADER_H) + "px";
+      const apLabel = document.createElement("span");
+      apLabel.className = "ap-header-label";
+      apLabel.textContent = SIMS[activeSim].name;
+      apHeader.appendChild(apLabel);
+      rightSide.appendChild(apHeader);
+
+      // Content area
+      const content = document.createElement("div");
+      content.className = "content-area";
+      content.setAttribute("role", "main");
+      content.style.width = "100%";
+      content.style.height = (AP_CONTENT_H) + "px";
+      applySimTheme(content);
+      { const tb = getSimTitleBar(); if (tb) content.appendChild(tb); }
+      const sc2col = getSimContent();
+      if (sc2col) content.appendChild(sc2col);
+
+      rightSide.appendChild(content);
+      apBody.appendChild(rightSide);
+      ap.appendChild(apBody);
+    } else {
+      // Full-width: border on whole AP container
+      ap.style.border = "1px solid #858585";
+      ap.style.boxSizing = "content-box";
+
+      const apHeader = document.createElement("div");
+      apHeader.className = "ap-header";
+      apHeader.style.height = (AP_HEADER_H) + "px";
+      const apLabel = document.createElement("span");
+      apLabel.className = "ap-header-label";
+      apLabel.textContent = SIMS[activeSim].name;
+      apHeader.appendChild(apLabel);
+      ap.appendChild(apHeader);
+
+      const apBody = document.createElement("div");
+      apBody.className = "ap-body";
+
+      // Content area
+      const content = document.createElement("div");
+      content.className = "content-area";
+      content.setAttribute("role", "main");
+      content.style.width = (contentW) + "px";
+      content.style.height = (AP_CONTENT_H) + "px";
+      applySimTheme(content);
+      { const tb = getSimTitleBar(); if (tb) content.appendChild(tb); }
+      const scFull = getSimContent();
+      if (scFull) content.appendChild(scFull);
+
+      apBody.appendChild(content);
+      ap.appendChild(apBody);
+    }
+    page.appendChild(ap);
+
+    // Question containers (below AP on the page)
+    if (activeLayout === "ap-full" || activeLayout === "ap-2col") {
+      const qRow = document.createElement("div");
+      qRow.className = "question-row";
+      if (activeLayout === "ap-2col") {
+        qRow.style.paddingLeft = "28px";
+        qRow.style.paddingRight = "26px";
+      }
+
+      [
+        { label: "Question #1", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eu eros nec tortor tincidunt consequat eget eu eros?" },
+        { label: "Question #2", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit?" }
+      ].forEach(q => {
+        const qContainer = document.createElement("div");
+        qContainer.className = "question-container";
+
+        const qHeader = document.createElement("div");
+        qHeader.className = "question-header";
+        const qLabel = document.createElement("span");
+        qLabel.className = "question-header-label";
+        qLabel.textContent = q.label;
+        qHeader.appendChild(qLabel);
+        qContainer.appendChild(qHeader);
+
+        const qBody = document.createElement("div");
+        qBody.className = "question-body";
+        qBody.innerHTML = `<div>${q.text}</div><div class="question-input">Please type your answer here.</div>`;
+        qContainer.appendChild(qBody);
+
+        qRow.appendChild(qContainer);
+      });
+
+      page.appendChild(qRow);
+    }
+    viewport.appendChild(page);
+
+    // Chromebook + AP: re-measure wrapper and override frame width (matches Standalone logic)
+    if (activeDevice === "chromebook") {
+      const cbWrapperW = document.querySelector(".viewport-wrapper").clientWidth;
+      const cbFrameW = Math.min(device.screenW, cbWrapperW);
+      frame.style.width = (cbFrameW) + "px";
+      if (cbFrameW < 1100) {
+        viewport.style.justifyContent = "flex-start";
+      }
+    }
+  } else if (activeLayout === "standalone" && isNoLimit) {
+    // Standalone + Teacher Desktop — gray background, content centered
+    const standaloneMax = 1024;
+    const standaloneMin = 768;
+    const standaloneMargin = 20;
+    const standaloneH = 562;
+
+    document.body.style.background = "#ededed";
+    document.body.style.paddingRight = "0";
+    container.style.alignSelf = "stretch";
+
+    // Measure AFTER stretch so container matches wrapper width
+    const fullW = container.clientWidth;
+    const standaloneBorder = 4; // 2px border each side, box-sizing: content-box
+    const standaloneW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, fullW - (standaloneMargin * 2) - standaloneBorder)));
+    const ml = standaloneW <= standaloneMin ? standaloneMargin : Math.floor((fullW - standaloneW - standaloneBorder) / 2);
+
+    const topOffset = container.getBoundingClientRect().top;
+    const verticalPad = Math.max(0, (window.innerHeight - topOffset - standaloneH) / 2);
+    container.style.paddingTop = verticalPad + "px";
+
+    const content = document.createElement("div");
+    content.className = "content-area standalone";
+    content.setAttribute("role", "main");
+    content.style.width = (standaloneW) + "px";
+    content.style.height = (standaloneH) + "px";
+    content.style.marginLeft = ml + "px";
+    applySimTheme(content);
+    { const tb = getSimTitleBar(); if (tb) content.appendChild(tb); }
+    const scSA1 = getSimContent();
+    if (scSA1) content.appendChild(scSA1);
+
+    // Update info line with actual responsive width
+    info.innerHTML = `<strong>Teacher Desktop / ${layout.name}</strong><br><strong>Content:</strong> ${standaloneW}w × ${standaloneH}h`;
+    if (standaloneW <= standaloneMin) {
+      const clipW = standaloneMin + (standaloneMargin * 2) + standaloneBorder; // 812
+      info.style.alignSelf = "flex-start";
+      info.style.minWidth = clipW + "px";
+    }
+
+    container.appendChild(content);
+    if (SIM.onResize) SIM.onResize();
+    return;
+  } else {
+    // Standalone with device frame
+    const standaloneMax = 1024;
+    const standaloneMin = 768;
+    const standaloneMargin = 20;
+    const contentBorder = 4; // 2px border each side on .content-area.standalone (content-box)
+    const wrapperClientW = document.querySelector(".viewport-wrapper").clientWidth;
+    const standaloneH = 562;
+
+    let standaloneW, simMarginLeft, frameVisualW;
+
+    if (activeDevice === "chromebook") {
+      // Chromebook: frame shrinks with browser, content responsive
+      frameVisualW = Math.min(device.screenW, wrapperClientW);
+      frame.style.width = (frameVisualW) + "px";
+
+      const shrinkStart = standaloneMax + contentBorder + (standaloneMargin * 2); // 1068
+      const clipStart = standaloneMin + contentBorder + (standaloneMargin * 2); // 812
+
+      if (frameVisualW >= shrinkStart) {
+        standaloneW = standaloneMax;
+        simMarginLeft = null;
+      } else if (frameVisualW >= clipStart) {
+        standaloneW = frameVisualW - (standaloneMargin * 2) - contentBorder;
+        simMarginLeft = standaloneMargin;
+      } else {
+        standaloneW = standaloneMin;
+        simMarginLeft = standaloneMargin;
+      }
+
+      // Label freeze when clipping
+      if (frameVisualW < clipStart) {
+        info.style.alignSelf = "flex-start";
+        info.style.minWidth = clipStart + "px";
+      }
+    } else {
+      // iPad/Android: fixed frame, fixed content, no responsiveness
+      frameVisualW = device.screenW;
+      if (device.screenW <= standaloneMax + contentBorder) {
+        standaloneW = device.screenW - (standaloneMargin * 2) - contentBorder;
+        simMarginLeft = standaloneMargin;
+      } else {
+        standaloneW = standaloneMax;
+        simMarginLeft = null;
+      }
+
+      // Label freeze when frame is clipped by wrapper
+      if (wrapperClientW < device.screenW) {
+        info.style.alignSelf = "flex-start";
+        info.style.minWidth = device.screenW + "px";
+      }
+
+      frame.style.boxShadow = "0 2px 12px rgba(0, 0, 0, 0.3)";
+    }
+
+    const content = document.createElement("div");
+    content.className = "content-area standalone";
+    content.setAttribute("role", "main");
+    content.style.width = (standaloneW) + "px";
+    content.style.height = (standaloneH) + "px";
+    applySimTheme(content);
+    { const tb = getSimTitleBar(); if (tb) content.appendChild(tb); }
+    const scSA2 = getSimContent();
+    if (scSA2) content.appendChild(scSA2);
+
+    viewport.style.display = "flex";
+    viewport.style.alignItems = "center";
+    viewport.style.background = "#ededed";
+
+    if (simMarginLeft !== null) {
+      viewport.style.justifyContent = "flex-start";
+      content.style.marginLeft = simMarginLeft + "px";
+    } else {
+      viewport.style.justifyContent = "center";
+    }
+    viewport.appendChild(content);
+
+    // Update info line
+    info.innerHTML = `<strong>${device.name} / ${layout.name}</strong><br><strong>Screen:</strong> ${device.screenW}w × ${device.screenH}h • <strong>Available:</strong> ${frameVisualW}w × ${availH}h • <strong>Content:</strong> ${standaloneW}w × ${standaloneH}h`;
+  }
+
+  frame.appendChild(viewport);
+
+  // Bottom chrome
+  if (!isNoLimit && device.bottomChrome > 0) {
+    const bottom = document.createElement("div");
+    bottom.className = "chrome-bottom";
+    bottom.style.height = (device.bottomChrome) + "px";
+    bottom.setAttribute("data-label", device.bottomLabel);
+
+    frame.appendChild(bottom);
+  }
+
+  container.appendChild(frame);
+  if (SIM.onResize) SIM.onResize();
+}
+
+// Button wiring
+function wireToggleGroup(selector, callback) {
+  document.querySelectorAll(selector).forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btn.classList.contains("active")) return;
+      if (callback) callback(btn);
+      document.querySelectorAll(selector).forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
+      });
+      btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
+      buildViewport();
+    });
+  });
+}
+
+wireToggleGroup("[data-sim]", btn => {
+  activeSim = btn.dataset.sim;
+  invalidateSimCache();
+});
+wireToggleGroup("[data-layout]", btn => {
+  activeLayout = btn.dataset.layout;
+  if (activeLayout === "ap-2col") sidebarExpanded = true;
+});
+wireToggleGroup("[data-device]", btn => { activeDevice = btn.dataset.device; });
+
+document.getElementById("demo-site-btn").addEventListener("click", () => {
+  if (demoMode) {
+    demoMode = false;
+    exitDemoView();
+  } else {
+    demoMode = true;
+    _savedDevice = activeDevice;
+    _savedLayout = activeLayout;
+    activeDevice = "none";
+    activeLayout = "standalone";
+    buildDemoView();
+  }
+});
+
+// Warm the Lato italic face at startup. It lives in a separate woff2 and is only used by
+// late-appearing italic placeholders (e.g. "Max number of trials reached"), so over the
+// network it would otherwise download on first render and flash from a wider fallback
+// italic. Fetching it now means it's ready before any such label mounts. No-op locally
+// (font is already instant) and fully guarded so it can never throw or block startup.
+if (document.fonts && document.fonts.load) {
+  try { document.fonts.load("italic 16px 'Lato'").catch(function () {}); } catch (e) {}
+}
+
+buildViewport();
+
+// Resize handler
+let _resizeRafId = null;
+function updateStandaloneDeviceFrame() {
+  if (_resizeRafId) return; // already scheduled
+  _resizeRafId = requestAnimationFrame(() => {
+    _resizeRafId = null;
+    _updateStandaloneDeviceFrameNow();
+  });
+}
+function _updateStandaloneDeviceFrameNow() {
+  const wrapper = document.querySelector(".viewport-wrapper");
+  const contentEl = document.querySelector(".content-area.standalone");
+  if (!wrapper || !contentEl) return;
+
+  const device = DEVICES[activeDevice];
+  if (!device) return;
+
+  const wrapperClientW = wrapper.clientWidth;
+  const info = document.getElementById("viewportInfo");
+
+  if (activeDevice !== "chromebook") {
+    // iPad/Android: no responsive changes, only label freeze
+    if (info) {
+      const isClipping = wrapperClientW < device.screenW;
+      info.style.alignSelf = isClipping ? "flex-start" : "";
+      info.style.minWidth = isClipping ? device.screenW + "px" : "";
+    }
+    return;
+  }
+
+  // Chromebook: full responsive logic
+  const contentBorder = 4;
+  const margin = 20;
+  const standaloneMax = 1024;
+  const standaloneMin = 768;
+  const availH = device.screenH - device.topChrome - device.bottomChrome;
+
+  const frameVisualW = Math.min(device.screenW, wrapperClientW);
+  const frameEl = document.querySelector(".device-frame");
+  if (frameEl) {
+    frameEl.style.transition = "none";
+    frameEl.style.width = frameVisualW + "px";
+  }
+  contentEl.style.transition = "none";
+
+  const shrinkStart = standaloneMax + contentBorder + (margin * 2); // 1068
+  const clipStart = standaloneMin + contentBorder + (margin * 2); // 812
+
+  const viewport = contentEl.parentElement;
+
+  let w;
+  if (frameVisualW >= shrinkStart) {
+    w = standaloneMax;
+    contentEl.style.marginLeft = "";
+    if (viewport) viewport.style.justifyContent = "center";
+  } else if (frameVisualW >= clipStart) {
+    w = frameVisualW - (margin * 2) - contentBorder;
+    contentEl.style.marginLeft = margin + "px";
+    if (viewport) viewport.style.justifyContent = "flex-start";
+  } else {
+    w = standaloneMin;
+    contentEl.style.marginLeft = margin + "px";
+    if (viewport) viewport.style.justifyContent = "flex-start";
+  }
+
+  contentEl.style.width = w + "px";
+  const layoutName = LAYOUTS[activeLayout] ? LAYOUTS[activeLayout].name : activeLayout;
+  if (info) {
+    info.innerHTML = '<strong>' + device.name + ' / ' + layoutName + '</strong><br><strong>Screen:</strong> ' + device.screenW + 'w \u00d7 ' + device.screenH + 'h \u2022 <strong>Available:</strong> ' + frameVisualW + 'w \u00d7 ' + availH + 'h \u2022 <strong>Content:</strong> ' + w + 'w \u00d7 562h';
+    const isClipping = frameVisualW < clipStart;
+    info.style.alignSelf = isClipping ? "flex-start" : "";
+    info.style.minWidth = isClipping ? clipStart + "px" : "";
+  }
+  if (SIM.onResize) SIM.onResize();
+}
+
+window.addEventListener("resize", () => {
+  // Always update browser width label
+  const bwEl = document.getElementById("browserWidthValue");
+  const bwWrapper = document.querySelector(".viewport-wrapper");
+  if (bwEl && bwWrapper) bwEl.textContent = Math.round(window.innerWidth - bwWrapper.getBoundingClientRect().left) + "px";
+
+  if (demoMode) { buildDemoView(); return; }
+
+  if (activeLayout === "standalone" && activeDevice === "none") {
+    // Teacher Desktop — full rebuild (responsive content)
+    buildViewport();
+  } else if (activeLayout === "standalone" && activeDevice !== "none") {
+    // Device frame — lightweight update (no rebuild)
+    updateStandaloneDeviceFrame();
+  } else if (activeDevice === "chromebook" && activeLayout !== "standalone") {
+    // Chromebook + AP layouts — shrink frame, label freeze
+    const device = DEVICES[activeDevice];
+    const wrapper = document.querySelector(".viewport-wrapper");
+    if (device && wrapper) {
+      const wrapperW = wrapper.clientWidth;
+      const frameVisualW = Math.min(device.screenW, wrapperW);
+      const frameEl = document.querySelector(".device-frame");
+      if (frameEl) {
+        frameEl.style.transition = "none";
+        frameEl.style.width = frameVisualW + "px";
+      }
+      // Pin page to left when frame < 1100, restore centering when wider
+      const viewportArea = document.querySelector(".viewport-area");
+      if (viewportArea) {
+        viewportArea.style.justifyContent = frameVisualW < 1100 ? "flex-start" : "";
+      }
+      const info = document.getElementById("viewportInfo");
+      if (info) {
+        const availH = device.screenH - device.topChrome - device.bottomChrome;
+        const layoutName = LAYOUTS[activeLayout] ? LAYOUTS[activeLayout].name : activeLayout;
+        const contentW = activeLayout === "ap-2col" ? (sidebarExpanded ? AP_CONTENT_W_EXPANDED : AP_CONTENT_W_COLLAPSED) : 1044;
+        info.innerHTML = '<strong>' + device.name + ' / ' + layoutName + '</strong><br><strong>Screen:</strong> ' + device.screenW + 'w \u00d7 ' + device.screenH + 'h \u2022 <strong>Available:</strong> ' + frameVisualW + 'w \u00d7 ' + availH + 'h \u2022 <strong>Content:</strong> ' + contentW + 'w \u00d7 ' + AP_CONTENT_H + 'h';
+        const isClipping = wrapperW < device.screenW;
+        info.style.alignSelf = isClipping ? "flex-start" : "";
+        info.style.minWidth = isClipping ? Math.max(frameVisualW, 1100) + "px" : "";
+      }
+    }
+  } else if (activeDevice !== "none" && activeDevice !== "chromebook") {
+    // iPad/Android + any layout — label freeze only
+    const info = document.getElementById("viewportInfo");
+    const device = DEVICES[activeDevice];
+    if (info && device) {
+      const wrapperW = document.querySelector(".viewport-wrapper").clientWidth;
+      const isClipping = wrapperW < device.screenW;
+      info.style.alignSelf = isClipping ? "flex-start" : "";
+      info.style.minWidth = isClipping ? device.screenW + "px" : "";
+    }
+  }
+  // Let the interactive re-measure at the new size
+  if (SIM.onResize) SIM.onResize();
+});
+
+</script>
+</body>
+</html>
