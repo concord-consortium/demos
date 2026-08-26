@@ -1340,6 +1340,161 @@
   .nnm-readscroll, .nnm-frows { gap: var(--nnm-row-gap); }
   .nnm-frows { display: flex; flex-direction: column; flex-shrink: 0; }
   .nnm-frow { display: flex; align-items: center; gap: 0; border-radius: 5px; box-sizing: border-box; }
+
+
+  /* ---- 3B Investigate Pathway 3 ---- */
+  .d3b-bar { justify-content: flex-start; }
+  .d3b-barlabel {
+    font-family: 'Lato', sans-serif; font-size: 13px; color: var(--nnm-ink-3); font-style: italic;
+  }
+  .d3b-panel { flex: 1; min-height: 0; }
+  .d3b-body { display: flex; flex-direction: column; gap: 12px; overflow: auto; }
+  .d3b-budget {
+    margin-left: auto; font-family: var(--nnm-mono); font-size: 11.5px; color: var(--nnm-ink-3);
+  }
+  .d3b-notes {
+    font-family: 'Lato', sans-serif; font-size: 13.5px; line-height: 1.55;
+    color: var(--nnm-ink); background: var(--nnm-surface);
+    border-left: 3px solid #C6D2E2; border-radius: 0 5px 5px 0; padding: 10px 12px;
+  }
+  .d3b-known { display: flex; flex-wrap: wrap; gap: 6px; }
+  .d3b-attr {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.03em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--nnm-rule); color: var(--nnm-ink-3); background: #fff;
+  }
+  .d3b-attr.on { color: var(--nnm-ink); border-color: #B9C7DA; background: #F2F6FB; }
+  /* A commissioned attribute is marked so it is obvious which facts were bought. */
+  .d3b-attr.new { border-color: #C6836C; color: #A84A2C; background: #FBF1EC; }
+  .d3b-subhead {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--nnm-ink-2);
+    border-top: 1px solid var(--nnm-rule-soft); padding-top: 10px;
+  }
+  .d3b-subnote { font-family: 'Lato', sans-serif; font-size: 12px; color: var(--nnm-ink-3); margin-top: -6px; }
+  .d3b-list { display: flex; flex-direction: column; gap: 6px; }
+  .d3b-item {
+    display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
+    align-items: center; padding: 8px 10px;
+    border: 1px solid var(--nnm-rule-soft); border-radius: 6px; background: #fff;
+  }
+  .d3b-item.done { background: #FBF1EC; border-color: #E4CBBF; }
+  .d3b-itemname { font-family: 'Lato', sans-serif; font-size: 13.5px; color: var(--nnm-ink); }
+  .d3b-itemdesc {
+    grid-column: 1; font-family: 'Lato', sans-serif; font-size: 11.5px;
+    line-height: 1.4; color: var(--nnm-ink-3);
+  }
+  .d3b-buy {
+    grid-row: 1 / span 2; grid-column: 2;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 0 12px; height: 32px; box-sizing: border-box;
+    border: 2px solid var(--nnm-rule); background: #fff; color: var(--nnm-ink-2);
+    border-radius: 5px; cursor: pointer;
+  }
+  .d3b-buy:hover:not(:disabled) { background: var(--nnm-surface); }
+  .d3b-buy:disabled { opacity: 0.45; cursor: default; }
+  .d3b-table { display: flex; flex-direction: column; gap: 4px; }
+  .d3b-trow {
+    display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 6px; align-items: center;
+  }
+  .d3b-trow > div { font-family: 'Lato', sans-serif; font-size: 12.5px; color: var(--nnm-ink-2); }
+  .d3b-trow.head > div { font-size: 11.5px; color: var(--nnm-ink-3); text-align: center; }
+  .d3b-trow > div.hit { background: #F7F9FC; border-radius: 5px; }
+  .d3b-chip {
+    display: flex; align-items: center; justify-content: center; gap: 7px; padding: 4px 0;
+    font-family: var(--nnm-mono); font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- 3A Correlations ---- */
+  /* padding-top matches .nnm-stack so the toolbar sits on the same line as 2B's. */
+  .d3-wrap { display: flex; flex-direction: column; min-height: 0; gap: 10px; padding-top: 9px; }
+  /* The toolbar reuses 2B's column proportions exactly — .nnm's gap, .nnm-leftcol's
+     basis, .nnm-rightcol's basis — so the find bar is the same width and sits in the
+     same place, and the view switch lands where the Animate toggle does over there. */
+  .d3-toolbar { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .d3-filter { flex: 1 1 440px; min-width: 236px; }
+  .d3-head { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .d3-title {
+    font-family: 'Lato', sans-serif; font-size: 15px; color: var(--nnm-ink-2);
+  }
+  .d3-views { display: flex; gap: 6px; justify-content: flex-end; flex: 1 1 560px; min-width: 318px; }
+  .d3-viewbtn {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 0 12px; height: 36px; box-sizing: border-box;
+    border: 2px solid var(--nnm-rule); background: #fff; color: var(--nnm-ink-2);
+    border-radius: 5px; cursor: pointer;
+  }
+  .d3-viewbtn:hover { background: var(--nnm-surface); }
+  .d3-viewbtn.on { background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff; }
+  .d3-scroll { flex: 1; min-height: 0; overflow: auto; scrollbar-gutter: stable; }
+  .d3-grid {
+    display: grid;
+    grid-template-columns: 150px repeat(3, 1fr);
+    gap: 2px;
+    align-items: stretch;
+  }
+  .d3-colhead, .d3-rowhead {
+    font-family: 'Lato', sans-serif; font-size: 12.5px; color: var(--nnm-ink-2);
+    display: flex; align-items: center;
+  }
+  .d3-colhead { justify-content: flex-end; padding-bottom: 6px; border-bottom: 1px solid var(--nnm-rule-soft); }
+  .d3-rowhead { justify-content: center; padding-right: 10px; border-right: 1px solid var(--nnm-rule-soft); }
+  /* Both header bands stay put while the matrix scrolls under them — with eight
+     rows you otherwise lose track of which pathway a column is. Opaque, or the
+     cells show through; the corner sits above both where they cross. */
+  .d3-colhead, .d3-rowhead, .d3-corner { position: sticky; background: #fff; }
+  .d3-colhead { top: 0; z-index: 2; }
+  .d3-rowhead { left: 0; z-index: 2; }
+  .d3-corner { top: 0; left: 0; z-index: 3; }
+  /* The outcome rows are what the model is judged against, not attributes of the
+     scene — a heavier rule keeps the two blocks apart, as the explorer does. */
+  .d3-rowhead.outcome { color: var(--nnm-ink); font-weight: 600; }
+  /* Computed by the chain rather than observed about the scene. */
+  .d3-rowhead.derived { color: var(--nnm-ink); font-weight: 600; font-style: italic; }
+  /* Computed by the chain rather than read off it — kept visually apart from the
+     three pathways it is made from. */
+  .d3-colhead.derived { font-style: italic; color: var(--nnm-ink); border-left: 1px solid var(--nnm-rule-soft); }
+  .d3-grid > .d3-rowhead.outcome + .d3-cell { background: #FCFCFD; }
+  .d3-cell {
+    display: flex; align-items: center; justify-content: center;
+    background: #fff; border-radius: 5px; min-height: 62px;
+  }
+  .d3-cell.corr { gap: 10px; }
+  .d3-cell.corr.strong { background: #F7F9FC; box-shadow: inset 0 0 0 1px #DCE3EC; }
+  .d3-dot { display: block; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18); flex-shrink: 0; }
+  .d3-r {
+    font-family: var(--nnm-mono); font-size: 12.5px; font-variant-numeric: tabular-nums;
+    color: var(--nnm-ink-2); min-width: 46px;
+  }
+  .d3-cell.corr.strong .d3-r { color: var(--nnm-ink); font-weight: 700; }
+  .d3-cell.graph { padding: 2px; align-items: stretch; }
+  /* One dot is one conversation, so they are drawn at whatever size makes the
+     tallest stack fit — never capped, or the stacks would stop meaning counts. */
+  .d3-plot { display: block; overflow: visible; }
+  .d3-pt { fill: #D08A6A; fill-opacity: 0.85; }
+  .d3-blabel { font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; fill: #7B8593; }
+  .d3-tick { font-family: var(--nnm-mono); font-size: 8.5px; fill: #97A0AD; }
+  .d3-colname { text-align: center; }
+  .d3-rowname { }
+  .d3-colhead, .d3-rowhead { flex-direction: column; align-items: stretch; gap: 4px; }
+  /* The row marginal: how the conversations divide between this row's values,
+     which is the thing that decides whether a correlation could exist at all. */
+  .d3-marg { display: flex; flex-direction: column; gap: 2px; padding-right: 10px; }
+  .d3-margrow {
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; color: #7B8593;
+  }
+  .d3-margrow i { display: block; height: 7px; border-radius: 2px; background: #E0B6A4; flex-shrink: 0; }
+  .d3-margrow span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .d3-margrow em { font-style: normal; font-family: var(--nnm-mono); font-size: 9.5px; color: #A6AEB9; }
+  .d3-note {
+    font-family: 'Lato', sans-serif; font-size: 12.5px; line-height: 1.45;
+    color: var(--nnm-ink-3); flex-shrink: 0; padding-bottom: 2px;
+  }
+
   .nnm-cell {
     width: 82px;
     height: 40px;
@@ -1730,7 +1885,7 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.4</div>
+      <div style="font-weight: 600;">v0.5</div>
       <div style="font-weight: 400;">Updated: 8/26/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
@@ -2410,7 +2565,784 @@ const NNM_FILTER = (function () {
 
 // Each day's interactive is built here, branching on activeSim.
 // Screens not yet built fall through to the blank wrap at the bottom.
+// =====================================================================
+// Shared by every interactive: the diverging fill ramp and the SVG
+// namespace. Blue reads negative, warm reads positive — the same
+// convention the shipped Pathway Explorer uses, so a colour means the
+// same thing across Day 2, Day 3 and the tool students may already know.
+//
+// Fills are quantised into five steps rather than a smooth ramp. Every
+// continuous ramp has a band where neither dark nor light text reaches
+// 4.5:1; stepping over it keeps each level legible, and it also matches
+// the handful of distinct tints in the sketch. Verified per level.
+// =====================================================================
+const SVGNS = "http://www.w3.org/2000/svg";
+const FILL_NEG = ["#C8D6E9", "#A9BDD8", "#8DA6CA", "#7694BD", "#1F4E8F"];
+const FILL_POS = ["#EFD3C4", "#E0B6A4", "#D29A84", "#C6836C", "#A84A2C"];
+const CUTS = [0.12, 0.30, 0.50, 0.75];
+function level(t) {
+  for (let i = 0; i < CUTS.length; i++) if (t < CUTS[i]) return i;
+  return 4;
+}
+
+
+// =====================================================================
+// The conversation panel — filter bar, the case card with its nav, and one
+// reading per pathway under the shared word-contribution legend.
+//
+// Shared by 2B (where it feeds the prediction chain) and 3B (where it feeds
+// the observation notes). Only the DOM is shared: each interactive keeps its
+// own idea of what to do when the case changes, because 2B has to drive an
+// animated chain off it and 3B does not.
+// =====================================================================
+function tokMax(D) {
+  return Math.max.apply(null, Object.keys(D.vocabulary).map(function (w) {
+    return Math.abs(D.vocabulary[w][1]);
+  }));
+}
+
+function pathNames(D) {
+  return Array.from({ length: D.nPathways }, function (_, i) {
+    return "Pathway " + (i + PATH_OFFSET);
+  });
+}
+
+function pearson(a, b) {
+  const n = a.length;
+  let ma = 0, mb = 0;
+  for (let i = 0; i < n; i++) { ma += a[i]; mb += b[i]; }
+  ma /= n; mb /= n;
+  let num = 0, va = 0, vb = 0;
+  for (let i = 0; i < n; i++) {
+    const da = a[i] - ma, db = b[i] - mb;
+    num += da * db; va += da * da; vb += db * db;
+  }
+  return (va === 0 || vb === 0) ? 0 : num / Math.sqrt(va * vb);
+}
+
+function navGlyph(dir) {
+  return '<svg viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" ' +
+    'stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="' +
+    (dir < 0 ? "M8.4 1.9 L3.6 6 L8.4 10.1 Z" : "M3.6 1.9 L8.4 6 L3.6 10.1 Z") +
+    '"/></svg>';
+}
+
+function buildCasePanel(opts) {
+  const D = window.NNM_DATA;
+  const NP = D.nPathways;
+  const TMAX = tokMax(D);
+  const NAMES = pathNames(D);
+
+  const leftCol = document.createElement("div");
+  leftCol.className = "nnm-leftcol";
+
+  const filter = NNM_FILTER.buildBar(opts.onFilter);
+  leftCol.appendChild(filter.el);
+
+  const emptyMsg = document.createElement("div");
+  emptyMsg.className = "nnm-empty";
+  emptyMsg.textContent = "No conversations match that search.";
+  emptyMsg.hidden = true;
+
+  const casePanel = document.createElement("div");
+  casePanel.className = "nnm-panel nnm-readings";
+  casePanel.setAttribute("role", "region");
+  casePanel.setAttribute("aria-label", "Conversation");
+
+  const caseHead = document.createElement("div");
+  caseHead.className = "nnm-panel-head";
+  const caseIdEl = document.createElement("span");
+  caseIdEl.textContent = "Conversation";
+  caseHead.appendChild(caseIdEl);
+  const nav = document.createElement("div");
+  nav.className = "nnm-nav";
+  const countEl = document.createElement("span");
+  countEl.className = "nnm-count";
+  const prevBtn = document.createElement("button");
+  prevBtn.className = "nnm-navbtn";
+  prevBtn.innerHTML = navGlyph(-1);
+  prevBtn.setAttribute("aria-label", "Previous conversation");
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "nnm-navbtn";
+  nextBtn.innerHTML = navGlyph(1);
+  nextBtn.setAttribute("aria-label", "Next conversation");
+  nav.appendChild(countEl); nav.appendChild(prevBtn); nav.appendChild(nextBtn);
+  caseHead.appendChild(nav);
+  casePanel.appendChild(caseHead);
+
+  const caseBody = document.createElement("div");
+  caseBody.className = "nnm-panel-body";
+  caseBody.style.display = "flex";
+  caseBody.style.flexDirection = "column";
+  caseBody.style.overflow = "hidden";
+
+  const readHead = document.createElement("div");
+  readHead.className = "nnm-readhead";
+  readHead.innerHTML =
+    '<div class="nnm-legend">' +
+      '<div class="nnm-legend-label">Word Contribution</div>' +
+      '<div class="nnm-read-scale"><span class="lo">' + (-TMAX).toFixed(4) + '</span>' +
+        '<span class="grad"></span>' +
+        '<span class="hi">' + TMAX.toFixed(4) + '</span></div>' +
+    '</div>';
+  readHead.setAttribute("role", "img");
+  readHead.setAttribute("aria-label",
+    "Word contribution, shared by all three pathways: " + (-TMAX).toFixed(4) +
+    " to " + TMAX.toFixed(4));
+  caseBody.appendChild(readHead);
+
+  const readScroll = document.createElement("div");
+  readScroll.className = "nnm-readscroll";
+  caseBody.appendChild(readScroll);
+
+  const readings = [];
+  for (let p = 0; p < NP; p++) {
+    const r = document.createElement("div");
+    r.className = "nnm-read";
+    r.innerHTML =
+      '<div class="nnm-read-name">' + NAMES[p] + '</div>' +
+      '<div class="nnm-read-text"></div>';
+    readScroll.appendChild(r);
+    readings.push(r);
+  }
+
+  casePanel.appendChild(caseBody);
+  leftCol.appendChild(casePanel);
+  leftCol.appendChild(emptyMsg);
+
+  // Fills one reading with the conversation, each word this pathway scores
+  // tinted on the shared scale. 2B does its own version so it can withhold the
+  // colours until the Activate step; this is the plain always-on form.
+  function paintReading(p, it) {
+    const txt = readings[p].querySelector(".nnm-read-text");
+    txt.innerHTML = "";
+    it.text.split(/\s+/).forEach(function (w, wi) {
+      if (wi) txt.appendChild(document.createTextNode(" "));
+      const span = document.createElement("span");
+      span.className = "nnm-tok";
+      span.textContent = w;
+      const v = D.vocabulary[w];
+      if (v && v[0] === p) {
+        const L = level(Math.min(1, Math.abs(v[1]) / TMAX));
+        span.classList.add("scored", "lit");
+        span.style.setProperty("--tok-bg", (v[1] >= 0 ? FILL_POS : FILL_NEG)[L]);
+        span.style.setProperty("--tok-fg", L === 4 ? "#fff" : "#1E242C");
+        span.title = w + ": " + (v[1] >= 0 ? "+" : "−") + Math.abs(v[1]).toFixed(4);
+      } else if (v) {
+        span.title = w + ": a " + NAMES[v[0]] + " word";
+      }
+      txt.appendChild(span);
+    });
+  }
+
+  return {
+    leftCol: leftCol, filter: filter, emptyMsg: emptyMsg,
+    casePanel: casePanel, caseHead: caseHead, caseIdEl: caseIdEl,
+    nav: nav, countEl: countEl, prevBtn: prevBtn, nextBtn: nextBtn,
+    caseBody: caseBody, readHead: readHead, readScroll: readScroll,
+    readings: readings, paintReading: paintReading, TOK_MAX: TMAX, PATH_NAMES: NAMES
+  };
+}
+
 function buildSimContent() {
+
+  // ---------------------------------------------------------------
+  // 3B — Investigate Pathway 3.  The conversation panel from 2B on the
+  // left; on the right the observation notes for that conversation and a
+  // commissioning list. Pathway 3 lines up with none of the attributes we
+  // were given, so students read what an observer wrote down and pay to
+  // have a new attribute coded. Three of the four they can commission are
+  // decoys — finding the one that fits is the work.
+  // ---------------------------------------------------------------
+  if (activeSim === "d3b") {
+    const D = window.NNM_DATA;
+    const NP = D.nPathways;
+    const items = D.items;
+    const NAMES = pathNames(D);
+    const BUDGET = 3;
+    const HIDDEN = D.attributes
+      .map(function (a, i) { return { a: a, i: i }; })
+      .filter(function (x) { return x.a.hidden; });
+
+    let cases = items.slice();
+    let idx = 0;
+    const bought = [];
+
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content";
+    SIM._timeouts = []; SIM._observers = [];
+    const stack = document.createElement("div");
+    stack.className = "nnm-stack";
+    wrap.appendChild(stack);
+    const root = document.createElement("div");
+    root.className = "nnm";
+    stack.appendChild(root);
+
+    const casePane = buildCasePanel({
+      onFilter: function (its) { cases = its; idx = 0; render(); }
+    });
+    root.appendChild(casePane.leftCol);
+
+    const rightCol = document.createElement("div");
+    rightCol.className = "nnm-rightcol";
+    root.appendChild(rightCol);
+
+    // a toolbar to match the find bar's height, so both cards start level
+    const bar = document.createElement("div");
+    bar.className = "nnm-steprow d3b-bar";
+    const barLabel = document.createElement("div");
+    barLabel.className = "d3b-barlabel";
+    barLabel.textContent = "What else was going on?";
+    bar.appendChild(barLabel);
+    rightCol.appendChild(bar);
+
+    const panel = document.createElement("div");
+    panel.className = "nnm-panel d3b-panel";
+    rightCol.appendChild(panel);
+    const pHead = document.createElement("div");
+    pHead.className = "nnm-panel-head";
+    const pTitle = document.createElement("span");
+    pTitle.textContent = "Observation notes";
+    pHead.appendChild(pTitle);
+    const budgetEl = document.createElement("span");
+    budgetEl.className = "d3b-budget";
+    pHead.appendChild(budgetEl);
+    panel.appendChild(pHead);
+
+    const pBody = document.createElement("div");
+    pBody.className = "nnm-panel-body d3b-body";
+    panel.appendChild(pBody);
+
+    const notesEl = document.createElement("div");
+    notesEl.className = "d3b-notes";
+    pBody.appendChild(notesEl);
+
+    const knownEl = document.createElement("div");
+    knownEl.className = "d3b-known";
+    pBody.appendChild(knownEl);
+
+    const commHead = document.createElement("div");
+    commHead.className = "d3b-subhead";
+    commHead.textContent = "Commission coding";
+    pBody.appendChild(commHead);
+    const commNote = document.createElement("div");
+    commNote.className = "d3b-subnote";
+    commNote.textContent = "Researchers will read all " + items.length +
+      " sets of notes and code one more attribute. You can afford " + BUDGET + ".";
+    pBody.appendChild(commNote);
+
+    const listEl = document.createElement("div");
+    listEl.className = "d3b-list";
+    pBody.appendChild(listEl);
+
+    const resultEl = document.createElement("div");
+    resultEl.className = "d3b-results";
+    pBody.appendChild(resultEl);
+
+    // r for an attribute against each pathway, over the whole set — the point is
+    // that a commissioned attribute is judged on ALL 800, not the filtered few.
+    function rowFor(attrIndex) {
+      const vals = items.map(function (it) { return it.attrs[attrIndex]; });
+      const out = [];
+      for (let p = 0; p < NP; p++) {
+        out.push(pearson(vals, items.map(function (it) { return it.act[p]; })));
+      }
+      return out;
+    }
+
+    function corrChip(r) {
+      const el = document.createElement("span");
+      el.className = "d3b-chip";
+      const dot = document.createElement("i");
+      dot.className = "d3-dot";
+      const side = 8 + 22 * Math.sqrt(Math.min(1, Math.abs(r)));
+      dot.style.width = side.toFixed(1) + "px";
+      dot.style.height = side.toFixed(1) + "px";
+      dot.style.background = r === 0 ? "#FFFFFF"
+        : (r > 0 ? FILL_POS : FILL_NEG)[level(Math.min(1, Math.abs(r)))];
+      const n = document.createElement("span");
+      n.textContent = (r >= 0 ? "+" : "−") + Math.abs(r).toFixed(2);
+      el.appendChild(dot); el.appendChild(n);
+      return el;
+    }
+
+    function renderList() {
+      listEl.innerHTML = "";
+      HIDDEN.forEach(function (h) {
+        const row = document.createElement("div");
+        row.className = "d3b-item" + (bought.indexOf(h.a.key) >= 0 ? " done" : "");
+        const name = document.createElement("div");
+        name.className = "d3b-itemname";
+        name.textContent = h.a.label;
+        const desc = document.createElement("div");
+        desc.className = "d3b-itemdesc";
+        desc.textContent = h.a.description;
+        const btn = document.createElement("button");
+        btn.className = "d3b-buy";
+        if (bought.indexOf(h.a.key) >= 0) {
+          btn.textContent = "Coded";
+          btn.disabled = true;
+        } else {
+          btn.textContent = "Commission";
+          btn.disabled = bought.length >= BUDGET;
+          btn.addEventListener("click", function () {
+            if (bought.length >= BUDGET) return;
+            bought.push(h.a.key);
+            render();
+          });
+        }
+        row.appendChild(name); row.appendChild(desc); row.appendChild(btn);
+        listEl.appendChild(row);
+      });
+    }
+
+    function renderResults() {
+      resultEl.innerHTML = "";
+      if (!bought.length) return;
+      const h = document.createElement("div");
+      h.className = "d3b-subhead";
+      h.textContent = "What the coding found";
+      resultEl.appendChild(h);
+      const tbl = document.createElement("div");
+      tbl.className = "d3b-table";
+      const hdr = document.createElement("div");
+      hdr.className = "d3b-trow head";
+      hdr.appendChild(document.createElement("div"));
+      NAMES.forEach(function (n) {
+        const c = document.createElement("div");
+        c.textContent = n;
+        hdr.appendChild(c);
+      });
+      tbl.appendChild(hdr);
+      bought.forEach(function (key) {
+        const h2 = HIDDEN.filter(function (x) { return x.a.key === key; })[0];
+        const rs = rowFor(h2.i);
+        const tr = document.createElement("div");
+        tr.className = "d3b-trow";
+        const lab = document.createElement("div");
+        lab.textContent = h2.a.label;
+        tr.appendChild(lab);
+        rs.forEach(function (r) {
+          const c = document.createElement("div");
+          if (Math.abs(r) >= 0.3) c.className = "hit";
+          c.appendChild(corrChip(r));
+          tr.appendChild(c);
+        });
+        tbl.appendChild(tr);
+      });
+      resultEl.appendChild(tbl);
+    }
+
+    function render() {
+      const empty = cases.length === 0;
+      casePane.casePanel.style.display = empty ? "none" : "";
+      casePane.emptyMsg.hidden = !empty;
+      panel.style.visibility = empty ? "hidden" : "";
+      budgetEl.textContent = bought.length + " of " + BUDGET + " commissioned";
+      renderList();
+      renderResults();
+      if (empty) return;
+      if (idx >= cases.length) idx = cases.length - 1;
+      const it = cases[idx];
+      casePane.countEl.textContent = (idx + 1) + " / " + cases.length;
+      setAriaDisabled(casePane.prevBtn, idx === 0);
+      setAriaDisabled(casePane.nextBtn, idx === cases.length - 1);
+      casePane.caseIdEl.title = "#" + it.id;
+      for (let p = 0; p < NP; p++) casePane.paintReading(p, it);
+
+      notesEl.textContent = it.obs || "(no notes for this conversation)";
+
+      knownEl.innerHTML = "";
+      D.attributes.forEach(function (a, i) {
+        if (a.hidden && bought.indexOf(a.key) < 0) return;   // not coded yet
+        const chip = document.createElement("span");
+        const v = it.attrs[i];
+        const lab = (a.valueLabels && a.valueLabels[v]) !== undefined
+          ? a.valueLabels[v] : String(v);
+        chip.className = "d3b-attr" + (a.hidden ? " new" : "") + (v ? " on" : "");
+        chip.textContent = a.label + ": " + lab;
+        knownEl.appendChild(chip);
+      });
+    }
+
+    casePane.prevBtn.addEventListener("click", function () {
+      if (idx > 0) { idx--; render(); }
+    });
+    casePane.nextBtn.addEventListener("click", function () {
+      if (idx < cases.length - 1) { idx++; render(); }
+    });
+
+    // Opens on the cases the curriculum sends students to: the ones the model
+    // got wrong where Pathway 3 was shouting.
+    casePane.filter.input.value = "model_correct:0 AND pathway_3:>2";
+    casePane.filter.input.dispatchEvent(new Event("input", { bubbles: true }));
+
+    render();
+    SIM.onResize = function () {};
+    return wrap;
+  }
+
+
+  // ---------------------------------------------------------------
+  // 3A — Correlations.  Matches Design Sketches: a matrix of pathways
+  // against things we already know how to name, in two views. The point
+  // of the day is that a pathway cannot be read directly — you interpret
+  // it indirectly, through attributes you can name. Colour convention is
+  // the shipped Pathway Explorer's and Day 2's: blue negative, warm positive.
+  // ---------------------------------------------------------------
+  if (activeSim === "d3a") {
+    const D = window.NNM_DATA;
+    const NP = D.nPathways;
+    const ALL = D.items;
+    // Correlations are computed over the filtered set, the way the shipped
+    // Pathway Explorer does it. That is not a convenience: over all 800 Pathway 3
+    // lines up with nothing, and its association with the predicted label only
+    // appears once you narrow to the conversations the model got wrong. The
+    // filter is how the day's finding is reached.
+    let items = ALL.slice();
+
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content d3-wrap";
+
+    // ---- the series we can correlate a pathway against ----
+    const HIDE = ["resource_stressed", "gestures_repeated", "young_present", "carrying_burden"];
+    let rows = [], paths = [], R = [];
+    function buildSeries() {
+    rows = [
+      { key: "target", label: "Actual label", vals: items.map(function (it) { return it.target; }),
+        groups: [[0, "Wait"], [1, "Approach"]] },
+      { key: "pred", label: "Model prediction", vals: items.map(function (it) { return it.pred; }),
+        groups: [[0, "Wait"], [1, "Approach"]] },
+      { key: "correct", label: "Model was correct", vals: items.map(function (it) { return it.pred === it.target ? 1 : 0; }),
+        groups: [[0, "wrong"], [1, "right"]] }
+    ];
+    D.attributes.forEach(function (a, i) {
+      if (HIDE.indexOf(a.key) >= 0) return;              // Day 3 reveals these later
+      const vals = items.map(function (it) { return it.attrs[i]; });
+      const uniq = Array.from(new Set(vals)).sort(function (x, y) { return x - y; });
+      const groups = uniq.length <= 6
+        ? uniq.map(function (v) { return [v, (a.valueLabels && a.valueLabels[v]) || String(v)]; })
+        : [[0, "low"], [1, "high"]];
+      rows.push({ key: a.key, label: a.label, vals: vals, groups: groups, integer: a.type === "integer" });
+    });
+
+    paths = [];
+    const alo = Math.min.apply(null, D.scoreMin), ahi = Math.max.apply(null, D.scoreMax);
+    for (let p = 0; p < NP; p++) {
+      paths.push({ label: "Pathway " + (p + PATH_OFFSET),
+                   vals: items.map(function (it) { return it.act[p]; }),
+                   lo: alo, hi: ahi });
+    }
+    // The chain's own output, as a fourth column. This is where the curriculum's
+    // question gets answered: read across the Actual label row and the weighted
+    // sum sits just BELOW Pathway 1, not above it. The model's importances are
+    // fitted to reproduce its own prediction, not the truth, so combining the
+    // pathways with them throws away what the other two knew.
+    const ws = items.map(function (it) {
+      let t = 0;
+      for (let p = 0; p < NP; p++) t += it.act[p] * D.importance[p];
+      return t;
+    });
+    let wlo = Infinity, whi = -Infinity;
+    ws.forEach(function (v) { if (v < wlo) wlo = v; if (v > whi) whi = v; });
+    paths.push({ label: "Weighted sum", vals: ws, lo: wlo, hi: whi, derived: true });
+    R = rows.map(function (row) {
+      return paths.map(function (pa) { return pearson(row.vals, pa.vals); });
+    });
+    }
+
+    const ACT_LO = Math.min.apply(null, D.scoreMin);
+    const ACT_HI = Math.max.apply(null, D.scoreMax);
+
+    // ---- header ----
+    // One toolbar: the find bar at the same width it has in the Prediction Chain,
+    // so the two interactives read as the same tool, and the view switch on the
+    // far right where the Animate toggle sits over there.
+    const toolbar = document.createElement("div");
+    toolbar.className = "d3-toolbar";
+    wrap.appendChild(toolbar);
+
+    const filter = NNM_FILTER.buildBar(function (its) {
+      items = its.length ? its : [];
+      render();
+    });
+    filter.el.classList.add("d3-filter");
+    toolbar.appendChild(filter.el);
+
+    const head = document.createElement("div");
+    head.className = "d3-head";
+    const title = document.createElement("div");
+    title.className = "d3-title";
+    head.appendChild(title);
+    const views = document.createElement("div");
+    views.className = "d3-views";
+    let view = "corr";
+    const viewBtns = [["corr", "Correlation view"], ["graph", "Graph view"]].map(function (v) {
+      const b = document.createElement("button");
+      b.className = "d3-viewbtn";
+      b.textContent = v[1];
+      b.addEventListener("click", function () { view = v[0]; render(); });
+      views.appendChild(b);
+      return { key: v[0], el: b };
+    });
+    toolbar.appendChild(views);
+    wrap.appendChild(head);
+
+    const scroll = document.createElement("div");
+    scroll.className = "d3-scroll";
+    wrap.appendChild(scroll);
+
+    const note = document.createElement("div");
+    note.className = "d3-note";
+    wrap.appendChild(note);
+
+    // ---- a cell in the correlation view: area tracks |r|, colour its sign ----
+    function corrCell(r) {
+      const el = document.createElement("div");
+      el.className = "d3-cell corr";
+      const dot = document.createElement("i");
+      dot.className = "d3-dot";
+      const t = Math.sqrt(Math.min(1, Math.abs(r)));
+      const side = 8 + 46 * t;
+      dot.style.width = side.toFixed(1) + "px";
+      dot.style.height = side.toFixed(1) + "px";
+      dot.style.background = r === 0 ? "#FFFFFF"
+        : (r > 0 ? FILL_POS : FILL_NEG)[level(Math.min(1, Math.abs(r)))];
+      const num = document.createElement("span");
+      num.className = "d3-r";
+      num.textContent = (r >= 0 ? "+" : "−") + Math.abs(r).toFixed(2);
+      el.appendChild(dot); el.appendChild(num);
+      el.title = "r = " + r.toFixed(4) + "  (n = " + items.length + ")";
+      if (Math.abs(r) >= 0.30) el.classList.add("strong");
+      return el;
+    }
+
+    // ---- the graph view, built the way the sketch is: CODAP dot plots ----
+    // Every panel uses the same mark. One dot is one conversation — stacks are
+    // literal counts, not a histogram scaled to fit — so "how many" reads the same
+    // in a marginal, a cell, and a category. Dots shrink when a stack would
+    // overflow rather than the count being capped, which is what CODAP does.
+    const AXIS_H = 16, LABEL_W = 52, PAD_R = 6, PAD_T = 6;
+
+    function niceTicks(lo, hi, want) {
+      const span = hi - lo;
+      if (!(span > 0)) return [lo];
+      const raw = span / want;
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const norm = raw / mag;
+      const stepN = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+      const step = stepN * mag;
+      const out = [];
+      for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(v);
+      return out;
+    }
+
+    function fmtTick(v, span) {
+      const dp = span >= 20 ? 0 : span >= 4 ? 1 : 2;
+      return (Math.abs(v) < 1e-9 ? 0 : v).toFixed(dp);
+    }
+
+    // Lays one band of dots: values -> x, packed into columns a dot wide, stacked
+    // upward from the baseline. Returns the radius that made the tallest stack fit.
+    function packBand(vals, lo, hi, plotW, bandH) {
+      let r = 3.2;
+      for (; r >= 0.9; r -= 0.15) {
+        const d = r * 2, cols = Math.max(1, Math.round(plotW / d));
+        const counts = new Array(cols).fill(0);
+        let tallest = 0;
+        for (let i = 0; i < vals.length; i++) {
+          let c = Math.floor(((vals[i] - lo) / (hi - lo)) * cols);
+          if (c < 0) c = 0; if (c >= cols) c = cols - 1;
+          counts[c]++;
+          if (counts[c] > tallest) tallest = counts[c];
+        }
+        if (tallest * d <= bandH - 2 || r <= 0.9) {
+          const pts = [];
+          const seen = new Array(cols).fill(0);
+          for (let i = 0; i < vals.length; i++) {
+            let c = Math.floor(((vals[i] - lo) / (hi - lo)) * cols);
+            if (c < 0) c = 0; if (c >= cols) c = cols - 1;
+            pts.push([c * d + r, seen[c] * d + r]);
+            seen[c]++;
+          }
+          return { r: r, pts: pts };
+        }
+      }
+      return { r: 0.9, pts: [] };
+    }
+
+    function svgEl(name, attrs) {
+      const e = document.createElementNS(SVGNS, name);
+      Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+      return e;
+    }
+
+    // One dot plot. `bands` is a list of {label, vals}; a single band gives the
+    // marginal distributions in the headers, several give a matrix cell.
+    function dotPlot(bands, lo, hi, W, H, opts) {
+      opts = opts || {};
+      const svg = svgEl("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: H });
+      svg.setAttribute("class", "d3-plot");
+      const labW = opts.noLabels ? 8 : LABEL_W;
+      const plotW = W - labW - PAD_R;
+      const plotH = H - AXIS_H - PAD_T;
+      const bandH = plotH / bands.length;
+
+      bands.forEach(function (b, bi) {
+        const base = PAD_T + (bi + 1) * bandH;
+        svg.appendChild(svgEl("line", {
+          x1: labW, x2: W - PAD_R, y1: base, y2: base,
+          stroke: bi === bands.length - 1 ? "#B9C0CA" : "#E4E8EE", "stroke-width": 1
+        }));
+        if (!opts.noLabels) {
+          const t = svgEl("text", { x: labW - 6, y: base - bandH / 2, class: "d3-blabel" });
+          t.setAttribute("text-anchor", "end");
+          t.setAttribute("dominant-baseline", "middle");
+          t.textContent = b.label;
+          svg.appendChild(t);
+        }
+        const packed = packBand(b.vals, lo, hi, plotW, bandH);
+        packed.pts.forEach(function (pt) {
+          svg.appendChild(svgEl("circle", {
+            cx: labW + pt[0], cy: base - pt[1], r: packed.r, class: "d3-pt"
+          }));
+        });
+      });
+
+      niceTicks(lo, hi, 5).forEach(function (v) {
+        const x = labW + ((v - lo) / (hi - lo)) * plotW;
+        svg.appendChild(svgEl("line", {
+          x1: x, x2: x, y1: PAD_T + plotH, y2: PAD_T + plotH + 3,
+          stroke: "#B9C0CA", "stroke-width": 1
+        }));
+        const t = svgEl("text", { x: x, y: H - 3, class: "d3-tick" });
+        t.setAttribute("text-anchor", "middle");
+        t.textContent = fmtTick(v, hi - lo);
+        svg.appendChild(t);
+      });
+      return svg;
+    }
+
+    function graphCell(row, pi) {
+      const el = document.createElement("div");
+      el.className = "d3-cell graph";
+      const gv = row.gvals || row.vals;
+      const bands = row.groups.map(function (g) {
+        const vals = [];
+        for (let i = 0; i < items.length; i++) if (gv[i] === g[0]) vals.push(paths[pi].vals[i]);
+        return { label: g[1], vals: vals };
+      });
+      el.appendChild(dotPlot(bands, paths[pi].lo, paths[pi].hi, 210,
+        Math.max(70, 26 * bands.length + AXIS_H + PAD_T)));
+      return el;
+    }
+
+    // The marginals the sketch puts in the headers: what each variable looks like
+    // on its own, before anything is compared. An attribute that is 95% one value
+    // cannot correlate with much, and that is visible here and nowhere else.
+    function pathMarginal(pa) {
+      return dotPlot([{ label: "", vals: pa.vals }], pa.lo, pa.hi, 210, 62, { noLabels: true });
+    }
+
+    function rowMarginal(row) {
+      const gv = row.gvals || row.vals;
+      const counts = row.groups.map(function (g) {
+        let n = 0;
+        for (let i = 0; i < gv.length; i++) if (gv[i] === g[0]) n++;
+        return { label: g[1], n: n };
+      });
+      const most = Math.max.apply(null, counts.map(function (c) { return c.n; })) || 1;
+      const el = document.createElement("div");
+      el.className = "d3-marg";
+      counts.forEach(function (c) {
+        const b = document.createElement("div");
+        b.className = "d3-margrow";
+        const bar = document.createElement("i");
+        bar.style.width = (6 + 62 * c.n / most).toFixed(1) + "px";
+        const lab = document.createElement("span");
+        lab.textContent = c.label;
+        const n = document.createElement("em");
+        n.textContent = c.n;
+        b.appendChild(bar); b.appendChild(lab); b.appendChild(n);
+        el.appendChild(b);
+      });
+      return el;
+    }
+
+    // Below this, r swings wildly on one or two conversations and reads as a
+    // finding when it is not. Every cell shares the same n, so the whole matrix
+    // says so rather than marking cells individually.
+    const MIN_N = 12;
+
+    function render() {
+      const n = items.length;
+      title.textContent = "Correlations over " + n + " of " + ALL.length + " conversations";
+      if (n < MIN_N) {
+        scroll.innerHTML = "";
+        note.innerHTML = n === 0
+          ? "Nothing matches that filter."
+          : "Only " + n + " conversations match. A correlation over so few is mostly "
+            + "noise — widen the filter to at least " + MIN_N + " to read this matrix.";
+        viewBtns.forEach(function (v) { v.el.classList.toggle("on", v.key === view); });
+        return;
+      }
+      buildSeries();
+      viewBtns.forEach(function (v) {
+        v.el.classList.toggle("on", v.key === view);
+        v.el.setAttribute("aria-pressed", v.key === view ? "true" : "false");
+      });
+      scroll.innerHTML = "";
+      const grid = document.createElement("div");
+      grid.className = "d3-grid " + view;
+      grid.style.gridTemplateColumns = "150px repeat(" + paths.length + ", 1fr)";
+      const corner = document.createElement("div");
+      corner.className = "d3-corner";
+      grid.appendChild(corner);
+      paths.forEach(function (pa, pi) {
+        const h = document.createElement("div");
+        h.className = "d3-colhead" + (pa.derived ? " derived" : "");
+        const nm = document.createElement("div");
+        nm.className = "d3-colname";
+        nm.textContent = pa.label;
+        h.appendChild(nm);
+        if (view === "graph") h.appendChild(pathMarginal(pa));
+        grid.appendChild(h);
+      });
+      rows.forEach(function (row, ri) {
+        const lab = document.createElement("div");
+        lab.className = "d3-rowhead" + (ri < 3 ? " outcome" : "")
+          + (row.derived ? " derived" : "");
+        const nm = document.createElement("div");
+        nm.className = "d3-rowname";
+        nm.textContent = row.label;
+        lab.appendChild(nm);
+        if (view === "graph") lab.appendChild(rowMarginal(row));
+        grid.appendChild(lab);
+        paths.forEach(function (pa, pi) {
+          grid.appendChild(view === "corr" ? corrCell(R[ri][pi]) : graphCell(row, pi));
+        });
+      });
+      scroll.appendChild(grid);
+      note.innerHTML = view === "corr"
+        ? "Each circle is the correlation between that row and that pathway, over the "
+          + items.length + " conversations in the filter. Area tracks strength, colour "
+          + "tracks direction. Hover a cell for the exact value."
+        : "One dot is one conversation. Each panel splits a pathway’s activations by the "
+          + "row’s value; the headers show what each one looks like on its own. Two piles "
+          + "sitting in the same place means the pathway does not tell those groups apart.";
+    }
+
+    // Opens on the conversations the model got wrong, which is where the day's
+    // finding lives: over all 800 Pathway 3 lines up with nothing, and only in
+    // here does it become the strongest thing in the matrix.
+    filter.input.value = "model_correct:0";
+    filter.input.dispatchEvent(new Event("input", { bubbles: true }));
+
+    render();
+    SIM.onResize = function () {};
+    return wrap;
+  }
+
 
   // ---------------------------------------------------------------
   // 2B — The Prediction Chain.  Laid out to match Design Sketches p.3:
@@ -2430,19 +3362,6 @@ function buildSimContent() {
       { length: D.nPathways },
       function (_, i) { return "Pathway " + (i + PATH_OFFSET); }
     );
-    const SVGNS = "http://www.w3.org/2000/svg";
-
-    // Fills are quantised into five steps rather than a smooth ramp. Every
-    // continuous ramp has a band where neither dark nor light text reaches
-    // 4.5:1; stepping over it keeps each level legible, and it also matches
-    // the handful of distinct tints in the sketch. Verified per level.
-    const FILL_NEG = ["#C8D6E9", "#A9BDD8", "#8DA6CA", "#7694BD", "#1F4E8F"];
-    const FILL_POS = ["#EFD3C4", "#E0B6A4", "#D29A84", "#C6836C", "#A84A2C"];
-    const CUTS = [0.12, 0.30, 0.50, 0.75];
-    function level(t) {
-      for (let i = 0; i < CUTS.length; i++) if (t < CUTS[i]) return i;
-      return 4;
-    }
     // Area-proportional, not side-proportional: if the side tracked the value,
     // doubling it would quadruple the ink. side = MAX * sqrt(v / scale) makes the
     // AREA track the value, which is what the eye actually judges.
@@ -2556,90 +3475,24 @@ function buildSimContent() {
 
     // The find bar sits over the conversation list it filters, so it takes the
     // left column's width and the flow panel runs the full height beside it.
-    const leftCol = document.createElement("div");
-    leftCol.className = "nnm-leftcol";
+    // The panel itself is shared with 3B — see buildCasePanel. 2B keeps its own
+    // render(), because it has to withhold the word colours until Activate runs
+    // and drive the chain on the right off the same case.
+    const casePane = buildCasePanel({
+      onFilter: function (items) { cases = items; goToCase(0); }
+    });
+    const leftCol = casePane.leftCol;
     root.appendChild(leftCol);
-
-    const filter = NNM_FILTER.buildBar(function (items) { cases = items; goToCase(0); });
-    leftCol.appendChild(filter.el);
-
-    const emptyMsg = document.createElement("div");
-    emptyMsg.className = "nnm-empty";
-    emptyMsg.textContent = "No conversations match that search.";
-    emptyMsg.hidden = true;
-
-    // ================= left: the three readings =================
-    const casePanel = document.createElement("div");
-    casePanel.className = "nnm-panel nnm-readings";
-    casePanel.setAttribute("role", "region");
-    casePanel.setAttribute("aria-label", "Conversation");
-
-    const caseHead = document.createElement("div");
-    caseHead.className = "nnm-panel-head";
-    const caseIdEl = document.createElement("span");
-    caseIdEl.textContent = "Conversation";
-    caseHead.appendChild(caseIdEl);
-    const nav = document.createElement("div");
-    nav.className = "nnm-nav";
-    const countEl = document.createElement("span");
-    countEl.className = "nnm-count";
-    const prevBtn = document.createElement("button");
-    prevBtn.className = "nnm-navbtn";
-    prevBtn.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" ' +
-      'stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">' +
-      '<path d="M8.4 1.9 L3.6 6 L8.4 10.1 Z"/></svg>';
-    prevBtn.setAttribute("aria-label", "Previous conversation");
-    const nextBtn = document.createElement("button");
-    nextBtn.className = "nnm-navbtn";
-    nextBtn.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" ' +
-      'stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">' +
-      '<path d="M3.6 1.9 L8.4 6 L3.6 10.1 Z"/></svg>';
-    nextBtn.setAttribute("aria-label", "Next conversation");
-    nav.appendChild(countEl); nav.appendChild(prevBtn); nav.appendChild(nextBtn);
-    caseHead.appendChild(nav);
-    casePanel.appendChild(caseHead);
-
-    const caseBody = document.createElement("div");
-    caseBody.className = "nnm-panel-body";
-    caseBody.style.display = "flex";
-    caseBody.style.flexDirection = "column";
-    caseBody.style.overflow = "hidden";
-    // An empty spacer, not a heading: it exists only to match the height of the
-    // flow's column captions so reading 1 and flow row 1 start on the same line.
-    const readHead = document.createElement("div");
-    readHead.className = "nnm-readhead";
-    readHead.innerHTML =
-      '<div class="nnm-legend">' +
-        '<div class="nnm-legend-label">Word Contribution</div>' +
-        '<div class="nnm-read-scale"><span class="lo">' + (-TOK_MAX).toFixed(4) + '</span>' +
-          '<span class="grad"></span>' +
-          '<span class="hi">' + TOK_MAX.toFixed(4) + '</span></div>' +
-      '</div>';
-    readHead.setAttribute("role", "img");
-    readHead.setAttribute("aria-label",
-      "Word contribution, shared by all three pathways: " + (-TOK_MAX).toFixed(4) +
-      " to " + TOK_MAX.toFixed(4));
-    caseBody.appendChild(readHead);
-
-    const readScroll = document.createElement("div");
-    readScroll.className = "nnm-readscroll";
-    caseBody.appendChild(readScroll);
-
-    const readings = [];
-    for (let p = 0; p < NP; p++) {
-      const r = document.createElement("div");
-      r.className = "nnm-read";
-      r.innerHTML =
-        '<div class="nnm-read-name">' + PATH_NAMES[p] + '</div>' +
-        '<div class="nnm-read-text"></div>';
-      readScroll.appendChild(r);
-      readings.push(r);
-    }
-
-    casePanel.appendChild(caseBody);
-    leftCol.appendChild(casePanel);
-    leftCol.appendChild(emptyMsg);
-
+    const filter = casePane.filter;
+    const emptyMsg = casePane.emptyMsg;
+    const casePanel = casePane.casePanel;
+    const caseIdEl = casePane.caseIdEl;
+    const countEl = casePane.countEl;
+    const prevBtn = casePane.prevBtn;
+    const nextBtn = casePane.nextBtn;
+    const readHead = casePane.readHead;
+    const readScroll = casePane.readScroll;
+    const readings = casePane.readings;
     // ================= right: the flow =================
     const rightCol = document.createElement("div");
     rightCol.className = "nnm-rightcol";
