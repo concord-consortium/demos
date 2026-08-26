@@ -975,17 +975,20 @@
   /* --- case navigator --- */
   .nnm-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
   .nnm-navbtn {
-    width: 26px; height: 26px;
+    width: 36px; height: 36px;
+    box-sizing: border-box;
     display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--nnm-rule);
+    border: 2px solid var(--nnm-rule);
     background: #fff;
     border-radius: 5px;
     cursor: pointer;
     color: var(--nnm-ink-2);
-    font-size: 14px;
-    line-height: 1;
     padding: 0;
   }
+  /* Drawn rather than typed. The ◀ ▶ characters carry their own side bearings and
+     baseline offset, so they sit off-centre in the button by an amount that
+     depends on the font — a symmetric viewBox centres exactly and always. */
+  .nnm-navbtn svg { width: 19px; height: 19px; display: block; }
   .nnm-navbtn:hover:not([aria-disabled="true"]) { background: var(--nnm-surface); }
   .nnm-navbtn:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
   .nnm-navbtn[aria-disabled="true"] { opacity: 0.35; cursor: default; }
@@ -1026,15 +1029,19 @@
   /* Out of the flow, like the sum's caption before it. Left in, the wrapper
      centres the sum row plus these labels as one group, which lifts the sum
      half the labels' height above the centre of the three pathways. */
+  /* Anchored on the right so the two rows line up with each other rather than
+     ragging out from a shared left edge — the values are what is being compared,
+     and they are the last thing on each line. */
   .nnm-labels {
     position: absolute;
     top: calc(100% + 16px);
-    left: 6px;
+    right: 6px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end;
     gap: 4px;
   }
+  .nnm-labels .nnm-label-row { justify-content: flex-end; }
   /* In the narrow layout the labels rejoin the flow, so the row must wrap or they
      sit alongside the sum and push the panel wide. */
   .nnm-flowbody.narrow .nnm-deciderow { flex-wrap: wrap; }
@@ -1165,11 +1172,17 @@
   .nnm-steprow {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
     height: 36px;
     box-sizing: border-box;
     flex-shrink: 0;
+  }
+  .nnm-stepgroup {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
   .nnm-leftcol {
     display: flex;
@@ -1266,6 +1279,12 @@
     width: auto;
     white-space: nowrap;
   }
+  /* Two words, two lines: kept to the width of a cell so it breaks rather than
+     reaching for the panel edge, which it was 13px short of on one line. */
+  .nnm-flowhead .c.far.dec {
+    white-space: normal;
+    width: 82px;
+  }
   .nnm-flowhead .c {
     width: 82px;
     flex-shrink: 0;
@@ -1313,29 +1332,40 @@
     to   { opacity: 1; transform: scale(1); }
   }
   .nnm-reset {
-    width: 36px; height: 36px;
+    height: 36px;
     box-sizing: border-box;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 4px;
     flex-shrink: 0;
-    border: 1px solid var(--nnm-rule);
+    border: 2px solid var(--nnm-rule);
     background: #fff;
     border-radius: 5px;
     cursor: pointer;
     color: var(--nnm-ink-2);
-    font-size: 21px;
-    line-height: 1;
-    padding: 0 0 2px;
+    padding: 0 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
-  .nnm-reset:hover { background: var(--nnm-surface); }
+  .nnm-reset .glyph { font-size: 19px; line-height: 1; padding-bottom: 2px; }
+  .nnm-reset:hover:not(:disabled) { background: var(--nnm-surface); }
+  /* Nothing to clear until a step has run, so it starts unavailable rather than
+     inviting a press that would do nothing. */
+  .nnm-reset:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
 
   .nnm-animtoggle {
+    flex-shrink: 0;
+    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 6px;
     height: 36px;
-    margin-left: 6px;
     padding: 0 4px;
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 15px;
@@ -1504,7 +1534,9 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
     padding: 3px 11px;
-    border-radius: 11px;
+    /* Fully rounded rather than a fixed radius, so it stays a true pill at the
+       narrow layout's shorter height without a second value to keep in step. */
+    border-radius: 999px;
     border: 1px solid var(--nnm-rule);
     color: var(--nnm-ink-3);
     background: #fff;
@@ -1523,12 +1555,20 @@
     padding: 0 12px;
     height: 36px;
     box-sizing: border-box;
-    border: 1px solid var(--nnm-rule);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 2px solid var(--nnm-rule);
     background: #fff;
     color: var(--nnm-ink-2);
     border-radius: 5px;
     cursor: pointer;
   }
+  /* Each icon is a miniature of what the step does to the diagram beside it —
+     marked-up text, the multiply glyph, the three lines converging, the fork to
+     two answers — rather than a generic metaphor. currentColor so they invert
+     with the button when it is the active step. */
+  .nnm-step svg { width: 13px; height: 13px; flex-shrink: 0; overflow: visible; }
   .nnm-step:hover { background: var(--nnm-surface); }
   .nnm-step.on {
     background: var(--nnm-ink);
@@ -1555,8 +1595,8 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.1</div>
-      <div style="font-weight: 400;">Updated: 8/25/26</div>
+      <div style="font-weight: 600;">v0.2</div>
+      <div style="font-weight: 400;">Updated: 8/26/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
@@ -1569,13 +1609,13 @@
 
       <div role="group" aria-labelledby="day2-label">
         <div class="day-sublabel" id="day2-label">Day 2</div>
-        <button class="toggle-btn active" data-sim="d2b" aria-pressed="true">Decision Chain</button>
+        <button class="toggle-btn active" data-sim="d2b" aria-pressed="true">Prediction Chain</button>
       </div>
 
       <div role="group" aria-labelledby="day3-label">
         <div class="day-sublabel" id="day3-label">Day 3</div>
         <button class="toggle-btn" data-sim="d3a" aria-pressed="false">Correlations</button>
-        <button class="toggle-btn" data-sim="d3b" aria-pressed="false">Investigate P2</button>
+        <button class="toggle-btn" data-sim="d3b" aria-pressed="false">Investigate P3</button>
       </div>
     </div>
 
@@ -1708,7 +1748,7 @@ const SIMS = {
   },
   d2b: {
     day: 2, id: "2B",
-    name: "The Decision Chain",
+    name: "The Prediction Chain",
     description: "How the pathways combine into one decision",
     theme: PLACEHOLDER_THEME,
     about:
@@ -1728,11 +1768,11 @@ const SIMS = {
   },
   d3b: {
     day: 3, id: "3B",
-    name: "Investigate P2",
+    name: "Investigate P3",
     description: "The pathway that matches nothing",
     theme: PLACEHOLDER_THEME,
     about:
-      '<p>Placeholder. P2 lines up with none of the given attributes, but it tracks the model being wrong. Students filter to the errors, read the observation notes, and commission new attribute coding.</p>' +
+      '<p>Placeholder. Pathway 3 lines up with none of the given attributes, but it tracks the model being wrong. Students filter to the errors, read the observation notes, and commission new attribute coding.</p>' +
       '<h3>The point</h3>' +
       '<p>A model can get the right answer for a reason nobody would endorse.</p>'
   }
@@ -1999,10 +2039,16 @@ let _cachedDDTriggerWCondensed = null;
 // dependency, so this implements the subset the curriculum actually
 // uses, with the same syntax, so queries copy across between the two:
 //
-//   model_correct:0            voices_raised:1 AND pathway_0:>1
-//   pathway_2:>2               yandor                (bare word = text)
-//   NOT near_water:1           target_label:approach OR pathway_1:<-2
+//   model_correct:0            voices_raised:1 AND pathway_1:>1
+//   pathway_3:>2               yandor                (bare word = text)
+//   NOT near_water:1           target_label:approach OR pathway_2:<-2
+//
+// Pathway fields carry the number students see, not the data's index:
+// pathway_1 reads act[0]. See PATH_OFFSET.
 // =====================================================================
+// Students count pathways from 1; the data indexes them from 0.
+const PATH_OFFSET = 1;
+
 const NNM_FILTER = (function () {
   const D = window.NNM_DATA;
 
@@ -2017,7 +2063,9 @@ const NNM_FILTER = (function () {
 
   const FIELDS = ["text", "target", "target_label", "prediction", "model_correct"]
     .concat(attrKeys)
-    .concat(D.items.length ? Array.from({ length: D.nPathways }, function (_, i) { return "pathway_" + i; }) : []);
+    .concat(D.items.length
+      ? Array.from({ length: D.nPathways }, function (_, i) { return "pathway_" + (i + PATH_OFFSET); })
+      : []);
 
   function flatten(it) {
     const o = {
@@ -2027,7 +2075,7 @@ const NNM_FILTER = (function () {
       prediction: it.pred,
       model_correct: it.pred === it.target ? 1 : 0
     };
-    for (let p = 0; p < D.nPathways; p++) o["pathway_" + p] = it.act[p];
+    for (let p = 0; p < D.nPathways; p++) o["pathway_" + (p + PATH_OFFSET)] = it.act[p];
     D.attributeKeys.forEach(function (k, i) {
       if (HIDDEN_FIELDS.indexOf(k) < 0) o[k] = it.attrs[i];
     });
@@ -2136,7 +2184,7 @@ const NNM_FILTER = (function () {
 
     const label = document.createElement("label");
     label.className = "nnm-filter-label";
-    label.textContent = "Find";
+    label.textContent = "Filter";
     const id = "nnm-q-" + Math.floor(performance.now() * 1000 % 1e9);
     label.setAttribute("for", id);
 
@@ -2165,8 +2213,8 @@ const NNM_FILTER = (function () {
       FIELDS.map(function (f) { return '<code>' + f + '</code>'; }).join(" ") +
       '</div><b>Examples</b><ul>' +
       '<li><code>model_correct:0</code> — the ones the model got wrong</li>' +
-      '<li><code>pathway_2:&gt;2</code> — a high score on P2</li>' +
-      '<li><code>voices_raised:1 AND pathway_0:&lt;0</code></li>' +
+      '<li><code>pathway_3:&gt;2</code> — a high score on Pathway 3</li>' +
+      '<li><code>voices_raised:1 AND pathway_1:&lt;0</code></li>' +
       '<li><code>yandor</code> — conversations containing that word</li>' +
       '<li><code>NOT near_water:1</code></li>' +
       '</ul>';
@@ -2219,7 +2267,7 @@ const NNM_FILTER = (function () {
 function buildSimContent() {
 
   // ---------------------------------------------------------------
-  // 2B — The Decision Chain.  Laid out to match Design Sketches p.3:
+  // 2B — The Prediction Chain.  Laid out to match Design Sketches p.3:
   // left, one card holding all three pathway readings; right, the flow
   // activation x importance => weighted, the three converging on a sum,
   // the sum choosing between two outcomes, and the stacked bar beneath.
@@ -2229,7 +2277,13 @@ function buildSimContent() {
     const D = window.NNM_DATA;
     const NP = D.nPathways;
     const IMP = D.importance;
-    const PATH_NAMES = ["Pathway 0", "Pathway 1", "Pathway 2"];
+    // Pathways are numbered from 1 for students. The data — act[], importance[],
+    // explainedVariance[], baseValues[] — is indexed from 0 and stays that way,
+    // so every label is the index plus PATH_OFFSET and nothing else converts.
+    const PATH_NAMES = Array.from(
+      { length: D.nPathways },
+      function (_, i) { return "Pathway " + (i + PATH_OFFSET); }
+    );
     const SVGNS = "http://www.w3.org/2000/svg";
 
     // Fills are quantised into five steps rather than a smooth ramp. Every
@@ -2290,7 +2344,7 @@ function buildSimContent() {
     leftCol.className = "nnm-leftcol";
     root.appendChild(leftCol);
 
-    const filter = NNM_FILTER.buildBar(function (items) { cancelAnim(); cases = items; idx = 0; render(); });
+    const filter = NNM_FILTER.buildBar(function (items) { cases = items; goToCase(0); });
     leftCol.appendChild(filter.el);
 
     const emptyMsg = document.createElement("div");
@@ -2314,10 +2368,16 @@ function buildSimContent() {
     const countEl = document.createElement("span");
     countEl.className = "nnm-count";
     const prevBtn = document.createElement("button");
-    prevBtn.className = "nnm-navbtn"; prevBtn.innerHTML = "&#9664;";
+    prevBtn.className = "nnm-navbtn";
+    prevBtn.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" ' +
+      'stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">' +
+      '<path d="M8.4 1.9 L3.6 6 L8.4 10.1 Z"/></svg>';
     prevBtn.setAttribute("aria-label", "Previous conversation");
     const nextBtn = document.createElement("button");
-    nextBtn.className = "nnm-navbtn"; nextBtn.innerHTML = "&#9654;";
+    nextBtn.className = "nnm-navbtn";
+    nextBtn.innerHTML = '<svg viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" ' +
+      'stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">' +
+      '<path d="M3.6 1.9 L8.4 6 L3.6 10.1 Z"/></svg>';
     nextBtn.setAttribute("aria-label", "Next conversation");
     nav.appendChild(countEl); nav.appendChild(prevBtn); nav.appendChild(nextBtn);
     caseHead.appendChild(nav);
@@ -2372,7 +2432,39 @@ function buildSimContent() {
     chainHeadTitle.textContent = "Neural pathways";
     chainHead.appendChild(chainHeadTitle);
 
-    const STEP_LABELS = ["Words", "Weigh", "Add up", "Decide"];
+    // Words read off the page: three lines of text with some words marked.
+    const ICON_ACTIVATE =
+      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">' +
+      '<rect x="1" y="2.4" width="5.5" height="2.6" rx="1.1"/>' +
+      '<rect x="8" y="2.4" width="7" height="2.6" rx="1.1" opacity=".3"/>' +
+      '<rect x="1" y="6.7" width="4" height="2.6" rx="1.1" opacity=".3"/>' +
+      '<rect x="5.5" y="6.7" width="6.5" height="2.6" rx="1.1"/>' +
+      '<rect x="1" y="11" width="6.5" height="2.6" rx="1.1"/>' +
+      '<rect x="9" y="11" width="4.5" height="2.6" rx="1.1" opacity=".3"/></svg>';
+
+    // The multiply glyph itself, the same shape that sits in every row.
+    const ICON_WEIGH =
+      '<svg viewBox="0 0 32 32" aria-hidden="true" fill="currentColor">' +
+      '<path d="M6 2 L16 12 L26 2 L30 6 L20 16 L30 26 L26 30 L16 20 L6 30 L2 26 L12 16 L2 6 Z"/></svg>';
+
+    // Three contributions converging on one total.
+    const ICON_ADDUP =
+      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.7" stroke-linecap="round">' +
+      '<path d="M1 1.4 L10 8"/><path d="M1 8 H10"/><path d="M1 14.6 L10 8"/>' +
+      '<circle cx="12.8" cy="8" r="2.4" fill="currentColor" stroke="none"/></svg>';
+
+    // One score forking to two answers; the one it picks is filled.
+    const ICON_PREDICT =
+      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.7" stroke-linecap="round">' +
+      '<path d="M0.8 8 H5"/><path d="M5 8 C8 8 7.5 2.6 10.2 2.6"/>' +
+      '<path d="M5 8 C8 8 7.5 13.4 10.2 13.4"/>' +
+      '<circle cx="12.9" cy="2.6" r="2.7" fill="currentColor" stroke="none"/>' +
+      '<circle cx="12.9" cy="13.4" r="2"/></svg>';
+
+    const STEP_LABELS = ["Activate", "Weigh", "Add Up", "Predict"];
+    const STEP_ICONS = [ICON_ACTIVATE, ICON_WEIGH, ICON_ADDUP, ICON_PREDICT];
     let prevStep = 0;
     let wordAnim = false;          // true while the Words sequence is in flight
     let weighAnim = false;         // true while the Weigh sequence is in flight
@@ -2413,7 +2505,7 @@ function buildSimContent() {
     // cell carrying its own score, and on arrival that score is added to the
     // running total in the cell. The number a student watches climb IS the sum
     // that defines the pathway activation.
-    function flyOne(el, target, v) {
+    function flyOne(el, target, v, scores) {
       const r = el.getBoundingClientRect();
       const tr = target.getBoundingClientRect();
       const c = document.createElement("span");
@@ -2423,8 +2515,9 @@ function buildSimContent() {
       // Colours come from the token's own custom properties, not getComputedStyle:
       // `lit` animates the background, so the computed value can still be the
       // un-lit one and the chip would come out transparent.
-      c.style.background = el.style.getPropertyValue("--tok-bg") || "#DDE3EC";
-      c.style.color = el.style.getPropertyValue("--tok-fg") || "#1E242C";
+      c.style.background = scores ? el.style.getPropertyValue("--tok-bg") : "#FFFFFF";
+      c.style.color = scores ? el.style.getPropertyValue("--tok-fg") : "var(--nnm-ink-2)";
+      if (!scores) c.style.border = "1px solid var(--nnm-rule)";
       c.textContent = el.textContent;
       document.body.appendChild(c);
 
@@ -2473,13 +2566,21 @@ function buildSimContent() {
       cell.style.borderColor = "rgba(30,36,44,0.14)";
     }
 
+    // nnm-pop and nnm-tick both set `animation` at the same specificity, and
+    // .nnm-pop is declared later, so it wins wherever both are present. A cell
+    // revealed with a pop would then swallow every kick that followed — the
+    // class went on, the animation never changed. Only one is ever left on.
+    function bump(cell) {
+      cell.classList.remove("nnm-tick", "nnm-pop");
+      void cell.offsetWidth;   // restart the animation on a re-add
+      cell.classList.add("nnm-tick");
+    }
+
     function showRunning(cell, v) {
       cell.textContent = fmt(v, 3);
       cell.style.color = "";
       paint(cell, v, ACT_SCALE);
-      cell.classList.remove("nnm-tick");
-      void cell.offsetWidth;
-      cell.classList.add("nnm-tick");
+      bump(cell);
     }
 
     const SCAN_HOLD = 300;   // how long a word wears the outline before resolving
@@ -2510,7 +2611,7 @@ function buildSimContent() {
         const n = toks.length;
         // Longer conversations send words faster, so a pathway takes roughly the
         // same time to build whether it has four words or fourteen.
-        const gap = Math.max(80, Math.min(170, 1100 / Math.max(1, n)));
+        const gap = Math.max(80, Math.min(170, 1100 / Math.max(1, all.length)));
         const start = t;
 
         // 1. every word in the sentence is scanned in turn — outlined, then
@@ -2530,23 +2631,33 @@ function buildSimContent() {
         const opened = start + all.length * scanGap + SCAN_HOLD + PAUSE;
         later(function () { cell.classList.remove("empty"); showZero(cell); }, opened);
 
-        // 3. the words, one at a time. The pathway's constant base value rides in
-        //    with the first of them rather than appearing on its own beforehand:
-        //    it is 0.2-0.9% of each pathway's range, and the thing it was meant to
-        //    stand for — the length of the text — is not in this data, since it is
-        //    the same value for a 12-word conversation and a 40-word one.
-        //    Ten of the 800 conversations leave some pathway with no words at all;
-        //    there is nothing to fold into, so those cells open on their answer.
+        // 3. EVERY word travels, not just the ones this pathway knows — the model
+        //    reads the whole sentence. Words this pathway has no score for arrive
+        //    and change nothing, which is the point of showing them.
+        //    The pathway's constant base value rides in with the first word that
+        //    does score, so a word that contributes nothing never appears to move
+        //    the total. It is 0.2-0.9% of each pathway's range, and the thing it
+        //    was meant to stand for — the length of the text — is not in this data,
+        //    since it is the same value for a 12-word conversation and a 40-word one.
         let running = 0;
+        let awaitingBase = true;
         const flyFrom = opened + TO_FLY;
-        toks.forEach(function (el, i) {
-          const v = D.vocabulary[el.textContent][1];
-          const add = i === 0 ? v + D.baseValues[p] : v;
-          later(function () { flyOne(el, cell, v); }, flyFrom + i * gap);
-          later(function () { running += add; showRunning(cell, running); }, flyFrom + i * gap + FLY);
+        all.forEach(function (el, i) {
+          const entry = D.vocabulary[el.textContent];
+          const mine = entry && entry[0] === p;
+          const v = mine ? entry[1] : 0;
+          const add = mine && awaitingBase ? v + D.baseValues[p] : v;
+          if (mine) awaitingBase = false;
+          later(function () { flyOne(el, cell, v, mine); }, flyFrom + i * gap);
+          later(function () {
+            if (add !== 0) { running += add; showRunning(cell, running); }
+            else { bump(cell); }   // it landed; this pathway just had nothing to say
+          }, flyFrom + i * gap + FLY);
         });
+        // Ten of the 800 conversations leave some pathway with no words it knows.
+        // Nothing to fold the base into, so the cell lands on its answer directly.
         if (n === 0) {
-          later(function () { showRunning(cell, it.act[p]); }, flyFrom);
+          later(function () { showRunning(cell, it.act[p]); }, flyFrom + all.length * gap + FLY);
         }
 
         // land on the stored activation, not the accumulated float, so the cell
@@ -2554,9 +2665,9 @@ function buildSimContent() {
         later(function () {
           cell.textContent = fmt(it.act[p], 3);
           paint(cell, it.act[p], ACT_SCALE);
-        }, flyFrom + n * gap + FLY + 40);
+        }, flyFrom + all.length * gap + FLY + 40);
 
-        t = flyFrom + n * gap + FLY + TAIL;
+        t = flyFrom + all.length * gap + FLY + TAIL;
       }
       later(function () { wordAnim = false; }, t);
     }
@@ -2565,7 +2676,7 @@ function buildSimContent() {
 
     // Weighted boxes are sized against the largest weighted value in THIS
     // conversation, so the row shows how much of this decision each pathway is
-    // responsible for. On most conversations P0 fills its slot and the other two
+    // responsible for. On most conversations Pathway 1 fills its slot and the other two
     // are slivers — which is the point, and is what the stacked bar used to say.
     function weightedWidth(w, maxAbs, full) {
       if (!maxAbs) return full;
@@ -2597,9 +2708,15 @@ function buildSimContent() {
       for (let p = 0; p < NP; p++) {
         (function (pi, start) {
           const r = rows[pi];
-          later(function () { r.classList.add("lit-mul"); }, start);
-          later(function () { r.querySelector(".imp").classList.add("nnm-tick"); }, start + 260);
-          later(function () { r.classList.add("lit-arr"); }, start + 560);
+          later(function () {
+            r.classList.add("lit-mul");
+            bump(r.querySelector(".nnm-op.mul"));
+          }, start);
+          later(function () { bump(r.querySelector(".imp")); }, start + 260);
+          later(function () {
+            r.classList.add("lit-arr");
+            bump(r.querySelector(".nnm-op.arr"));
+          }, start + 560);
           later(function () { apply(pi); }, start + 820);
         })(p, t);
         t += 1040;
@@ -2607,10 +2724,25 @@ function buildSimContent() {
       later(function () { weighAnim = false; }, t);
     }
 
-    // The three lines converge together, not one after another, and the sum only
-    // appears once they have all arrived — it is what they add up to, so it should
-    // not be sitting there before they land.
+    // How long one converging line takes to draw. The three run in turn, each
+    // followed by the total it just changed.
     const DRAW = 620;
+
+    const SUM_HOLD = 200;    // the total sits with its new value before the next line
+    // The draw eases out — with this curve a line is all but touching its target
+    // well before the 620ms formally ends. Reacting on that deadline reads as a
+    // beat too late, so whatever the line delivers moves slightly ahead of it and
+    // lands with the line rather than after it. Used by Add up and by Predict.
+    const DRAW_LEAD = 90;
+
+    // Fills the sum with a partial total. The first arrival reveals the cell;
+    // later ones kick it, the same grammar the pathway activations use.
+    function showSum(v, first) {
+      sumCell.classList.remove("empty");
+      sumCell.textContent = fmt(v, 1);
+      paint(sumCell, v, SUM_SCALE);
+      if (first) revealCell(sumCell, 0); else bump(sumCell);
+    }
 
     function playAddUp() {
       if (motionOff()) {
@@ -2622,25 +2754,34 @@ function buildSimContent() {
       for (let i = 0; i < NP; i++) solidPending[i] = true;
       trackConnectors(0);
 
-      later(function () {
-        for (let i = 0; i < NP; i++) solidPending[i] = false;
-        // Redraw first so the resting attribute reads "drawn": the animation has
-        // no fill, so when it ends the attribute is what keeps the line visible.
-        drawConnectors(lastChosen);
-        convSolid.forEach(function (sol) {
+      // One line at a time, each followed by the total it just changed, so the
+      // sum is seen being built out of three contributions rather than appearing
+      // whole once the lines have all landed.
+      const it = cases[idx];
+      let running = 0;
+      let t = 60;
+      for (let i = 0; i < NP; i++) {
+        const p = i;
+        later(function () {
+          solidPending[p] = false;
+          // Redraw first so the resting attribute reads "drawn": the animation has
+          // no fill, so when it ends the attribute is what keeps the line visible.
+          drawConnectors(lastChosen);
+          const sol = convSolid[p];
           const len = parseFloat(sol.getAttribute("stroke-dasharray")) || 0;
           sol.animate(
             [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
             { duration: DRAW, easing: "cubic-bezier(.3,0,.35,1)" }
           );
-        });
-      }, 60);
-
-      later(function () {
-        addUpAnim = false;
-        sumCell.classList.remove("empty");
-        revealCell(sumCell, 0);
-      }, 60 + DRAW + 90);
+        }, t);
+        const react = t + DRAW - DRAW_LEAD;
+        later(function () {
+          running += it.act[p] * IMP[p];
+          showSum(running, p === 0);
+        }, react);
+        t = react + SUM_HOLD;
+      }
+      later(function () { addUpAnim = false; }, t - SUM_HOLD + 30);
     }
 
     // The two answers are on screen from the start, plain. Decide draws the line
@@ -2664,18 +2805,49 @@ function buildSimContent() {
           { duration: DRAW, easing: "cubic-bezier(.3,0,.35,1)" }
         );
       }, 60);
+      // The line arrives first, then the answer it delivers takes its colour and
+      // is kicked, and only after that does the comparison appear beneath. Three
+      // separate beats: the route, the result, then how it measured up.
       later(function () {
         decideAnim = false;
         outEls.forEach(function (o) {
-          o.el.classList.toggle("on", o.v === lastChosen);
+          const on = o.v === lastChosen;
+          o.el.classList.toggle("on", on);
+          if (on) { o.el.classList.remove("nnm-pop"); void o.el.offsetWidth; o.el.classList.add("nnm-pop"); }
         });
-      }, 60 + DRAW + 60);
+      }, 60 + DRAW - DRAW_LEAD);
+    }
+
+    // How long after Predict starts before the answer box has finished arriving.
+    // The labels underneath wait for this.
+    const DECIDE_SETTLED = 60 + DRAW - DRAW_LEAD + 420;
+
+    // Each conversation is its own problem and keeps its own place in the chain.
+    // Keyed by conversation id rather than position, so a filter that reorders or
+    // narrows the set doesn't hand one conversation another's progress.
+    const stepByCase = Object.create(null);
+
+    function remember() {
+      const it = cases[idx];
+      if (it) stepByCase[it.id] = step;
+    }
+
+    // Arriving at a conversation restores where it was left — or the empty
+    // skeleton the first time. It re-draws that state rather than replaying the
+    // animation: you are returning to your work, not watching it happen again.
+    function goToCase(n) {
+      cancelAnim();
+      idx = n;
+      const it = cases[n];
+      step = it ? (stepByCase[it.id] || 0) : 0;
+      render();
     }
 
     function setStep(n) {
       cancelAnim();
       const from = step;
       step = n;
+      remember();
       wordAnim = (n === 1);
       weighAnim = (n === 2);
       // Must be set before render(), not after: render decides whether the sum
@@ -2690,20 +2862,24 @@ function buildSimContent() {
     }
     const steps = document.createElement("div");
     steps.className = "nnm-steprow";
+    const stepGroup = document.createElement("div");
+    stepGroup.className = "nnm-stepgroup";
+    steps.appendChild(stepGroup);
     const stepBtns = STEP_LABELS.map(function (label, i) {
       const b = document.createElement("button");
-      b.className = "nnm-step"; b.textContent = label;
+      b.className = "nnm-step";
+      b.innerHTML = STEP_ICONS[i] + '<span>' + label + '</span>';
       b.setAttribute("aria-pressed", "false");
       b.addEventListener("click", function () { setStep(i + 1); });
-      steps.appendChild(b);
+      stepGroup.appendChild(b);
       return b;
     });
     const resetBtn = document.createElement("button");
     resetBtn.className = "nnm-reset";
-    resetBtn.innerHTML = "&#8634;";
+    resetBtn.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
     resetBtn.setAttribute("aria-label", "Clear the steps and start over");
     resetBtn.addEventListener("click", function () { setStep(0); });
-    steps.appendChild(resetBtn);
+    stepGroup.appendChild(resetBtn);
 
     const animWrap = document.createElement("label");
     animWrap.className = "nnm-animtoggle";
@@ -2722,7 +2898,7 @@ function buildSimContent() {
       cancelAnim();
       setStep(step);
     });
-    steps.appendChild(animWrap);
+    chainHead.appendChild(animWrap);
 
     rightCol.appendChild(steps);
     chainPanel.appendChild(chainHead);
@@ -2742,9 +2918,9 @@ function buildSimContent() {
       '<span class="g"></span>' +
       '<span class="c imp">Pathway<br>Importance</span>' +
       '<span class="g"></span>' +
-      '<span class="c wgt">Weighted<br>Value</span>' +
+      '<span class="c wgt">Weighted<br>Activation</span>' +
       '<span class="c far sum">Weighted<br>Sum</span>' +
-      '<span class="c far dec">Decision</span>';
+      '<span class="c far dec">Model Prediction</span>';
     chainBody.appendChild(flowHead);
 
     const flowBody = document.createElement("div");
@@ -2951,12 +3127,18 @@ function buildSimContent() {
     // box mid-move. This follows the edge frame by frame until the box settles.
     let lastChosen = 0;
     let trackRaf = null;
+    // Callers ask for a window to follow; the longest one wins. Replacing the
+    // deadline instead of extending it lets a trackConnectors(0) — playAddUp and
+    // playDecide both open with one — cancel a follow that render() started for a
+    // width transition still in flight, freezing the lines at whatever width the
+    // boxes happened to be passing through.
+    let trackUntil = 0;
     function trackConnectors(ms) {
-      if (trackRaf) cancelAnimationFrame(trackRaf);
-      const until = performance.now() + ms;
+      trackUntil = Math.max(trackUntil, performance.now() + ms);
+      if (trackRaf) return;
       (function frame() {
         drawConnectors(lastChosen);
-        if (performance.now() < until) {
+        if (performance.now() < trackUntil) {
           trackRaf = requestAnimationFrame(frame);
         } else {
           trackRaf = null;
@@ -2964,9 +3146,31 @@ function buildSimContent() {
       })();
     }
 
+    // The lines are anchored to the right edge of each weighted box, so the boxes'
+    // geometry is what should drive the redraw — not a duration guessed in advance.
+    // A timed follow only covers the transition it was told about: one that starts
+    // late, a re-layout from fitFlow's narrow mode, or a second width change
+    // arriving mid-flight all leave the lines attached to where the boxes were.
+    // Watching the boxes themselves catches every width change, whatever caused it.
+    if (window.ResizeObserver) {
+      const boxWatch = new ResizeObserver(function () { drawConnectors(lastChosen); });
+      rows.forEach(function (r) { boxWatch.observe(r.querySelector(".wgt")); });
+      boxWatch.observe(sumCell);
+      outEls.forEach(function (o) { boxWatch.observe(o.el); });
+    }
+
+    // Width is transitioned, so the end of that transition is the moment the final
+    // anchor is knowable. Cheap, exact, and independent of any follow window:
+    // whatever else has been cancelled by then, the lines land attached.
+    rows.forEach(function (r) {
+      r.querySelector(".wgt").addEventListener("transitionend", function (e) {
+        if (e.propertyName === "width") drawConnectors(lastChosen);
+      });
+    });
+
     // Fills a cell in and kicks it, without the stand-in hatching.
     function revealCell(el, delay) {
-      el.classList.remove("empty", "nnm-pop");
+      el.classList.remove("empty", "nnm-pop", "nnm-tick");
       void el.offsetWidth;
       el.style.animationDelay = (delay || 0) + "ms";
       el.classList.add("nnm-pop");
@@ -2982,6 +3186,18 @@ function buildSimContent() {
       const slotW = rows[0].querySelector(".nnm-slot").getBoundingClientRect().width;
       conv.style.marginLeft = (-slotW) + "px";
       conv.style.width = (CONV_W + slotW) + "px";
+
+      // The SVG carries a width but no height, so its height falls out of the
+      // viewBox's aspect ratio — and the viewBox is built from its own measured
+      // height. That loop ratchets: a long conversation stretches it, and nothing
+      // shrinks it again, so it holds flowBody at the tallest conversation seen
+      // and the sum keeps centring on that rather than on the middle pathway.
+      // The rows are the authority on how tall this column is. They carry explicit
+      // heights from syncRows and never stretch, so their span is measured
+      // directly rather than read off a container the SVG may already be inflating.
+      const span = rows[NP - 1].getBoundingClientRect().bottom
+        - rows[0].getBoundingClientRect().top;
+      if (span > 0) conv.style.height = span + "px";
 
       const cr0 = conv.getBoundingClientRect();
       if (cr0.width < 2) {
@@ -3078,7 +3294,7 @@ function buildSimContent() {
       });
 
       labelsEl.innerHTML = "";
-      [["Actually", it.target], ["Model said", it.pred]].forEach(function (pair) {
+      [["Prediction", it.pred], ["Actual", it.target]].forEach(function (pair) {
         const row = document.createElement("div");
         row.className = "nnm-label-row";
         const b = document.createElement("b"); b.textContent = pair[0];
@@ -3156,7 +3372,7 @@ function buildSimContent() {
             labelsEl.style.visibility = "";
             labelsEl.classList.remove("nnm-pop"); void labelsEl.offsetWidth;
             labelsEl.classList.add("nnm-pop");
-          }, 560);
+          }, motionOff() ? 0 : DECIDE_SETTLED);
           SIM._timeouts.push(t);
         } else {
           labelsEl.style.visibility = "";
@@ -3174,6 +3390,7 @@ function buildSimContent() {
         b.classList.toggle("on", i + 1 === step);
         b.setAttribute("aria-pressed", i + 1 === step ? "true" : "false");
       });
+      resetBtn.disabled = step === 0;
 
       fitFlow();
 
@@ -3204,8 +3421,8 @@ function buildSimContent() {
     linkScroll(readScroll, chainBody);
     linkScroll(chainBody, readScroll);
 
-    prevBtn.addEventListener("click", function () { if (idx > 0) { cancelAnim(); idx--; render(); } });
-    nextBtn.addEventListener("click", function () { if (idx < cases.length - 1) { cancelAnim(); idx++; render(); } });
+    prevBtn.addEventListener("click", function () { if (idx > 0) goToCase(idx - 1); });
+    nextBtn.addEventListener("click", function () { if (idx < cases.length - 1) goToCase(idx + 1); });
 
     SIM.onResize = function () { requestAnimationFrame(render); };
     requestAnimationFrame(render);
