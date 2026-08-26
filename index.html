@@ -971,6 +971,17 @@
     flex-shrink: 0;
   }
   .nnm-panel-body { padding: 12px 14px; overflow: auto; min-height: 0; flex: 1; }
+  /* The two scrolling panels give up their right padding so the scroll container
+     reaches the card edge and its bar rides there rather than floating 14px in.
+     The inset moves onto the scrolling content itself, which keeps text off the
+     bar without pulling the bar inwards. */
+  .nnm-readings .nnm-panel-body,
+  .nnm-flowpanel .nnm-panel-body { padding-right: 0; }
+  .nnm-readhead { padding-right: 14px; }
+  /* Exactly .nnm-flowbodywrap's box, so the two scrollers — and so the two
+     scrollbars — start and end on the same lines. The 5/6px inset with matching
+     negative margin buys focus-ring room without displacing anything. */
+  .nnm-readscroll { padding: 5px 14px 5px 6px; margin: -5px 0 -5px -6px; }
 
   /* --- case navigator --- */
   .nnm-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
@@ -1198,10 +1209,10 @@
     font-size: 12px;
     line-height: 1.25;
     color: var(--nnm-ink-2);
-    height: 30px;              /* matches .nnm-flowhead's two-line captions */
+    min-height: 30px;          /* at least .nnm-flowhead's two-line captions */
     display: flex;
     align-items: flex-end;
-    margin-bottom: 8px;
+    margin-bottom: 18px;
     flex-shrink: 0;
   }
   .nnm-readscroll {
@@ -1214,6 +1225,9 @@
     gap: 14px;
   }
   .nnm-read { border-radius: 5px; padding: 0 5px; box-sizing: border-box; }
+  /* Words carry a tooltip once Activate has run — its value here, or where it
+     counts instead. Before that there is nothing to tell, so no help cursor. */
+  .nnm-read-text .nnm-tok[title] { cursor: help; }
   .nnm-read-name {
     font-family: 'Lato', sans-serif;
     font-size: 12.5px;
@@ -1222,6 +1236,20 @@
     border-bottom: 1px solid #B9CBE4;
     margin-bottom: 5px;
   }
+  /* Label over the ramp, both filling the caption band. No "Scale" in the name —
+     the gradient is visibly one; the legend names the quantity, not the widget. */
+  .nnm-legend { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+  .nnm-legend-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--nnm-ink-3);
+    line-height: 1.1;
+  }
+  .nnm-readhead .nnm-read-scale { margin-bottom: 0; font-size: 12px; }
+  .nnm-readhead .nnm-read-scale .grad { height: 12px; border-radius: 3px; }
   .nnm-read-scale {
     display: flex;
     align-items: center;
@@ -1258,16 +1286,21 @@
     min-height: 0;
     flex: 1;
     scrollbar-gutter: stable;
-    padding: 5px 0 5px 6px;
+    padding: 5px 14px 5px 6px;
     margin: -5px 0 -5px -6px;
   }
+  .nnm-flowhead { padding-right: 14px; box-sizing: border-box; }
+  /* Outside the scroller, exactly as the legend is on the readings side, so both
+     scrollbars span the same band and neither heading moves. Both scrollers now
+     hold only their rows, so the sync — which copies scrollTop straight across —
+     still lines them up row for row. */
   .nnm-flowhead {
     position: relative;
     display: flex;
     align-items: flex-end;
     gap: 0;
     height: 30px;
-    margin-bottom: 8px;
+    margin-bottom: 18px;
     flex-shrink: 0;
     box-sizing: content-box;
   }
@@ -1595,7 +1628,7 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.2</div>
+      <div style="font-weight: 600;">v0.3</div>
       <div style="font-weight: 400;">Updated: 8/26/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
@@ -2307,11 +2340,16 @@ function buildSimContent() {
     const SUM_SCALE = 40;
     const ACT_SCALE = Math.max.apply(null, D.scoreMin.map(Math.abs).concat(D.scoreMax.map(Math.abs)));
     const IMP_MAX = Math.max.apply(null, IMP.map(Math.abs));
-    const TOK_MAX = [0, 0, 0];
-    Object.keys(D.vocabulary).forEach(function (w) {
-      const v = D.vocabulary[w];
-      TOK_MAX[v[0]] = Math.max(TOK_MAX[v[0]], Math.abs(v[1]));
-    });
+    // One colour scale across all three pathways, not one each. Per-pathway
+    // normalisation is common in attribution tools and keeps a weak output
+    // readable, but here the three maxima sit within 1.48x of each other, so it
+    // bought almost nothing while implying the readings were separately
+    // calibrated and not comparable. It also disagreed with the cells the words
+    // fly into: ACT_SCALE is already a single value across all three, so the same
+    // word could read full-strength on the left and mid-tone on the right.
+    // Pathway 1's strongest word now renders at 68% intensity, Pathway 2's at 76%.
+    const TOK_MAX = Math.max.apply(null,
+      Object.keys(D.vocabulary).map(function (w) { return Math.abs(D.vocabulary[w][1]); }));
 
     let cases = D.items.slice();
     let idx = 0;
@@ -2392,7 +2430,17 @@ function buildSimContent() {
     // flow's column captions so reading 1 and flow row 1 start on the same line.
     const readHead = document.createElement("div");
     readHead.className = "nnm-readhead";
-    readHead.setAttribute("aria-hidden", "true");
+    readHead.innerHTML =
+      '<div class="nnm-legend">' +
+        '<div class="nnm-legend-label">Word Contribution</div>' +
+        '<div class="nnm-read-scale"><span class="lo">' + (-TOK_MAX).toFixed(4) + '</span>' +
+          '<span class="grad"></span>' +
+          '<span class="hi">' + TOK_MAX.toFixed(4) + '</span></div>' +
+      '</div>';
+    readHead.setAttribute("role", "img");
+    readHead.setAttribute("aria-label",
+      "Word contribution, shared by all three pathways: " + (-TOK_MAX).toFixed(4) +
+      " to " + TOK_MAX.toFixed(4));
     caseBody.appendChild(readHead);
 
     const readScroll = document.createElement("div");
@@ -2405,8 +2453,6 @@ function buildSimContent() {
       r.className = "nnm-read";
       r.innerHTML =
         '<div class="nnm-read-name">' + PATH_NAMES[p] + '</div>' +
-        '<div class="nnm-read-scale"><span class="lo"></span>' +
-          '<span class="grad"></span><span class="hi"></span></div>' +
         '<div class="nnm-read-text"></div>';
       readScroll.appendChild(r);
       readings.push(r);
@@ -2611,7 +2657,7 @@ function buildSimContent() {
         const n = toks.length;
         // Longer conversations send words faster, so a pathway takes roughly the
         // same time to build whether it has four words or fourteen.
-        const gap = Math.max(80, Math.min(170, 1100 / Math.max(1, all.length)));
+        const gap = Math.max(80, Math.min(170, 1100 / Math.max(1, n)));
         const start = t;
 
         // 1. every word in the sentence is scanned in turn — outlined, then
@@ -2631,33 +2677,33 @@ function buildSimContent() {
         const opened = start + all.length * scanGap + SCAN_HOLD + PAUSE;
         later(function () { cell.classList.remove("empty"); showZero(cell); }, opened);
 
-        // 3. EVERY word travels, not just the ones this pathway knows — the model
-        //    reads the whole sentence. Words this pathway has no score for arrive
-        //    and change nothing, which is the point of showing them.
-        //    The pathway's constant base value rides in with the first word that
-        //    does score, so a word that contributes nothing never appears to move
-        //    the total. It is 0.2-0.9% of each pathway's range, and the thing it
-        //    was meant to stand for — the length of the text — is not in this data,
-        //    since it is the same value for a 12-word conversation and a 40-word one.
+        // 3. Only the words this pathway scores travel. That every word was read
+        //    is already said by the scan above, which outlines all of them one at
+        //    a time; flying them all as well repeats that and adds a claim that is
+        //    not true — a word this pathway has no entry for did not contribute a
+        //    zero, it has no value here at all. So the three beats each mean one
+        //    thing: the scan reads, the flight contributes, the bounce moves the
+        //    number.
+        //    The pathway's constant base value rides in with the first word rather
+        //    than appearing on its own beforehand: it is 0.2-0.9% of each pathway's
+        //    range, and the thing it was meant to stand for — the length of the
+        //    text — is not in this data, since it is the same value for a 12-word
+        //    conversation and a 40-word one.
         let running = 0;
-        let awaitingBase = true;
         const flyFrom = opened + TO_FLY;
-        all.forEach(function (el, i) {
-          const entry = D.vocabulary[el.textContent];
-          const mine = entry && entry[0] === p;
-          const v = mine ? entry[1] : 0;
-          const add = mine && awaitingBase ? v + D.baseValues[p] : v;
-          if (mine) awaitingBase = false;
-          later(function () { flyOne(el, cell, v, mine); }, flyFrom + i * gap);
+        toks.forEach(function (el, i) {
+          const v = D.vocabulary[el.textContent][1];
+          const add = i === 0 ? v + D.baseValues[p] : v;
+          later(function () { flyOne(el, cell, v, true); }, flyFrom + i * gap);
           later(function () {
-            if (add !== 0) { running += add; showRunning(cell, running); }
-            else { bump(cell); }   // it landed; this pathway just had nothing to say
+            running += add;
+            showRunning(cell, running);
           }, flyFrom + i * gap + FLY);
         });
         // Ten of the 800 conversations leave some pathway with no words it knows.
         // Nothing to fold the base into, so the cell lands on its answer directly.
         if (n === 0) {
-          later(function () { showRunning(cell, it.act[p]); }, flyFrom + all.length * gap + FLY);
+          later(function () { showRunning(cell, it.act[p]); }, flyFrom);
         }
 
         // land on the stored activation, not the accumulated float, so the cell
@@ -2665,9 +2711,9 @@ function buildSimContent() {
         later(function () {
           cell.textContent = fmt(it.act[p], 3);
           paint(cell, it.act[p], ACT_SCALE);
-        }, flyFrom + all.length * gap + FLY + 40);
+        }, flyFrom + n * gap + FLY + 40);
 
-        t = flyFrom + all.length * gap + FLY + TAIL;
+        t = flyFrom + n * gap + FLY + TAIL;
       }
       later(function () { wordAnim = false; }, t);
     }
@@ -2921,7 +2967,7 @@ function buildSimContent() {
       '<span class="c wgt">Weighted<br>Activation</span>' +
       '<span class="c far sum">Weighted<br>Sum</span>' +
       '<span class="c far dec">Model Prediction</span>';
-    chainBody.appendChild(flowHead);
+    chainOuter.insertBefore(flowHead, chainBody);
 
     const flowBody = document.createElement("div");
     flowBody.className = "nnm-flowbody";
@@ -3091,7 +3137,12 @@ function buildSimContent() {
     function alignTops() {
       flowHead.style.height = "";
       const base = flowHead.getBoundingClientRect().height;
-      const delta = readScroll.getBoundingClientRect().top - rowsEl.getBoundingClientRect().top;
+      // Measure the two things that must sit on the same line — the first reading
+      // and the first flow row — not their scroll containers. The containers carry
+      // padding for focus-ring room, so their top edges sit above their content by
+      // an amount that has nothing to do with the alignment being solved for.
+      const delta = readings[0].getBoundingClientRect().top
+        - rows[0].getBoundingClientRect().top;
       if (delta > 0) flowHead.style.height = (base + delta) + "px";
     }
 
@@ -3267,10 +3318,8 @@ function buildSimContent() {
       setAriaDisabled(nextBtn, idx === cases.length - 1);
       caseIdEl.title = "#" + it.id;   // id kept for cross-referencing the explorer
 
-      // all three readings, each on its own colour scale
+      // all three readings, on the one shared colour scale shown above them
       readings.forEach(function (r, p) {
-        r.querySelector(".lo").textContent = (-TOK_MAX[p]).toFixed(4);
-        r.querySelector(".hi").textContent = TOK_MAX[p].toFixed(4);
         const txt = r.querySelector(".nnm-read-text");
         txt.innerHTML = "";
         it.text.split(/\s+/).forEach(function (w, wi) {
@@ -3279,15 +3328,27 @@ function buildSimContent() {
           span.className = "nnm-tok";
           span.textContent = w;
           const v = D.vocabulary[w];
+          // The tooltips say what the model made of a word, so they arrive with
+          // the step that shows it. Before Activate the sentence is deliberately
+          // plain, and a hover that gave up the value — or, on a blank, the
+          // pathway that owns it — would hand over the answer the step exists to
+          // reveal, while the words on screen still say nothing has been read.
+          const told = step >= 1;
           if (v && v[0] === p) {
-            const L = level(Math.min(1, Math.abs(v[1]) / TOK_MAX[p]));
+            const L = level(Math.min(1, Math.abs(v[1]) / TOK_MAX));
             span.classList.add("scored");
             span.style.setProperty("--tok-bg", (v[1] >= 0 ? FILL_POS : FILL_NEG)[L]);
             span.style.setProperty("--tok-fg", L === 4 ? "#fff" : "#1E242C");
-            span.title = w + ": " + fmt(v[1], 4);
+            if (told) span.title = w + ": " + fmt(v[1], 4);
             // Lit straight away unless the Words sequence is about to light them
             // one at a time.
             if (step >= 1 && !wordAnim) span.classList.add("lit");
+          } else if (v) {
+            // Each of the 30 words belongs to exactly one pathway. Naming that
+            // one turns a blank from "this word did not matter" into a fact.
+            // No verb: half the vocabulary is negative, so "activates" would be
+            // wrong for those, and "scores" is a term used nowhere else here.
+            if (told) span.title = w + ": a " + PATH_NAMES[v[0]] + " word";
           }
           txt.appendChild(span);
         });
