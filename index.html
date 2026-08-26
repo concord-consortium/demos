@@ -982,6 +982,7 @@
      scrollbars — start and end on the same lines. The 5/6px inset with matching
      negative margin buys focus-ring room without displacing anything. */
   .nnm-readscroll { padding: 5px 14px 5px 6px; margin: -5px 0 -5px -6px; }
+  .nnm-readings, .nnm-flowpanel { --nnm-row-gap: 30px; }
 
   /* --- case navigator --- */
   .nnm-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
@@ -1212,7 +1213,7 @@
     min-height: 30px;          /* at least .nnm-flowhead's two-line captions */
     display: flex;
     align-items: flex-end;
-    margin-bottom: 18px;
+    margin-bottom: 28px;
     flex-shrink: 0;
   }
   .nnm-readscroll {
@@ -1222,7 +1223,7 @@
     scrollbar-gutter: stable;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    /* gap comes from --nnm-row-gap, shared with .nnm-frows */
   }
   .nnm-read { border-radius: 5px; padding: 0 5px; box-sizing: border-box; }
   /* Words carry a tooltip once Activate has run — its value here, or where it
@@ -1300,7 +1301,10 @@
     align-items: flex-end;
     gap: 0;
     height: 30px;
-    margin-bottom: 18px;
+    /* Matches .nnm-readhead's. alignTops only controls this element's height, and
+       the captions are pinned to its bottom edge, so that space opens above them —
+       the gap below has to be set here to stay in step with the legend's. */
+    margin-bottom: 28px;
     flex-shrink: 0;
     box-sizing: content-box;
   }
@@ -1329,7 +1333,12 @@
   }
   .nnm-flowhead .g { width: 30px; flex-shrink: 0; }
   .nnm-flowbody { display: flex; align-items: stretch; flex-shrink: 0; min-width: 0; }
-  .nnm-frows { display: flex; flex-direction: column; gap: 14px; flex-shrink: 0; }
+  /* Both columns must use the SAME gap or they drift: syncRows matches each pair's
+     height and alignTops pins the first pair, so a difference in gap accumulates
+     down the rows and only shows from row 2 onwards. One value, used by both.
+     20px is the floor — the number hangs 18px below its cell — and the rest is air. */
+  .nnm-readscroll, .nnm-frows { gap: var(--nnm-row-gap); }
+  .nnm-frows { display: flex; flex-direction: column; flex-shrink: 0; }
   .nnm-frow { display: flex; align-items: center; gap: 0; border-radius: 5px; box-sizing: border-box; }
   .nnm-cell {
     width: 82px;
@@ -1348,7 +1357,12 @@
   }
   /* Importance stays grey: it is the one number that does not change
      from conversation to conversation. */
-  .nnm-cell.imp { background: #EFF1F4 !important; color: var(--nnm-ink) !important; border-color: #D3D8E0 !important; }
+  /* Importance keeps the same bare-square grammar as the other three columns.
+     What marks it as a property of the MODEL rather than a result of a step is
+     that it is the only column already showing a real value at step 0, while the
+     others still hold their empty stand-ins — and that it never changes as you
+     move between conversations. */
+  .nnm-cell.imp { color: var(--nnm-ink) !important; }
   .nnm-cell.sum { width: 62px; height: 40px; }
   /* A stage that has not run yet is a stand-in: the box is there so the shape of
      the calculation is visible from the start, but it holds no value and no colour. */
@@ -1418,6 +1432,7 @@
   .nnm-nomotion .nnm-tick { animation: none !important; }
   .nnm-nomotion .nnm-cell,
   .nnm-nomotion .nnm-cell.wgt,
+  .nnm-nomotion .nnm-sq,
   .nnm-nomotion .nnm-tok { transition: none !important; }
   .nnm-reset:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
   /* A fixed-width track for the weighted box, so the box can change size with
@@ -1431,6 +1446,79 @@
   /* Resting width sits between the widest and narrowest a value can produce, so
      the Weigh step is seen to widen some boxes and narrow others rather than only
      ever shrinking them. */
+  /* A symbol cell holds a square over its number. The square carries magnitude
+     by AREA and sign by colour; the number stays put rather than moving above or
+     below by sign, so the column can still be scanned. The cell itself goes
+     plain — colouring both it and the square would say the same thing twice and
+     make the square's edge unreadable against it. */
+  /* The square grows from a fixed centre, on the same line as the multiply glyph
+     beside it, so it expands in every direction rather than upward off a baseline.
+     Both it and the number are taken out of the flow to do that: in flow, a
+     growing square pushes the number down the cell, and a label that bobs with
+     the value is unreadable. The number is parked at half the LARGEST square plus
+     a gap, so it is clear of the square at full size and never moves. */
+  .nnm-cell.sym {
+    position: relative;
+    /* Only tall enough to hold the largest square centred. The number is absolute
+       and hangs below into the row gap rather than being contained here — sizing
+       the cell to fit it forced a matching 40px of empty space ABOVE the square,
+       which nothing used, and pushed the row pitch to 126px for 65px of ink. */
+    height: 72px;
+    /* Transparent, not white: the connector lines run INTO these cells to reach
+       the square in the middle, and an opaque cell paints over the last 25px of
+       every line — the ends looked clipped. The square carries the fill, so the
+       cell needs none. !important because paint() still writes one inline. */
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+  .nnm-cell.sym .nnm-num {
+    position: absolute;
+    left: 0; right: 0;
+    top: calc(50% + 41px);
+    text-align: center;
+  }
+  .nnm-cell.sym .nnm-sq {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    flex-shrink: 0;
+    /* Inset so it never changes the square's measured size — the connector lines
+       anchor to that. Keeps a white or very pale square visible on white. */
+    box-shadow: inset 0 0 0 1px rgba(30,36,44,0.20);
+    transition: width 0.35s cubic-bezier(.3,0,.3,1),
+                height 0.35s cubic-bezier(.3,0,.3,1),
+                background-color 0.35s ease;
+  }
+  /* paint() flips the cell's text to white at the top colour level — correct when
+     the cell itself carried a dark fill, fatal now that it is forced white and the
+     square holds the colour. An explicit colour here beats that inherited value,
+     so the number stays legible however dark its square gets. */
+  .nnm-cell.sym .nnm-num { line-height: 1; color: #1E242C; }
+  /* The weighted box still varies in width, so its own centre slides. The slot
+     behind it does not, so the symbol is pinned to that instead and stays put. */
+  .nnm-cell.wgt.sym .nnm-sq { left: 41px; }
+  .nnm-cell.wgt.sym .nnm-num { left: 0; right: auto; width: 82px; }
+  .nnm-flowbody.narrow .nnm-cell.wgt.sym .nnm-sq { left: 37px; }
+  .nnm-flowbody.narrow .nnm-cell.wgt.sym .nnm-num { width: 74px; }
+  /* Nothing has been computed yet: the stand-in is the smallest square the scale
+     can produce, empty. That is also the size a real value starts from, so the
+     step grows the square out of the stand-in instead of collapsing a large
+     placeholder first. Sized with !important because sizeSym writes the real
+     dimensions inline, and .empty is toggled after that. */
+  .nnm-cell.sym.empty .nnm-sq {
+    width: 12px !important;
+    height: 12px !important;
+    background: #FFFFFF !important;
+  }
+  /* Beats the explicit colour that keeps a number legible on a dark square, which
+     would otherwise defeat .empty's `color: transparent`. */
+  .nnm-cell.sym.empty .nnm-num { color: transparent; }
+
   .nnm-cell.wgt {
     width: 58px;
     transition: width 0.45s cubic-bezier(.3,0,.3,1), background-color 0.35s ease, color 0.35s ease;
@@ -1443,12 +1531,26 @@
     justify-content: center;
     transition: opacity 0.3s ease;
   }
-  .nnm-glyph { width: 22px; height: 22px; display: block; }
-  .nnm-glyph.arr { width: 24px; height: 18px; }
+  .nnm-glyph {
+    font-family: var(--nnm-mono);
+    font-size: 24px;
+    line-height: 1;
+    color: #C2C9D4;
+    display: block;
+    transition: color 0.3s ease;
+  }
+  .nnm-glyph.arr { font-size: 36px; }
   /* The operators darken as the Weigh step reaches them, one row at a time. */
-  .nnm-glyph path { transition: fill 0.3s ease, stroke 0.3s ease; }
-  .nnm-frow.lit-mul .mul .nnm-glyph path { fill: #BFC7D2; stroke: #7E8895; }
-  .nnm-frow.lit-arr .arr .nnm-glyph path { fill: #BFC7D2; stroke: #7E8895; }
+  .nnm-frow.lit-mul .mul .nnm-glyph,
+  .nnm-frow.lit-arr .arr .nnm-glyph { color: #6B7583; }
+  /* A bigger kick than the cells get. They are small marks with no number to
+     carry the change, so the standard 1.09 barely registered on them. */
+  .nnm-op.nnm-tick { animation: nnm-tick-op 0.30s ease-out; }
+  @keyframes nnm-tick-op {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.34); }
+    100% { transform: scale(1); }
+  }
 
   .nnm-conv {
     flex-shrink: 0;
@@ -1628,7 +1730,7 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.3</div>
+      <div style="font-weight: 600;">v0.4</div>
       <div style="font-weight: 400;">Updated: 8/26/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
@@ -2072,6 +2174,7 @@ let _cachedDDTriggerWCondensed = null;
 // dependency, so this implements the subset the curriculum actually
 // uses, with the same syntax, so queries copy across between the two:
 //
+//   n:127                      id:8e8b7e9f           (jump to one case)
 //   model_correct:0            voices_raised:1 AND pathway_1:>1
 //   pathway_3:>2               yandor                (bare word = text)
 //   NOT near_water:1           target_label:approach OR pathway_2:<-2
@@ -2094,14 +2197,22 @@ const NNM_FILTER = (function () {
   const attrLabel = {};
   D.attributes.forEach(function (a) { attrLabel[a.key] = a.label; });
 
-  const FIELDS = ["text", "target", "target_label", "prediction", "model_correct"]
+  const FIELDS = ["n", "id", "text", "target", "target_label", "prediction", "model_correct"]
     .concat(attrKeys)
     .concat(D.items.length
       ? Array.from({ length: D.nPathways }, function (_, i) { return "pathway_" + (i + PATH_OFFSET); })
       : []);
 
-  function flatten(it) {
+  // `i` arrives free: FLAT is built with .map, which passes the index.
+  function flatten(it, i) {
     const o = {
+      // Position in the full 800, so it does not shift when a filter narrows the
+      // set — unlike the "3 / 57" counter, which is a position within the results.
+      n: i + 1,
+      // The hex id the upstream Pathway Explorer uses in its &item= parameter, so
+      // a conversation can be named the same way in both places. Matches on a
+      // substring, so a leading fragment is enough.
+      id: it.id,
       text: it.text.replace(/\n/g, " "),
       target: it.target,
       target_label: it.target === 1 ? "approach" : "wait",
@@ -2245,6 +2356,8 @@ const NNM_FILTER = (function () {
       '<b>Fields</b><div class="nnm-fieldlist">' +
       FIELDS.map(function (f) { return '<code>' + f + '</code>'; }).join(" ") +
       '</div><b>Examples</b><ul>' +
+      '<li><code>n:127</code> — jump to conversation 127 of 800</li>' +
+      '<li><code>id:8e8b7e9f</code> — jump to one by id (a fragment is enough)</li>' +
       '<li><code>model_correct:0</code> — the ones the model got wrong</li>' +
       '<li><code>pathway_3:&gt;2</code> — a high score on Pathway 3</li>' +
       '<li><code>voices_raised:1 AND pathway_1:&lt;0</code></li>' +
@@ -2330,6 +2443,46 @@ function buildSimContent() {
       for (let i = 0; i < CUTS.length; i++) if (t < CUTS[i]) return i;
       return 4;
     }
+    // Area-proportional, not side-proportional: if the side tracked the value,
+    // doubling it would quadruple the ink. side = MAX * sqrt(v / scale) makes the
+    // AREA track the value, which is what the eye actually judges.
+    // SIZE is measured against one scale for all four columns, so a square means
+    // the same thing wherever it appears — and so the chain can be read across:
+    // activation x importance visibly grows or shrinks into the weighted value.
+    // Per-column sizing made that invisible, because it rescaled the result back
+    // to the same apparent size as the input.
+    // COLOUR stays per-column: activations are at most 6% of the shared scale, so
+    // colouring them against it would wash the whole column out to nothing.
+    function sizeSym(cell, v, sizeScale, colourScale) {
+      const sq = cell.querySelector(".nnm-sq");
+      if (!sq) return;
+      const scale = colourScale === undefined ? sizeScale : colourScale;
+      const t = Math.sqrt(Math.min(1, Math.abs(v) / sizeScale));
+      const side = SYM_MIN + (SYM_MAX - SYM_MIN) * t;
+      sq.style.width = side.toFixed(1) + "px";
+      sq.style.height = side.toFixed(1) + "px";
+      // Zero has no sign, and the legend already says so — its ramp runs
+      // blue - white - orange. Tinting the opening square the lightest positive
+      // shade claimed a direction the value does not have; it starts white and
+      // takes a colour only once a word has moved it.
+      sq.style.background = v === 0 ? "#FFFFFF"
+        : (v > 0 ? FILL_POS : FILL_NEG)[level(Math.min(1, Math.abs(v) / scale))];
+    }
+
+    // One way in for every value the three symbol cells show, so the number and
+    // its square can never disagree.
+    function writeCell(cell, v, colourScale, sizeScale) {
+      const num = cell.querySelector(".nnm-num");
+      // 4dp throughout. Importance needs it because Pathway 2's is 0.0854 and 2dp
+      // read 0.09 — 5.4% high on the one number whose smallness is the point. The
+      // computed columns need it because at 3dp seven values across the 800 came
+      // out as "+0.000"/"−0.000"; the smallest anywhere is −0.000135, so 4dp
+      // clears every one of them.
+      (num || cell).textContent = fmt(v, 4);
+      paint(cell, v, colourScale);
+      sizeSym(cell, v, sizeScale === undefined ? colourScale : sizeScale, colourScale);
+    }
+
     function paint(el, v, scale) {
       const L = level(Math.min(1, Math.abs(v) / scale));
       el.style.background = (v >= 0 ? FILL_POS : FILL_NEG)[L];
@@ -2338,6 +2491,31 @@ function buildSimContent() {
     }
 
     const SUM_SCALE = 40;
+    // Squares are sized against the largest value the whole dataset produces, so a
+    // square means the same thing on every conversation. The weighted values and
+    // the sum share one scale because the sum IS those three added — sharing is
+    // what makes that readable. Activation keeps its own: it spans +-4.8 against
+    // the weighted +-74, and one scale across both would flatten it to nothing.
+    const SYM_SCALE = (function () {
+      let m = 0;
+      D.items.forEach(function (it) {
+        let s = 0;
+        for (let p = 0; p < NP; p++) {
+          const w = it.act[p] * IMP[p];
+          s += w;
+          m = Math.max(m, Math.abs(w));
+        }
+        m = Math.max(m, Math.abs(s));
+      });
+      return m;
+    })();
+    // Side of the largest square. The squares are absolutely positioned, so they
+    // do not drive layout width — only the cells do — and the sum's square is free
+    // to overhang its 62px cell into the blank either side of it. The real limit
+    // is vertical: the cell must be tall enough to centre this and still clear the
+    // number below, and the rows (and through syncRows, the readings) follow.
+    const SYM_MAX = 68;
+    const SYM_MIN = 12;   // and of the smallest, so a zero still reads as a square
     const ACT_SCALE = Math.max.apply(null, D.scoreMin.map(Math.abs).concat(D.scoreMax.map(Math.abs)));
     const IMP_MAX = Math.max.apply(null, IMP.map(Math.abs));
     // One colour scale across all three pathways, not one each. Per-pathway
@@ -2533,8 +2711,13 @@ function buildSimContent() {
       animTimers.length = 0;
       document.querySelectorAll(".nnm-fly").forEach(function (e) { e.remove(); });
       if (trackRaf) { cancelAnimationFrame(trackRaf); trackRaf = null; }
+      // Both flags mean the same thing and must be cleared the same way: false =
+      // the line is drawn. playDecide raises decidePending itself when it is about
+      // to animate, so raising it here only affected the paths that DON'T animate
+      // — restoring a conversation from memory — where it hid the fan line while
+      // the three convergence lines came back drawn.
       for (let i = 0; i < solidPending.length; i++) solidPending[i] = false;
-      decidePending = true;
+      decidePending = false;
       wordAnim = false;
       weighAnim = false;
       addUpAnim = false;
@@ -2553,7 +2736,11 @@ function buildSimContent() {
     // that defines the pathway activation.
     function flyOne(el, target, v, scores) {
       const r = el.getBoundingClientRect();
-      const tr = target.getBoundingClientRect();
+      // The square is what the eye reads as the value now, and it sits in the
+      // middle of a mostly empty 82px cell — aiming at the cell would send chips
+      // to a rim well above it. Its centre is fixed as it grows (it is
+      // translate(-50%,-50%)), so it is a stable target mid-flight.
+      const tr = (target.querySelector(".nnm-sq") || target).getBoundingClientRect();
       const c = document.createElement("span");
       c.className = "nnm-fly";
       c.style.left = r.left + "px";
@@ -2567,14 +2754,12 @@ function buildSimContent() {
       c.textContent = el.textContent;
       document.body.appendChild(c);
 
-      // Aim at the top edge of the cell, centred, so the chips pour in over the
-      // rim rather than converging on the middle of the number.
       // Measure the CHIP, not the word. The chip is placed at the word's top-left
-      // but is a different size — it carries the score as well — so offsetting by
-      // the word's centre leaves the chip landing about 20px right of target.
+      // but is a different size, so offsetting by the word's centre leaves the
+      // chip landing about 20px right of target.
       const cr = c.getBoundingClientRect();
       const dx = (tr.left + tr.width / 2) - (cr.left + cr.width / 2);
-      const dy = tr.top - (cr.top + cr.height / 2);
+      const dy = (tr.top + tr.height / 2) - (cr.top + cr.height / 2);
 
       // A sampled quadratic Bézier rather than a few waypoints: the control point
       // sits above the midpoint, so the path is a real parabola into the cell.
@@ -2606,7 +2791,9 @@ function buildSimContent() {
     }
 
     function showZero(cell) {
-      cell.textContent = fmt(0, 3);
+      const z = cell.querySelector(".nnm-num");
+      (z || cell).textContent = fmt(0, 4);
+      sizeSym(cell, 0, SYM_SCALE, ACT_SCALE);
       cell.style.background = "#fff";
       cell.style.color = "var(--nnm-ink-3)";
       cell.style.borderColor = "rgba(30,36,44,0.14)";
@@ -2623,7 +2810,8 @@ function buildSimContent() {
     }
 
     function showRunning(cell, v) {
-      cell.textContent = fmt(v, 3);
+      cell.querySelector(".nnm-num").textContent = fmt(v, 4);
+      sizeSym(cell, v, SYM_SCALE, ACT_SCALE);
       cell.style.color = "";
       paint(cell, v, ACT_SCALE);
       bump(cell);
@@ -2709,7 +2897,8 @@ function buildSimContent() {
         // land on the stored activation, not the accumulated float, so the cell
         // agrees to the last digit with every other number on screen
         later(function () {
-          cell.textContent = fmt(it.act[p], 3);
+          cell.querySelector(".nnm-num").textContent = fmt(it.act[p], 4);
+          sizeSym(cell, it.act[p], SYM_SCALE, ACT_SCALE);
           paint(cell, it.act[p], ACT_SCALE);
         }, flyFrom + n * gap + FLY + 40);
 
@@ -2737,7 +2926,8 @@ function buildSimContent() {
       const apply = function (p) {
         const cell = rows[p].querySelector(".wgt");
         cell.style.width = Math.round(weightedWidth(wgt[p], maxAbs, full)) + "px";
-        cell.textContent = fmt(wgt[p], 2);
+        cell.querySelector(".nnm-num").textContent = fmt(wgt[p], 4);
+        sizeSym(cell, wgt[p], SYM_SCALE);
         paint(cell, wgt[p], SUM_SCALE);
         revealCell(cell, 0);
         trackConnectors(motionOff() ? 0 : 520);
@@ -2785,7 +2975,8 @@ function buildSimContent() {
     // later ones kick it, the same grammar the pathway activations use.
     function showSum(v, first) {
       sumCell.classList.remove("empty");
-      sumCell.textContent = fmt(v, 1);
+      sumCell.querySelector(".nnm-num").textContent = fmt(v, 4);
+      sizeSym(sumCell, v, SYM_SCALE);
       paint(sumCell, v, SUM_SCALE);
       if (first) revealCell(sumCell, 0); else bump(sumCell);
     }
@@ -2900,6 +3091,12 @@ function buildSimContent() {
       // cell is filled or left as a stand-in, and it reads this.
       addUpAnim = (n >= 3 && from < 3 && !motionOff());
       decideAnim = (n >= 4 && from < 4 && !motionOff());
+      // Raised here, not in cancelAnim, because only here is it known whether an
+      // animation is actually coming. In cancelAnim it also applied to the paths
+      // that never animate — restoring a conversation — and hid the line there.
+      // Left false, render would paint it fully drawn for a frame before
+      // playDecide hid it again, which is the flash the convergence lines had.
+      decidePending = decideAnim;
       render();
       if (wordAnim) playWords();
       if (weighAnim) playWeigh();
@@ -2966,7 +3163,7 @@ function buildSimContent() {
       '<span class="g"></span>' +
       '<span class="c wgt">Weighted<br>Activation</span>' +
       '<span class="c far sum">Weighted<br>Sum</span>' +
-      '<span class="c far dec">Model Prediction</span>';
+      '<span class="c far dec">Pathway Prediction</span>';
     chainOuter.insertBefore(flowHead, chainBody);
 
     const flowBody = document.createElement("div");
@@ -2977,27 +3174,28 @@ function buildSimContent() {
     rowsEl.className = "nnm-frows";
     flowBody.appendChild(rowsEl);
 
-    function glyphX() {
-      return '<svg class="nnm-glyph" viewBox="0 0 32 32" aria-hidden="true">' +
-        '<path d="M6 2 L16 12 L26 2 L30 6 L20 16 L30 26 L26 30 L16 20 L6 30 L2 26 L12 16 L2 6 Z" ' +
-        'fill="#E3E7ED" stroke="#CBD2DC" stroke-width="1.2" stroke-linejoin="round"/></svg>';
-    }
-    function glyphArrow() {
-      return '<svg class="nnm-glyph arr" viewBox="0 0 32 24" aria-hidden="true">' +
-        '<path d="M2 8 H18 V2 L30 12 L18 22 V16 H2 Z" ' +
-        'fill="#F1F3F6" stroke="#CBD2DC" stroke-width="1.2" stroke-linejoin="round"/></svg>';
-    }
+    // Typographic marks rather than drawn shapes: the old chunky X read as a close
+    // button, and neither glyph could align or scale with the numbers beside it.
+    // An arrow, not an equals sign. The panel is a flow diagram — the converging
+    // lines and the fan are directional too — and the row does not actually
+    // multiply out on screen, because activation is shown to 4dp and stored to 6.
+    // "=" would invite a check that fails; the arrow claims only that one stage
+    // produces the next. Revisit if activation ever goes to 5dp, which is what it
+    // would take to make the arithmetic verifiable by hand.
+    function glyphX() { return '<span class="nnm-glyph" aria-hidden="true">\u00D7</span>'; }
+    function glyphArrow() { return '<span class="nnm-glyph arr" aria-hidden="true">\u2192</span>'; }
 
     const rows = [];
     for (let p = 0; p < NP; p++) {
       const r = document.createElement("div");
       r.className = "nnm-frow";
       r.innerHTML =
-        '<span class="nnm-cell act"></span>' +
+        '<span class="nnm-cell act sym"><i class="nnm-sq"></i><span class="nnm-num"></span></span>' +
         '<span class="nnm-op mul">' + glyphX() + '</span>' +
-        '<span class="nnm-cell imp"></span>' +
+        '<span class="nnm-cell imp sym"><i class="nnm-sq"></i><span class="nnm-num"></span></span>' +
         '<span class="nnm-op arr">' + glyphArrow() + '</span>' +
-        '<span class="nnm-slot"><span class="nnm-cell wgt"></span></span>';
+        '<span class="nnm-slot"><span class="nnm-cell wgt sym">' +
+          '<i class="nnm-sq"></i><span class="nnm-num"></span></span></span>';
       rowsEl.appendChild(r);
       rows.push(r);
     }
@@ -3048,7 +3246,8 @@ function buildSimContent() {
     sumLabel.className = "nnm-taillabel";
     sumLabel.hidden = true;   // the caption now lives in the header row
     const sumCell = document.createElement("div");
-    sumCell.className = "nnm-cell sum";
+    sumCell.className = "nnm-cell sum sym";
+    sumCell.innerHTML = '<i class="nnm-sq"></i><span class="nnm-num"></span>';
     tail.appendChild(sumLabel);
     tail.appendChild(sumCell);
     decideRow.appendChild(tail);
@@ -3097,7 +3296,14 @@ function buildSimContent() {
     chainBody.appendChild(noteEl);
 
     // ---------- helpers ----------
-    function fmt(v, dp) { return (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(dp === undefined ? 2 : dp); }
+    // Exactly zero carries no sign — the same reason its square is white rather
+    // than the lightest positive tint. A value that merely ROUNDS to zero keeps
+    // its sign: Pathway 2's weighted values are all under +-0.41, so "+0.00" is
+    // usually a real positive, not nothing.
+    function fmt(v, dp) {
+      const d = dp === undefined ? 2 : dp;
+      return (v === 0 ? "" : v > 0 ? "+" : "−") + Math.abs(v).toFixed(d);
+    }
     function pill(v) {
       const s = document.createElement("span");
       s.className = "nnm-pill " + (v === 1 ? "approach" : "wait");
@@ -3219,6 +3425,22 @@ function buildSimContent() {
       });
     });
 
+    // The squares carry the anchors now, and they animate their own size, so the
+    // lines have to follow them the same way they follow the boxes.
+    rows.map(function (r) { return r.querySelector(".wgt .nnm-sq"); })
+      .concat([sumCell.querySelector(".nnm-sq")])
+      .forEach(function (sq) {
+        if (!sq) return;
+        if (window.ResizeObserver) {
+          new ResizeObserver(function () { drawConnectors(lastChosen); }).observe(sq);
+        }
+        sq.addEventListener("transitionend", function (e) {
+          if (e.propertyName === "width" || e.propertyName === "height") {
+            drawConnectors(lastChosen);
+          }
+        });
+      });
+
     // Fills a cell in and kicks it, without the stand-in hatching.
     function revealCell(el, delay) {
       el.classList.remove("empty", "nnm-pop", "nnm-tick");
@@ -3232,6 +3454,14 @@ function buildSimContent() {
     // SVG has to reach back over the slot: it is given a negative left margin equal
     // to the slot width and the same amount of extra width, so its canvas covers the
     // slot while its contribution to the row's layout is unchanged.
+
+    // The lines leave the symbol, not the box around it. The box is transparent
+    // now that the square carries the value, so anchoring to its edge left the
+    // lines starting in blank space up to 26px clear of anything.
+    function symRect(cell) {
+      const sq = cell.querySelector(".nnm-sq");
+      return (sq && sq.getBoundingClientRect().width > 0 ? sq : cell).getBoundingClientRect();
+    }
 
     function drawConnectors(chosen) {
       const slotW = rows[0].querySelector(".nnm-slot").getBoundingClientRect().width;
@@ -3251,29 +3481,36 @@ function buildSimContent() {
       if (span > 0) conv.style.height = span + "px";
 
       const cr0 = conv.getBoundingClientRect();
+      // The guides are on screen from the start — they are the shape of the chain
+      // waiting to be filled, like the empty stand-in squares. Only an unmeasurable
+      // canvas hides them.
       if (cr0.width < 2) {
         conv.style.visibility = "hidden";
       } else {
         conv.style.visibility = "";
         conv.setAttribute("viewBox", "0 0 " + cr0.width + " " + cr0.height);
-        const sc = sumCell.getBoundingClientRect();
+        const sc = symRect(sumCell);
         const ty = sc.top + sc.height / 2 - cr0.top;
+        // The sum square's own left edge. The SVG's right border is not the same
+        // place — the square overhangs its cell and changes size — so ending the
+        // lines at the border left a gap that grew and shrank with the value.
+        const tx = sc.left - cr0.left;
         rows.forEach(function (r, i) {
-          const rr = r.querySelector(".wgt").getBoundingClientRect();
+          const rr = symRect(r.querySelector(".wgt"));
           const y = rr.top + rr.height / 2 - cr0.top;
           const x = rr.right - cr0.left;
           const ln = convPaths[i];
           ln.setAttribute("x1", x);
           ln.setAttribute("y1", y);
-          ln.setAttribute("x2", cr0.width);
+          ln.setAttribute("x2", tx);
           ln.setAttribute("y2", ty);
 
           const sol = convSolid[i];
           sol.setAttribute("x1", x);
           sol.setAttribute("y1", y);
-          sol.setAttribute("x2", cr0.width);
+          sol.setAttribute("x2", tx);
           sol.setAttribute("y2", ty);
-          const len = Math.hypot(cr0.width - x, ty - y);
+          const len = Math.hypot(tx - x, ty - y);
           sol.setAttribute("stroke-dasharray", len);
           // Resting state: fully drawn once Add up has run, fully hidden before.
           // A running animation still overrides this, so redraws during the draw
@@ -3286,14 +3523,20 @@ function buildSimContent() {
       if (fr.width < 2) { fan.style.visibility = "hidden"; return; }
       fan.style.visibility = "";
       fan.setAttribute("viewBox", "0 0 " + fr.width + " " + fr.height);
-      const sc2 = sumCell.getBoundingClientRect();
+      const sc2 = symRect(sumCell);
       const sy = sc2.top + sc2.height / 2 - fr.top;
+      // Anchored the same way at both ends: it leaves the sum square's right edge
+      // and arrives at the answer's left edge, wherever those happen to be.
+      const sx = sc2.right - fr.left;
       outEls.forEach(function (o, i) {
         const orr = o.el.getBoundingClientRect();
         const oy = orr.top + orr.height / 2 - fr.top;
+        const ox = orr.left - fr.left;
+        const span = ox - sx;
         const pth = i === 0 ? fanUp : fanDown;
-        pth.setAttribute("d", "M0 " + sy + " C " + (fr.width * 0.55) + " " + sy + ", " +
-          (fr.width * 0.45) + " " + oy + ", " + fr.width + " " + oy);
+        pth.setAttribute("d", "M" + sx + " " + sy +
+          " C " + (sx + span * 0.55) + " " + sy + ", " +
+          (sx + span * 0.45) + " " + oy + ", " + ox + " " + oy);
       });
 
       const chosenPath = chosen === 1 ? fanUp : fanDown;
@@ -3355,7 +3598,11 @@ function buildSimContent() {
       });
 
       labelsEl.innerHTML = "";
-      [["Prediction", it.pred], ["Actual", it.target]].forEach(function (pair) {
+      // Three different things are on screen and they must not share a word:
+      // the column above is the PATHWAYS' prediction, this is the MODEL's, and
+      // Actual is the truth. They disagree on 7% of conversations, which is the
+      // whole point of Day 3 — so "Prediction" alone was ambiguous here.
+      [["Model", it.pred], ["Actual", it.target]].forEach(function (pair) {
         const row = document.createElement("div");
         row.className = "nnm-label-row";
         const b = document.createElement("b"); b.textContent = pair[0];
@@ -3386,9 +3633,10 @@ function buildSimContent() {
         wgt.push(w); sum += w;
         const r = rows[p];
         const actC = r.querySelector(".act"), impC = r.querySelector(".imp"), wgtC = r.querySelector(".wgt");
-        actC.textContent = fmt(a, 3); paint(actC, a, ACT_SCALE);
-        impC.textContent = fmt(IMP[p], 2);
-        wgtC.textContent = fmt(w, 2); paint(wgtC, w, SUM_SCALE);
+        writeCell(actC, a, ACT_SCALE, SYM_SCALE);
+        impC.querySelector(".nnm-num").textContent = fmt(IMP[p], 4);
+        sizeSym(impC, IMP[p], SYM_SCALE, IMP_MAX);
+        writeCell(wgtC, w, SUM_SCALE, SYM_SCALE);
         revealed(actC, step >= 1 && !wordAnim, prevStep >= 1 && !wordAnim, p * 90);
         // Importance is never revealed: it is not produced by the step before it.
         // It is a property of the model — the same three numbers on all 800
@@ -3410,10 +3658,10 @@ function buildSimContent() {
           r.classList.remove("lit-mul", "lit-arr");
         }
       }
-      conv.style.visibility = step >= 3 ? "" : "hidden";
-      fan.style.visibility = step >= 4 ? "" : "hidden";
+      // conv/fan visibility is owned by drawConnectors — see the note there.
 
-      sumCell.textContent = fmt(sum, 1);
+      sumCell.querySelector(".nnm-num").textContent = fmt(sum, 4);
+      sizeSym(sumCell, sum, SYM_SCALE);
       paint(sumCell, sum, SUM_SCALE);
       revealed(sumCell, step >= 3 && !addUpAnim, prevStep >= 3 && !addUpAnim, 260);
 
