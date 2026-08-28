@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CODAP · Data Point Shape — UX prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/codap.css">
+<link rel="stylesheet" href="css/prototype.css">
+</head>
+<body>
+
+<header class="proto-bar">
+  <h1 class="proto-title">CODAP · Data Point Shape <span>interactive UX prototype — not production CODAP</span></h1>
+
+  <div class="proto-group">
+    <label id="lbl-strategy">Format menu</label>
+    <div class="proto-seg" id="seg-strategy" role="group" aria-labelledby="lbl-strategy"></div>
+  </div>
+
+  <div class="proto-group">
+    <label id="lbl-legend">Legend</label>
+    <div class="proto-seg" id="seg-legend" role="group" aria-labelledby="lbl-legend"></div>
+  </div>
+
+  <div class="proto-group">
+    <label id="lbl-keys">Legend keys</label>
+    <div class="proto-seg" id="seg-keys" role="group" aria-labelledby="lbl-keys"></div>
+  </div>
+
+  <div class="proto-group">
+    <label id="lbl-width">Menu width</label>
+    <div class="proto-seg" id="seg-width" role="group" aria-labelledby="lbl-width"></div>
+  </div>
+
+  <div class="proto-group">
+    <label id="lbl-view">View</label>
+    <div class="proto-seg" id="seg-view" role="group" aria-labelledby="lbl-view"></div>
+  </div>
+
+  <div class="proto-actions">
+    <button class="proto-action" id="docs-button" type="button"
+            aria-haspopup="dialog" aria-expanded="false" aria-controls="docs-panel">Docs</button>
+    <button class="proto-reset" id="proto-reset" type="button">Reset formatting</button>
+  </div>
+</header>
+
+<div class="proto-note" id="note-proposal">
+  <p><strong>What to look at:</strong> the <em>Format</em> panel on the right of the graph tile. Point Size and Border
+  Color stay global, and each <em>Habitat</em> category gets its own shape and fill, as we agreed on 25 Aug.
+  Everything redraws immediately; nothing is saved.</p>
+  <ul>
+    <li><strong>Point Size</strong> behaves as it does today — CODAP's computed radius times 0–2. Drag it with
+      different shapes set and watch the small end: Star, Plus and X are the ones that give up first.</li>
+    <li><strong>Legend → No legend</strong> shows the panel’s basic form: with no legend attribute there are no
+      categories to list, so the three category rows collapse to a single <em>Points</em> row with the same shape and
+      fill dropdowns. Worth checking that the panel still reads sensibly in the case most CODAP graphs are actually in.</li>
+    <li><strong>Menu width</strong> compares Michael’s 216 px Zeplin spec against the 256 px we discussed. Every
+      label now fits at both widths; what changes is the category row — 216 px leaves about 11 characters for a
+      category name before it truncates, 256 px leaves about 16.</li>
+    <li><strong>Click a point</strong> to select it (Shift-click to add) — this is how the shapes handle CODAP’s
+      selection styling, a red 2 px border at radius + 1. <strong>Clicking a legend key</strong> selects that whole
+      category, as it does in CODAP today.</li>
+    <li><strong>Legend keys</strong> switches between CODAP’s color squares and keys that carry the shape too.
+      The shape version is a proposal, not something we agreed — it is here to be judged. Either way the keys stay
+      clickable.</li>
+    <li><strong>Docs</strong>, top right, has the read me, the design findings, the asset spec and the seven SVGs.</li>
+  </ul>
+</div>
+<div class="proto-note reference" id="note-reference" hidden>
+  <p><strong>Reference only.</strong> This is the Google Sheets model from the design notes: one set of controls plus a
+  <em>Series</em> dropdown. It is here for comparison, not as the proposal — it needs a new scoping concept, a new
+  “Mixed” state and more code than the per-category rows, and the Series dropdown scopes only two of the five
+  controls below it. Switch back to <strong>Per-category rows</strong> for the proposed design.</p>
+</div>
+
+<main class="workspace" id="prototype-view">
+  <div class="tile-wrap">
+    <div class="codap-component codap-graph focused" style="width:480px;height:470px">
+      <div class="component-title-bar focusTile">
+        <span class="title-bar-left-icon" id="tile-icon"></span>
+        <span class="title-bar">Mammals</span>
+      </div>
+      <div class="graph-plot">
+        <div id="plot" style="height:382px"></div>
+        <div class="multi-legend" id="legend"></div>
+      </div>
+
+      <div class="inspector-panel wide" id="inspector-panel" role="toolbar"
+           aria-label="Graph inspector" aria-orientation="vertical"></div>
+
+      <div class="codap-inspector-palette-wrapper" id="format-palette" style="left:calc(100% + 88px);top:150px"></div>
+    </div>
+  </div>
+</main>
+
+<div class="docs-panel" id="docs-panel" hidden></div>
+
+<div id="live-status" role="status" aria-live="polite"></div>
+
+<section class="geometry-sheet" id="geometry-view" hidden>
+  <h2>At CODAP point radii</h2>
+  <p class="geo-note">CODAP's <code>computePointRadius()</code> floors at 3 and caps at 10, then multiplies by the
+     Point Size slider (0–2). This is the whole legibility range.</p>
+  <div id="geo-sizes"></div>
+  <h2>Fill and border behavior (r = 8, 2 px border in a contrasting color)</h2>
+  <p class="geo-note">This is what CODAP's <em>selected</em> point styling does. Note how much of a Plus or an X is border.</p>
+  <div class="band"><div class="row" id="geo-stroked"></div></div>
+  <h2>On a dark plot background (r = 8)</h2>
+  <div class="band dark"><div class="row" id="geo-dark"></div></div>
+  <h2>Metrics</h2>
+  <table id="geo-metrics"></table>
+</section>
+
+<footer class="proto-footer">
+  <h2>Scope of this prototype</h2>
+  <ul>
+    <li>Formatting is <strong>session-only</strong>. No CODAP document model, no serialization, no plugin API.</li>
+    <li>Only the <em>Format</em> inspector button opens a panel. Rescale / View / Measure / Image are chrome.</li>
+    <li>Fused points and the fuse-to-bars animation are deliberately out of scope — see <code>FINDINGS.md</code>.</li>
+    <li>Shape geometry is generated from a single library (<code>js/shapes.js</code>) shared by the plotted points,
+        the Point Shape menu and the legend keys; <code>assets/shapes/</code> holds the exported SVGs.</li>
+    <li>Switch <strong>View</strong> above to the geometry sheet: every shape at every CODAP point radius, with border
+        behavior and metrics.</li>
+  </ul>
+</footer>
+
+<script src="js/shapes.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/graph.js"></script>
+<script src="js/palette.js"></script>
+<script src="js/geometry.js"></script>
+<script src="js/docs-content.js"></script>
+<script src="js/docs.js"></script>
+<script src="js/app.js"></script>
+<script>document.getElementById("tile-icon").innerHTML = window.Icons.graphTile;</script>
+</body>
+</html>
