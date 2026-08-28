@@ -1,0 +1,441 @@
+/* ===========================================================================
+   codap.css — styles transcribed from the CODAP v3 source so the prototype
+   reads as CODAP and not as a generic chart demo.
+
+   Sources (concord-consortium/codap, v3/src):
+     components/vars.scss                     design tokens
+     components/inspector-panel.scss          panel, palette, slider, select
+     components/component-title-bar.scss      tile header
+     components/codap-component.scss          tile chrome
+     components/graph/components/graph.scss   plot area, axes, grid
+     components/common/color-picker-palette.scss
+     components/data-display/inspector/display-item-format-control.scss
+   =========================================================================== */
+
+:root {
+  /* vars.scss */
+  --accent: #006c8e;
+  --accent-light-1: #8ddaf2;
+  --accent-light-2: #a5e3f6;
+  --accent-light-3: #bbefff;
+
+  --charcoal-dark-1: #545454;
+  --charcoal: #707070;
+  --charcoal-light-1: #949494;
+  --charcoal-light-5: #e9e9e9;
+  --charcoal-light-8: #f6f6f6;
+
+  --tile-border-color: #0081a9;
+  --focus-border-color: #1c9fc7;
+  --focus-outline-color: #0957d0;
+  --label-color: #222222;
+  --background-fill: #f9f9f9;
+  --icon-fill-light: #d3f4ff;
+  --icon-fill-medium: #bfefff;
+
+  --palette-bg: #ffffff;
+  --palette-header-height: 34px;
+  --palette-hover-bg: #d3f4ff;
+  --palette-icon-color: #006c8e;
+  --palette-pointer-size: 10px;
+  --menu-item-hover-bg: #edf2f7;
+  --menu-border-color: #e2e8f0;
+
+  --title-bar-height: 34px;
+
+  /* Prototype: menu width. 216px is Michael's Zeplin total width, 220px is the
+     min-width the shipped CSS uses, 256px is the width agreed on 25 Aug to fit
+     a shape + color row. Switchable from the prototype bar. */
+  --palette-width: 256px;
+}
+
+/* --- tile chrome --------------------------------------------------------- */
+.codap-component {
+  position: relative;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px 1px rgba(0, 0, 0, 0.25);
+  outline: 1px solid var(--tile-border-color);
+  background: #fff;
+}
+.codap-component.focused {
+  box-shadow: 0 2px 6px 1px rgba(0, 0, 0, 0.25);
+  outline-width: 2px;
+}
+
+.component-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--title-bar-height);
+  border-radius: 4px 4px 0 0;
+  background-color: var(--accent-light-3);
+  position: relative;
+}
+.component-title-bar.focusTile { background-color: var(--accent-light-1); }
+
+.title-bar {
+  color: var(--label-color);
+  font: 400 14px Roboto, sans-serif;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 129, 169, 0.35);
+  border-radius: 3px;
+  padding: 1px 10px;
+  min-width: 60px;
+  text-align: center;
+}
+.title-bar-left-icon {
+  position: absolute;
+  left: 9px;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+}
+
+/* --- plot ---------------------------------------------------------------- */
+.graph-plot { position: relative; width: 100%; }
+.graph-plot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.graph-plot text { font: 12px sans-serif; fill: #242424; }
+.graph-plot .axis-background { fill: var(--background-fill); }
+.graph-plot .axis line, .graph-plot .axis path.domain { stroke: #d3d3d3; }
+.graph-plot .axis-line { stroke: #d3d3d3; }
+.graph-plot .grid line {
+  stroke: lightgrey; stroke-opacity: 0.7; shape-rendering: crispEdges; pointer-events: none;
+}
+.graph-plot .zero line { stroke: #444444; stroke-opacity: 0.8; shape-rendering: crispEdges; }
+.graph-plot .attribute-label {
+  font: 500 14px Roboto, sans-serif; fill: var(--label-color); cursor: default;
+}
+.graph-plot .plot-cell-background { stroke: none; }
+.graph-plot .data-point { cursor: pointer; }
+.graph-plot .data-point:focus { outline: none; }
+.graph-plot .data-point:focus-visible path {
+  stroke: var(--focus-outline-color) !important;
+  stroke-width: 2 !important;
+  stroke-opacity: 1 !important;
+}
+
+/* checkerboard shown through a transparent plot background */
+.plot-transparent-pattern rect { fill: #ffffff; }
+
+/* --- legend -------------------------------------------------------------- */
+.multi-legend { padding: 6px 0 0 10px; user-select: none; }
+.legend-title {
+  display: flex; align-items: center; gap: 4px;
+  font: 500 12px Roboto, sans-serif; color: var(--label-color); margin-bottom: 4px;
+}
+.legend-title .caret { border-top: 4px solid var(--charcoal-dark-1); }
+.legend-keys { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.legend-key {
+  display: flex; align-items: center; gap: 4px;
+  font: 12px sans-serif; color: #242424;
+  appearance: none; background: none; border: 0; margin: 0;
+  /* The swatch stays CODAP's 15px; the padding is hit area only (WCAG 2.5.8). */
+  padding: 5px 6px 5px 2px; min-height: 26px;
+  cursor: pointer; border-radius: 3px;
+}
+.legend-key:hover { background: var(--palette-hover-bg); }
+.legend-key:focus-visible { outline: 2px solid var(--focus-outline-color); outline-offset: 1px; }
+.legend-key .key-swatch {
+  width: 15px; height: 15px; display: flex; align-items: center; justify-content: center;
+  flex: 0 0 15px;
+}
+.legend-key .key-swatch svg { width: 15px; height: 15px; overflow: visible; }
+/* CODAP today: a plain 15 x 15 color square (keySize = 15) */
+.legend-key .key-square { width: 15px; height: 15px; display: block; }
+/* .legend-rect-selected in legend.scss: black 2px stroke on the key */
+.legend-key.selected .key-square { box-shadow: inset 0 0 0 2px #000; }
+.legend-key.selected .key-swatch svg path { stroke: #000; stroke-width: 2; }
+
+/* --- inspector panel ----------------------------------------------------- */
+.inspector-panel {
+  position: absolute;
+  top: -2px;
+  right: -80px;
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  border: 2px solid var(--tile-border-color);
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0 1px 3px 0;
+  min-height: 50px;
+}
+.inspector-tool-button {
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  height: 52px; width: 100%; padding: 4px 0 7px; border: none; background: #fff;
+  cursor: pointer; font-family: Roboto, sans-serif;
+}
+.inspector-tool-button.top { height: 56px; padding-top: 8px; border-radius: 4px 4px 0 0; }
+.inspector-tool-button.bottom { height: 56px; padding-bottom: 11px; border-radius: 0 0 4px 4px; }
+.inspector-tool-button:hover { background-color: var(--icon-fill-light); }
+.inspector-tool-button[aria-expanded="true"], .inspector-tool-button.active {
+  background-color: var(--icon-fill-medium);
+}
+.inspector-tool-button:focus-visible {
+  background-color: var(--icon-fill-light);
+  outline: 2px solid var(--focus-outline-color);
+  outline-offset: -2px; position: relative; z-index: 1;
+}
+.inspector-button-label { font-size: 14px; font-weight: 500; color: var(--label-color); }
+.inspector-tool-button svg { width: 24px; height: 24px; }
+
+/* --- inspector palette --------------------------------------------------- */
+.codap-inspector-palette-wrapper {
+  position: absolute;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+  z-index: 20;
+}
+.palette-pointer {
+  position: absolute; z-index: 10; left: -10px;
+  border-top: var(--palette-pointer-size) solid transparent;
+  border-bottom: var(--palette-pointer-size) solid transparent;
+  border-right: var(--palette-pointer-size) solid var(--palette-bg);
+}
+.codap-inspector-palette {
+  background-color: var(--palette-bg);
+  border-radius: 4px;
+  /* CODAP renders React Aria popovers in a portal, so the shipped palette can
+     use overflow:hidden. Here the popovers are children, so it must stay
+     visible or the last menu row is clipped. */
+  overflow: visible;
+  font-family: Roboto, "museo-sans", sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  width: var(--palette-width);
+  min-height: 50px;
+  color: var(--label-color);
+}
+.codap-inspector-palette-header {
+  display: flex; flex-direction: row; align-items: center; gap: 5px;
+  padding: 0 5px; height: var(--palette-header-height);
+  background-color: var(--accent-light-2); border-radius: 2px 2px 0 0;
+}
+.codap-inspector-palette-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; flex-shrink: 0;
+}
+.codap-inspector-palette-header-title { font-weight: bold; line-height: var(--palette-header-height); }
+
+.palette-form { padding: 10px; background-color: var(--palette-bg); border-radius: 0 0 4px 4px; }
+
+.palette-row {
+  display: flex; flex-direction: row; align-items: center; height: 20px; white-space: nowrap;
+}
+.palette-row.color-picker-row {
+  height: 30px; justify-content: space-between; padding-right: 5px; margin: 4px 0;
+}
+.palette-row.slider-row { gap: 10px; }
+.palette-row.control-row { height: 30px; justify-content: space-between; padding-right: 5px; margin: 4px 0; }
+
+.form-label { display: flex; flex-direction: row; align-items: center; white-space: nowrap; }
+/* Labels truncate rather than shoving the control past the panel edge. At
+   216px "Graph Background Color" and "Point Border Color" do not fit - one of
+   the concrete arguments for widening the menu. */
+.palette-row.control-row .form-label,
+.palette-row.color-picker-row .form-label {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 30px;
+}
+.palette-row.control-row > .pt-select,
+.palette-row.control-row > .color-control { flex: 0 0 auto; }
+.form-label.color-picker { margin-right: 4px; }
+
+/* NEW in this prototype: section headings from the design notes */
+.palette-section-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin: 2px 0 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--charcoal-light-5);
+}
+.palette-section + .palette-section { margin-top: 12px; }
+.palette-footnote {
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--charcoal);
+  margin: 6px 0 0 8px;
+}
+.scope-hint { color: var(--charcoal); font-size: 11px; margin-left: 6px; font-weight: normal; }
+
+/* disabled sections, as in display-item-format-control.scss */
+.stroke-section.disabled, .color-picker-row.disabled, .control-row.disabled {
+  opacity: 0.5; pointer-events: none;
+}
+
+/* --- slider (react-aria-Slider) ------------------------------------------ */
+.pt-slider { flex: 1; min-width: 100px; position: relative; display: flex; align-items: center; height: 20px; }
+.pt-slider input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 10px; margin: 0;
+  background: var(--palette-hover-bg); border-radius: 5px; cursor: pointer;
+}
+.pt-slider::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+  background-color: var(--palette-icon-color); transform: translateY(-50%);
+  border-radius: 1px; pointer-events: none;
+}
+.pt-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background-color: var(--palette-hover-bg); border: 2px solid var(--palette-icon-color);
+  box-sizing: border-box; position: relative; z-index: 2;
+}
+.pt-slider input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%;
+  background-color: var(--palette-hover-bg); border: 2px solid var(--palette-icon-color);
+}
+.pt-slider input[type="range"]:focus-visible {
+  outline: 2px solid var(--focus-outline-color); outline-offset: 2px;
+}
+
+/* --- select button (react-aria-Select) ----------------------------------- */
+.pt-select { position: relative; }
+.pt-select > button {
+  display: flex; align-items: center; font-size: 14px; gap: 4px;
+  font-family: inherit; color: var(--label-color);
+  background: var(--palette-hover-bg); border: 1px solid var(--charcoal);
+  border-radius: 3px; padding: 2px 6px; cursor: pointer; min-width: 80px; height: 26px;
+}
+.pt-select > button:hover { background: var(--accent-light-3); border-color: var(--palette-icon-color); }
+.pt-select > button[aria-expanded="true"] { background: var(--accent-light-2); }
+.pt-select > button:focus-visible { outline: 2px solid var(--focus-outline-color); outline-offset: 2px; }
+.pt-select .select-value {
+  flex: 1; overflow: hidden; text-overflow: ellipsis; text-align: left;
+  display: flex; align-items: center; gap: 6px;
+}
+.pt-select .select-value .glyph { display: inline-flex; flex: 0 0 auto; }
+.pt-select .select-arrow {
+  margin-left: auto; width: 0; height: 0; flex-shrink: 0;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-top: 4px solid var(--palette-icon-color); transition: transform 0.15s ease;
+}
+.pt-select > button[aria-expanded="true"] .select-arrow { transform: rotate(180deg); }
+.pt-select.shape-select > button { min-width: 0; }
+.pt-select.shape-select.icon-only > button { padding: 2px 4px; }
+.pt-select.shape-select.icon-only .select-value { flex: 0 0 auto; }
+.pt-select.shape-select .select-value { display: flex; align-items: center; gap: 6px; }
+
+/* --- popovers (react-aria-Popover) --------------------------------------- */
+/* Portalled to .popover-layer on <body> and positioned from the trigger's rect,
+   so a menu is never clipped by the palette or by the category scroll list. */
+.popover-layer { position: fixed; inset: 0; width: 0; height: 0; z-index: 150; }
+.pt-popover {
+  position: fixed; z-index: 150;
+  background: var(--palette-bg); border: 1px solid var(--charcoal-light-1);
+  border-radius: 3px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22); padding: 6px 2px;
+  overflow-y: auto; animation: menu-fade-in 150ms ease-out;
+}
+.pt-popover[hidden] { display: none; }
+@keyframes menu-fade-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.pt-listbox { font-size: 14px; outline: none; list-style: none; margin: 0; padding: 0; }
+.pt-listbox li {
+  padding: 5px 10px; cursor: pointer; outline: none; display: flex; align-items: center; gap: 8px;
+}
+.pt-listbox li[data-focused="true"] { background-color: var(--charcoal-light-5); }
+.pt-listbox li[aria-selected="true"] { font-weight: bold; }
+.pt-listbox li:focus-visible { outline: 2px solid var(--focus-outline-color); outline-offset: -2px; }
+.pt-listbox .shape-glyph { flex: 0 0 24px; }
+
+/* --- color swatch button (color-picker-thumb) --------------------------- */
+.pt-select.color-control > button { min-width: 0; }
+.color-picker-thumb {
+  display: flex; flex-direction: row; align-items: center; gap: 4px;
+  padding: 3px; margin: 2px 1px; border: none;
+  background-color: var(--palette-hover-bg); border-radius: 3px; cursor: pointer;
+}
+.color-picker-thumb:focus-visible { outline: 2px solid var(--focus-outline-color); outline-offset: 2px; }
+.color-picker-thumb-swatch {
+  width: 24px; height: 24px; border: 1px solid var(--charcoal-light-1); border-radius: 2px;
+  flex-shrink: 0; position: relative; overflow: hidden;
+}
+.color-picker-thumb-swatch::before {
+  content: ""; position: absolute; inset: 0; z-index: 0;
+  background: repeating-conic-gradient(#fff 0% 25%, #d0d0d0 0% 50%) 0 0 / 12px 12px;
+}
+.color-picker-thumb-swatch::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; background-color: var(--swatch-color);
+}
+.color-picker-thumb-swatch.mixed::after {
+  background: linear-gradient(135deg, var(--mix-a) 0 33%, var(--mix-b) 33% 66%, var(--mix-c) 66% 100%);
+}
+.color-picker-thumb::after {
+  content: ""; display: block; width: 0; height: 0; flex-shrink: 0;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-top: 4px solid var(--palette-icon-color);
+}
+.color-picker-thumb[aria-expanded="true"]::after {
+  border-top: none; border-bottom: 4px solid var(--palette-icon-color);
+}
+
+.color-picker-palette {
+  display: flex; flex-direction: column; align-items: center; padding: 12px;
+  background-color: #fff; border-radius: 4px; width: 235px;
+}
+.color-swatch-grid {
+  display: grid; grid-template-columns: repeat(8, 22px); gap: 5px; width: 100%;
+}
+.color-swatch-cell {
+  width: 22px; height: 22px; padding: 0; cursor: pointer;
+  border: solid 1px var(--charcoal-dark-1); border-radius: 2px;
+}
+.color-swatch-cell[aria-pressed="true"] { border: 2px solid #000; }
+.color-swatch-cell:focus-visible { outline: 2px solid var(--focus-outline-color); outline-offset: 2px; }
+.color-swatch-footer {
+  display: flex; justify-content: center; align-items: center; width: 100%;
+  height: 24px; margin-top: 10px;
+}
+.color-picker-more-button {
+  appearance: none; background: var(--icon-fill-light); border: 1px solid #3f3f3f;
+  border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; height: 24px;
+  line-height: 1; padding: 4px 10px; font-family: inherit;
+}
+.color-picker-more-button:hover { background-color: var(--icon-fill-medium); }
+.color-picker-more-button:focus-visible { outline: 2px solid var(--focus-outline-color); outline-offset: -2px; }
+
+/* --- checkbox (react-aria-Checkbox) -------------------------------------- */
+.palette-checkbox {
+  display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: normal;
+  padding: 2px 0; margin: 2px 0 2px 8px; height: 20px;
+}
+.palette-checkbox input { position: absolute; opacity: 0; width: 0; height: 0; }
+.checkbox-indicator {
+  width: 18px; height: 18px; border: 2px solid var(--palette-icon-color); border-radius: 2px;
+  flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+  background-color: var(--palette-bg);
+}
+.palette-checkbox input:checked + .checkbox-indicator { background-color: var(--palette-hover-bg); }
+.palette-checkbox input:checked + .checkbox-indicator::after {
+  content: ""; display: block; width: 5px; height: 9px;
+  border: solid var(--palette-icon-color); border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+.palette-checkbox:hover .checkbox-indicator { border-color: #01879e; }
+.palette-checkbox input:focus-visible + .checkbox-indicator {
+  outline: 2px solid var(--focus-outline-color); outline-offset: 2px;
+}
+
+/* --- category (legend) list --------------------------------------------- */
+.cat-color-setting {
+  overflow-y: auto;
+  /* 2.5 rows, per the 25 Aug discussion: a half row makes it obvious the list
+     scrolls. Row height is measured at runtime and written to --cat-row-h. */
+  max-height: calc(var(--cat-row-h, 34px) * 2.5);
+  scrollbar-width: thin;
+  scrollbar-color: gray lightgray;
+  margin: 6px 0;
+  /* hairlines so a clipped half-row reads as "there is more", not as a bug */
+  border-top: 1px solid var(--charcoal-light-5);
+  border-bottom: 1px solid var(--charcoal-light-5);
+}
+.cat-color-setting::-webkit-scrollbar { width: 0.35rem; }
+.cat-color-setting::-webkit-scrollbar-track { border-radius: 0.175rem; background-color: lightgray; }
+.cat-color-setting::-webkit-scrollbar-thumb { border-radius: 0.175rem; background-color: gray; }
+
+.cat-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px; height: 34px; padding-right: 4px;
+}
+.cat-row .cat-name {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cat-row .cat-controls { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.cat-row.is-current { background: #f2fbff; border-radius: 3px; }
