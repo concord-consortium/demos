@@ -1,0 +1,72 @@
+{
+  "artboard": 24,
+  "referenceRadius": 8,
+  "safeBox": 22,
+  "constants": {
+    "square": 1.7,
+    "diamond": 1.2,
+    "triangle": 2.55,
+    "star": 1.42,
+    "starInner": 0.48,
+    "plusArm": 0.41,
+    "plusLen": 1.08
+  },
+  "shapes": [
+    {
+      "id": "circle",
+      "label": "Circle",
+      "area": 201.06,
+      "percentOfCircleArea": 100,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "id": "square",
+      "label": "Square",
+      "area": 184.96,
+      "percentOfCircleArea": 92,
+      "width": 13.6,
+      "height": 13.6
+    },
+    {
+      "id": "triangle",
+      "label": "Triangle",
+      "area": 180.2,
+      "percentOfCircleArea": 89.6,
+      "width": 20.4,
+      "height": 17.67
+    },
+    {
+      "id": "diamond",
+      "label": "Diamond",
+      "area": 184.32,
+      "percentOfCircleArea": 91.7,
+      "width": 19.2,
+      "height": 19.2
+    },
+    {
+      "id": "star",
+      "label": "Star",
+      "area": 182.05,
+      "percentOfCircleArea": 90.5,
+      "width": 21.61,
+      "height": 20.55
+    },
+    {
+      "id": "plus",
+      "label": "Plus",
+      "area": 183.68,
+      "percentOfCircleArea": 91.4,
+      "width": 17.28,
+      "height": 17.28
+    },
+    {
+      "id": "x",
+      "label": "X",
+      "area": 183.68,
+      "percentOfCircleArea": 91.4,
+      "width": 16.86,
+      "height": 16.86
+    }
+  ]
+}

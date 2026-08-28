@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 24" width="168" height="24">
+  <path id="point-circle" d="M4,12a8,8 0 1 0 16,0a8,8 0 1 0 -16,0Z" fill="#E6805B" stroke="#FFFFFF" stroke-width="1" stroke-linejoin="round"/>
+  <path id="point-square" d="M29.2,5.2L42.8,5.2L42.8,18.8L29.2,18.8Z" fill="#E6805B" stroke="#FFFFFF" stroke-width="1" stroke-linejoin="round"/>
+  <path id="point-triangle" d="M60,3.167L70.2,20.833L49.8,20.833Z" fill="#E6805B" stroke="#FFFFFF" stroke-width="1" stroke-linejoin="round"/>
+  <path id="point-diamond" d="M84,2.4L93.6,12L84,21.6L74.4,12Z" fill="#E6805B" stroke="#FFFFFF" stroke-width="1" stroke-linejoin="round"/>
+  <path id="point-star" d="M108,0.64L111.205,7.589L118.804,8.49L113.186,13.685L114.677,21.19L108,17.453L101.323,21.19L102.814,13.685L97.196,8.49L104.795,7.589Z" fill="#E6805B" stroke="#FFFFFF" stroke-width="1" stroke-linejoin="round"/>
+  <path id="point-plus" d="M128.72,3.36L135.28,3.36L135.28,8.72L140.64,8.72L140.64,15.28L135.28,15.28L135.28,20.64L128.72,20.64L128.72,15.28L123.36,15.28L123.36,8.72L128.72,8.72Z" fill="#E6805B" stroke="#FFFFFF" stroke-width="1" stroke-linejoin="round"/>
+  <path id="point-x" d="M159.79,3.571L164.429,8.21L160.639,12L164.429,15.79L159.79,20.429L156,16.639L152.21,20.429L147.571,15.79L151.361,12L147.571,8.21L152.21,3.571L156,7.361Z" fill="#E6805B" stroke="#FFFFFF" stroke-width="1" stroke-linejoin="round"/>
+</svg>
