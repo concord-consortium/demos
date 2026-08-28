@@ -108,6 +108,12 @@ work.
 Row height grows with the shape dropdown (34 px in the prototype), so this
 should be computed rather than hard-coded.
 
+**Update, 28 Aug.** This is going in as an acceptance criterion on CODAP-1506
+rather than as its own bug. The 1.97-row window is a defect in shipped CODAP
+today, independent of the shape work, so a standalone ticket was considered —
+but CODAP-1506 rewrites this panel and the same stylesheet, so fixing it there
+avoids two changes to one file.
+
 ## 6. Plus and X: fill vs border
 
 They are filled shapes with a single outline, like the other five. That was the
@@ -121,16 +127,23 @@ a selected Plus at r=5 is more border than interior — it reads as a heavier,
 larger mark than a selected circle next to it. Open the prototype’s **Shape geometry** view, the
 "fill and border behavior" row, to see it at 2 px.
 
-Choose one:
+**Decided 28 Aug: leave it.** Kate reviewed the 2 px border on Plus and X and
+is happy with it as it stands. All seven shapes keep the same 2 px selection
+border — no special-casing for Plus and X, and no scaling border width with
+radius. The prototype already behaves this way, so nothing changes in it.
+
+The three options, for the record:
 
 * **(a)** Leave it. Selection is transient and arguably *should* be loud.
+  **← chosen**
 * **(b)** Scale border width with radius (`max(1, r/5)`) for all shapes, which
   also fixes selected circles looking chunky at r=3.
 * **(c)** Special-case Plus and X to a thinner border. Cheapest visually, worst
   for the model — it puts shape-specific logic in the styling path.
 
-The prototype ships (a) and flags it. My preference is (b), because it is a
-general improvement rather than a patch.
+(b) is still a reasonable general improvement to CODAP's selection styling if
+chunky selected circles at small radii ever come up on their own, but it is out
+of scope for this work. Recorded on CODAP-1504.
 
 ## 7. Below r≈4 the pointed shapes stop working
 
@@ -292,8 +305,8 @@ nothing tells them which shape means what.
 1. Confirm **per-category rows** as the structure to build. (§1, §2)
 2. Is **256 px** signed off, and are truncating labels acceptable in
    translation, or do rows need to wrap? (§4)
-3. Selected-point border on Plus and X — leave, scale with radius, or
-   special-case? (§6)
+3. **Settled 28 Aug.** Selected-point border on Plus and X — leave it at 2 px
+   for all seven shapes. (§6)
 4. Do we clamp the minimum point radius, or warn, when a non-circle shape is
    used on a large dataset? (§7)
 5. Does per-category shape go on the data configuration alongside legend color?
