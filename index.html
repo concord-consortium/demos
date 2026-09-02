@@ -291,71 +291,6 @@
     overflow: hidden;
   }
 
-  /* A prototype A/B switch, deliberately OUTSIDE the interactive: it sits below
-     the device mock on the shell's own teal so it reads as scaffolding for a
-     design review, not as a control a student would ever be shown. */
-  /* Rides in the browser-chrome band, which is 56-111px of dead space with one
-     short label in it. Reset to no margin there; the two fallbacks below cover
-     the frames that have no chrome band to ride in. */
-  /* First choice: the Activity Player's own header, alongside the activity name.
-     No pill — the bar is already teal, and white on it is the contrast the label
-     beside it already relies on. */
-  .ap-header .nnm-whatif {
-    margin: 0;
-    background: none;
-    padding: 0;
-    border-radius: 0;
-  }
-  /* Second choice, for the layouts that draw no AP header. Same reasoning: the
-     chrome is a dark ground the white text reads cleanly against, so the teal
-     would only be a second box inside a box. Pinned to the band's bottom edge
-     rather than its middle, sitting 10px above the page. The .above fallback
-     keeps its pill — that one lands on a light ground. */
-  .chrome-top .nnm-whatif {
-    margin: 0 0 10px;
-    align-self: flex-end;
-    background: none;
-    padding: 0;
-    border-radius: 0;
-  }
-  .nnm-whatif.above { margin: 0 auto 10px; }
-  /* The band's label is centred by an absolute ::after, so it cannot be pushed
-     aside by a sibling — it moves to the left edge instead, where the bar (which
-     tracks the model panel, well right of centre) will not reach it. */
-  .chrome-top.has-whatif::after { left: 12px; right: auto; text-align: left; }
-  .nnm-whatif {
-    width: fit-content;
-    align-self: center;
-    margin: 12px auto 0;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 9px 18px;
-    border-radius: 6px;
-    background: #047A99;
-    color: #fff;
-    font-family: 'Lato', sans-serif;
-    font-size: 16px;
-  }
-  .nnm-whatif .lab {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .nnm-whatif label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    min-height: 24px;
-  }
-  /* White accent, so the dot the browser picks to contrast with it is dark and
-     the checked state is legible on the teal. */
-  .nnm-whatif input { width: 17px; height: 17px; margin: 0; accent-color: #fff; cursor: pointer; }
-  .nnm-whatif input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-
   /* Left column for 2-column layout */
   .ap-left-column {
     display: flex;
@@ -924,6 +859,7 @@
     text-transform: uppercase;
     cursor: pointer;
   }
+  .nnm-blankhead { display: flex; justify-content: flex-end; height: 36px; flex-shrink: 0; }
   .nnm-about-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
   .nnm-about-btn:hover { background: var(--nnm-surface); }
   /* Same press-is-the-answer rule as every other button here. */
@@ -948,7 +884,9 @@
     font-weight: 600;
     letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: var(--nnm-ink-3);
+    /* ink-2, not ink-3: at 3.4:1 this failed AA, and it is the word that says what
+       the box beside it does. Shared by every interactive's filter bar. */
+    color: var(--nnm-ink-2);
     flex-shrink: 0;
   }
   .nnm-filter-input {
@@ -971,7 +909,9 @@
     text-overflow: ellipsis;
     font-family: var(--nnm-mono);
     font-size: 11.5px;
-    color: var(--nnm-ink-3);
+    /* ink-2 with the label beside it: at 3.4:1 this failed AA, and it is the one
+       number in the bar a student acts on — how many the query matched. */
+    color: var(--nnm-ink-2);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     flex-shrink: 0;
@@ -1296,13 +1236,31 @@
     box-sizing: border-box;
     flex-shrink: 0;
   }
+  /* Left-aligned on the flow panel's own left edge: .nnm-steprow is a sibling of
+     the panel inside .nnm-rightcol and neither carries padding, so flex-start
+     puts the first button flush with the card below it. */
   .nnm-stepgroup {
-    flex: 1;
+    /* Sized to its five buttons rather than to the row, so the free space to the
+       right of them is the rule's to centre in. */
+    flex: 0 1 auto;
     min-width: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 6px;
+  }
+  /* The divider between the five steps and About. `margin: 0 auto` makes it take
+     an equal share of the row's free space on each side, which centres it in the
+     gap at any panel width and pushes About flush to the right edge without
+     taking it out of the flow. At widths where there is no free space the margins
+     collapse and it simply sits between the two, which is the right degradation.
+     2px and --nnm-rule: the same line the buttons are drawn with. */
+  .nnm-steprule {
+    width: 2px;
+    height: 36px;
+    margin: 0 auto;
+    flex-shrink: 0;
+    background: var(--nnm-rule);
   }
   .nnm-leftcol {
     display: flex;
@@ -1464,11 +1422,45 @@
   .nnm-frow { display: flex; align-items: center; gap: 0; border-radius: 5px; box-sizing: border-box; }
 
 
-  /* ---- 3B Investigate Pathway 3 ---- */
+  /* ---- 3B Investigate Pathway 4 ---- */
   .d3b-bar { justify-content: flex-start; }
-  .d3b-barlabel {
-    font-family: 'Lato', sans-serif; font-size: 13px; color: var(--nnm-ink-3); font-style: italic;
+  /* Nothing else in this bar is elastic, so About takes the slack itself. In 2B
+     the rule's auto margins do it and in 3A the view switch's flex does. */
+  .d3b-bar .nnm-about-btn { margin-left: auto; }
+  /* Three columns: the two conversations being compared, then the one control set
+     that is not per conversation. The conversations are equal — two things being
+     compared cannot be given different amounts of room — and commissioning takes
+     what is left, which is enough for four one-line items and the results table.
+     Stacking commissioning below instead leaves it about 67px once two full
+     conversation cards are placed, which is not a panel. */
+  .d3b-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; flex: 1 1 0; }
+  .d3b-buycol { flex: 0 0 314px; }
+  .d3b-conv, .d3b-panel { flex: 1; min-height: 0; }
+  .d3b-convbody { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  /* Nothing in this toolbar is elastic once the prompt is gone, so the query would
+     stretch across the whole row and stop matching the one on Correlations. Held
+     at the same basis, with the buttons taking the slack. */
+  .d3b-toolbar .d3-filter { flex: 0 1 447px; }
+  .d3b-toolbar .nnm-reset { margin-left: auto; }
+  /* 9px between the query row and the cards under it, the same gap the Prediction
+     Chain's columns carry between their top row and their panels. The stack has no
+     row gap of its own, so the toolbar and the cards were butted together. */
+  .d3b-toolbar { margin-bottom: 9px; }
+  /* The reading is the thing being compared, so it gets the room in the card and
+     the notes below it keep their own. */
+  .d3b-readtext { flex-shrink: 0; margin-bottom: 12px; }
+  .d3b-convbody .d3b-subhead { margin-top: 2px; }
+  /* The notes scroll inside their own block rather than pushing the chips out of
+     the card. The chips have to stay in view: they are where a commissioned
+     attribute turns up, and the whole point of reading the notes is to decide
+     what to commission. */
+  .d3b-convbody .d3b-notes { flex: 1 1 auto; min-height: 90px; overflow-y: auto; }
+  .d3b-convbody .d3b-known { flex-shrink: 0; padding-top: 8px; }
+  .d3b-count {
+    margin-left: auto; font-family: var(--nnm-mono); font-size: 11.5px;
+    color: var(--nnm-ink-2); font-variant-numeric: tabular-nums;
   }
+  .d3b-conv .nnm-nav { margin-left: 8px; }
   .d3b-panel { flex: 1; min-height: 0; }
   .d3b-body { display: flex; flex-direction: column; gap: 12px; overflow: auto; }
   .d3b-budget {
@@ -1540,25 +1532,86 @@
      same place, and the view switch lands where the Animate toggle does over there. */
   .d3-toolbar { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
   .d3-filter { flex: 1 1 440px; min-width: 236px; }
-  .d3-head { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .d3-head { position: relative; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
   .d3-title {
     font-family: 'Lato', sans-serif; font-size: 15px; color: var(--nnm-ink-2);
   }
-  .d3-views { display: flex; gap: 6px; justify-content: flex-end; flex: 1 1 560px; min-width: 318px; }
+  /* The same 560 basis .nnm-rightcol carries, against the filter's 440, so the
+     toolbar divides exactly as the two panels beneath it do and the find bar is
+     the width it is in the Prediction Chain. No gap: the switch's `margin: 0 auto`
+     takes an equal share of whatever is left on each side, which centres it
+     between the filter and About at any width — a gap would push it off by half
+     of one. */
+  .d3-views { display: flex; align-items: center; flex: 1 1 560px; min-width: 318px; }
+  /* The auto margins centre the switch inside .d3-views, but the toolbar's own
+     10px gap sits to the LEFT of that group and not to the right of it, so a
+     switch centred in the group measures 10px further from the filter than from
+     About. Backing off half the gap puts it on the true midpoint between the
+     filter's right edge and About's left edge. */
+  .d3-viewswitch { margin: 0 auto; position: relative; left: -5px; }
+  /* One switch with a name on each side, correlation on the left because that is
+     the view this opens on. The names ARE the control — no chrome of their own —
+     so nothing competes with the thumb for the "which is it on" reading. */
+  .d3-viewswitch { display: flex; align-items: center; gap: 10px; }
   .d3-viewbtn {
     font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
     letter-spacing: 0.04em; text-transform: uppercase;
-    padding: 0 12px; height: 36px; box-sizing: border-box;
-    border: 2px solid var(--nnm-rule); background: #fff; color: var(--nnm-ink-2);
-    border-radius: 5px; cursor: pointer;
+    padding: 0; height: 36px; box-sizing: border-box;
+    border: 0; background: none; color: var(--nnm-ink-2);
+    cursor: pointer; white-space: nowrap;
   }
+  /* Weight stays 600 in both states: going bold on the chosen name would widen it
+     and shove the switch sideways every time it is thrown. Colour carries it, and
+     the thumb's position carries it before colour does. --nnm-ink-2 is 6.3:1 on
+     white, so the name that is not chosen is still properly readable. */
+  .d3-viewbtn.on { color: var(--nnm-ink); }
+  .d3-viewbtn:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; border-radius: 3px; }
+  /* The Prediction Chain's slider thumb exactly — 24px, white, 2px --nnm-rule —
+     with its hover and press states, so the two controls read as one family. */
+  .d3-switchtrack {
+    position: relative;
+    width: 54px; height: 30px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    border: 2px solid var(--nnm-rule);
+    border-radius: 15px;
+    background: var(--nnm-surface);
+    cursor: pointer;
+  }
+  .d3-switchthumb {
+    position: absolute; left: 1px; top: 1px;
+    width: 24px; height: 24px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--nnm-rule);
+    transition: transform 0.2s cubic-bezier(.3,0,.3,1);
+  }
+  /* 24px of travel: the padding box is 50px wide (54 less two 2px borders), the
+     thumb is 24, and it is inset 1px at each end — 50 - 24 - 1 - 1. At 26 it
+     would sit hard against the right border instead of mirroring its rest. */
+  .d3-switchtrack.graph .d3-switchthumb { transform: translateX(24px); }
+  .d3-switchtrack:hover .d3-switchthumb { background: var(--nnm-surface); border-color: #A7B0BC; }
+  .d3-switchtrack:active .d3-switchthumb {
+    background: var(--nnm-ink); border-color: var(--nnm-ink);
+    box-shadow: 0 0 0 4px rgba(30,36,44,0.10);
+  }
+  /* Centred on the full width of the row, not on what the title leaves over.
+     Absolute, so it takes no part in the row's flex and nothing moves when it
+     appears. --nnm-ink-2, not the --nnm-ink-3 it used to wear: this is an
+     instruction, and ink-3 measures 3.4:1 on white, under the 4.5:1 that 12px
+     text has to clear. ink-2 is 6.3:1. */
   .d3-viewhint {
-    font-family: 'Lato', sans-serif; font-size: 12px; font-style: italic;
-    color: var(--nnm-ink-3); white-space: nowrap; align-self: center;
+    position: absolute; left: 0; right: 0;
+    text-align: center;
+    pointer-events: none;
+    /* 15px, the same size as the title it shares the row with — one type size on
+       the line, and the hint does not outrank the thing it sits beside. */
+    font-family: 'Lato', sans-serif; font-size: 15px; font-style: italic;
+    color: var(--nnm-ink-2); white-space: nowrap;
   }
   .d3-viewhint[hidden] { display: none; }
-  .d3-viewbtn:hover { background: var(--nnm-surface); }
-  .d3-viewbtn.on { background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff; }
+  .d3-viewbtn:hover { color: var(--nnm-ink); }
   /* The matrix is taller than the panel at every size this runs at, so the last
      row is always cut by the scroll edge. It scrolled before, but nothing said so
      — a row sliced in half just reads as broken. The wrapper carries a fade that
@@ -1628,9 +1681,21 @@
     transform: translateY(0);
     transition: transform 0.34s cubic-bezier(.34, 1.08, .5, 1);
   }
-  .d3-stubinner.noplot { transform: translateY(15px); }
+  /* Centred in the row rather than nudged down by a fixed amount. The 15px this
+     replaces was worked out when a row was 70px tall and its contents were a
+     different height; rows size themselves now, so sizeRows measures the block and
+     sets --stub-lift. The fallback is the old value, for the frame before the
+     first measurement lands. */
+  .d3-stubinner.noplot { transform: translateY(var(--stub-lift, 15px)); }
+  /* 44 = the 22px of bars it had at 28, plus AXIS_H and PAD_T for the axis it now
+     draws. The stub used to go without one on the grounds that every cell in its
+     row carries the same axis on the same scale — but the stub's plot is ~132px
+     wide against a cell's ~99, so its scale is stretched differently and the axis
+     beside it cannot be borrowed. It was the only histogram on screen with no way
+     to see where zero is. */
   .d3-pathplot {
     position: absolute; left: 0; right: 0; top: 0;
+    height: 44px;
     transition: opacity 0.24s ease;
   }
   .d3-stubinner.noplot .d3-pathplot { opacity: 0; }
@@ -1642,10 +1707,14 @@
      transitioned too: without it the name slid up while the range bar jumped its
      28px in one frame. Same curve as the name's, so the two separate together. */
   .d3-margbox {
-    position: relative; padding-top: 28px;
+    position: relative; padding-top: 44px;
     transition: padding-top 0.34s cubic-bezier(.34, 1.08, .5, 1);
   }
-  .d3-stubinner.noplot .d3-margbox { padding-top: 0; }
+  /* 8, not 0: with the plot gone the name and the bar were nearly touching. Kept
+     on the padding that already animates, so the extra space opens and closes with
+     the view rather than jumping. sizeRows uses this same 8 (STUB_GAP) to work out
+     where the block sits — the two have to agree. */
+  .d3-stubinner.noplot .d3-margbox { padding-top: 8px; }
   /* Two lines whether or not the label has a space to break at, so the band keeps
      one height and the marginals below it stay level. */
   .d3-colname { min-height: 2.5em; }
@@ -1655,7 +1724,19 @@
   .d3-colhead, .d3-rowhead, .d3-corner { position: sticky; background: #fff; }
   .d3-colhead { top: 0; z-index: 2; }
   .d3-rowhead { left: 0; z-index: 2; }
-  .d3-corner { top: 0; left: 0; z-index: 3; }
+  /* The one cell in the table that is not a heading and not a reading. It still
+     has to be there — the grid needs something in that slot or every column shifts
+     one to the left — but it should read as empty page, not as an empty box. The
+     ruling is the container showing through 1px gaps, so white is painted into the
+     two gaps that belong to this cell alone — the grid's own padding above it and
+     to its left. NOT a 1px spread on all four sides: the gaps to its right and
+     below are the first heading's left border and the first stub's top border, and
+     those belong to the table. Three shadows rather than two because the 1px at
+     the diagonal corner falls outside both strips. */
+  .d3-corner {
+    top: 0; left: 0; z-index: 3;
+    box-shadow: -1px 0 0 #fff, 0 -1px 0 #fff, -1px -1px 0 #fff;
+  }
   /* Pathways are the rows now and the series are the columns, so the outcome
      block — what the model is judged against, as opposed to attributes of the
      scene — is the first three COLUMNS. A heavier heading and a tinted cell keep
@@ -1663,7 +1744,7 @@
   .d3-colhead.outcome { color: var(--nnm-ink); font-weight: 600; }
   /* The heavier weight marks the outcome HEADINGS, not their counts — inherited,
      it made the same marginal look like two different things across the band. */
-  .d3-colhead.outcome .d3-marg { color: #7B8593; font-weight: 400; }
+  .d3-colhead.outcome .d3-marg { color: var(--nnm-ink-2); font-weight: 400; }
   /* A tint no longer separates the outcome block from the attributes — every cell
      carries its own fill now — so the boundary is drawn instead, on the last
      column of the block. */
@@ -1705,38 +1786,48 @@
   .d3-cell.corr.undef { justify-content: center; }
   .d3-cell.corr.undef .d3-r { color: var(--nnm-ink-3); min-width: 0; }
   .d3b-chip.undef { color: var(--nnm-ink-3); }
-  /* Spelled out under the matrix whenever the filter has flattened a row. */
-  .d3-caveat {
-    margin-top: 6px;
-    color: var(--nnm-ink-2);
-    font-style: normal;
-  }
-  .d3-caveat b { font-weight: 700; }
   .d3-cell.graph { padding: 2px; align-items: stretch; }
-  /* One dot is one conversation, so they are drawn at whatever size makes the
-     tallest stack fit — never capped, or the stacks would stop meaning counts. */
+  /* Bar height is a count, drawn at whatever scale makes the fullest bin fit —
+     never capped, or the bars would stop meaning counts. */
   .d3-plot { display: block; overflow: visible; }
-  .d3-pt { fill: #D08A6A; fill-opacity: 0.85; }
+  .d3-bar { fill: #D08A6A; fill-opacity: 0.85; }
 
+  /* The bar is the histogram's own axis, drawn as a line. Its margins are the
+     insets the plot above uses — 8px for the label gutter, 6px for PAD_R — so the
+     two line up, and the caption sits under it rather than beside it. Beside it,
+     the caption's width decided the track's: "4% of range" and "64% of range"
+     differ enough that two rows got tracks 5px apart in length, which is the one
+     thing a bar like this must not do. */
   .d3-range {
-    display: flex; align-items: center; gap: 6px;
+    display: block; margin: 3px 6px 0 8px;
     font-family: 'Barlow Condensed', sans-serif; font-size: 11px;
-    color: var(--nnm-ink-3); margin-top: 2px;
+    color: var(--nnm-ink-2);
   }
   .d3-range-track {
-    position: relative; flex: 1; height: 4px; border-radius: 2px;
+    position: relative; display: block; height: 4px; border-radius: 2px;
     background: #E4E8EE;
+  }
+  /* Three layers on one axis: the track is the whole -5..5, the "full" segment is
+     everything this pathway reaches over all 800 conversations, and the fill is
+     what the filter left. The caption's percentage is fill / full, so the ratio it
+     names is a ratio you can see. */
+  .d3-range-full {
+    position: absolute; top: 0; height: 4px; border-radius: 2px;
+    background: #CCD3DD;
   }
   .d3-range-fill {
     position: absolute; top: 0; height: 4px; border-radius: 2px;
-    background: #B9C0CA;
+    background: #838C99;
   }
-  /* A column the filter has all but flattened is the one worth looking at, so it
-     is the one that is not grey. */
-  .d3-range.narrow { color: var(--nnm-pos); }
-  .d3-range.narrow .d3-range-fill { background: var(--nnm-pos); }
-  .d3-blabel { font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; fill: #7B8593; }
-  .d3-tick { font-family: var(--nnm-mono); font-size: 8.5px; fill: #97A0AD; }
+  .d3-range .cap { display: block; line-height: 1; margin-top: 4px; text-align: center; }
+  .d3-blabel { font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; fill: var(--nnm-ink-2); }
+  /* The close-up has room the matrix cells do not: 10.5px is sized for a 42px stub
+     inside a 99px cell, and at 530px wide it read as fine print. The ticks are
+     8.5px for the same reason and get the same treatment, a step below the band
+     labels so the axis stays quieter than the groups it is measuring. */
+  .d3-detail .d3-blabel { font-size: 14px; fill: var(--nnm-ink); }
+  .d3-detail .d3-tick { font-size: 12px; fill: var(--nnm-ink-2); }
+  .d3-tick { font-family: var(--nnm-mono); font-size: 8.5px; fill: var(--nnm-ink-2); }
   .d3-colname { text-align: center; }
   /* The stub is the widest thing in the row and the names are short, so they read
      better against the matrix than floating in the middle of it. */
@@ -1751,7 +1842,7 @@
   .d3-marg { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .d3-margrow {
     display: flex; align-items: center; gap: 5px;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; color: #7B8593;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; color: var(--nnm-ink-2);
   }
   /* Bar, label, count — the original arrangement. It truncated because the bar was
      drawn up to 32px while the column only had 84 of content, and the label was the
@@ -1767,7 +1858,7 @@
   /* auto, so the counts line up on the right however long the label before them. */
   .d3-margrow em {
     margin-left: auto; font-style: normal;
-    font-family: var(--nnm-mono); font-size: 9.5px; color: #8A94A3;
+    font-family: var(--nnm-mono); font-size: 9.5px; color: var(--nnm-ink-2);
     font-variant-numeric: tabular-nums;
   }
   /* Sized against the matrix, not the panel: it is a key to the squares, so it
@@ -1776,9 +1867,30 @@
      scroller 96px wider there, so the same grid produced 100px columns in one view
      and 88px in the other. Its space is reserved either way and the two views tile
      identically. */
+  /* 70px, not the 55 the bar and ticks need: "Correlation" measures 62px in the
+     column headings' own Lato 12.5, and squeezing it into 55 meant dropping to
+     10.5px, at which it stops reading as a heading and starts reading as fine
+     print. The 15px comes off the matrix, spread across eight columns — under 2px
+     each. */
   .d3-legend {
+    position: relative;
     display: flex; visibility: hidden;
     flex-shrink: 0; gap: 5px; align-items: flex-start;
+    width: 70px;
+  }
+  /* Sits in the band sizeCorrCells opens above the bar to line it up with the
+     first pathway row — so the label lands level with the column headings and
+     reads as one of them. Absolute, so it takes no part in the bar/ticks row; its
+     height is set alongside that padding, from the one measurement. */
+  /* Centred across the key's full width — bar and ticks together, which is the
+     block it names — and dropped to the foot of the heading band so it sits close
+     to the thing it labels rather than floating in the middle of the space. */
+  .d3-legend-label {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+    padding-bottom: 13px; box-sizing: border-box;
+    line-height: 1.25; text-align: center;
+    font-family: 'Lato', sans-serif; font-size: 12.5px; color: var(--nnm-ink-2);
   }
   .d3-scrollwrap.showkey .d3-legend { visibility: visible; }
   .d3-legend-bar {
@@ -1786,14 +1898,63 @@
     border-radius: 3px;
     box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18);
   }
-  .d3-legend-ticks { position: relative; width: 34px; flex-shrink: 0; }
+  /* 40, not the 34 it held at 9.5px: at 11px with tabular-nums "+0.75" renders
+     34.7px — wider than a canvas measurement of the same string predicts, because
+     the tabular figures are set on a fixed advance. The legend is 70px and the bar
+     and gap take 21, so this is inside what is already reserved. */
+  .d3-legend-ticks { position: relative; width: 40px; flex-shrink: 0; }
   .d3-legend-ticks span {
     position: absolute; left: 0; transform: translateY(-50%);
-    font-family: var(--nnm-mono); font-size: 9.5px;
-    font-variant-numeric: tabular-nums; color: var(--nnm-ink-3);
+    /* 11px, the size of the values in the cells: a tick and a cell value are the
+       same kind of number in the same mono face, so they read at the same size.
+       "+0.75" comes to 33.1px, which still clears the 34px column — going to the
+       label's 12.5 would need 38 and would also make the key's numbers louder
+       than the data's. 48.6px between ticks, so there is no vertical squeeze. */
+    font-family: var(--nnm-mono); font-size: 11px;
+    font-variant-numeric: tabular-nums; color: var(--nnm-ink-2);
     white-space: nowrap;
   }
-  .d3-legend-ticks span.zero { color: var(--nnm-ink-2); }
+  .d3-legend-ticks span.zero { color: var(--nnm-ink); }
+  /* Sits across the bar with its value in the ticks column, on an opaque ground so
+     it reads over whichever tick it lands on. Centred on its own line, so the top
+     it is given is the value's position rather than the top of the mark. */
+  /* display:flex here would otherwise beat the browser's own [hidden] rule, and
+     `legendMark.hidden = true` would set the property while the element carried on
+     painting. Same trap .d3-viewhint has a rule for. */
+  .d3-legend-mark[hidden] { display: none; }
+  .d3-legend-mark {
+    position: absolute; left: 0; right: 0;
+    /* Above the ticks. The marker is added to the legend before the bar and the
+       ticks are, and positioned siblings with no z-index paint in DOM order — so
+       the tick labels were drawing OVER the bubble, and its white fill covered
+       nothing. That is what the tick-dimming had really been compensating for. */
+    z-index: 1;
+    transform: translateY(-50%);
+    display: flex; align-items: center; gap: 0;
+    pointer-events: none;
+  }
+  /* 22px: the bar's 16 plus 3px of overhang each side, so the line reads as
+     pointing AT the ramp rather than as part of it. */
+  /* 23 with the gap closed, where it was 22 with a 1px gap: the line grows by the
+     pixel the gap gave up, so it runs into the bubble's outline and the pill does
+     not shift. The two are one mark, in one ink. */
+  .d3-legend-mark i {
+    width: 23px; height: 2px; margin-left: -3px;
+    background: var(--nnm-ink); flex-shrink: 0;
+  }
+  .d3-legend-mark .val {
+    font-family: var(--nnm-mono); font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--nnm-ink); background: #FFFFFF;
+    /* Solid white, so the tick label the pill lands on is covered rather than read
+       through it — at r = 0.51 the bubble sits on "+0.5" and the two sets of digits
+       printed over each other. This is what does that job now; the ticks are left
+       alone. Outline in the same ink as the marker line it runs into, so the line
+       and the bubble read as one object rather than as a mark with a label near
+       it. */
+    border: 1.5px solid var(--nnm-ink);
+    padding: 3px 6px; border-radius: 999px;
+  }
   .d3-legend-ticks span::before {
     content: ""; position: absolute; left: -4px; top: 50%;
     width: 3px; height: 1px; background: var(--nnm-rule);
@@ -1837,9 +1998,37 @@
     box-shadow: inset 0 0 0 0 rgba(30, 36, 44, 0);
     transition: background-color 0.12s ease, box-shadow 0.12s ease;
   }
-  .d3-cell.graph[role="button"]:hover::after {
-    background: rgba(30, 36, 44, 0.07);
+  /* The hover colour is the cell's own background, set per cell as --corr from the
+     correlation it would show in the other view. The neutral grey wash is dropped
+     while it is on: laid over the hue it would muddy it, and the cell would no
+     longer match the key it is meant to be read against. Cells whose column is
+     flat have no correlation, so they keep the grey. */
+  .d3-cell.graph[role="button"] { transition: background-color 0.12s ease; }
+  .d3-cell.graph.hascorr[role="button"]:hover,
+  .d3-cell.graph.hascorr[role="button"]:focus-visible { background: var(--corr); }
+  /* The overlay carries the ring and nothing else where there is a colour: it is
+     painted ABOVE the plot, so any background on it covers the histogram. */
+  .d3-cell.graph[role="button"]:hover::after,
+  .d3-cell.graph[role="button"]:focus-visible::after {
     box-shadow: inset 0 0 0 2px var(--nnm-ink-3);
+  }
+  .d3-cell.graph[role="button"]:not(.hascorr):hover::after,
+  .d3-cell.graph[role="button"]:not(.hascorr):focus-visible::after {
+    background: rgba(30, 36, 44, 0.07);
+  }
+  /* Hovering any panel you can open darkens its bars. Where the cell is also
+     wearing its correlation, --barfill is whatever contrasts with that colour (see
+     rampBarInk) — the usual salmon is itself a colour from the ramp behind it, so
+     at one point on the scale it would match it exactly. Everywhere else it falls
+     back to ink: a cell whose column is flat has no correlation to show, and a
+     pathway stub is not a pair, but both are still buttons that open a close-up
+     and both should answer the pointer the same way. */
+  .d3-cell.graph, .d3-rowhead { --barfill: var(--nnm-ink); }
+  .d3-cell.graph[role="button"]:hover .d3-bar,
+  .d3-cell.graph[role="button"]:focus-visible .d3-bar,
+  .d3-rowhead[role="button"]:hover .d3-bar,
+  .d3-rowhead[role="button"]:focus-visible .d3-bar {
+    fill: var(--barfill); fill-opacity: 0.95;
   }
   .d3-cell.graph[role="button"]:active::after {
     background: rgba(30, 36, 44, 0.14);
@@ -1893,11 +2082,10 @@
   }
   .d3-detail-close:hover { background: var(--nnm-surface); }
   .d3-detail-close:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
-  .d3-detail-body { padding: 10px 13px 4px; }
-  .d3-detail-note {
-    font-family: 'Lato', sans-serif; font-size: 12px; line-height: 1.45;
-    color: var(--nnm-ink-2); padding: 0 13px 12px;
-  }
+  /* 12 at the foot, not 4. The 4 was sized for a card that had a paragraph of
+     text under the plot to hold it off the edge; with that gone the axis labels
+     sat almost on the border. */
+  .d3-detail-body { padding: 10px 13px 12px; }
   .d3-note {
     font-family: 'Lato', sans-serif; font-size: 12.5px; line-height: 1.45;
     color: var(--nnm-ink-3); flex-shrink: 0; padding-bottom: 2px;
@@ -1926,6 +2114,14 @@
      others still hold their empty stand-ins — and that it never changes as you
      move between conversations. */
   .nnm-cell.imp { color: var(--nnm-ink) !important; }
+  /* The importance VALUE starts pale — the same #C2C9D4 an unlit operator wears
+     (see .nnm-glyph), and for the same reason: nothing has taken it up yet. It
+     goes to ink at the beat the carried square lands on the box, so the number
+     and the box are seen to be picked up together rather than the number having
+     been dark all along. 0.2s, started 200ms before the square lands, so the
+     change is complete as it arrives — see IMP_INK, which must match. */
+  .nnm-cell.imp .nnm-num { color: #C2C9D4 !important; transition: color 0.2s ease; }
+  .nnm-frow.lit-imp .imp .nnm-num { color: var(--nnm-ink) !important; }
   .nnm-cell.sum { width: 62px; height: 40px; }
   /* A stage that has not run yet is a stand-in: the box is there so the shape of
      the calculation is visible from the start, but it holds no value and no colour. */
@@ -1942,12 +2138,9 @@
     to   { opacity: 1; transform: scale(1); }
   }
   .nnm-reset {
-    /* Out of the flow at the row's right edge, so the four steps centre on the
-       panel rather than on the space beside it. That is safe here in a way it was
-       not for the Animate toggle: the step buttons do not shrink, so the row is
-       already overflowing at the widths where Reset would start to collide. */
-    position: absolute;
-    right: 0;
+    /* In the flow, as the fifth member of .nnm-stepgroup. It was absolute at the
+       row's right edge back when the four steps were centred and it had to stay
+       clear of them; that job belongs to About now. */
     height: 36px;
     box-sizing: border-box;
     display: inline-flex;
@@ -2170,6 +2363,12 @@
   /* Zero-size, fixed, holds the position; the flying element lives inside and
      owns the animation transform. The two nest without fighting. */
   .nnm-flyanchor { position: fixed; left: 0; top: 0; width: 0; height: 0; pointer-events: none; z-index: 40; }
+  /* A fixed box the size of the flow scroller's viewport. Being fixed it is the
+     containing block for the absolutely positioned anchors inside it, so its
+     overflow actually clips them — which a scroller cannot do to a fixed anchor
+     parked on <body>. */
+  .nnm-flyclip { position: fixed; overflow: hidden; pointer-events: none; z-index: 40; }
+  .nnm-flyanchor.clipped { position: absolute; }
   /* The turn-over arrow, shown only where importance is negative. */
   .nnm-flipcue { position: absolute; left: 0; top: 0; pointer-events: none; color: #8A94A3; }
   .nnm-flipcue svg { display: block; overflow: visible; }
@@ -2224,6 +2423,10 @@
   .nnm-cell.wgt.sym .nnm-num { left: 0; right: auto; width: 82px; }
   .nnm-flowbody.narrow .nnm-cell.wgt.sym .nnm-sq { left: 37px; }
   .nnm-flowbody.narrow .nnm-cell.wgt.sym .nnm-num { width: 74px; }
+  /* Square corners on the importance box only. sizeSym writes its transparent
+     fill and its darkest-shade outline inline; the radius belongs here because
+     it never varies. */
+  .nnm-cell.imp.sym .nnm-sq { border-radius: 0; }
   /* Nothing has been computed yet: the stand-in is the smallest square the scale
      can produce, empty. That is also the size a real value starts from, so the
      step grows the square out of the stand-in instead of collapsing a large
@@ -2237,17 +2440,31 @@
   /* Beats the explicit colour that keeps a number legible on a dark square, which
      would otherwise defeat .empty's `color: transparent`. */
   .nnm-cell.sym.empty .nnm-num { color: transparent; }
+  /* Held back while the carried square is still settling on top of it — see the
+     drop timer in carry(). visibility, not display: the connector lines anchor to
+     this square's measured rect and it has to keep occupying its place. */
+  .nnm-cell.wgt.under .nnm-sq { visibility: hidden; }
+
 
   .nnm-cell.wgt {
     width: 58px;
     transition: width 0.45s cubic-bezier(.3,0,.3,1), background-color 0.35s ease, color 0.35s ease;
   }
+  /* The operators sit on the NUMBERS, not on the squares: the row reads as
+     0.1234 × 0.5000 → 0.0617, which is the arithmetic the step actually does.
+     Dropped by the same 41px that puts .nnm-num's line box below the square,
+     plus the 6px from that box's top down to the centre of the digits' ink —
+     so the glyph's ink lands on the digits' ink, not on their line box.
+     A relative offset, not a transform: .nnm-op carries the tick animation's
+     scale, which is applied about the box's own centre once this has moved it. */
   .nnm-op {
     width: 30px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    top: 47px;
     transition: opacity 0.3s ease;
   }
   .nnm-glyph {
@@ -2258,22 +2475,28 @@
     display: block;
     transition: color 0.3s ease;
   }
-  /* The arrow's line box is already centred with everything else in the row, but
-     the glyph's ink sits ~1.75px below the middle of it at this size: measured
-     against the row, the arrow's ink centred on 455.5 while the X centred on 454.0
-     and the empty cells on 453.5. Two pixels up puts it on 453.5 — level with the
-     cells and within half a pixel of the X. The parent .nnm-op carries the tick
-     animation's transform, so this offset does not collide with it. */
-  .nnm-glyph.arr { font-size: 36px; position: relative; top: -2px; }
-  /* Same correction, smaller: the multiply glyph's ink centred half a pixel below
-     the cells it sits between. */
-  .nnm-op.mul .nnm-glyph { position: relative; top: -1px; }
+  /* Each glyph's ink sits differently inside its own line box, so the shared 47px
+     drop above lands them ~1px apart. These two make up the remainder: measured
+     ink centres are 453.2 (×) and 454.3 (→) against a digit ink centre of 500.9,
+     so × needs 47.7 and → needs 46.6. Sub-pixel, so the tick animation's scale
+     (which does multiply them) moves them by a fraction of a pixel — invisible,
+     and the same fraction the previous corrections already lived with. */
+  /* Same 24px as the X, inherited from .nnm-glyph. Its own correction is a shade
+     smaller: the equals' ink centres 0.13px higher in the line box than the X's. */
+  .nnm-glyph.eq { position: relative; top: -0.15px; }
+  .nnm-op.mul .nnm-glyph { position: relative; top: -0.3px; }
   /* The operators darken as the Weigh step reaches them, one row at a time. */
   .nnm-frow.lit-mul .mul .nnm-glyph,
-  .nnm-frow.lit-arr .arr .nnm-glyph { color: #6B7583; }
+  .nnm-frow.lit-eq .eq .nnm-glyph { color: #6B7583; }
   /* A bigger kick than the cells get. They are small marks with no number to
      carry the change, so the standard 1.09 barely registered on them. */
   .nnm-op.nnm-tick { animation: nnm-tick-op 0.30s ease-out; }
+  /* The importance value takes the CELLS' 1.09, not the operators' 1.34, because
+     a ratio is not a distance. The x's ink is 10.9px wide and the ='s 12.4px, so
+     1.34 throws them about 2px out per side. The value's ink is 58.7px wide, so
+     the same 1.34 would throw it nearly 10px — five times the travel, on the
+     widest thing in the row. At 1.09 it moves 2.6px per side and reads as the
+     same size of kick as the marks either side of it. */
   @keyframes nnm-tick-op {
     0%   { transform: scale(1); }
     35%  { transform: scale(1.34); }
@@ -2357,7 +2580,10 @@
   .nnm-flowbody.narrow .nnm-cell { width: 74px; height: 36px; font-size: 12px; }
   .nnm-flowbody.narrow .nnm-slot { width: 74px; }
   .nnm-flowbody.narrow .nnm-cell.sum { width: 58px; }
-  .nnm-flowbody.narrow .nnm-op { width: 26px; }
+  /* Narrow drops the numbers to 12px, which lifts the centre of their ink by
+     0.6px. The operators follow it rather than staying put and reading half a
+     pixel low, the same tolerance the corrections above are drawn to. */
+  .nnm-flowbody.narrow .nnm-op { width: 26px; top: 46.4px; }
   .nnm-flowpanel:has(.nnm-flowbody.narrow) .nnm-flowhead .c { width: 74px; }
   .nnm-flowpanel:has(.nnm-flowbody.narrow) .nnm-flowhead .g { width: 26px; }
   .nnm-flowbody.narrow .nnm-out { width: 68px; height: 34px; font-size: 12.5px; }
@@ -2470,57 +2696,6 @@
   .nnm-step:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
   .nnm-step[aria-disabled="true"] { opacity: 0.35; cursor: default; }
 
-  /* --- "Headings are buttons" variant ---
-     Each column caption is a <button> in BOTH variants, so the two share one
-     element and one layout and throwing the switch never rebuilds or re-measures
-     the head. Without .hb the buttons are disabled and stripped back to look
-     exactly like the captions they replace. Pathway Importance stays a plain
-     span: it is the one column no step produces, so it has nothing to run. */
-  .nnm-flowhead button.c {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    box-sizing: border-box;
-    font-family: 'Lato', sans-serif;
-    font-size: 12px;
-    line-height: 1.25;
-    color: var(--nnm-ink-2);
-    text-align: center;
-    cursor: default;
-  }
-  /* border-box, so a caption occupies the same 82px with the chrome on as
-     without it and no column shifts when the variant changes. */
-  .nnm-flowhead.hb button.c {
-    border: 2px solid var(--nnm-rule);
-    border-radius: 5px;
-    background: #fff;
-    padding: 4px 5px;
-    cursor: pointer;
-    /* The chrome is drawn AROUND the caption rather than pushing it: the box is
-       dropped by exactly its own bottom padding and border, so the words stay on
-       the line they sat on as plain text. Without this the whole head appears to
-       jump up 6px when the variant changes. The 6px it grows downwards is air —
-       there are 28px between this head and the first row. */
-    margin-bottom: -6px;
-  }
-  /* The one caption that is not a button still has to sit on the same baseline as
-     the ones that are, so it takes the same box with the chrome made invisible. */
-  .nnm-flowhead.hb .c.imp {
-    box-sizing: border-box;
-    padding: 4px 5px;
-    border: 2px solid transparent;
-    margin-bottom: -6px;
-  }
-  .nnm-flowhead.hb button.c:hover { background: var(--nnm-surface); }
-  /* Same press-is-the-answer rule as the step buttons above: the pressed look and
-     the selected look are the same look, so nothing shifts on release. */
-  .nnm-flowhead.hb button.c:active,
-  .nnm-flowhead.hb button.c.on {
-    background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff;
-  }
-  .nnm-flowhead.hb button.c:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
-
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -2538,8 +2713,8 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.6</div>
-      <div style="font-weight: 400;">Updated: 8/31/26</div>
+      <div style="font-weight: 600;">v0.7</div>
+      <div style="font-weight: 400;">Updated: 9/2/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
@@ -2552,13 +2727,13 @@
 
       <div role="group" aria-labelledby="day2-label">
         <div class="day-sublabel" id="day2-label">Day 2</div>
-        <button class="toggle-btn active" data-sim="d2b" aria-pressed="true">Prediction Chain</button>
+        <button class="toggle-btn" data-sim="d2b" aria-pressed="false">Prediction Chain</button>
       </div>
 
       <div role="group" aria-labelledby="day3-label">
         <div class="day-sublabel" id="day3-label">Day 3</div>
         <button class="toggle-btn" data-sim="d3a" aria-pressed="false">Correlations</button>
-        <button class="toggle-btn" data-sim="d3b" aria-pressed="false">Investigate P4</button>
+        <button class="toggle-btn active" data-sim="d3b" aria-pressed="true">Investigate P4</button>
       </div>
     </div>
 
@@ -2710,13 +2885,39 @@ const SIMS = {
     description: "What each pathway lines up with",
     theme: PLACEHOLDER_THEME,
     about:
-      '<p>Placeholder. A matrix of pathways against known attributes, in a graph view and a correlation view. Students choose pairs and run the correlation.</p>' +
+      '<p>Placeholder. A matrix of pathways against known attributes, shown either as correlations or as the histograms behind them. Students choose pairs and run the correlation.</p>' +
+      '<h3>Correlations</h3>' +
+      '<p>Each square is the correlation between that pathway and that column, over the ' +
+        'conversations in the filter. Color tracks both direction and strength \u2014 orange ' +
+        'positive, blue negative, deeper for stronger. Hover a cell for the exact value.</p>' +
+      '<h3>Histograms</h3>' +
+      '<p>Each panel is a pair of histograms: the conversations are counted into bins along ' +
+        'the pathway\u2019s activation axis, and bar height is how many landed in that bin. The ' +
+        'pair splits them by the column\u2019s value, and the column heading shows what that ' +
+        'split looks like on its own. Two histograms with the same shape in the same place ' +
+        'means the pathway does not tell those groups apart. A bar of a given height means the ' +
+        'same count everywhere on screen, so the panels can be read against each other.</p>' +
+      '<h3>What the filter leaves standing</h3>' +
+      '<p>A filter can leave a column holding the same value on every conversation \u2014 ' +
+        'model_correct:0, the query this opens on, leaves every conversation wrong. A flat ' +
+        'column cannot be correlated with anything, so it has nothing to show. It also ties ' +
+        'two columns together: with the model wrong on every conversation its prediction is ' +
+        'always the opposite of the actual label, so those two columns come out exact mirrors ' +
+        'of each other. That symmetry is arithmetic, not a finding.</p>' +
+      '<p>The same thing happens by degrees to the pathways, and the bar under each pathway ' +
+        'name is what says so: it shows how much of that pathway\u2019s full range the filter ' +
+        'left standing, and where in that range it sits. \u201C4% of range\u201D means these ' +
+        'conversations cover about a twenty-fifth of the spread the pathway has across all 800 ' +
+        '\u2014 so there is barely anything left for a correlation to be computed from, and ' +
+        'that whole row reads as noise however striking a number in it looks. Below a quarter ' +
+        'of its range the bar turns orange. A flat column is this same failure taken to zero. ' +
+        'Hover a bar for the exact spans.</p>' +
       '<h3>The point</h3>' +
       '<p>You cannot read a pathway directly. You interpret it indirectly, through things you already know how to name.</p>'
   },
   d3b: {
     day: 3, id: "3B", pathways: 4,
-    name: "Investigate P4",
+    name: "Investigate Pathway 4",
     description: "The pathway that matches nothing",
     theme: PLACEHOLDER_THEME,
     about:
@@ -2726,7 +2927,7 @@ const SIMS = {
   }
 };
 
-let activeSim = "d2b";
+let activeSim = "d3b";
 let activeDevice = "chromebook";
 let activeLayout = "ap-full";
 let sidebarExpanded = true;
@@ -2775,75 +2976,6 @@ function invalidateSimCache() {
   for (var key in SIM) delete SIM[key];
 }
 
-// Which variant of the Prediction Chain's step controls is on show. Module scope,
-// so it survives the shell rebuilding the page on every device or layout change,
-// and so the answer is remembered while another interactive is visited.
-let whatIfMode = "top";
-
-// Built fresh on each viewport render and mounted under the device mock. Returns
-// null for the interactives it does not apply to, which is all of them but 2B.
-function buildWhatIf() {
-  if (activeSim !== "d2b") return null;
-  const bar = document.createElement("div");
-  bar.className = "nnm-whatif";
-  bar.setAttribute("role", "radiogroup");
-  bar.setAttribute("aria-label", "What if: where the step controls live");
-  const lab = document.createElement("span");
-  lab.className = "lab";
-  lab.textContent = "What if \u2026";
-  bar.appendChild(lab);
-  [["top", "Buttons on top"], ["headings", "Headings are buttons"]].forEach(function (o) {
-    const l = document.createElement("label");
-    const r = document.createElement("input");
-    r.type = "radio";
-    r.name = "nnm-whatif";
-    r.value = o[0];
-    r.checked = whatIfMode === o[0];
-    r.addEventListener("change", function () {
-      if (!r.checked) return;
-      whatIfMode = o[0];
-      // The interactive parks its own switcher here while it is mounted. Absent
-      // if the sim has since been torn down, which invalidateSimCache does by
-      // clearing every key on SIM.
-      if (typeof SIM.setWhatIf === "function") SIM.setWhatIf(whatIfMode);
-    });
-    const t = document.createElement("span");
-    t.textContent = o[1];
-    l.appendChild(r);
-    l.appendChild(t);
-    bar.appendChild(l);
-  });
-  return bar;
-}
-
-// The bar asks a question about the model panel, so it sits under the model panel
-// rather than under the page. It is laid out centred and then nudged sideways by
-// the gap between its own centre and the panel's — a transform, so applying it
-// cannot disturb the layout the measurement came from, and clearing it first
-// means repeated calls settle on the same answer instead of ratcheting.
-function positionWhatIf() {
-  const bar = document.querySelector(".nnm-whatif");
-  if (!bar) return;
-  bar.style.transform = "";
-  const panel = document.querySelector(".nnm-flowpanel");
-  if (!panel) return;
-  const p = panel.getBoundingClientRect();
-  if (p.width < 2) return;
-  const b = bar.getBoundingClientRect();
-  let dx = p.left + p.width / 2 - (b.left + b.width / 2);
-  // Whatever the bar sits in clips it — the chrome band when it is riding there,
-  // the wrapper otherwise — and at narrow browser widths the panel's centre can
-  // sit far enough right to carry the bar under that edge. Track the panel only
-  // as far as staying wholly visible allows.
-  const host = bar.closest(".ap-header, .chrome-top") || document.querySelector(".viewport-wrapper");
-  if (host) {
-    const h = host.getBoundingClientRect();
-    dx = Math.min(dx, h.right - 10 - b.right);
-    dx = Math.max(dx, h.left + 10 - b.left);
-  }
-  bar.style.transform = "translateX(" + Math.round(dx) + "px)";
-}
-
 function applySimTheme(contentEl) {
   const theme = SIMS[activeSim].theme;
   const props = {
@@ -2874,6 +3006,23 @@ const doubleArrowIconSVG = '<svg aria-hidden="true" viewBox="0 0 32 32" xmlns="h
 function setAriaDisabled(el, disabled) {
   if (disabled) el.setAttribute("aria-disabled", "true");
   else el.removeAttribute("aria-disabled");
+}
+
+// One About button wherever it is mounted. The filter row builds one and hands
+// it out so an interactive can re-home it; the screens that are not built yet
+// make one of their own, so About is reachable on every screen in the nav.
+function makeAboutButton() {
+  const b = document.createElement("button");
+  b.className = "nnm-about-btn";
+  b.appendChild(createSVGIcon(infoIconSVG));
+  b.appendChild(document.createTextNode("About"));
+  b.setAttribute("aria-label", "About this interactive");
+  b.addEventListener("click", function () {
+    // Mounted on the content area, which is the positioned ancestor the modal's
+    // absolute placement is written against.
+    openAboutModal(b, b.closest(".content-area"));
+  });
+  return b;
 }
 
 function createSVGIcon(svgString) {
@@ -3298,16 +3447,7 @@ function makeFilter(D) {
     const rowEl = document.createElement("div");
     rowEl.className = "nnm-filterrow";
     rowEl.appendChild(wrapEl);
-    const aboutBtn = document.createElement("button");
-    aboutBtn.className = "nnm-about-btn";
-    aboutBtn.appendChild(createSVGIcon(infoIconSVG));
-    aboutBtn.appendChild(document.createTextNode("About"));
-    aboutBtn.setAttribute("aria-label", "About this interactive");
-    aboutBtn.addEventListener("click", function () {
-      // Mounted on the content area, which is the positioned ancestor the modal's
-      // absolute placement is written against.
-      openAboutModal(aboutBtn, aboutBtn.closest(".content-area"));
-    });
+    const aboutBtn = makeAboutButton();
     rowEl.appendChild(aboutBtn);
 
     helpBtn.addEventListener("click", function () {
@@ -3338,8 +3478,10 @@ function makeFilter(D) {
     live = true;   // the caller renders the initial state itself
 
     // The row, not the wrap: callers place one element and get the filter and
-    // About together.
-    return { el: rowEl, input: input, current: function () { return last; } };
+    // About together. `about` is handed out as well so a caller can move the
+    // button somewhere else — 2B puts it at the right end of its step row — and
+    // the filter simply takes the width the button gives up.
+    return { el: rowEl, about: aboutBtn, input: input, current: function () { return last; } };
   }
 
   return { buildBar: buildBar, run: run, FIELDS: FIELDS };
@@ -3413,14 +3555,27 @@ function rampHex(v) {
   const c = rampAt(v);
   return "#" + c.map(function (x) { return x.toString(16).padStart(2, "0"); }).join("");
 }
-// Relative luminance, so the label flips to white wherever the fill goes dark
-// enough — a bucket index cannot answer that once the colour is continuous.
-function rampIsDark(v) {
+// Relative luminance of the ramp at v. A bucket index cannot answer questions
+// about the colour once the ramp is continuous; this can.
+function rampLum(v) {
   const c = rampAt(v).map(function (x) {
     x /= 255;
     return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
   });
-  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2] < 0.30;
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+// The label flips to white wherever the fill goes dark enough.
+function rampIsDark(v) { return rampLum(v) < 0.30; }
+// What to draw a histogram in when it sits ON the ramp. The bars' own #D08A6A is
+// itself a colour from this ramp, so somewhere on the scale it matches the fill
+// exactly — at r = 0.72 the fill is #D09781 against a #D08A6A bar, a contrast
+// ratio of 1.1, and the histogram vanishes. Whichever of white or ink contrasts
+// more with the colour behind it, computed rather than thresholded.
+function rampBarInk(v) {
+  const L = rampLum(v);
+  const onWhite = 1.05 / (L + 0.05);
+  const onInk = (L + 0.05) / 0.0177;
+  return onWhite > onInk ? "#FFFFFF" : "#1E242C";
 }
 
 function level(t) {
@@ -3608,13 +3763,26 @@ function buildSimContent() {
     const items = D.items;
     const NAMES = pathNames(D);
     const BUDGET = 3;
+    // The pathway this screen is about. Last of the four: it is the one no known
+    // attribute explains (nothing above r = 0.06) and the only one that predicts
+    // the model being WRONG (-0.18) — which is why the day sends students here to
+    // find the attribute nobody thought to code. The content designer calls it P3;
+    // she numbers from 0 and PATH_OFFSET numbers from 1, so it is the same column.
+    const FOCUS = NP - 1;
     const HIDDEN = D.attributes
       .map(function (a, i) { return { a: a, i: i }; })
       .filter(function (x) { return x.a.hidden; });
 
     let cases = items.slice();
-    let idx = 0;
     const bought = [];
+    const TMAX = tokMax(D);
+    // The content designer's own query, translated: her "pathway_3" is this
+    // prototype's pathway_4 (she numbers from 0, PATH_OFFSET numbers from 1), and
+    // the >2 is an activation, so it carries over unchanged. It leaves 7 of the 63
+    // conversations the model got wrong — every one resource-stressed, which is
+    // the pattern the commissioning step exists to find. It was >1, which gives 24
+    // and the same unanimous answer.
+    const DEFAULT_QUERY = "model_correct:0 AND pathway_4:>2";
 
     const wrap = document.createElement("div");
     wrap.className = "sim-content";
@@ -3622,35 +3790,150 @@ function buildSimContent() {
     const stack = document.createElement("div");
     stack.className = "nnm-stack";
     wrap.appendChild(stack);
+
+    // One row across the top, the way Correlations does it: the query on the left,
+    // the day's question in the middle, About in the corner every interactive puts
+    // it in.
+    const toolbar = document.createElement("div");
+    toolbar.className = "d3-toolbar d3b-toolbar";
+    stack.appendChild(toolbar);
+    const filter = NNM_FILTER.buildBar(function (its) {
+      cases = its;
+      panes.forEach(function (p, i) { p.idx = Math.min(i, Math.max(0, cases.length - 1)); });
+      render();
+    });
+    filter.el.classList.add("d3-filter");
+    toolbar.appendChild(filter.el);
+    // Reset, then About. Everything this screen accumulates is undoable in one
+    // place: the commissions, where each pane is in the set, and the query itself
+    // if it has been edited away from the one the day opens on.
+    const resetBtn = document.createElement("button");
+    resetBtn.className = "nnm-reset";
+    resetBtn.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
+    resetBtn.setAttribute("aria-label", "Clear the commissions and start over");
+    resetBtn.addEventListener("click", function () {
+      bought.length = 0;
+      panes.forEach(function (p, i) { p.idx = i; });
+      if (filter.input.value !== DEFAULT_QUERY) {
+        filter.input.value = DEFAULT_QUERY;
+        filter.input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      render();
+    });
+    toolbar.appendChild(resetBtn);
+    if (filter.about) toolbar.appendChild(filter.about);
+
     const root = document.createElement("div");
     root.className = "nnm";
     stack.appendChild(root);
 
-    const casePane = buildCasePanel({
-      onFilter: function (its) { cases = its; idx = 0; render(); }
+    // Two conversations, side by side, in identical cards. The finding this screen
+    // exists for is that the SAME words keep lighting up and the SAME thing keeps
+    // turning up in the notes — neither of which is visible one conversation at a
+    // time. Everything about one conversation stays inside its own card: splitting
+    // the reading from its notes would break the very pairing being looked for.
+    const panes = [0, 1].map(function (slot) {
+      const col = document.createElement("div");
+      col.className = "d3b-col";
+      root.appendChild(col);
+
+      const panel = document.createElement("div");
+      panel.className = "nnm-panel d3b-conv";
+      col.appendChild(panel);
+
+      const head = document.createElement("div");
+      head.className = "nnm-panel-head";
+      const title = document.createElement("span");
+      title.textContent = "Conversation";
+      head.appendChild(title);
+      const count = document.createElement("span");
+      count.className = "d3b-count";
+      head.appendChild(count);
+      const nav = document.createElement("div");
+      nav.className = "nnm-nav";
+      const prev = document.createElement("button");
+      prev.className = "nnm-navbtn";
+      prev.innerHTML = "&#9664;";
+      prev.setAttribute("aria-label", "Previous conversation");
+      const next = document.createElement("button");
+      next.className = "nnm-navbtn";
+      next.innerHTML = "&#9654;";
+      next.setAttribute("aria-label", "Next conversation");
+      nav.appendChild(prev); nav.appendChild(next);
+      head.appendChild(nav);
+      panel.appendChild(head);
+
+      const body = document.createElement("div");
+      body.className = "nnm-panel-body d3b-convbody";
+      panel.appendChild(body);
+
+      // The same key in both cards, built the way the conversation panel builds it
+      // so it styles identically. It IS the same ramp either way — tokMax is taken
+      // over the whole vocabulary, not per conversation — so duplicating it costs
+      // nothing and keeps each card readable on its own.
+      const readHead = document.createElement("div");
+      readHead.className = "nnm-readhead";
+      readHead.innerHTML =
+        '<div class="nnm-legend">' +
+          '<div class="nnm-legend-label">Word Contribution</div>' +
+          '<div class="nnm-read-scale"><span class="lo">\u2212' + TMAX.toFixed(4) + '</span>' +
+            '<span class="grad"></span>' +
+            '<span class="hi">+' + TMAX.toFixed(4) + '</span></div>' +
+        '</div>';
+      readHead.setAttribute("role", "img");
+      readHead.setAttribute("aria-label",
+        "Word contribution for " + NAMES[FOCUS] + ": minus " + TMAX.toFixed(4) +
+        " to plus " + TMAX.toFixed(4));
+      body.appendChild(readHead);
+
+      const readName = document.createElement("div");
+      readName.className = "nnm-read-name";
+      readName.textContent = NAMES[FOCUS];
+      body.appendChild(readName);
+      const readText = document.createElement("div");
+      readText.className = "nnm-read-text d3b-readtext";
+      body.appendChild(readText);
+
+      const notesHead = document.createElement("div");
+      notesHead.className = "d3b-subhead";
+      notesHead.textContent = "Observation notes";
+      body.appendChild(notesHead);
+      const notes = document.createElement("div");
+      notes.className = "d3b-notes";
+      body.appendChild(notes);
+      const known = document.createElement("div");
+      known.className = "d3b-known";
+      body.appendChild(known);
+
+      const pane = { idx: slot, count: count, prev: prev, next: next,
+                     readText: readText, notes: notes, known: known, panel: panel };
+      prev.addEventListener("click", function () {
+        if (pane.idx > 0) { pane.idx--; render(); }
+      });
+      next.addEventListener("click", function () {
+        if (pane.idx < cases.length - 1) { pane.idx++; render(); }
+      });
+      return pane;
     });
-    root.appendChild(casePane.leftCol);
 
-    const rightCol = document.createElement("div");
-    rightCol.className = "nnm-rightcol";
-    root.appendChild(rightCol);
+    const emptyMsg = document.createElement("div");
+    emptyMsg.className = "nnm-empty";
+    emptyMsg.textContent = "No conversations match that search.";
+    emptyMsg.hidden = true;
+    stack.appendChild(emptyMsg);
 
-    // a toolbar to match the find bar's height, so both cards start level
-    const bar = document.createElement("div");
-    bar.className = "nnm-steprow d3b-bar";
-    const barLabel = document.createElement("div");
-    barLabel.className = "d3b-barlabel";
-    barLabel.textContent = "What else was going on?";
-    bar.appendChild(barLabel);
-    rightCol.appendChild(bar);
-
+    // Third column: the one control set on this screen that is not per
+    // conversation, so it is not duplicated into either card.
+    const buyCol = document.createElement("div");
+    buyCol.className = "d3b-col d3b-buycol";
+    root.appendChild(buyCol);
     const panel = document.createElement("div");
     panel.className = "nnm-panel d3b-panel";
-    rightCol.appendChild(panel);
+    buyCol.appendChild(panel);
     const pHead = document.createElement("div");
     pHead.className = "nnm-panel-head";
     const pTitle = document.createElement("span");
-    pTitle.textContent = "Observation notes";
+    pTitle.textContent = "Commission coding";
     pHead.appendChild(pTitle);
     const budgetEl = document.createElement("span");
     budgetEl.className = "d3b-budget";
@@ -3660,35 +3943,18 @@ function buildSimContent() {
     const pBody = document.createElement("div");
     pBody.className = "nnm-panel-body d3b-body";
     panel.appendChild(pBody);
-
-    const notesEl = document.createElement("div");
-    notesEl.className = "d3b-notes";
-    pBody.appendChild(notesEl);
-
-    const knownEl = document.createElement("div");
-    knownEl.className = "d3b-known";
-    pBody.appendChild(knownEl);
-
-    const commHead = document.createElement("div");
-    commHead.className = "d3b-subhead";
-    commHead.textContent = "Commission coding";
-    pBody.appendChild(commHead);
     const commNote = document.createElement("div");
     commNote.className = "d3b-subnote";
     commNote.textContent = "Researchers will read all " + items.length +
       " sets of notes and code one more attribute. You can afford " + BUDGET + ".";
     pBody.appendChild(commNote);
-
     const listEl = document.createElement("div");
     listEl.className = "d3b-list";
     pBody.appendChild(listEl);
-
     const resultEl = document.createElement("div");
     resultEl.className = "d3b-results";
     pBody.appendChild(resultEl);
 
-    // r for an attribute against each pathway, over the whole set — the point is
-    // that a commissioned attribute is judged on ALL 800, not the filtered few.
     function rowFor(attrIndex) {
       const vals = items.map(function (it) { return it.attrs[attrIndex]; });
       const out = [];
@@ -3697,7 +3963,6 @@ function buildSimContent() {
       }
       return out;
     }
-
     function corrChip(r) {
       const el = document.createElement("span");
       el.className = "d3b-chip";
@@ -3719,7 +3984,6 @@ function buildSimContent() {
       el.appendChild(dot); el.appendChild(n);
       return el;
     }
-
     function renderList() {
       listEl.innerHTML = "";
       HIDDEN.forEach(function (h) {
@@ -3749,7 +4013,6 @@ function buildSimContent() {
         listEl.appendChild(row);
       });
     }
-
     function renderResults() {
       resultEl.innerHTML = "";
       if (!bought.length) return;
@@ -3787,56 +4050,72 @@ function buildSimContent() {
       resultEl.appendChild(tbl);
     }
 
-    function render() {
-      const empty = cases.length === 0;
-      casePane.casePanel.style.display = empty ? "none" : "";
-      casePane.emptyMsg.hidden = !empty;
-      panel.style.visibility = empty ? "hidden" : "";
-      budgetEl.textContent = bought.length + " of " + BUDGET + " commissioned";
-      renderList();
-      renderResults();
-      if (empty) return;
-      if (idx >= cases.length) idx = cases.length - 1;
-      const it = cases[idx];
-      casePane.countEl.textContent = (idx + 1) + " / " + cases.length;
-      setAriaDisabled(casePane.prevBtn, idx === 0);
-      setAriaDisabled(casePane.nextBtn, idx === cases.length - 1);
-      casePane.caseIdEl.title = "#" + it.id;
-      for (let p = 0; p < NP; p++) casePane.paintReading(p, it);
-
-      notesEl.textContent = it.obs || "(no notes for this conversation)";
-
-      knownEl.innerHTML = "";
-      D.attributes.forEach(function (a, i) {
-        if (a.hidden && bought.indexOf(a.key) < 0) return;   // not coded yet
-        const chip = document.createElement("span");
-        const v = it.attrs[i];
-        const lab = (a.valueLabels && a.valueLabels[v]) !== undefined
-          ? a.valueLabels[v] : String(v);
-        chip.className = "d3b-attr" + (a.hidden ? " new" : "") + (v ? " on" : "");
-        chip.textContent = a.label + ": " + lab;
-        knownEl.appendChild(chip);
+    // Only the focus pathway is lit. Every word in the vocabulary belongs to
+    // exactly one pathway, so the four readings this screen used to show were
+    // highlighting four disjoint sets of words in the same sentence — and a
+    // student comparing conversations had to subtract three of them by eye to see
+    // the one under investigation.
+    function paintFocus(el, it) {
+      el.innerHTML = "";
+      it.text.split(/\s+/).forEach(function (w, wi) {
+        if (wi) el.appendChild(document.createTextNode(" "));
+        const span = document.createElement("span");
+        span.className = "nnm-tok";
+        span.textContent = w;
+        const v = D.vocabulary[w];
+        if (v && v[0] === FOCUS) {
+          const L = level(Math.min(1, Math.abs(v[1]) / TMAX));
+          span.classList.add("scored", "lit");
+          span.style.setProperty("--tok-bg", (v[1] >= 0 ? FILL_POS : FILL_NEG)[L]);
+          span.style.setProperty("--tok-fg", L === 4 ? "#fff" : "#1E242C");
+          span.title = w + ": " + (v[1] >= 0 ? "+" : "−") + Math.abs(v[1]).toFixed(4);
+        } else if (v) {
+          span.title = w + ": a " + NAMES[v[0]] + " word";
+        }
+        el.appendChild(span);
       });
     }
 
-    casePane.prevBtn.addEventListener("click", function () {
-      if (idx > 0) { idx--; render(); }
-    });
-    casePane.nextBtn.addEventListener("click", function () {
-      if (idx < cases.length - 1) { idx++; render(); }
-    });
+    function render() {
+      const empty = cases.length === 0;
+      root.style.display = empty ? "none" : "";
+      emptyMsg.hidden = !empty;
+      budgetEl.textContent = bought.length + " of " + BUDGET + " commissioned";
+      // Nothing to clear until something has been done — same rule the Prediction
+      // Chain's Reset follows, where it is unavailable until a step has run.
+      resetBtn.disabled = !bought.length
+        && filter.input.value === DEFAULT_QUERY
+        && panes.every(function (p, i) { return p.idx === i; });
+      renderList();
+      renderResults();
+      if (empty) return;
 
-    // Opens on the cases the curriculum sends students to: the ones the model got
-    // wrong where the biased pathway was shouting. In the four-pathway data that
-    // is Pathway 4 — it carries resource_stressed at r = +0.649, three times any
-    // other pathway's tie to any attribute — and the cut is >1 rather than the >2
-    // this used on the old three-pathway set. Re-derived, not translated: >1 is
-    // where the set stays both pure and big enough to be worth reading. It yields
-    // 24 conversations, every one of them predicted Wait and every one of them
-    // resource-stressed. (>2 would leave 7, and the old >2 was tuned to a
-    // different pathway in a different dataset.)
-    casePane.filter.input.value = "model_correct:0 AND pathway_4:>1";
-    casePane.filter.input.dispatchEvent(new Event("input", { bubbles: true }));
+      panes.forEach(function (pane) {
+        // Two panes over a set that can be one long: the second pane shows the
+        // same conversation rather than nothing, and its nav simply cannot move.
+        if (pane.idx >= cases.length) pane.idx = cases.length - 1;
+        const it = cases[pane.idx];
+        pane.count.textContent = (pane.idx + 1) + " / " + cases.length;
+        setAriaDisabled(pane.prev, pane.idx === 0);
+        setAriaDisabled(pane.next, pane.idx === cases.length - 1);
+        paintFocus(pane.readText, it);
+        pane.notes.textContent = it.obs || "(no notes for this conversation)";
+        pane.known.innerHTML = "";
+        D.attributes.forEach(function (a, i) {
+          if (a.hidden && bought.indexOf(a.key) < 0) return;   // not coded yet
+          const chip = document.createElement("span");
+          const v = it.attrs[i];
+          const lab = (a.valueLabels && a.valueLabels[v]) !== undefined
+            ? a.valueLabels[v] : String(v);
+          chip.className = "d3b-attr" + (a.hidden ? " new" : "") + (v ? " on" : "");
+          chip.textContent = a.label + ": " + lab;
+          pane.known.appendChild(chip);
+        });
+      });
+    }
+
+    filter.input.value = DEFAULT_QUERY;
+    filter.input.dispatchEvent(new Event("input", { bubbles: true }));
 
     render();
     SIM.onResize = function () {};
@@ -3870,24 +4149,35 @@ function buildSimContent() {
     // ---- the series we can correlate a pathway against ----
     const HIDE = ["resource_stressed", "gestures_repeated", "young_present", "carrying_burden"];
     let rows = [], paths = [], R = [];
+    // Read by sizeRows(), which runs from the ResizeObserver as well as from
+    // render() and so cannot reach render()'s own locals.
+    let rowCount = 0;
     function buildSeries() {
     rows = [
+      // Every column lists its 1-coded group FIRST. Three reasons, and they agree:
+      // the Prediction Chain puts Approach before Wait because its outcome sits on
+      // the sign axis; the key beside this matrix runs +1.0 at the top down to
+      // -1.0, so the 1 band on top makes each stack read in the same direction as
+      // the colour explaining it; and "correct / wrong", "yes / no" is the order
+      // the words go in. Was ascending by code, which is the order the DATA is in,
+      // not a reading order anyone chose.
       { key: "target", label: "Actual label", vals: items.map(function (it) { return it.target; }),
-        groups: [[0, "Wait"], [1, "Approach"]] },
+        groups: [[1, "Approach"], [0, "Wait"]] },
       { key: "pred", label: "Model prediction", vals: items.map(function (it) { return it.pred; }),
-        groups: [[0, "Wait"], [1, "Approach"]] },
+        groups: [[1, "Approach"], [0, "Wait"]] },
       { key: "correct", label: "Model was correct", vals: items.map(function (it) { return it.pred === it.target ? 1 : 0; }),
         // "correct", not "right": in a table with left/right geometry, sitting
         // beside Actual label and Model prediction, "right" reads as a direction
         // before it reads as correctness. It is also the header's own word.
-        groups: [[0, "wrong"], [1, "correct"]] }
+        groups: [[1, "correct"], [0, "wrong"]] }
     ];
     D.attributes.forEach(function (a, i) {
       if (HIDE.indexOf(a.key) >= 0) return;              // Day 3 reveals these later
       const vals = items.map(function (it) { return it.attrs[i]; });
-      const uniq = Array.from(new Set(vals)).sort(function (x, y) { return x - y; });
+      // Descending, for the same reason the three columns above lead with 1.
+      const uniq = Array.from(new Set(vals)).sort(function (x, y) { return y - x; });
       // At most three bands. Group size has six levels, and as a ROW that was six
-      // short bar-rows in a 150px stub; as a COLUMN it is six stacked dot plots in
+      // short bar-rows in a 150px stub; as a COLUMN it is six stacked histograms in
       // every cell of that column, which drove the header band and every row to
       // three times the height of the rest of the matrix. Anything with more
       // levels is split at its median instead.
@@ -3902,14 +4192,32 @@ function buildSimContent() {
         const sorted = vals.slice().sort(function (x, y) { return x - y; });
         const mid = sorted[Math.floor(sorted.length / 2)];
         gvals = vals.map(function (v) { return v < mid ? 0 : 1; });
-        groups = [[0, "under " + mid], [1, mid + " or more"]];
+        // Symbols, not words: "3 or more / under 3" was the one pair that read
+        // badly once the columns were flipped to lead with their 1-coded group,
+        // and it is also the longest label in a band that has ~100px to draw in.
+        // "\u22653 / <3" is shorter, exact, and says the split is a threshold
+        // rather than two named categories like Approach/Wait.
+        groups = [[1, "\u2265 " + mid], [0, "< " + mid]];
       }
       rows.push({ key: a.key, label: a.label, vals: vals, gvals: gvals,
                   groups: groups, integer: a.type === "integer" });
     });
 
     paths = [];
-    const alo = Math.min.apply(null, D.scoreMin), ahi = Math.max.apply(null, D.scoreMax);
+    rowCount = 0;
+    // A whole, symmetric axis — -5 to 5 — rather than the data's own -5.10 to 5.29.
+    // Ticks then land ON the ends of the line instead of inside it, so the axis
+    // stops where it is labelled; 0 is exactly the middle, which it was not; and
+    // every plot in both views shares one round scale.
+    //
+    // Rounded rather than extended, so it can clip: 2 of 3200 activations fall
+    // outside (-5.10 and 5.29), and binCounts already clamps anything out of range
+    // into the end bins. That moves them by at most 0.29 — under one bin's 0.37 —
+    // and no conversation is dropped from a count.
+    const ax = Math.max(1, Math.round(Math.max(
+      Math.abs(Math.min.apply(null, D.scoreMin)),
+      Math.abs(Math.max.apply(null, D.scoreMax)))));
+    const alo = -ax, ahi = ax;
     for (let p = 0; p < NP; p++) {
       paths.push({ label: "Pathway " + (p + PATH_OFFSET),
                    vals: items.map(function (it) { return it.act[p]; }),
@@ -3953,26 +4261,83 @@ function buildSimContent() {
     const title = document.createElement("div");
     title.className = "d3-title";
     head.appendChild(title);
+    // Says the plots can be opened, which nothing else on screen does. It lives in
+    // the head row rather than the toolbar for two reasons: the toolbar centres
+    // the view switch with auto margins, so anything added there shoves it off the
+    // midpoint; and being absolute here, showing and hiding it cannot move the
+    // plots below. Centred on the WHOLE row, so it sits on the row's midpoint
+    // rather than the midpoint of whatever the title leaves over.
+    const viewHint = document.createElement("span");
+    viewHint.className = "d3-viewhint";
+    viewHint.textContent = "Click a histogram to see it larger";
+    viewHint.hidden = true;
+    head.appendChild(viewHint);
     const views = document.createElement("div");
     views.className = "d3-views";
     let view = "corr";
     let prevView = "corr";
-    // Only graph view has anything to open, so the prompt appears only there. Left
-    // of the pair rather than between them, so the two view buttons stay one
-    // control.
-    const viewHint = document.createElement("span");
-    viewHint.className = "d3-viewhint";
-    viewHint.textContent = "Select a graph for a better view";
-
-    views.appendChild(viewHint);
-    const viewBtns = [["graph", "Graph view"], ["corr", "Correlation view"]].map(function (v) {
+    const viewSwitch = document.createElement("div");
+    viewSwitch.className = "d3-viewswitch";
+    function viewLabel(key, text) {
       const b = document.createElement("button");
       b.className = "d3-viewbtn";
-      b.textContent = v[1];
-      b.addEventListener("click", function () { view = v[0]; render(); });
-      views.appendChild(b);
-      return { key: v[0], el: b };
+      b.textContent = text;
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", function () { view = key; render(); });
+      return { key: key, el: b };
+    }
+    // Left to right: correlation, switch, graph.
+    // "Correlations" and "Histograms", not "Correlation view" and "Graph view".
+    // Two nouns naming what fills a cell, rather than a topic word beside a medium
+    // word — and one of them was the name of the whole screen, which made switching
+    // away read as leaving the subject rather than going to the evidence for it.
+    // "view" is dropped from both: redundant beside a toggle whose only job is
+    // switching views. The internal keys stay corr/graph.
+    //
+    // "Histograms" over "Distributions" for an 8th-grade audience: histograms are
+    // 6th-grade content they have drawn (CCSS 6.SP.B.4), while "distribution" is
+    // introduced as an abstract property a data set HAS, not as the name of a
+    // picture. It is also the word the hint line under the toolbar already uses,
+    // and one word for one thing matters more here than the more sophisticated
+    // term. "Graphs" was the third candidate and was rejected: at this grade the
+    // graph students associate with two variables is the scatter plot (8.SP.A.1),
+    // so it would point them at a picture this screen does not contain.
+    const corrView = viewLabel("corr", "Correlations");
+    const graphView = viewLabel("graph", "Histograms");
+    const viewTrack = document.createElement("span");
+    viewTrack.className = "d3-switchtrack";
+    // Hidden from assistive tech on purpose: the two names beside it are real
+    // toggle buttons carrying aria-pressed, so the state and both ways of
+    // changing it are already announced. A third control here would be the same
+    // choice said a third time. Nothing becomes keyboard-inaccessible — the
+    // track is a convenience for pointers.
+    viewTrack.setAttribute("aria-hidden", "true");
+    const viewThumb = document.createElement("i");
+    viewThumb.className = "d3-switchthumb";
+    viewTrack.appendChild(viewThumb);
+    viewTrack.addEventListener("click", function () {
+      view = (view === "corr" ? "graph" : "corr");
+      render();
     });
+    viewSwitch.appendChild(corrView.el);
+    viewSwitch.appendChild(viewTrack);
+    viewSwitch.appendChild(graphView.el);
+    views.appendChild(viewSwitch);
+    const viewBtns = [graphView, corrView];
+    // One place that puts the control in step with `view`, called from both paths
+    // through render() — the early return for too-few conversations, and the draw.
+    function syncViews() {
+      viewBtns.forEach(function (v) {
+        v.el.classList.toggle("on", v.key === view);
+        v.el.setAttribute("aria-pressed", v.key === view ? "true" : "false");
+      });
+      viewTrack.classList.toggle("graph", view === "graph");
+    }
+    // About goes INSIDE the right-hand group, not beside it: that leaves the
+    // toolbar with exactly two children on the same 440:560 bases the panels
+    // below use, so the filter comes out the width it has in the Prediction
+    // Chain, and it leaves the switch free to centre in what is left.
+    if (filter.about) views.appendChild(filter.about);
     toolbar.appendChild(views);
     wrap.appendChild(head);
 
@@ -3996,6 +4361,38 @@ function buildSimContent() {
     // covers an eighth.
     const legend = document.createElement("div");
     legend.className = "d3-legend";
+    const legendLabel = document.createElement("div");
+    legendLabel.className = "d3-legend-label";
+    // Two lines, so it fits the 70px the key already reserves — one line would need
+    // ~80 and another 12px off the matrix — and so it reads as a peer of the
+    // two-line column headings beside it rather than as a caption.
+    //
+    // "(r)" and not just "Correlation": the word is already the page title and the
+    // name of one of the two views, so on its own it does not say WHICH of the
+    // three it labels. r is the symbol every other reading of this number uses —
+    // the marker on the bar, the modal header, the cells' own tooltip — and this
+    // is the only place the quantity is explained, so it is where the symbol
+    // should be introduced.
+    ["Correlation", "(r)"].forEach(function (line) {
+      const ln = document.createElement("span");
+      ln.textContent = line;
+      legendLabel.appendChild(ln);
+    });
+    legend.appendChild(legendLabel);
+    // Where the cell under the pointer sits ON the scale. A tooltip can only state
+    // a number; this puts it in its place on the ramp, which is the thing the view
+    // is trying to teach — overlapping piles are a pale square near the middle of
+    // this bar, separated ones a deep square near an end. Shown in both views, and
+    // on focus as well as hover, so it is not a mouse-only reading.
+    const legendMark = document.createElement("div");
+    legendMark.className = "d3-legend-mark";
+    legendMark.hidden = true;
+    const legendMarkLine = document.createElement("i");
+    const legendMarkVal = document.createElement("span");
+    legendMarkVal.className = "val";
+    legendMark.appendChild(legendMarkLine);
+    legendMark.appendChild(legendMarkVal);
+    legend.appendChild(legendMark);
     const bar = document.createElement("div");
     bar.className = "d3-legend-bar";
     // One blend, top to bottom, running the shared ramp backwards so +1 is at the
@@ -4026,7 +4423,37 @@ function buildSimContent() {
       fadeBox.classList.toggle("at-end", atEnd);
     }
     scroll.addEventListener("scroll", syncFade, { passive: true });
+
+    // Delegated, so it survives every rebuild of the grid and costs one listener
+    // rather than one per cell. focusin/focusout give keyboard users the same
+    // reading.
+    //
+    // Bound to the DOCUMENT, not to the table or even to this interactive. The
+    // rule is simply: whatever the pointer is over, if it is not a cell with a
+    // correlation the marker goes. Hung on a container instead, the marker
+    // survived every route out that container's own mouseleave did not fire for —
+    // and mouseleave is exactly the event that does not fire when the pointer
+    // jumps, when a modal opens under it, or when it exits through a child that
+    // was removed mid-gesture.
+    //
+    // It unhooks itself once the legend is off the page, which is what happens
+    // when the interactive is torn down on a sim switch — otherwise the closure
+    // would be held alive by a listener nothing else knows to remove.
+    function markFrom(e) {
+      if (!legendMark.isConnected) {
+        document.removeEventListener("mouseover", markFrom, true);
+        document.removeEventListener("focusin", markFrom, true);
+        return;
+      }
+      const t = e.target;
+      const cell = t && t.closest ? t.closest(".d3-cell[data-r]") : null;
+      if (cell) showMark(parseFloat(cell.dataset.r)); else hideMark();
+    }
+    // Capture, so it still runs for targets inside anything that stops bubbling.
+    document.addEventListener("mouseover", markFrom, true);
+    document.addEventListener("focusin", markFrom, true);
     const sizeWatch = new ResizeObserver(function () {
+      sizeRows();
       sizeCorrCells();
       // Also on first mount: render() runs before the panel has a size, so this is
       // where the plots first get a real one.
@@ -4039,6 +4466,15 @@ function buildSimContent() {
     const note = document.createElement("div");
     note.className = "d3-note";
     wrap.appendChild(note);
+    // Hidden, not just emptied. wrap is a flex column with a 10px gap, so an empty
+    // note still costs the table that gap plus its own 2px — the table stopped
+    // 12px above the bottom of the content area, where the Prediction Chain's
+    // cards run all the way down to it. `hidden` takes it out of the flex flow
+    // entirely, gap included.
+    function setNote(html) {
+      note.innerHTML = html || "";
+      note.hidden = !html;
+    }
 
     // Picks the largest square that still leaves every pathway visible, then lets
     // the matrix scroll sideways if that many squares do not fit across. Floored
@@ -4052,7 +4488,7 @@ function buildSimContent() {
     // 46px is the floor the value sets: "\u22120.51" measures 34.7px at 11px mono, and
     // anything narrower lets the text run out under the next square, which paints
     // over it — every column but the last lost its final digit.
-    // The stub was 210 because the pathway dot plot lives in it. Narrowed to 150:
+    // The stub was 210 because the pathway histogram lives in it. Narrowed to 150:
     // the plot scales to whatever width it gets, and its ticks are short integers
     // now, so it survives the squeeze — and the 60px comes back to the eight
     // columns that carry the actual comparison.
@@ -4062,6 +4498,9 @@ function buildSimContent() {
     // both in flow: 7 padding + 31 name + 4 gap + 26 counts + 7 padding + 2.
     // Fixed, nothing resizes when the view changes; only the name moves.
     const STUB = 150, ROW = 70, HEAD = 77, GAP = 1;
+    // The gap the name and the range bar open between them once the plot is gone.
+    // Must match .d3-stubinner.noplot .d3-margbox's padding-top.
+    const STUB_GAP = 8;
 
     // Where the heading block rests in each view: flush to the top in graph view,
     // so it reads as a caption for the plot right beneath it; centred in the band
@@ -4103,19 +4542,108 @@ function buildSimContent() {
     }
 
     // The grid sizes itself now. This only aligns the key to the block of squares.
+    // The body rows divide whatever the scroller has, down to a ROW floor. ROW is
+    // not a fixed height any more — it is the tallest thing that must sit in one
+    // row: the stub's pathway name, its histogram and its range bar. With four
+    // pathways at a flat 70px the table used to stop 94px short of the bottom,
+    // which read as the matrix having been cut off.
+    //
+    // Written in px, not `minmax(ROW, 1fr)`: a flexible track lets its content
+    // push it taller, and in graph view the plots have an intrinsic height that
+    // took the rows to 98px and overflowed the scroller by 18. A fixed px row
+    // keeps the cells clipping their contents the way they always have — and when
+    // the floor does bite, the grid simply grows past the scroller and scrolls,
+    // which is the behaviour a dataset with more pathways needs.
+    //
+    // Both views get the same answer because the scroller does not change size
+    // when the view does, so switching still moves nothing.
+    function sizeRows(gridEl) {
+      const grid = gridEl || scroll.querySelector(".d3-grid");
+      if (!grid || !rowCount) return;
+      // The grid's own 1px padding top and bottom, and one 1px gap per body row
+      // (there are rowCount gaps: one under the head, one under each row but the
+      // last, which is rowCount in total).
+      const avail = scroll.clientHeight - 2 - HEAD - rowCount;
+      // Down to the half pixel, never up: rounding up puts the grid a pixel past
+      // the scroller and starts it scrolling for nothing. At most 2px is left over
+      // across four rows, well under the 1px ruling the eye is reading.
+      const h = Math.max(ROW, Math.floor((avail / rowCount) * 2) / 2);
+      grid.style.gridTemplateRows = HEAD + "px repeat(" + rowCount + ", " + h.toFixed(2) + "px)";
+
+      // Where the name + range block sits when the plot is not there. Measured
+      // from a real stub rather than assumed: the block's height depends on the
+      // name's line box and on however tall the range bar's own caption makes it,
+      // and the row's height is whatever the line above just decided.
+      const stub = grid.querySelector(".d3-rowhead");
+      const nm = stub && stub.querySelector(".d3-rowname");
+      const rng = stub && stub.querySelector(".d3-range");
+      if (nm && rng) {
+        const cs = getComputedStyle(stub);
+        const contentH = stub.getBoundingClientRect().height
+          - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        // The bar's own top margin counts too — it sits between the gap and the
+        // bar, and a rect does not include it. Left out, the block measured 3px
+        // short and the lift came out 1.5px too big.
+        const blockH = nm.getBoundingClientRect().height + STUB_GAP
+          + parseFloat(getComputedStyle(rng).marginTop)
+          + rng.getBoundingClientRect().height;
+        const next = Math.max(0, (contentH - blockH) / 2).toFixed(1) + "px";
+        if (grid.style.getPropertyValue("--stub-lift") !== next) {
+          // Pinned for the change, the way the view switch pins its own. The
+          // stubs carry a transform transition, so moving the value they are
+          // translated by animates them — on first render that is a slide from
+          // the fallback to the measured figure, and on resize a drift as the
+          // rows resize. Neither is a state change anyone asked to see; only the
+          // view switch should move these.
+          const inners = grid.querySelectorAll(".d3-stubinner");
+          inners.forEach(function (i) { i.style.transition = "none"; });
+          grid.style.setProperty("--stub-lift", next);
+          void grid.offsetWidth;
+          inners.forEach(function (i) { i.style.transition = ""; });
+        }
+      }
+    }
+
+    // Sizes the key against the grid. Reads whichever grid is up: the key is shown
+    // in both views now, and it was measuring `.d3-grid.corr` only — in graph view
+    // it returned at the first line and the bar kept whatever height the last
+    // correlation render had left it.
     function sizeCorrCells() {
-      const grid = scroll.querySelector(".d3-grid.corr");
+      const grid = scroll.querySelector(".d3-grid");
       if (!grid) return;
-      const cells = grid.querySelectorAll(".d3-cell.corr");
+      const cells = grid.querySelectorAll(".d3-cell");
       if (!cells.length) return;
       const g = grid.getBoundingClientRect();
       const a = cells[0].getBoundingClientRect();
       const b = cells[cells.length - 1].getBoundingClientRect();
-      legend.style.paddingTop = Math.round(a.top - g.top) + "px";
+      const band = Math.round(a.top - g.top);
+      legend.style.paddingTop = band + "px";
+      legendLabel.style.height = band + "px";
       const bodyH = Math.round(b.bottom - a.top);
       bar.style.height = bodyH + "px";
       ticks.style.height = bodyH + "px";
+      // The marker is placed against these two, so it follows the key when the
+      // panel resizes rather than being left at a stale height.
+      markTop = band;
+      markH = bodyH;
+      if (!legendMark.hidden) placeMark(lastMarkR);
     }
+
+    // +1 at the top of the bar, -1 at the bottom — the ticks' own mapping.
+    let markTop = 0, markH = 0, lastMarkR = 0;
+    function placeMark(r) {
+      const v = Math.max(-1, Math.min(1, r));
+      lastMarkR = v;
+      const y = ((1 - v) / 2) * markH;
+      legendMark.style.top = (markTop + y) + "px";
+      legendMarkVal.textContent = (v >= 0 ? "+" : "\u2212") + Math.abs(v).toFixed(2);
+    }
+    function showMark(r) {
+      if (!isFinite(r) || !markH) return;
+      placeMark(r);
+      legendMark.hidden = false;
+    }
+    function hideMark() { legendMark.hidden = true; }
 
     // ---- the panel behind one cell ----
     // Opened from either view and identical in both: the distribution that produced
@@ -4250,22 +4778,23 @@ function buildSimContent() {
 
       const body = document.createElement("div");
       body.className = "d3-detail-body";
-      // Full size, so it fits its own labels and a proper axis, and lets packBand
-      // choose the radius it wants — this is a zoom, not a member of the matrix, so
-      // it is not held to the one size the small multiples share.
-      body.appendChild(dotPlot(bands, pa.lo, pa.hi, 530, 230, {}));
+      // Full size, and scaled off the matrix rather than fitted to itself, so this
+      // is the cell's own picture enlarged: detailUnit() grows the unit by exactly
+      // the ratio the lane grew, which keeps every bar the same fraction of its
+      // band as it was in the cell.
+      //
+      // Note what that trades away. A bar here does NOT mean the same count as a
+      // bar of the same height in the matrix — it means 2.65 times fewer, because
+      // the lane is 2.65 times taller. Holding the unit fixed instead was tried:
+      // it makes counts comparable across the two, but the close-up then stretches
+      // x by 8.9 and y by 1, and a distribution filling 66% of its lane in the cell
+      // fills 25% here. It stopped looking like the thing that was clicked.
+      // Comparisons WITHIN a plot — band against band, filtered against all — are
+      // unaffected either way, and those are the ones the panel exists to make.
+      body.appendChild(histPlot(bands, pa.lo, pa.hi, 530, 230,
+        { unit: detailUnit(230), labW: 84 }));
       card.appendChild(body);
 
-      const note = document.createElement("div");
-      note.className = "d3-detail-note";
-      note.textContent = isFinite(r)
-        ? "One dot is one conversation, placed by its " + pa.label +
-          " score. The two rows are the same conversations split by " +
-          row.label.toLowerCase() + ". Piles in the same place mean this pathway does " +
-          "not tell those groups apart."
-        : "Every conversation in this filter shares one value on this row, so there " +
-          "is nothing here to correlate against.";
-      card.appendChild(note);
 
       makeDraggable(card, head, scrim);
       if (trigger) trigger.classList.add("selected");
@@ -4329,21 +4858,13 @@ function buildSimContent() {
       // same data across a different width: Pathway 4 spans 76% of the shared axis,
       // so its close-up was a quarter wider than the stub it came from and read as
       // a different distribution. A zoom has to be the same picture, larger.
-      body.appendChild(dotPlot([
+      // Scaled off the matrix, for the reason given in the other close-up.
+      body.appendChild(histPlot([
         { label: "these " + pa.vals.length, vals: pa.vals },
         { label: "all " + ALL.length, vals: full }
-      ], pa.lo, pa.hi, 530, 230, {}));
+      ], pa.lo, pa.hi, 530, 230, { unit: detailUnit(230), labW: 84 }));
       card.appendChild(body);
 
-      const note = document.createElement("div");
-      note.className = "d3-detail-note";
-      note.textContent = "Top: the " + pa.vals.length +
-        " conversations in the current filter. Bottom: all " + ALL.length +
-        ", on the same axis and at the same dot size \u2014 the filtered set covers " +
-        Math.round(frac * 100) +
-        "% of the range this pathway uses. A pathway that barely moves across a set " +
-        "cannot line up with anything measured over it.";
-      card.appendChild(note);
 
       makeDraggable(card, head, scrim);
       if (trigger) trigger.classList.add("selected");
@@ -4387,13 +4908,17 @@ function buildSimContent() {
       num.textContent = (r >= 0 ? "+" : "−") + Math.abs(r).toFixed(2);
       sq.appendChild(num);
       el.appendChild(sq);
+      el.dataset.r = r;
+      // Kept here, unlike on the graph cells: this one carries 4dp and the n, and
+      // the cell itself only shows 2dp, so removing it would lose the precision
+      // with nothing to replace it. The marker on the key runs alongside it.
       el.title = "r = " + r.toFixed(4) + "  (n = " + items.length + ")";
 
       return el;
     }
 
-    // ---- the graph view, built the way the sketch is: CODAP dot plots ----
-    // Every panel uses the same mark. One dot is one conversation — stacks are
+    // ---- the graph view: a histogram per group, on a shared axis ----
+    // Every panel uses the same mark. Bar height is a count — bars are
     // literal counts, not a histogram scaled to fit — so "how many" reads the same
     // in a marginal, a cell, and a category. Dots shrink when a stack would
     // overflow rather than the count being capped, which is what CODAP does.
@@ -4428,8 +4953,12 @@ function buildSimContent() {
     // Lays one band of dots: values -> x, packed into columns a dot wide, stacked
     // upward from the baseline. Returns the radius that made the tallest stack fit.
     // The radius ladder, shared so the fitting pass and the drawing pass agree.
-    const R_STEPS = [];
-    for (let rr = 3.2; rr >= 0.9; rr -= 0.15) R_STEPS.push(Math.round(rr * 100) / 100);
+    // Height given to ONE conversation inside a bar. This is the old dot-radius
+    // ladder doubled: a dot stood 2r tall, so a bar holding n conversations stands
+    // n * 2r — which puts every fitted size, and every decision about what clips,
+    // exactly where the dot plots had them.
+    const UNIT_STEPS = [];
+    for (let uu = 6.4; uu >= 1.8; uu -= 0.3) UNIT_STEPS.push(Math.round(uu * 100) / 100);
 
     // BINS is fixed for every plot of an activation axis. It used to be derived
     // from the dot radius — cols = plotW / 2r — which tied the histogram's shape to
@@ -4440,52 +4969,23 @@ function buildSimContent() {
     // width the plot has room for.
     const BINS = 27;
 
-    // How tall the tallest stack would be at a given radius. Used to find the one
-    // radius every band in the matrix can live with.
-    function stackAt(vals, lo, hi, plotW, r) {
-      const d = r * 2, cols = BINS;
-      const counts = new Array(cols).fill(0);
-      let tallest = 0;
+    // The histogram itself: how many conversations land in each of the BINS
+    // columns of the axis. Everything else is a way of drawing this.
+    function binCounts(vals, lo, hi) {
+      const counts = new Array(BINS).fill(0);
       for (let i = 0; i < vals.length; i++) {
-        let c = Math.floor(((vals[i] - lo) / (hi - lo)) * cols);
-        if (c < 0) c = 0; if (c >= cols) c = cols - 1;
+        let c = Math.floor(((vals[i] - lo) / (hi - lo)) * BINS);
+        if (c < 0) c = 0; if (c >= BINS) c = BINS - 1;
         counts[c]++;
-        if (counts[c] > tallest) tallest = counts[c];
       }
-      return tallest * d;
+      return counts;
     }
 
-    function packBand(vals, lo, hi, plotW, bandH, forceR) {
-      let r = forceR || 3.2;
-      for (; r >= 0.9; r -= (forceR ? 99 : 0.15)) {
-        const d = r * 2, cols = BINS, colW = plotW / cols;
-        const counts = new Array(cols).fill(0);
-        let tallest = 0;
-        for (let i = 0; i < vals.length; i++) {
-          let c = Math.floor(((vals[i] - lo) / (hi - lo)) * cols);
-          if (c < 0) c = 0; if (c >= cols) c = cols - 1;
-          counts[c]++;
-          if (counts[c] > tallest) tallest = counts[c];
-        }
-        // The last test used to be `r <= 0.9`, which the loop never reaches: r goes
-        // 0.95 then 0.80, so the guard `r >= 0.9` ends it first and it fell through
-        // to a fallback that returned NO POINTS. Any band too short for r = 0.95 to
-        // fit drew an empty plot — which is what the pathway stubs were doing at a
-        // 6px band. Test the next step instead, so the smallest radius always draws.
-        if (forceR || tallest * d <= bandH - 2 || r - 0.15 < 0.9) {
-          const pts = [];
-          const seen = new Array(cols).fill(0);
-          for (let i = 0; i < vals.length; i++) {
-            let c = Math.floor(((vals[i] - lo) / (hi - lo)) * cols);
-            if (c < 0) c = 0; if (c >= cols) c = cols - 1;
-            // Centred in its column, which is now independent of the dot size.
-            pts.push([c * colW + colW / 2, seen[c] * d + r]);
-            seen[c]++;
-          }
-          return { r: r, pts: pts };
-        }
-      }
-      return { r: 0.9, pts: [] };
+    // How tall the fullest bin would stand at a given unit. Used to find the one
+    // unit every band in the matrix can live with.
+    function stackAt(vals, lo, hi, plotW, unit) {
+      const counts = binCounts(vals, lo, hi);
+      return Math.max.apply(null, counts) * unit;
     }
 
     function svgEl(name, attrs) {
@@ -4494,9 +4994,9 @@ function buildSimContent() {
       return e;
     }
 
-    // One dot plot. `bands` is a list of {label, vals}; a single band gives the
+    // One histogram. `bands` is a list of {label, vals}; a single band gives the
     // marginal distributions in the headers, several give a matrix cell.
-    function dotPlot(bands, lo, hi, W, H, opts) {
+    function histPlot(bands, lo, hi, W, H, opts) {
       opts = opts || {};
       const svg = svgEl("svg", { viewBox: "0 0 " + W + " " + H, width: "100%", height: H });
       svg.setAttribute("class", "d3-plot");
@@ -4509,8 +5009,16 @@ function buildSimContent() {
       svg.appendChild(defs);
       const clipId = "nnmclip" + (clipSeq++);
       const rules = [];
-      const labW = opts.noLabels ? 8 : (opts.compact ? COMPACT_LABEL_W : LABEL_W);
-      const plotW = W - labW - PAD_R;
+      // LABEL_W is sized for the label at 10.5px. The close-up draws them at 14 and
+      // its groups carry three-digit counts — "Approach  (386)" is about 88px — so
+      // it asks for its own gutter rather than right-anchoring into a 52px one and
+      // running off the left of the card.
+      const labW = opts.noLabels ? 8 : (opts.labW || (opts.compact ? COMPACT_LABEL_W : LABEL_W));
+      // The right margin normally just keeps the last bar off the edge, but in the
+      // close-ups it has to answer the label gutter on the left, or the plot sits
+      // off-centre in the card by the whole width of that gutter.
+      const padR = opts.padR || PAD_R;
+      const plotW = W - labW - padR;
       // Without an axis the whole height goes to the dots. The pathway stub takes
       // this: every cell in its row carries the same axis on the same scale, so a
       // fifth copy of it in the stub was spending 22 of 28px to say nothing new —
@@ -4518,21 +5026,27 @@ function buildSimContent() {
       const plotH = H - (opts.noAxis ? 0 : AXIS_H) - PAD_T;
       const bandH = plotH / bands.length;
 
-      // One radius for every band in this plot. Left to itself packBand fits each
-      // band separately, so a panel showing 800 conversations above 63 gave the two
-      // rows different dot sizes — the same mark meaning a different thing in each
-      // half of one picture. Where a radius is dictated (the matrix, which fits one
-      // across every cell) that wins; otherwise the largest that suits them all.
-      let useR = opts.r;
-      if (!useR) {
-        useR = R_STEPS[R_STEPS.length - 1];
-        for (let i = 0; i < R_STEPS.length; i++) {
-          const rr = R_STEPS[i];
+      // One unit for every band in this plot, so a given height means the same
+      // number of conversations wherever it appears. Fitted per band, a panel
+      // showing 800 above 63 would draw the two at different scales — the same
+      // bar meaning a different count in each half of one picture. Where a unit is
+      // dictated (the matrix, which fits one across every cell) that wins;
+      // otherwise the largest that suits them all.
+      let unit = opts.unit;
+      if (!unit) {
+        unit = UNIT_STEPS[UNIT_STEPS.length - 1];
+        for (let i = 0; i < UNIT_STEPS.length; i++) {
+          const uu = UNIT_STEPS[i];
           if (bands.every(function (b) {
-            return stackAt(b.vals, lo, hi, plotW, rr) <= bandH - 2;
-          })) { useR = rr; break; }
+            return stackAt(b.vals, lo, hi, plotW, uu) <= bandH - 2;
+          })) { unit = uu; break; }
         }
       }
+      const colW = plotW / BINS;
+      // Bars meet edge to edge in a matrix cell, where a column is under 4px wide
+      // and a gap would read as a comb rather than a distribution. In the close-up,
+      // where a column is ~17px, 1px of daylight separates them into bars.
+      const barGap = colW > 6 ? 1 : 0;
 
       bands.forEach(function (b, bi) {
         const base = PAD_T + (bi + 1) * bandH;
@@ -4554,26 +5068,45 @@ function buildSimContent() {
           t.textContent = b.label;
           svg.appendChild(t);
         }
-        const packed = packBand(b.vals, lo, hi, plotW, bandH, useR);
-        packed.pts.forEach(function (pt) {
-          lane.appendChild(svgEl("circle", {
-            cx: labW + pt[0], cy: base - pt[1], r: packed.r, class: "d3-pt"
+        // A bar per bin, standing on the band's baseline. Height is the count
+        // times the shared unit, so two bars of the same height hold the same
+        // number of conversations wherever they are on screen — and a bin too tall
+        // for its band is cut by the lane's clip, which reads as running off the
+        // scale, exactly as an over-tall pile of dots did.
+        binCounts(b.vals, lo, hi).forEach(function (n, c) {
+          if (!n) return;
+          const h = n * unit;
+          lane.appendChild(svgEl("rect", {
+            x: labW + c * colW, y: base - h,
+            width: Math.max(0.5, colW - barGap), height: h, class: "d3-bar"
           }));
         });
       });
 
       rules.forEach(function (rl) {
         svg.appendChild(svgEl("line", {
-          x1: labW, x2: W - PAD_R, y1: rl.y, y2: rl.y,
-          stroke: rl.last ? "#B9C0CA" : "#E4E8EE", "stroke-width": 1
+          x1: labW, x2: W - padR, y1: rl.y, y2: rl.y,
+          // The pale rule separates two bands packed into a matrix cell; at full
+          // size each band is its own plot with its own axis, so both get the
+          // darker line rather than the top one looking like a fold.
+          // One grey for every band's baseline. The separator between two bands
+          // used to be paler than the axis under the bottom one, which read as
+          // the top histogram having a fainter axis than the one below it — they
+          // are both axes. #838C99 rather than the old #B9C0CA, which measured
+          // 1.9:1 on white, under the 3:1 a graphic has to clear.
+          stroke: "#838C99", "stroke-width": 1
         }));
       });
 
-      if (!opts.noAxis) niceTicks(lo, hi, opts.compact ? 2 : 5).forEach(function (v) {
+      // 3 across a full-size axis, not 5. The scale runs -5.10 to 4.99, and asking
+      // for 5 ticks makes niceTicks choose a step of 2 — so the axis ended at -4
+      // and 4 and READ as if the data stopped there, while the cells beside it were
+      // labelled -5, 0, 5. Three asks for a step of 5, which lands on the ends.
+      if (!opts.noAxis) niceTicks(lo, hi, opts.compact ? 2 : 3).forEach(function (v) {
         const x = labW + ((v - lo) / (hi - lo)) * plotW;
         svg.appendChild(svgEl("line", {
           x1: x, x2: x, y1: PAD_T + plotH, y2: PAD_T + plotH + 3,
-          stroke: "#B9C0CA", "stroke-width": 1
+          stroke: "#838C99", "stroke-width": 1
         }));
         const t = svgEl("text", { x: x, y: H - 3, class: "d3-tick" });
         t.setAttribute("text-anchor", "middle");
@@ -4590,33 +5123,42 @@ function buildSimContent() {
     // the top of a cell that was 22px taller than it. Built at the measured width
     // instead, the scale is 1 and the plot fills its cell.
     const plotJobs = [];
+    // What fitPlots last settled on: the unit, and the PLOT height a matrix cell
+    // got it for. The close-ups scale the two together — see openDetail.
+    //
+    // Plot height, not lane height. A lane is the plot divided by however many
+    // bands that column has, so a lane-to-lane ratio is only right when the cell
+    // and the close-up have the SAME number of bands. Every column is binary in
+    // this dataset, so that held by luck; a three-level attribute would have
+    // scaled its close-up against a two-band cell's lane and drawn it two-thirds
+    // too short. The band counts cancel out of a plot-to-plot ratio.
+    let fitUnit = 0, fitCellPlotH = 0;
 
-    // One radius for every dot on screen, cells and pathway stubs alike. Left to
-    // itself packBand shrinks the radius per band until that band's tallest stack
-    // fits, which produced ten different sizes across the matrix — a dot in one
-    // cell over three times the area of a dot in another, both meaning one
-    // conversation. Here the whole set is measured first and the largest radius
-    // that every band can live with is used everywhere.
+    // One unit for every bar on screen, cells and pathway stubs alike. Fitted per
+    // band it would produce ten different scales across the matrix — the same bar
+    // height meaning three times as many conversations in one cell as in another.
+    // Here the whole set is measured first and the largest unit every band can
+    // live with is used everywhere.
     function fitPlots() {
       if (view !== "graph" || !plotJobs.length) return;
       plotJobs.forEach(function (j) {
         const b = j.el.getBoundingClientRect();
         j.w = Math.round(b.width);
-        j.h = Math.round(b.height) || (j.noAxis ? 28 : 0);
+        j.h = Math.round(b.height) || 0;
       });
       if (plotJobs.some(function (j) { return j.w < 20 || j.h < 10; })) return;
-      // Some bands cannot fit at ANY radius. Filtered to the model's mistakes,
-      // Pathway 1 puts all 63 conversations inside 4% of its axis — a pile 44 dots
-      // tall needing 84px in a 24px band, which is the whole point of that row.
+      // Some bands cannot fit at ANY unit. Filtered to the model's mistakes,
+      // Pathway 1 puts all 63 conversations inside 4% of its axis — a bin 44 deep
+      // needing 84px in a 24px band, which is the whole point of that row.
       // Requiring every band to fit therefore always collapsed to the smallest
-      // radius, and that band still overflowed. So the radius is fitted to the
-      // bands that CAN fit, and the ones that cannot run past their band and are
-      // clipped by the cell — which reads as "off the scale", which is true.
-      const FLOOR = R_STEPS[R_STEPS.length - 1];
+      // unit, and that band still overflowed. So the unit is fitted to the bands
+      // that CAN fit, and the ones that cannot run past their band and are clipped
+      // by the cell — which reads as "off the scale", which is true.
+      const FLOOR = UNIT_STEPS[UNIT_STEPS.length - 1];
       const measured = [];
       plotJobs.forEach(function (j) {
-        // Must match what dotPlot will actually use, or the fit is computed for a
-        // wider plot than gets drawn and the piles come out taller than measured.
+        // Must match what histPlot will actually use, or the fit is computed for a
+        // wider plot than gets drawn and the bars come out taller than measured.
         const plotW = j.w - (j.labels ? COMPACT_LABEL_W : 8) - PAD_R;
         const bandH = (j.h - (j.noAxis ? 0 : AXIS_H) - PAD_T) / j.bands.length;
         j.bands.forEach(function (b) {
@@ -4626,23 +5168,55 @@ function buildSimContent() {
       });
       const fittable = measured.filter(function (m) { return m.fittable; });
       let pick = FLOOR;
-      for (let i = 0; i < R_STEPS.length; i++) {
-        const r = R_STEPS[i];
+      for (let i = 0; i < UNIT_STEPS.length; i++) {
+        const u = UNIT_STEPS[i];
         const ok = fittable.every(function (m) {
-          return stackAt(m.b.vals, m.j.lo, m.j.hi, m.plotW, r) <= m.bandH - 2;
+          return stackAt(m.b.vals, m.j.lo, m.j.hi, m.plotW, u) <= m.bandH - 2;
         });
-        if (ok) { pick = r; break; }
+        if (ok) { pick = u; break; }
       }
+      fitUnit = pick;
+      // A labelled job is a matrix cell; the stubs are the unlabelled ones and
+      // have a plot of their own height.
+      const cellJob = plotJobs.filter(function (j) { return j.labels; })[0];
+      fitCellPlotH = cellJob ? (cellJob.h - AXIS_H - PAD_T) : 0;
       plotJobs.forEach(function (j) {
         j.el.innerHTML = "";
-        j.el.appendChild(dotPlot(j.bands, j.lo, j.hi, j.w, j.h,
-          { noLabels: !j.labels, compact: true, noAxis: j.noAxis, r: pick }));
+        j.el.appendChild(histPlot(j.bands, j.lo, j.hi, j.w, j.h,
+          { noLabels: !j.labels, compact: true, noAxis: j.noAxis, unit: pick }));
       });
     }
 
-    function graphCell(row, pi) {
+    // The unit a close-up should draw at: the matrix's, grown by the ratio between
+    // its lane and a matrix cell's. 0 hands the plot back to fitting itself, which
+    // is what happens if the matrix has not been measured yet.
+    function detailUnit(H) {
+      if (!fitUnit || !fitCellPlotH) return 0;
+      return fitUnit * ((H - AXIS_H - PAD_T) / fitCellPlotH);
+    }
+
+    function graphCell(row, pi, r) {
       const el = document.createElement("div");
       el.className = "d3-cell graph";
+      // Hovering a panel paints it the colour its correlation has in the other
+      // view, so the two readings of one pair are tied together: piles that sit on
+      // top of each other come up pale, piles that separate come up deep. It is
+      // also what earns the key on the right its place in this view.
+      //
+      // On the CELL, not on the ::after overlay the grey wash uses — that overlay
+      // sits above the plot, so an opaque colour there would hide the histogram it
+      // is meant to be annotating. The cell's background is behind the SVG.
+      if (isFinite(r)) {
+        const flat = Math.abs(r) < 0.005;
+        el.classList.add("hascorr");
+        el.style.setProperty("--corr", flat ? "#FFFFFF" : rampHex(r));
+        el.style.setProperty("--barfill", flat ? "#1E242C" : rampBarInk(r));
+        // Read by the delegated listener that drives the marker on the key. No
+        // title: a native tooltip waits a second, cannot be styled, covers the
+        // histogram it is describing, and does not exist on the tablets this runs
+        // on. The marker says the same thing faster and in a fixed place.
+        el.dataset.r = r;
+      }
       const gv = row.gvals || row.vals;
       const bands = row.groups.map(function (g) {
         const vals = [];
@@ -4650,10 +5224,10 @@ function buildSimContent() {
         return { label: g[1], vals: vals };
       });
       // Half the previous size. 26px a band left most of each panel empty above
-      // the dots; 13 packs them without capping any stack, since packBand shrinks
-      // the dot radius to whatever the band allows. The axis strip and top pad are
+      // the bars; 13 holds them without capping any bin, since the unit shrinks to
+      // whatever the band allows. The axis strip and top pad are
       // NOT halved — they hold tick text, and 8px cannot.
-      // noLabels: "Wait / Approach" is redrawn in all four cells of a column and
+      // noLabels: "Approach / Wait" is redrawn in all four cells of a column and
       // is the same in every one — and the column heading's marginal already names
       // each band and counts it. A quarter of the plot's width was going on a
       // caption sitting directly above it, four times over.
@@ -4661,7 +5235,7 @@ function buildSimContent() {
       // which is the thing the panel exists to show, and leaving it to be inferred
       // from the heading's line order made the pairs unreadable.
       plotJobs.push({ el: el, bands: bands, lo: paths[pi].lo, hi: paths[pi].hi, labels: true });
-      el.appendChild(dotPlot(bands, paths[pi].lo, paths[pi].hi, 210,
+      el.appendChild(histPlot(bands, paths[pi].lo, paths[pi].hi, 210,
         Math.max(40, 13 * bands.length + AXIS_H + PAD_T),
         { noLabels: true, compact: true }));
       return el;
@@ -4682,20 +5256,38 @@ function buildSimContent() {
       const span = fHi - fLo;
       const frac = span > 0 ? (vHi - vLo) / span : 1;
       const el = document.createElement("div");
-      el.className = "d3-range" + (frac < 0.25 ? " narrow" : "");
+      // Every row's bar is drawn the same. A pathway the filter has all but
+      // flattened used to be picked out in colour as well, on the grounds that it
+      // is the one worth looking at — but the caption already says "4% of the
+      // range" and the fill is already a sliver, so the colour was a third way of
+      // saying the same thing, and the only strong colours available here mean
+      // something else on this screen.
+      el.className = "d3-range";
       const track = document.createElement("i");
       track.className = "d3-range-track";
+      // Positions are on the SHARED axis the histogram above uses, not on this
+      // pathway's own min and max. Drawn against its own range the bar was a
+      // different scale from the plot it sits under — aligning the two while they
+      // disagreed would have invited a reading that is not true.
+      const axSpan = pa.hi - pa.lo;
+      const at = function (v) { return ((v - pa.lo) / axSpan) * 100; };
+      const fullSeg = document.createElement("i");
+      fullSeg.className = "d3-range-full";
+      fullSeg.style.left = at(fLo).toFixed(2) + "%";
+      fullSeg.style.width = Math.max(1.5, at(fHi) - at(fLo)).toFixed(2) + "%";
+      track.appendChild(fullSeg);
       const fill = document.createElement("i");
       fill.className = "d3-range-fill";
-      // Floored at 2% so a collapsed column still shows WHERE it collapsed.
-      fill.style.left = (span > 0 ? ((vLo - fLo) / span) * 100 : 0).toFixed(2) + "%";
-      fill.style.width = Math.max(2, frac * 100).toFixed(2) + "%";
+      // Floored so a collapsed span still shows WHERE it collapsed.
+      fill.style.left = at(vLo).toFixed(2) + "%";
+      fill.style.width = Math.max(1.5, at(vHi) - at(vLo)).toFixed(2) + "%";
       track.appendChild(fill);
       const cap = document.createElement("span");
-      // Shortened with the stub. "% of its full range" left the bar itself about
-      // 40px long, too short to read a position off — which is the whole point of
-      // it. The tooltip still spells out both spans in full.
-      cap.textContent = Math.round(frac * 100) + "% of range";
+      cap.className = "cap";
+      // The words are back: they were dropped when the caption had to share a row
+      // with the bar, and on its own line there is 118px for a string that measures
+      // about 50. The tooltip still spells out both spans in full.
+      cap.textContent = Math.round(frac * 100) + "% of the range";
       el.appendChild(track);
       el.appendChild(cap);
       el.title = "These " + pa.vals.length + " conversations span " +
@@ -4713,11 +5305,11 @@ function buildSimContent() {
       // Fitted with the cells, so a dot means the same thing in the stub as it
       // does in the matrix beside it.
       plotJobs.push({ el: plot, bands: [{ label: "", vals: pa.vals }],
-                      lo: pa.lo, hi: pa.hi, noAxis: true });
+                      lo: pa.lo, hi: pa.hi });
       // Halved with the cells. At 62 it was the tallest thing in the row and held
       // every row open to twice the height of the plots beside it.
-      plot.appendChild(dotPlot([{ label: "", vals: pa.vals }], pa.lo, pa.hi, 210, 28,
-        { noLabels: true, compact: true, noAxis: true }));
+      plot.appendChild(histPlot([{ label: "", vals: pa.vals }], pa.lo, pa.hi, 210, 44,
+        { noLabels: true, compact: true }));
       box.appendChild(rangeBar(pa));
       return box;
     }
@@ -4760,27 +5352,32 @@ function buildSimContent() {
       if (n < MIN_N) {
         scroll.innerHTML = "";
         scrollWrap.classList.remove("showkey");
-        note.innerHTML = n === 0
+        setNote(n === 0
           ? "Nothing matches that filter."
           : "Only " + n + " conversations match. A correlation over so few is mostly "
-            + "noise — widen the filter to at least " + MIN_N + " to read this matrix.";
-        viewBtns.forEach(function (v) { v.el.classList.toggle("on", v.key === view); });
-        // Nothing drawn, so nothing to select.
+            + "noise — widen the filter to at least " + MIN_N + " to read this matrix.");
+        syncViews();
+        // Nothing drawn, so there is nothing to open.
         viewHint.hidden = true;
         return;
       }
       buildSeries();
-      viewBtns.forEach(function (v) {
-        v.el.classList.toggle("on", v.key === view);
-        v.el.setAttribute("aria-pressed", v.key === view ? "true" : "false");
-      });
+      syncViews();
       viewHint.hidden = view !== "graph";
+      // Settled before the grid is built, not after: the note is a flex sibling of
+      // the table, so whether it is showing decides how much height sizeRows() has
+      // to divide. Setting it afterwards made the first pass measure against the
+      // old height and left the ResizeObserver to correct it a frame later.
+      setNote("");
       scroll.innerHTML = "";
       // The trigger it would hand focus back to is about to be destroyed.
       closeDetail();
       plotJobs.length = 0;
       // The key explains the fills, so it belongs to the correlation view only.
-      scrollWrap.classList.toggle("showkey", view === "corr");
+      // Shown in both views: graph cells take their correlation's colour on hover,
+      // so the key explains something here too. It costs no layout either way —
+      // the legend is toggled with visibility, so its column is reserved in both.
+      scrollWrap.classList.add("showkey");
       // Pathways down the side, the things they might line up with across the
       // top. R is still indexed [series][pathway] — the transpose is in the
       // laying out, not in the arithmetic, so the correlations are untouched.
@@ -4797,10 +5394,10 @@ function buildSimContent() {
       // makes every column exactly equal in both views.
       grid.style.gridTemplateColumns =
         STUB + "px repeat(" + rows.length + ", minmax(0, 1fr))";
-      // Fixed body rows, so a row is the same height whichever view is showing and
-      // switching never moves anything. ROW is set by the tallest thing that has to
-      // sit in one: the stub's pathway name, its dot plot and its range bar.
-      grid.style.gridTemplateRows = HEAD + "px repeat(" + paths.length + ", " + ROW + "px)";
+      // Set here rather than in buildSeries, so it can never be out of step with
+      // the grid sizeRows() is about to measure against.
+      rowCount = paths.length;
+      sizeRows(grid);
       const corner = document.createElement("div");
       corner.className = "d3-corner";
       grid.appendChild(corner);
@@ -4867,7 +5464,7 @@ function buildSimContent() {
         }
         grid.appendChild(lab);
         rows.forEach(function (row, ri) {
-          const cell = view === "corr" ? corrCell(R[ri][pi]) : graphCell(row, pi);
+          const cell = view === "corr" ? corrCell(R[ri][pi]) : graphCell(row, pi, R[ri][pi]);
           if (ri === 2) cell.classList.add("sep");
           // Graph view only. A correlation cell is a colour and a number, and the
           // detail behind it is the distribution — which is what graph view already
@@ -4893,46 +5490,14 @@ function buildSimContent() {
       });
       scroll.appendChild(grid);
 
-      // A filter can flatten a row — model_correct:0, the view this opens on,
-      // leaves every conversation "wrong" — and a flat row does two things worth
-      // saying out loud, because both look like findings and neither is one.
-      const flat = rows.filter(function (row) {
-        for (let i = 1; i < row.vals.length; i++) if (row.vals[i] !== row.vals[0]) return false;
-        return row.vals.length > 0;
-      });
-      let caveat = "";
-      if (flat.length) {
-        caveat = "<b>" + flat.map(function (r) { return r.label; }).join(", ") +
-          (flat.length > 1 ? " have" : " has") +
-          " the same value on every conversation in this filter</b>, so " +
-          (flat.length > 1 ? "those rows" : "that row") + " cannot be correlated with anything.";
-        // Truth and prediction are one bit each. Fix "was the model correct" and
-        // the two rows become the same fact, so their correlations are locked
-        // together — identical where the model is right, mirrored where it is
-        // wrong. The matrix shows that as a striking symmetry; it is arithmetic.
-        const c = flat.filter(function (r) { return r.key === "correct"; })[0];
-        if (c) {
-          caveat += c.vals[0] === 0
-            ? " And because the model is wrong on every one of them, its prediction is always" +
-              " the opposite of the actual label — so those two rows are exact mirrors of each" +
-              " other by arithmetic, not by finding."
-            : " And because the model is right on every one of them, its prediction is always" +
-              " the actual label — so those two rows are identical by arithmetic, not by finding.";
-        }
-      }
-
-      note.innerHTML = view === "corr"
-        ? "Each square is the correlation between that pathway and that column, over "
-          + "the " + items.length + " conversations in the filter. Color tracks both "
-          + "direction and strength — orange positive, blue negative, deeper for "
-          + "stronger. Hover a cell for the exact value."
-        : "One dot is one conversation. Each panel splits a pathway’s activations by the "
-          + "row’s value; the headers show what each one looks like on its own. Two piles "
-          + "sitting in the same place means the pathway does not tell those groups apart.";
-      if (caveat) note.innerHTML += '<div class="d3-caveat">' + caveat + "</div>";
-      // After the note: it lives outside the scroller and its height — one line or
-      // three, depending on whether the filter flattened a row — decides how much
-      // room the squares have.
+      // Nothing is written under the matrix any more: what a square means, what a
+      // dot means, and what a flat row does to the reading all moved into About on
+      // 2026-09-01. The element stays only because the too-few-conversations path
+      // above still writes to it — cleared at the top of this draw.
+      // Again, now the grid is populated. The call up at gridTemplateColumns sets
+      // the row heights, but it runs before a single stub exists — and the stub is
+      // what --stub-lift has to be measured from.
+      sizeRows(grid);
       if (view === "corr") sizeCorrCells();
       fitPlots();
       placeHeads();
@@ -4987,6 +5552,17 @@ function buildSimContent() {
       const side = SYM_MIN + (SYM_MAX - SYM_MIN) * t;
       sq.style.width = side.toFixed(1) + "px";
       sq.style.height = side.toFixed(1) + "px";
+      // Importance is drawn as an outline, not a fill — it is a property of the
+      // MODEL rather than a value a step produced, the same distinction the grey
+      // number already makes. The outline takes the darkest shade of its own
+      // sign, so the direction still reads at a glance while the box stays
+      // plainly a reference. Its corners are square (see the CSS) for the same
+      // reason: nothing else in the panel is, so the difference is the mark.
+      if (cell.classList.contains("imp")) {
+        sq.style.background = "transparent";
+        sq.style.boxShadow = "inset 0 0 0 1px " + (v >= 0 ? FILL_POS[4] : FILL_NEG[4]);
+        return;
+      }
       // Zero has no sign, and the legend already says so — its ramp runs
       // blue - white - orange. Tinting the opening square the lightest positive
       // shade claimed a direction the value does not have; it starts white and
@@ -5174,6 +5750,8 @@ function buildSimContent() {
       carryFor.length = 0;
       flyLive.length = 0;
       document.querySelectorAll(".nnm-flyanchor").forEach(function (e) { e.remove(); });
+      document.querySelectorAll(".nnm-flyclip").forEach(function (e) { e.remove(); });
+      for (const k in flyClips) delete flyClips[k];
       if (trackRaf) { cancelAnimationFrame(trackRaf); trackRaf = null; }
       // Both flags mean the same thing and must be cleared the same way: false =
       // the line is drawn. playDecide raises decidePending itself when it is about
@@ -5283,13 +5861,70 @@ function buildSimContent() {
     // single delta is right for all of them.
     const flyLive = [];
 
-    function flyAnchor(left, top) {
+    // Everything that flies during Weigh — the carried square and its two cues —
+    // belongs to one ROW of the flow scroller, so it has to be clipped the way
+    // that row is. A fixed anchor on <body> is clipped by nothing, so a carry on
+    // a row scrolled out of view played in the open, over the panel's head or
+    // below the card. These three go into a clip host instead.
+    //
+    // The word chips deliberately do NOT: they fly from the readings panel into
+    // the flow panel, and either scroller's rectangle would cut that flight in
+    // half. If they ever need clipping it is to the two panels' union, not to one.
+    // Two regions, because the two flights have different reach. A carry stays
+    // inside one row, so "flow" is the flow scroller's viewport exactly. A word
+    // chip arcs up to 150px over the rows on its way across — measured, its peak
+    // sits 42px ABOVE the scroller band and 83px inside the top of the card — so
+    // clipping it to the scroller would cut the arc off. "cards" is the two
+    // panels' union, which holds the whole flight and still hides anything
+    // scrolled out of the rows.
+    const flyClips = {};
+    function flyClipRect(kind) {
+      if (kind === "cards") {
+        const a = document.querySelector(".nnm-readings");
+        const b = document.querySelector(".nnm-flowpanel");
+        if (a && b) {
+          const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+          return { left: Math.min(ra.left, rb.left), top: Math.min(ra.top, rb.top),
+                   right: Math.max(ra.right, rb.right), bottom: Math.max(ra.bottom, rb.bottom) };
+        }
+      }
+      return chainBody.getBoundingClientRect();
+    }
+    function flyClip(kind) {
+      let el = flyClips[kind];
+      if (!el || !el.isConnected) {
+        el = document.createElement("div");
+        el.className = "nnm-flyclip";
+        document.body.appendChild(el);
+        flyClips[kind] = el;
+      }
+      // Re-aimed only while empty. Moving it with live anchors inside would drag
+      // them along with it, since they are positioned against its origin.
+      if (!el.firstChild) {
+        const r = flyClipRect(kind);
+        el.style.left = r.left + "px";
+        el.style.top = r.top + "px";
+        el.style.width = (r.right - r.left) + "px";
+        el.style.height = (r.bottom - r.top) + "px";
+      }
+      return el;
+    }
+
+    function flyAnchor(left, top, kind) {
       const w = document.createElement("div");
       w.className = "nnm-flyanchor";
+      let host = document.body;
+      if (kind) {
+        host = flyClip(kind);
+        const h = host.getBoundingClientRect();
+        w.classList.add("clipped");
+        left -= h.left;
+        top -= h.top;
+      }
       w.style.left = left + "px";
       w.style.top = top + "px";
       w._s0 = readScroll ? readScroll.scrollTop : 0;
-      document.body.appendChild(w);
+      host.appendChild(w);
       flyLive.push(w);
       return w;
     }
@@ -5298,6 +5933,11 @@ function buildSimContent() {
       const i = flyLive.indexOf(w);
       if (i >= 0) flyLive.splice(i, 1);
       w.remove();
+      // A host outlives one flight — the next row's is a few hundred ms behind —
+      // so it goes only once nothing is left inside it.
+      for (const k in flyClips) {
+        if (flyClips[k] && !flyClips[k].firstChild) { flyClips[k].remove(); delete flyClips[k]; }
+      }
     }
 
     function syncFlyLayer() {
@@ -5316,7 +5956,7 @@ function buildSimContent() {
       const tr = (target.querySelector(".nnm-sq") || target).getBoundingClientRect();
       const c = document.createElement("span");
       c.className = "nnm-fly";
-      const anchor = flyAnchor(r.left, r.top);
+      const anchor = flyAnchor(r.left, r.top, "cards");
       // Colours come from the token's own custom properties, not getComputedStyle:
       // `lit` animates the background, so the computed value can still be the
       // un-lit one and the chip would come out transparent.
@@ -5359,7 +5999,7 @@ function buildSimContent() {
         });
       }
       playAnim(c, frames, { duration: FLY, easing: "linear", fill: "forwards" });
-      later(function () { c.remove(); }, FLY + 120);
+      later(function () { dropAnchor(anchor); }, FLY + 120);
     }
 
     function showZero(cell) {
@@ -5524,6 +6164,25 @@ function buildSimContent() {
     const CARRY_FLIP = 780;   // turn over, only where importance is negative
     const CARRY_C = 400;      // -> weighted activation
     const CARRY_GAP = 200;    // before the next pathway sets off
+    // The importance value takes its ink over the last stretch of the approach,
+    // so it has finished changing BY THE TIME the square lands rather than
+    // starting to change once everything has stopped. Must match the colour
+    // transition on .nnm-cell.imp .nnm-num.
+    const IMP_INK = 200;
+    // The last leg's SETTLE easing gets there at HALF its duration: measured on
+    // cubic-bezier(.34,1.26,.52,1), progress crosses 1.0 at t=0.503, then spends
+    // the remaining 200ms overshooting 2% and settling back. That crossing is the
+    // arrival the eye reads and the box's own bounce, so the weighted value
+    // appears and takes its kick THERE, not when the animation formally ends.
+    //
+    // It is also when the white stand-in under Weighted Activation goes, because
+    // the two are the same event: .nnm-sq is not replaced, apply() takes .empty
+    // off it and it becomes the real square. The travelling square's centre is
+    // over the stand-in's centre at that instant (0.503 of 400ms = 201ms), which
+    // is where this 200 puts it. Do not add a second timer to hide the stand-in
+    // — it would land a millisecond after apply() and hide the real value.
+    const WGT_LEAD = 200;
+
     // Rows that flip take longer than rows that do not, which is right: the turn
     // is the thing worth waiting for, and a row that held still to pad the timing
     // out would read as stalled.
@@ -5544,7 +6203,7 @@ function buildSimContent() {
       // back and round to the right — so it has to sit over the box rather than
       // beside it. Above rather than below: below is where the row's number sits,
       // 35px away, while above there is a clear 45px to the row before.
-      const anc = flyAnchor(box.left + box.width / 2, box.top);
+      const anc = flyAnchor(box.left + box.width / 2, box.top, "flow");
       const el = document.createElement("div");
       el.className = "nnm-flipcue";
       el.style.width = W + "px";
@@ -5605,7 +6264,7 @@ function buildSimContent() {
           '<path d="M1.5 6 H8.5 M5.6 3.1 L8.9 6 L5.6 8.9" fill="none" ' +
           'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" ' +
           'stroke-linejoin="round"/></svg>';
-        const anc = flyAnchor(cx, cy);
+        const anc = flyAnchor(cx, cy, "flow");
         anc.appendChild(a);
         const d0 = grow ? near : far, d1 = grow ? far : near;
         const at = function (d) {
@@ -5655,7 +6314,7 @@ function buildSimContent() {
       // Anchored on the square's CENTRE, and the element centres itself on that
       // point with translate(-50%,-50%). Growing then keeps the centre still,
       // which is what scale() used to do for free.
-      const anc = flyAnchor(a.left + a.width / 2, a.top + a.height / 2);
+      const anc = flyAnchor(a.left + a.width / 2, a.top + a.height / 2, "flow");
       c.style.width = startSide + "px";
       c.style.height = startSide + "px";
       c.style.background = startBg;
@@ -5714,6 +6373,13 @@ function buildSimContent() {
       // halves of the rule — the sign turns it over, the magnitude resizes it.
       // Beat one: resize. A row that does not flip takes its final colour here
       // too, since only the magnitude is changing.
+      // One beat, not two: the value takes its ink and its kick together, on the
+      // way in. The colour runs out exactly as leg one finishes — see IMP_INK.
+      later(function () {
+        row.classList.add("lit-imp");
+        bump(row.querySelector(".imp .nnm-num"));
+      }, Math.max(0, CARRY_A - IMP_INK));
+
       later(function () {
         resizeCue(i, sc, CARRY_SCALE);
         playAnim(c, 
@@ -5742,6 +6408,7 @@ function buildSimContent() {
       }
 
       const outAt = CARRY_A + CARRY_SCALE + (flips ? CARRY_FLIP : 0);
+
       later(function () {
         playAnim(c, 
           [{ transform: tf(dxI, dyI, end), width: endPx, height: endPx },
@@ -5760,7 +6427,16 @@ function buildSimContent() {
         trackConnectors(CARRY_C * 0.6 + 80);
       }, outAt + CARRY_C * 0.45);
 
-      later(function () { dropAnchor(anc); }, outAt + CARRY_C + 40);
+      // The carry keeps its overshoot and settle — that bounce is the landing. The
+      // square it lands on is the one that gives way: apply() uncovers the real
+      // one at the crossing, 200ms before this, so it spent the whole settle
+      // standing out from behind the moving square. It is held invisible until
+      // here (see .under) and revealed as the carry goes, both at full size in the
+      // same place, so the handover cannot be seen.
+      later(function () {
+        row.querySelector(".wgt").classList.remove("under");
+        dropAnchor(anc);
+      }, outAt + CARRY_C + 40);
     }
 
     function playWeigh() {
@@ -5783,12 +6459,21 @@ function buildSimContent() {
         paint(cell, wgt[p], SUM_SCALE);
         cell.classList.remove("empty", "nnm-pop", "nnm-tick");
         if (sq) { void sq.offsetWidth; sq.style.transition = ""; }
+        // The VALUE is kicked as it appears, the same 1.09 the importance value
+        // takes when the square lands on it. The number only — the cell keeps its
+        // tick removed above, because a box that grows here would give away the
+        // handoff the suspended transition exists to hide.
+        bump(cell.querySelector(".nnm-num"));
+        // The number, the colour and the kick all land here. The square does not:
+        // a carry is still settling on top of it and the two would double up. The
+        // drop timer in carry() takes this off.
+        if (carryFor[p]) cell.classList.add("under");
         carryFor[p] = null;
         trackConnectors(motionOff() ? 0 : 520);
       };
 
       if (motionOff()) {
-        rows.forEach(function (r) { r.classList.add("lit-mul", "lit-arr"); });
+        rows.forEach(function (r) { r.classList.add("lit-mul", "lit-eq", "lit-imp"); });
         for (let p = 0; p < NP; p++) apply(p);
         weighAnim = false;
         return;
@@ -5807,10 +6492,10 @@ function buildSimContent() {
           // it is the event, and a box that jumps at the same moment competes
           // with the thing it is meant to be multiplied by.
           later(function () {
-            r.classList.add("lit-arr");
-            bump(r.querySelector(".nnm-op.arr"));
+            r.classList.add("lit-eq");
+            bump(r.querySelector(".nnm-op.eq"));
           }, start + total - CARRY_C);
-          later(function () { apply(pi); }, start + total);
+          later(function () { apply(pi); }, start + total - WGT_LEAD);
         })(p, t, carryTotal(p));
         t += carryTotal(p) + CARRY_GAP;
       }
@@ -6000,7 +6685,19 @@ function buildSimContent() {
     resetBtn.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
     resetBtn.setAttribute("aria-label", "Clear the steps and start over");
     resetBtn.addEventListener("click", function () { setStep(0); });
-    steps.appendChild(resetBtn);
+    // One group of five. Reset is the same 36px pill as the four steps and reads
+    // as one of them; what kept it apart was where it sat, not how it looked.
+    stepGroup.appendChild(resetBtn);
+    // About moves out of the filter row above the conversations and into the slot
+    // Reset has just left — appending moves the node, so there is nothing to
+    // remove from the row it came from — with a rule between the two groups.
+    if (casePane.filter && casePane.filter.about) {
+      const stepRule = document.createElement("span");
+      stepRule.className = "nnm-steprule";
+      stepRule.setAttribute("aria-hidden", "true");
+      steps.appendChild(stepRule);
+      steps.appendChild(casePane.filter.about);
+    }
 
     const animWrap = document.createElement("label");
     animWrap.className = "nnm-animtoggle";
@@ -6107,43 +6804,14 @@ function buildSimContent() {
     const flowHead = document.createElement("div");
     flowHead.className = "nnm-flowhead";
     flowHead.innerHTML =
-      '<button type="button" class="c act" disabled>Pathway<br>Activation</button>' +
+      '<span class="c act">Pathway<br>Activation</span>' +
       '<span class="g"></span>' +
       '<span class="c imp">Pathway<br>Importance</span>' +
       '<span class="g"></span>' +
-      '<button type="button" class="c wgt" disabled>Weighted<br>Activation</button>' +
-      '<button type="button" class="c far sum" disabled>Weighted<br>Sum</button>' +
-      '<button type="button" class="c far dec" disabled>Pathway Prediction</button>';
+      '<span class="c wgt">Weighted<br>Activation</span>' +
+      '<span class="c far sum">Weighted<br>Sum</span>' +
+      '<span class="c far dec">Pathway Prediction</span>';
     chainOuter.insertBefore(flowHead, chainBody);
-
-    // Each step reached from the column it fills: Activate fills Pathway
-    // Activation, Weigh fills Weighted Activation, and so on. Same order as the
-    // button row above, so one index serves both.
-    const headBtns = [
-      flowHead.querySelector(".c.act"),
-      flowHead.querySelector(".c.wgt"),
-      flowHead.querySelector(".c.sum"),
-      flowHead.querySelector(".c.dec")
-    ];
-    headBtns.forEach(function (b, i) {
-      b.addEventListener("click", function () { setStep(i + 1); });
-    });
-
-    // Reset is not one of the four, so it stays put in either variant — otherwise
-    // "Headings are buttons" would leave no way to clear the diagram.
-    function applyWhatIf(mode) {
-      const heads = mode === "headings";
-      flowHead.classList.toggle("hb", heads);
-      stepGroup.style.display = heads ? "none" : "";
-      headBtns.forEach(function (b) { b.disabled = !heads; });
-      // The captions just grew or shed their chrome, which moves the first flow
-      // row off the first reading until both sides are measured again.
-      alignTops();
-      syncRows();
-      alignHeadCaptions();
-      trackConnectors(0);
-    }
-    SIM.setWhatIf = applyWhatIf;
 
     const flowBody = document.createElement("div");
     flowBody.className = "nnm-flowbody";
@@ -6155,14 +6823,14 @@ function buildSimContent() {
 
     // Typographic marks rather than drawn shapes: the old chunky X read as a close
     // button, and neither glyph could align or scale with the numbers beside it.
-    // An arrow, not an equals sign. The panel is a flow diagram — the converging
-    // lines and the fan are directional too — and the row does not actually
-    // multiply out on screen, because activation is shown to 4dp and stored to 6.
-    // "=" would invite a check that fails; the arrow claims only that one stage
-    // produces the next. Revisit if activation ever goes to 5dp, which is what it
-    // would take to make the arithmetic verifiable by hand.
+    // "=", at the same size as the X, so the row reads as one statement of
+    // arithmetic. It replaced an arrow on 2026-08-31 at the content designer's
+    // request. Worth knowing: the row does NOT multiply out exactly on screen,
+    // because activation is shown to 4dp and stored to 6 — 0.7293 x 17.9428 is
+    // 13.0857, not the 13.0863 displayed. Showing activation to 5dp is what it
+    // would take to make the equals sign check out by hand.
     function glyphX() { return '<span class="nnm-glyph" aria-hidden="true">\u00D7</span>'; }
-    function glyphArrow() { return '<span class="nnm-glyph arr" aria-hidden="true">\u2192</span>'; }
+    function glyphEq() { return '<span class="nnm-glyph eq" aria-hidden="true">=</span>'; }
 
     const rows = [];
     for (let p = 0; p < NP; p++) {
@@ -6172,7 +6840,7 @@ function buildSimContent() {
         '<span class="nnm-cell act sym"><i class="nnm-sq"></i><span class="nnm-num"></span></span>' +
         '<span class="nnm-op mul">' + glyphX() + '</span>' +
         '<span class="nnm-cell imp sym"><i class="nnm-sq"></i><span class="nnm-num"></span></span>' +
-        '<span class="nnm-op arr">' + glyphArrow() + '</span>' +
+        '<span class="nnm-op eq">' + glyphEq() + '</span>' +
         '<span class="nnm-slot"><span class="nnm-cell wgt sym">' +
           '<i class="nnm-sq"></i><span class="nnm-num"></span></span></span>';
       rowsEl.appendChild(r);
@@ -6637,6 +7305,7 @@ function buildSimContent() {
         // conversations, unchanged by any step — so it is on screen from the
         // start, and staying put while everything around it moves is the point.
         impC.classList.remove("empty");
+        if (!weighAnim) wgtC.classList.remove("under");
         revealed(wgtC, step >= 2 && !weighAnim, prevStep >= 2 && !weighAnim, p * 90 + 140);
         if (step >= 2 && !weighAnim) {
           const slot = r.querySelector(".nnm-slot").getBoundingClientRect().width;
@@ -6647,9 +7316,10 @@ function buildSimContent() {
         }
         if (!weighAnim) {
           r.classList.toggle("lit-mul", step >= 2);
-          r.classList.toggle("lit-arr", step >= 2);
+          r.classList.toggle("lit-eq", step >= 2);
+          r.classList.toggle("lit-imp", step >= 2);
         } else {
-          r.classList.remove("lit-mul", "lit-arr");
+          r.classList.remove("lit-mul", "lit-eq", "lit-imp");
         }
       }
       // conv/fan visibility is owned by drawConnectors — see the note there.
@@ -6689,8 +7359,8 @@ function buildSimContent() {
           + "summary of the model, not a copy of it — they land on the same answer in about "
           + "9 cases out of 10." : "";
 
-      stepBtns.concat(headBtns).forEach(function (b, i) {
-        const n = (i % 4) + 1;
+      stepBtns.forEach(function (b, i) {
+        const n = i + 1;
         b.classList.toggle("on", n === step);
         b.setAttribute("aria-pressed", n === step ? "true" : "false");
       });
@@ -6731,10 +7401,6 @@ function buildSimContent() {
     nextBtn.addEventListener("click", function () { if (idx < cases.length - 1) goToCase(idx + 1); });
 
     SIM.onResize = function () { requestAnimationFrame(render); };
-    // Whatever the shell's What if switch was last left on. Applied after the
-    // first render, because it re-measures and there is nothing to measure until
-    // the head and the first row have been laid out.
-    requestAnimationFrame(function () { render(); applyWhatIf(whatIfMode); });
     render();
 
     return wrap;
@@ -6743,6 +7409,20 @@ function buildSimContent() {
   // ---- not yet built: blank content area ----
   const wrap = document.createElement("div");
   wrap.className = "sim-content";
+
+  // Day 1's two screens have no content yet, but they do have About copy, so they
+  // carry the button in the same corner the built ones put it. Inside a .nnm-stack
+  // like every built screen, which is what supplies the 9px above the top row and
+  // the full width the button is pushed to the right edge of — without it the
+  // row is a shrink-to-fit flex item with no free space to justify into, and the
+  // button sits on the LEFT.
+  const blankStack = document.createElement("div");
+  blankStack.className = "nnm-stack";
+  const blankHead = document.createElement("div");
+  blankHead.className = "nnm-blankhead";
+  blankHead.appendChild(makeAboutButton());
+  blankStack.appendChild(blankHead);
+  wrap.appendChild(blankStack);
 
   // Polite live region for screen-reader announcements. Call SIM.announce("...")
   // from anywhere in the interactive.
@@ -7448,17 +8128,8 @@ function buildViewport() {
       info.style.minWidth = clipW + "px";
     }
 
-    // Container was emptied at the top of the rebuild, so appending the bar
-    // before the content is what puts it above the page. (insertBefore cannot be
-    // used here: the content is not a child yet.)
-    { const wi = buildWhatIf(); if (wi) { wi.classList.add("above"); container.appendChild(wi); } }
     container.appendChild(content);
     if (SIM.onResize) SIM.onResize();
-    // Synchronously first — getBoundingClientRect forces the layout it needs, so
-    // the bar is never painted at the page centre and then seen to jump. The
-    // frame afterwards catches anything the interactive re-measures on its own rAF.
-    positionWhatIf();
-    requestAnimationFrame(positionWhatIf);
     return;
   } else {
     // Standalone with device frame
@@ -7554,25 +8225,7 @@ function buildViewport() {
   }
 
   container.appendChild(frame);
-  {
-    const wi = buildWhatIf();
-    if (wi) {
-      // Preferred home is the AP header, beside the activity name. Standalone
-      // draws no AP header, so it falls back to the browser-chrome band, and
-      // Teacher Desktop standalone draws neither and takes the bar above the mock.
-      const apHead = frame.querySelector(".ap-header");
-      const band = frame.querySelector(".chrome-top");
-      if (apHead) { apHead.appendChild(wi); }
-      else if (band) { band.classList.add("has-whatif"); band.appendChild(wi); }
-      else { wi.classList.add("above"); container.insertBefore(wi, frame); }
-    }
-  }
   if (SIM.onResize) SIM.onResize();
-  // Synchronously first — getBoundingClientRect forces the layout it needs, so
-  // the bar is never painted at the page centre and then seen to jump. The frame
-  // afterwards catches anything the interactive re-measures on its own rAF.
-  positionWhatIf();
-  requestAnimationFrame(positionWhatIf);
 }
 
 // Button wiring
@@ -7758,10 +8411,6 @@ window.addEventListener("resize", () => {
   }
   // Let the interactive re-measure at the new size
   if (SIM.onResize) SIM.onResize();
-  // Most branches above move the frame without rebuilding it, so the bar has to
-  // be re-aimed here rather than relying on the mount.
-  positionWhatIf();
-  requestAnimationFrame(positionWhatIf);
 });
 
 </script>
