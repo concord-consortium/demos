@@ -1422,6 +1422,230 @@
   .nnm-frow { display: flex; align-items: center; gap: 0; border-radius: 5px; box-sizing: border-box; }
 
 
+  /* ---- 1A Trace a Case ---- */
+  .d1a-toolbar { margin-bottom: 9px; }
+  .d1a-toolbar .d3-filter { flex: 0 1 447px; }
+  .d1a-toolbar .nnm-about-btn { margin-left: auto; }
+  .d1a-panel { flex: 1; min-height: 0; }
+  /* The conversation is the smaller half: the network is the thing being read.
+     Scoped under .nnm to outrank .d3b-col's `flex: 1 1 0`, which is declared
+     further down and otherwise splits the row in half. 447px is the filter's
+     width above it, so the card and the filter share one left edge and one right. */
+  .nnm .d1a-leftcol { flex: 0 0 447px; }
+  .d1a-casebody { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  .d1a-text { flex-shrink: 0; margin-bottom: 10px; }
+  .d1a-casebody .d1a-notes { flex: 1 1 auto; min-height: 70px; overflow-y: auto; }
+  .d1a-labelrow { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-bottom: 10px; }
+  .d1a-labelcap {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--nnm-ink-2);
+  }
+  .d1a-label {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 2px 9px; border-radius: 999px; border: 2px solid;
+  }
+  .d1a-label.app { color: var(--nnm-pos); border-color: var(--nnm-pos); background: var(--nnm-pos-soft); }
+  .d1a-label.wait { color: var(--nnm-neg); border-color: var(--nnm-neg); background: var(--nnm-neg-soft); }
+
+  .d1a-panel .nnm-nav { margin-left: 8px; }
+
+  /* The column captions sit 10px under the header rule, so the body gives up
+     most of its top padding and the SVG carries the rest. */
+  .d1a-netbody { display: flex; flex-direction: column; min-height: 0; padding-top: 2px; }
+  /* `flex: 1 1 0`, not `auto`: the host's height has to come from the row it is in
+     and NOT from the SVG inside it, or measuring the host to size the SVG would
+     feed back into the host and never settle. */
+  .d1a-svghost { flex: 1 1 0; min-height: 0; }
+  .d1a-net { display: block; overflow: visible; }
+  /* Off-layout, but rendered: getComputedTextLength needs a laid-out element, and
+     `visibility: hidden` keeps that while `display: none` would not. */
+  .d1a-meas {
+    position: absolute; width: 0; height: 0; overflow: visible;
+    visibility: hidden; pointer-events: none;
+  }
+  /* The key sits in the card head, where the Correlations key's label sits. */
+  .d1a-scale {
+    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--nnm-ink-2);
+  }
+  .d1a-scale .grad {
+    width: 78px; height: 8px; border-radius: 4px;
+    background: linear-gradient(to right, var(--nnm-neg), #fff, var(--nnm-pos));
+    box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18);
+  }
+  .d1a-edge { stroke: #CCD3DD; }
+  /* Hovering dims everything unrelated rather than brightening what is related:
+     the answer to "what is this neuron wired to" should be what is LEFT. */
+  .d1a-net.hovering .d1a-edge { stroke: #EDF0F4; }
+  .d1a-net.hovering .d1a-edge.near { stroke: var(--nnm-ink); }
+  .d1a-node {
+    stroke: #6E7580; stroke-width: 1; cursor: pointer;
+    transition: r 0.12s ease;
+  }
+  /* `outline` on an SVG shape follows the bounding box and ignores border-radius,
+     so any ring on a circle comes out square. Both focus states are cleared —
+     :focus-visible alone left the box on a mouse click — and the ring is drawn
+     as its own circle instead, one per neuron. */
+  .d1a-node:focus, .d1a-node:focus-visible { outline: none; }
+  .d1a-ring {
+    fill: none; stroke: var(--nnm-neg); stroke-width: 2;
+    pointer-events: none; opacity: 0;
+  }
+  .d1a-ring.on { opacity: 1; }
+  .d1a-node.pinned { stroke: var(--nnm-ink); stroke-width: 2.5; }
+  /* What a click leaves behind. The point of the panel is that it can report the
+     number and the wiring and still have nothing to say about the meaning. */
+  .d1a-pin {
+    flex-shrink: 0; display: flex; align-items: baseline; gap: 8px;
+    margin-top: 8px; padding: 7px 10px;
+    background: var(--nnm-surface); border: 1px solid var(--nnm-rule-soft); border-radius: 6px;
+    font-family: 'Lato', sans-serif; font-size: 12.5px; line-height: 1.45;
+    color: var(--nnm-ink-2);
+  }
+  .d1a-pin.idle { color: var(--nnm-ink-3); }
+  .d1a-pin b { color: var(--nnm-ink); font-weight: 700; }
+  .d1a-pin .v { font-family: var(--nnm-mono); color: var(--nnm-ink); }
+  .d1a-pinclear {
+    margin-left: auto; flex-shrink: 0; align-self: center;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--nnm-ink-2); background: none; border: none; padding: 2px 4px;
+    cursor: pointer; text-decoration: underline;
+  }
+  .d1a-pinclear:hover { color: var(--nnm-ink); }
+  /* Same type as the Prediction Chain's column captions (.nnm-flowhead .c). */
+  .d1a-collabel {
+    font-family: 'Lato', sans-serif; font-size: 12px; fill: var(--nnm-ink-2);
+  }
+  .d1a-inlabel { font-family: 'Lato', sans-serif; font-size: 10.5px; fill: var(--nnm-ink-2); }
+  .d1a-outlabel {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase; fill: var(--nnm-ink);
+  }
+  /* The line the day turns on, so it is set as text rather than left implicit. */
+  .d1a-caption {
+    flex-shrink: 0; padding-top: 8px; margin-top: 6px;
+    border-top: 1px solid var(--nnm-rule-soft);
+    font-family: 'Lato', sans-serif; font-size: 13px; line-height: 1.45;
+    color: var(--nnm-ink-2);
+  }
+  .d1a-caption b { color: var(--nnm-ink); font-weight: 700; }
+
+  /* ---- 1B Extract Pathways ---- */
+  .d1b-toolbar { margin-bottom: 9px; }
+  .d1b-toolbar .d3-filter { flex: 0 1 447px; }
+  .d1b-toolbar .nnm-about-btn { margin-left: auto; }
+  .d1b-panel { flex: 1; min-height: 0; }
+  .d1b-body { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  .d1b-actcol { flex: 0 0 300px; }
+  .d1b-headsub {
+    margin-left: auto; font-family: 'Barlow Condensed', sans-serif; font-size: 11px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--nnm-ink-2);
+  }
+  /* Two keys, because there are two quantities and they must never be read on
+     the same scale: activations on the project's orange/blue ramp, loadings on
+     the purple/yellow one slide 17 gives them. */
+  .d1b-key {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-bottom: 8px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--nnm-ink-2);
+  }
+  .d1b-key i { flex: 1; height: 8px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18); }
+  .d1b-key i.act { background: linear-gradient(to right, var(--nnm-neg), #fff, var(--nnm-pos)); }
+  .d1b-key i.load { background: linear-gradient(to right, #F9A825, #fff, #673AB7); }
+  .d1b-loadkey { margin-top: 2px; }
+
+  .d1b-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; flex-shrink: 0; }
+  .d1b-dot { display: block; width: 100%; aspect-ratio: 1; border-radius: 50%;
+             box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18); }
+  .d1b-dot.pickable { cursor: pointer; }
+  .d1b-dot.picked { box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18), 0 0 0 2px var(--nnm-ink); }
+  .d1b-actgrid { margin-bottom: 10px; }
+  .d1b-casetext {
+    flex-shrink: 0; font-family: 'Lato', sans-serif; font-size: 11.5px;
+    color: var(--nnm-ink-2); line-height: 1.4; margin-bottom: 10px;
+  }
+  .d1b-extract {
+    margin-top: auto; flex-shrink: 0; height: 36px; box-sizing: border-box;
+    border: 2px solid var(--nnm-ink); border-radius: 5px; background: var(--nnm-ink);
+    color: #fff; cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .d1b-extract:hover:not(:disabled) { background: #2C3541; border-color: #2C3541; }
+  .d1b-extract:disabled { opacity: 0.4; cursor: default; }
+  .d1b-extract:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+
+  .d1b-pathrow { display: flex; gap: 10px; flex-shrink: 0; align-items: flex-start; }
+  .d1b-empty {
+    font-family: 'Lato', sans-serif; font-size: 13px; font-style: italic;
+    color: var(--nnm-ink-2); padding: 20px 0;
+  }
+  /* The pathways arrive one after another rather than all at once — the brief
+     asks for them to be seen emerging, and a stagger is what makes four grids
+     read as an extraction rather than a screen redraw. */
+  .d1b-path {
+    flex: 1 1 0; min-width: 0; padding: 6px; border-radius: 6px;
+    border: 2px solid transparent; cursor: pointer;
+    animation: d1b-emerge 0.42s cubic-bezier(.3,0,.3,1) both;
+  }
+  .d1b-path.on { border-color: var(--nnm-ink); background: var(--nnm-surface); }
+  .d1b-path:hover { background: var(--nnm-surface); }
+  @keyframes d1b-emerge {
+    from { opacity: 0; transform: translateY(10px) scale(0.94); }
+    to   { opacity: 1; transform: none; }
+  }
+  .nnm-nomotion .d1b-path { animation: none; }
+  .d1b-pathgrid { gap: 1px; }
+  .d1b-pathname {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--nnm-ink);
+    margin-bottom: 5px;
+  }
+  .d1b-stat {
+    margin-top: 5px; font-family: var(--nnm-mono); font-size: 9.5px; line-height: 1.5;
+    color: var(--nnm-ink-2); font-variant-numeric: tabular-nums;
+  }
+  .d1b-loadhead { margin-top: 12px; }
+  .d1b-loadwrap { flex: 0 0 auto; }
+  .d1b-loadgrid { grid-template-columns: repeat(12, 1fr); max-width: 330px; }
+
+  /* One neuron's loadings: bars out from a zero line, per the sketch under
+     "Loadings" in the brief. */
+  .d1b-bars { display: flex; flex-direction: column; gap: 4px; max-width: 380px; }
+  .d1b-barrow {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 11.5px; color: var(--nnm-ink-2);
+  }
+  .d1b-barlab { flex: 0 0 68px; }
+  .d1b-bartrack { position: relative; flex: 1; height: 10px; border-radius: 2px; background: #EEF1F5; }
+  .d1b-bartrack::after {
+    content: ""; position: absolute; left: 50%; top: -1px; width: 1px; height: 12px;
+    background: var(--nnm-ink-3);
+  }
+  .d1b-barfill { position: absolute; top: 0; height: 10px; border-radius: 2px; }
+  .d1b-barfill.pos { background: #673AB7; }
+  .d1b-barfill.neg { background: #F9A825; }
+  .d1b-barnum {
+    flex: 0 0 52px; text-align: right; font-style: normal;
+    font-family: var(--nnm-mono); font-size: 10px; color: var(--nnm-ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .d1b-note {
+    flex-shrink: 0; margin-top: auto; padding-top: 10px;
+    font-family: 'Lato', sans-serif; font-size: 12.5px; line-height: 1.45;
+    color: var(--nnm-ink-2);
+  }
+  .d1b-clear {
+    border: 2px solid var(--nnm-rule); border-radius: 5px; background: #fff;
+    color: var(--nnm-ink-2); cursor: pointer; padding: 1px 8px; margin-right: 6px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .d1b-clear:hover { background: var(--nnm-surface); }
+
   /* ---- 3B Investigate Pathway 4 ---- */
   .d3b-bar { justify-content: flex-start; }
   /* Nothing else in this bar is elastic, so About takes the slack itself. In 2B
@@ -2713,7 +2937,7 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.7</div>
+      <div style="font-weight: 600;">v0.8</div>
       <div style="font-weight: 400;">Updated: 9/2/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
@@ -2727,13 +2951,13 @@
 
       <div role="group" aria-labelledby="day2-label">
         <div class="day-sublabel" id="day2-label">Day 2</div>
-        <button class="toggle-btn" data-sim="d2b" aria-pressed="false">Prediction Chain</button>
+        <button class="toggle-btn active" data-sim="d2b" aria-pressed="true">Prediction Chain</button>
       </div>
 
       <div role="group" aria-labelledby="day3-label">
         <div class="day-sublabel" id="day3-label">Day 3</div>
         <button class="toggle-btn" data-sim="d3a" aria-pressed="false">Correlations</button>
-        <button class="toggle-btn active" data-sim="d3b" aria-pressed="true">Investigate P4</button>
+        <button class="toggle-btn" data-sim="d3b" aria-pressed="false">Investigate P4</button>
       </div>
     </div>
 
@@ -2860,7 +3084,7 @@ const SIMS = {
       '<p>This is what actually happens inside the model \u2014 and it is unreadable. No single neuron means anything on its own.</p>'
   },
   d1b: {
-    day: 1, id: "1B",
+    day: 1, id: "1B", pathways: 4,
     name: "Extract the Pathways",
     description: "Find the neurons that fire together",
     theme: PLACEHOLDER_THEME,
@@ -2927,7 +3151,7 @@ const SIMS = {
   }
 };
 
-let activeSim = "d3b";
+let activeSim = "d2b";
 let activeDevice = "chromebook";
 let activeLayout = "ap-full";
 let sidebarExpanded = true;
@@ -3404,7 +3628,11 @@ function makeFilter(D) {
     input.type = "text";
     input.id = id;
     input.className = "nnm-filter-input";
-    input.placeholder = "model_correct:0";
+    // Day 1 has no model, so its screens cannot suggest a query about one. The
+    // fields themselves are still the shared set — see the note in 1A — but the
+    // example at least matches what the student has in front of them.
+    input.placeholder = (activeSim === "d1a" || activeSim === "d1b")
+      ? "voices_raised:1" : "model_correct:0";
     input.setAttribute("autocomplete", "off");
     input.setAttribute("spellcheck", "false");
 
@@ -7405,6 +7633,927 @@ function buildSimContent() {
 
     return wrap;
   }
+
+  // ---------------------------------------------------------------
+  // 1A — Trace a Case.  Design Sketches slide 9: input layer, hidden layers,
+  // output, neurons coloured by activation, weights on the edges, and the point
+  // the slide writes under it — "that's what is really happening" and "difficult
+  // to interpret". The whole of Day 1 turns on that second line: a case really
+  // can be followed through the network, and following it teaches you nothing.
+  // That is what pathways are for, which is 1B.
+  //
+  // What is real here and what is not, because the difference matters and the
+  // About copy says so too:
+  //   REAL  — the conversation, its words, and which of the 30 vocabulary words
+  //           it contains; the label a human gave it; and the decision, which is
+  //           computed by tallying each word's measured lean toward Approach or
+  //           Wait over the whole set (that rule is right on 95.8% of the 800).
+  //   TOY   — the two hidden layers. There are no neuron activations for the
+  //           alien corpus anywhere in the data, so these are a small fixed
+  //           network run forward on the real word vector: deterministic per
+  //           case, responsive to the text, and not a depiction of the trained
+  //           model's own 64x64.
+  // ---------------------------------------------------------------
+  if (activeSim === "d1a") {
+    const D = simData();
+    const items = D.items;
+    const VOCAB = Object.keys(D.vocabulary).sort();
+    const LABELS = ["Wait", "Approach"];
+    // The output column is drawn top-down in this order: Approach above Wait, the
+    // same way round as the Prediction Chain's outcome. LABELS stays in target
+    // order (0 = Wait) because that is how the data is coded.
+    const OUT_ORDER = [1, 0];
+    let cases = items.slice();
+    let idx = 0;
+
+    // ---- the measured lean of every word, over the whole corpus ----
+    // This is the one honest signal available without a trained network: how
+    // often a word turns up in a conversation a human labelled Approach.
+    const LEAN = (function () {
+      const base = items.filter(function (it) { return it.target === 1; }).length / items.length;
+      const freq = {};
+      items.forEach(function (it) {
+        const seen = {};
+        it.text.split(/\s+/).forEach(function (w) {
+          if (seen[w]) return;
+          seen[w] = 1;
+          freq[w] = freq[w] || [0, 0];
+          freq[w][it.target]++;
+        });
+      });
+      const out = {};
+      VOCAB.forEach(function (w) {
+        const f = freq[w] || [0, 0], n = f[0] + f[1];
+        out[w] = n ? (f[1] / n) - base : 0;
+      });
+      return out;
+    })();
+
+    // ---- the toy network ----
+    // Weights from a seeded generator, so the picture is identical every time the
+    // same conversation is opened — a network that reshuffled itself on every
+    // render would teach that the wiring is arbitrary, which is the opposite of
+    // the point.
+    const H1 = 14, H2 = 8;
+    const rand = (function (seed) {
+      return function () {
+        seed = (seed * 1664525 + 1013904223) % 4294967296;
+        return seed / 4294967296 * 2 - 1;
+      };
+    })(20260902);
+    const W1 = [], W2 = [];
+    for (let j = 0; j < H1; j++) {
+      const row = [];
+      for (let i = 0; i < VOCAB.length; i++) row.push(rand());
+      W1.push(row);
+    }
+    for (let k = 0; k < H2; k++) {
+      const row = [];
+      for (let j = 0; j < H1; j++) row.push(rand());
+      W2.push(row);
+    }
+    function tanh(x) { return Math.tanh ? Math.tanh(x) : (Math.exp(2*x)-1)/(Math.exp(2*x)+1); }
+
+    function forward(it) {
+      const words = it.text.split(/\s+/);
+      const inp = VOCAB.map(function (w) { return words.indexOf(w) >= 0 ? 1 : 0; });
+      const h1 = W1.map(function (row) {
+        let s = 0;
+        for (let i = 0; i < inp.length; i++) s += inp[i] * row[i];
+        return tanh(s * 0.55);
+      });
+      const h2 = W2.map(function (row) {
+        let s = 0;
+        for (let j = 0; j < h1.length; j++) s += h1[j] * row[j];
+        return tanh(s * 0.7);
+      });
+      // The decision is NOT from the toy layers — it is the measured word tally,
+      // so what the diagram lands on is a defensible answer rather than noise.
+      let score = 0;
+      VOCAB.forEach(function (w, i) { if (inp[i]) score += LEAN[w]; });
+      return { inp: inp, h1: h1, h2: h2, score: score,
+               out: [ -tanh(score * 3), tanh(score * 3) ] };
+    }
+
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content";
+    SIM._timeouts = []; SIM._observers = [];
+    const stack = document.createElement("div");
+    stack.className = "nnm-stack";
+    wrap.appendChild(stack);
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "d3-toolbar d1a-toolbar";
+    stack.appendChild(toolbar);
+    const filter = NNM_FILTER.buildBar(function (its) { cases = its; idx = 0; render(); });
+    filter.el.classList.add("d3-filter");
+    toolbar.appendChild(filter.el);
+    if (filter.about) toolbar.appendChild(filter.about);
+
+    const root = document.createElement("div");
+    root.className = "nnm";
+    stack.appendChild(root);
+
+    // ---- left: the conversation being traced ----
+    const leftCol = document.createElement("div");
+    leftCol.className = "d3b-col d1a-leftcol";
+    root.appendChild(leftCol);
+    const casePanel = document.createElement("div");
+    casePanel.className = "nnm-panel d1a-panel";
+    leftCol.appendChild(casePanel);
+    const cHead = document.createElement("div");
+    cHead.className = "nnm-panel-head";
+    const cTitle = document.createElement("span");
+    cTitle.textContent = "Conversation";
+    cHead.appendChild(cTitle);
+    const countEl = document.createElement("span");
+    countEl.className = "d3b-count";
+    cHead.appendChild(countEl);
+    const nav = document.createElement("div");
+    nav.className = "nnm-nav";
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "nnm-navbtn"; prevBtn.innerHTML = "&#9664;";
+    prevBtn.setAttribute("aria-label", "Previous conversation");
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "nnm-navbtn"; nextBtn.innerHTML = "&#9654;";
+    nextBtn.setAttribute("aria-label", "Next conversation");
+    nav.appendChild(prevBtn); nav.appendChild(nextBtn);
+    cHead.appendChild(nav);
+    casePanel.appendChild(cHead);
+    const cBody = document.createElement("div");
+    cBody.className = "nnm-panel-body d1a-casebody";
+    casePanel.appendChild(cBody);
+    const textEl = document.createElement("div");
+    textEl.className = "nnm-read-text d1a-text";
+    cBody.appendChild(textEl);
+    const labelRow = document.createElement("div");
+    labelRow.className = "d1a-labelrow";
+    cBody.appendChild(labelRow);
+    const notesHead = document.createElement("div");
+    notesHead.className = "d3b-subhead";
+    notesHead.textContent = "Observation notes";
+    cBody.appendChild(notesHead);
+    const notesEl = document.createElement("div");
+    notesEl.className = "d3b-notes d1a-notes";
+    cBody.appendChild(notesEl);
+
+    // ---- right: the network ----
+    const netCol = document.createElement("div");
+    netCol.className = "d3b-col";
+    root.appendChild(netCol);
+    const netPanel = document.createElement("div");
+    netPanel.className = "nnm-panel d1a-panel";
+    netCol.appendChild(netPanel);
+    const nHead = document.createElement("div");
+    nHead.className = "nnm-panel-head";
+    const nTitle = document.createElement("span");
+    nTitle.textContent = "The network";
+    nHead.appendChild(nTitle);
+    const scaleEl = document.createElement("div");
+    scaleEl.className = "d1a-scale";
+    scaleEl.innerHTML = '<span class="lo">− activation</span>'
+      + '<span class="grad"></span><span class="hi">+ activation</span>';
+    nHead.appendChild(scaleEl);
+    netPanel.appendChild(nHead);
+    const nBody = document.createElement("div");
+    nBody.className = "nnm-panel-body d1a-netbody";
+    netPanel.appendChild(nBody);
+    const svgHost = document.createElement("div");
+    svgHost.className = "d1a-svghost";
+    nBody.appendChild(svgHost);
+    const pinEl = document.createElement("div");
+    pinEl.className = "d1a-pin idle";
+    nBody.appendChild(pinEl);
+    const caption = document.createElement("div");
+    caption.className = "d1a-caption";
+    nBody.appendChild(caption);
+
+    // Colour for an activation on the project's ramp: orange positive, blue
+    // negative, as slide 9 has it. (Two later slides say the reverse; the rest of
+    // this project is orange-positive throughout, so that is what is used.)
+    function actColour(v) {
+      const t = Math.min(1, Math.abs(v));
+      if (t < 0.02) return "#FFFFFF";
+      return (v >= 0 ? FILL_POS : FILL_NEG)[level(t)];
+    }
+
+    const NS = "http://www.w3.org/2000/svg";
+    function el(name, attrs) {
+      const e = document.createElementNS(NS, name);
+      Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+      return e;
+    }
+
+    // Last size drawn, so the observer below can ignore the changes it causes.
+    let drawnW = 0, drawnH = 0;
+
+    // The columns have to land in the same place for every conversation. Centring
+    // the drawing on its own extent moved them, because the input words form the
+    // left edge and they are a different width in every case. So the space held
+    // for the labels is the widest they can EVER be, over the whole vocabulary,
+    // measured in the same font the labels are actually drawn in.
+    const measSvg = el("svg", { class: "d1a-meas" });
+    const measIn = el("text", { class: "d1a-inlabel" });
+    const measOut = el("text", { class: "d1a-outlabel" });
+    measSvg.appendChild(measIn); measSvg.appendChild(measOut);
+    nBody.appendChild(measSvg);
+    function widest(node, strs) {
+      let w = 0;
+      strs.forEach(function (t) {
+        node.textContent = t;
+        w = Math.max(w, node.getComputedTextLength ? node.getComputedTextLength() : 0);
+      });
+      return w;
+    }
+
+    function drawNet(f, it) {
+      svgHost.innerHTML = "";
+      // Measured, not fixed. A hard 560 x 430 viewBox was 74px taller than the
+      // host, so the bottom of the Hidden 1 column ran 25px past the caption, and
+      // scaling 560 down to the host's width letterboxed 9px off the top and
+      // bottom. One unit = one pixel here, so nothing is scaled or clipped.
+      const W = drawnW = Math.max(380, Math.round(svgHost.clientWidth || 520));
+      const H = drawnH = Math.max(300, Math.round(svgHost.clientHeight || 400));
+      const svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: W, height: H,
+                              class: "d1a-net" });
+      const scene = el("g", { class: "d1a-scene" });
+      svg.appendChild(scene);
+      // Only the words this conversation contains get an input neuron. A column of
+      // 30 with two thirds of them dark would say the absent words are doing
+      // something, and the input to the model is the presence, not the vocabulary.
+      const present = [];
+      VOCAB.forEach(function (w, i) { if (f.inp[i]) present.push({ w: w, i: i }); });
+      const cols = [
+        { n: present.length, x: 0, r: 7,  label: "Input" },
+        { n: H1, x: 0, r: 8, label: "Hidden 1" },
+        { n: H2, x: 0, r: 9, label: "Hidden 2" },
+        // 10px between the two outcome circles: they are one choice, not two
+        // separate readings, so they read better as a close pair.
+        { n: 2,  x: 0, r: 13, label: "Output", step: 36 }
+      ];
+      // Equal margins by construction, and identical from case to case: both label
+      // gutters are reserved at their maximum, then the four columns spread evenly
+      // across whatever is left.
+      const PAD = 4;
+      const inGut = widest(measIn, VOCAB) + 6;         // the word, then its 6px gap
+      const outGut = widest(measOut, LABELS) + 8;      // an 8px gap, then the word
+      const xFirst = PAD + inGut + cols[0].r;
+      const xLast = Math.max(xFirst + 60, W - PAD - outGut - cols[3].r);
+      cols.forEach(function (c, i) {
+        c.x = xFirst + (xLast - xFirst) * i / (cols.length - 1);
+      });
+      // 44 clears the captions at y 17; 14 keeps the last circle off the bottom edge.
+      const top = 44, bot = H - 14;
+      function ys(n, maxStep) {
+        if (n === 1) return [(top + bot) / 2];
+        const step = Math.min(maxStep || 26, (bot - top) / (n - 1));
+        const mid = (top + bot) / 2, span = step * (n - 1);
+        const out = [];
+        for (let i = 0; i < n; i++) out.push(mid - span / 2 + i * step);
+        return out;
+      }
+      const pos = cols.map(function (c) { return ys(c.n, c.step); });
+      const vals = [
+        present.map(function (p) { return 1; }),
+        f.h1, f.h2, OUT_ORDER.map(function (o) { return f.out[o]; })
+      ];
+
+      // Edges first, so every neuron sits on top of its own wiring.
+      const edgeG = el("g", { class: "d1a-edges" });
+      scene.appendChild(edgeG);
+      const edges = [];
+      function link(li, a, b, weight) {
+        const line = el("line", {
+          x1: cols[li].x + cols[li].r, y1: pos[li][a],
+          x2: cols[li+1].x - cols[li+1].r, y2: pos[li+1][b],
+          class: "d1a-edge"
+        });
+        line.style.strokeWidth = (0.4 + 1.6 * Math.min(1, Math.abs(weight))).toFixed(2);
+        edgeG.appendChild(line);
+        edges.push({ el: line, from: [li, a], to: [li+1, b] });
+      }
+      present.forEach(function (p, a) {
+        for (let b = 0; b < H1; b++) link(0, a, b, W1[b][p.i]);
+      });
+      for (let a = 0; a < H1; a++) for (let b = 0; b < H2; b++) link(1, a, b, W2[b][a]);
+      for (let a = 0; a < H2; a++) for (let b = 0; b < 2; b++) link(2, a, b, 0.5);
+
+      // A click pins the highlight, so the wiring can be read without holding the
+      // mouse still — and so the readout below has somewhere to point.
+      let pinIdx = null;
+      function pinText(li, i) {
+        const v = vals[li][i];
+        const num = '<span class="v">' + (v >= 0 ? "+" : "\u2212")
+          + Math.abs(v).toFixed(2) + "</span>";
+        if (li === 0) {
+          return "<b>\u201C" + present[i].w + "\u201D</b> is in this conversation, so its "
+            + "input is switched on (" + num + "). It feeds all " + H1 + " Hidden 1 neurons. "
+            + "The network never sees the word \u2014 only the switch.";
+        }
+        if (li === 3) {
+          return "<b>" + LABELS[OUT_ORDER[i]] + "</b> " + num + " \u2014 one of the two numbers "
+            + "the network ends on. The larger one is the answer.";
+        }
+        const fanIn = li === 1 ? present.length : H1;
+        const fanOut = li === 1 ? H2 : 2;
+        return "<b>" + cols[li].label + " neuron " + (i + 1) + "</b> " + num + " \u2014 "
+          + fanIn + " connections in, " + fanOut + " out. "
+          + "That is everything there is to know about it.";
+      }
+      function paintPin() {
+        Array.prototype.forEach.call(svg.querySelectorAll(".d1a-node"), function (n) {
+          n.classList.remove("pinned");
+          n.setAttribute("aria-pressed", "false");
+        });
+        if (!pinIdx) {
+          pinEl.className = "d1a-pin idle";
+          pinEl.innerHTML = "<span>Click any neuron to read it.</span>";
+          return;
+        }
+        pinEl.className = "d1a-pin";
+        const sel = svg.querySelector('.d1a-node[data-layer="' + pinIdx[0]
+          + '"][data-i="' + pinIdx[1] + '"]');
+        if (sel) { sel.classList.add("pinned"); sel.setAttribute("aria-pressed", "true"); }
+        pinEl.innerHTML = "<span>" + pinText(pinIdx[0], pinIdx[1]) + "</span>"
+          + '<button class="d1a-pinclear" type="button">Clear</button>';
+        pinEl.querySelector(".d1a-pinclear").addEventListener("click", function () {
+          pinIdx = null; applyHover(-1, -1); paintPin();
+        });
+      }
+
+      // Neurons.
+      cols.forEach(function (c, li) {
+        const g = el("g", {});
+        scene.appendChild(g);
+        const cap = el("text", { x: c.x, y: 20, class: "d1a-collabel" });
+        cap.setAttribute("text-anchor", "middle");
+        cap.textContent = c.label;
+        scene.appendChild(cap);
+        for (let i = 0; i < c.n; i++) {
+          const v = vals[li][i];
+          const node = el("circle", { cx: c.x, cy: pos[li][i], r: c.r, class: "d1a-node" });
+          node.style.fill = actColour(v);
+          node.dataset.layer = li; node.dataset.i = i;
+          node.setAttribute("tabindex", "0");
+          node.setAttribute("role", "button");
+          const name = li === 0 ? present[i].w
+            : li === 3 ? LABELS[OUT_ORDER[i]] : c.label + " neuron " + (i + 1);
+          node.setAttribute("aria-label", name + ", activation " + v.toFixed(2));
+          node.setAttribute("aria-pressed", "false");
+          const t = el("title", {});
+          t.textContent = name + "   " + (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
+          node.appendChild(t);
+          function on() { setHover(li, i); }
+          function off() { setHover(-1, -1); }
+          function toggle(ev) {
+            if (ev) ev.stopPropagation();
+            if (pinIdx && pinIdx[0] === li && pinIdx[1] === i) { pinIdx = null; applyHover(-1, -1); }
+            else { pinIdx = [li, i]; applyHover(li, i); }
+            paintPin();
+          }
+          node.addEventListener("mouseenter", on);
+          node.addEventListener("mouseleave", off);
+          node.addEventListener("focus", on);
+          node.addEventListener("blur", off);
+          node.addEventListener("click", toggle);
+          node.addEventListener("keydown", function (ev) {
+            if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggle(null); }
+          });
+          g.appendChild(node);
+          const ring = el("circle", { cx: c.x, cy: pos[li][i], r: c.r + 3.5, class: "d1a-ring" });
+          g.appendChild(ring);
+          node.addEventListener("focus", function () { ring.classList.add("on"); });
+          node.addEventListener("blur", function () { ring.classList.remove("on"); });
+          if (li === 0) {
+            const lbl = el("text", { x: c.x - c.r - 6, y: pos[li][i] + 3.5, class: "d1a-inlabel" });
+            lbl.setAttribute("text-anchor", "end");
+            lbl.textContent = present[i].w;
+            scene.appendChild(lbl);
+          }
+          if (li === 3) {
+            const lbl = el("text", { x: c.x + c.r + 8, y: pos[li][i] + 4, class: "d1a-outlabel" });
+            lbl.textContent = LABELS[OUT_ORDER[i]];
+            scene.appendChild(lbl);
+          }
+        }
+      });
+
+      // Slide 9's "hover any neuron to see the incoming and outgoing connected
+      // neurons": everything unrelated steps back rather than the related edges
+      // being brightened, so the answer is what is LEFT rather than what is added.
+      function setHover(li, i) { if (pinIdx) return; applyHover(li, i); }
+      function applyHover(li, i) {
+        const on = li >= 0;
+        svg.classList.toggle("hovering", on);
+        edges.forEach(function (e) {
+          const touched = on && ((e.from[0] === li && e.from[1] === i)
+                              || (e.to[0] === li && e.to[1] === i));
+          e.el.classList.toggle("near", !!touched);
+        });
+      }
+
+      // Clicking the empty space around the network lets the pin go.
+      svg.addEventListener("click", function () {
+        if (pinIdx) { pinIdx = null; applyHover(-1, -1); paintPin(); }
+      });
+      paintPin();
+
+      svgHost.appendChild(svg);
+    }
+
+    function render() {
+      const empty = cases.length === 0;
+      root.style.display = empty ? "none" : "";
+      if (empty) return;
+      if (idx >= cases.length) idx = cases.length - 1;
+      const it = cases[idx];
+      const f = forward(it);
+
+      countEl.textContent = (idx + 1) + " / " + cases.length;
+      setAriaDisabled(prevBtn, idx === 0);
+      setAriaDisabled(nextBtn, idx === cases.length - 1);
+
+      // No colouring on the words: on Day 1 there is nothing yet that could
+      // honestly tint one. The input column names them instead.
+      textEl.textContent = it.text;
+      labelRow.innerHTML = "";
+      const cap = document.createElement("span");
+      cap.className = "d1a-labelcap";
+      cap.textContent = "A human labelled this";
+      const chip = document.createElement("span");
+      chip.className = "d1a-label " + (it.target === 1 ? "app" : "wait");
+      chip.textContent = LABELS[it.target];
+      labelRow.appendChild(cap); labelRow.appendChild(chip);
+      notesEl.textContent = it.obs || "(no notes for this conversation)";
+
+      drawNet(f, it);
+      const said = f.score > 0 ? 1 : 0;
+      caption.innerHTML = "<b>This is what actually happens.</b> Every word this "
+        + "conversation contains switches on an input, and the signal runs through "
+        + "to a decision — here, <b>" + LABELS[said] + "</b>. Nothing in the middle "
+        + "says what any of it means.";
+    }
+
+    prevBtn.addEventListener("click", function () { if (idx > 0) { idx--; render(); } });
+    nextBtn.addEventListener("click", function () {
+      if (idx < cases.length - 1) { idx++; render(); }
+    });
+
+    render();
+    SIM.onResize = function () { render(); };
+    // The first render runs before the panel has been laid out, so the host still
+    // measures 0 and the drawing above falls back to its minimums. This is what
+    // redraws it at the real size, and what keeps it right as the window changes.
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(function () {
+        if (Math.abs(svgHost.clientWidth - drawnW) < 1
+            && Math.abs(svgHost.clientHeight - drawnH) < 1) return;
+        render();
+      });
+      ro.observe(svgHost);
+      SIM._observers.push(ro);
+    }
+    return wrap;
+  }
+
+
+  // ---------------------------------------------------------------
+  // 1B — Extract Pathways.  Design Sketches slides 17-18, and Scott's heatmap
+  // demo: a grid of neuron activations on the left, and on the right one grid
+  // per pathway showing loading x activation. 1A ends on "the network is real
+  // and unreadable"; this is where the readable thing comes from.
+  //
+  // The extraction is NOT staged. The toy network below is run over all 800
+  // conversations to make a real 800 x 96 activation matrix, and the pathways
+  // are pulled out of it by actual factor extraction — power iteration with
+  // deflation on the covariance — so the loadings, the explained variance and
+  // the pathway scores on screen are all computed here, from that matrix. Only
+  // the network underneath is invented: the alien corpus has no neuron layer
+  // anywhere (alien-fa-4 carries pathway scores and importance but no
+  // `loadings`, and its activations/ endpoint is a 404), while the Yelp fit has
+  // 6 x 780. If Scott exports alien neuron data, ACT below is the only thing
+  // that has to change.
+  //
+  // Slide 18 is the framing this has to keep: a pathway is not causal, not a
+  // substitute for a hidden neuron, just an explanation tool.
+  // ---------------------------------------------------------------
+  if (activeSim === "d1b") {
+    const D = simData();
+    const items = D.items;
+    const VOCAB = Object.keys(D.vocabulary).sort();
+    const LABELS = ["Wait", "Approach"];
+    const NEUR = 96, GRID_W = 12, GRID_H = 8;   // 12 x 8 reads as a grid, not a list
+    const NPATH = 4;
+    let cases = items.slice();
+    let idx = 0;
+    let extracted = null;      // {loadings, scores, varFrac}
+    let selPath = 0;
+    let selNeuron = -1;
+    let playing = false, playTimer = null;
+
+    // ---- the neuron layer ----
+    // A random network was the obvious construction and it was the wrong one:
+    // random weights spread the variance evenly, so extraction returned four
+    // look-alike pathways (11 / 10 / 7 / 6 percent) where the real fit is
+    // dominated by the first (55 / 20 / 15 / 10). Four equally noisy grids is
+    // the opposite of the lesson.
+    //
+    // So the neurons are built from the model's OWN pathway scores: each neuron
+    // reads some mix of the four real pathways, scaled by how much variance the
+    // fit says each one carries, plus its own private noise. Nothing about a
+    // pathway is written into any single neuron — every neuron is a blend — but
+    // the structure is genuinely there to be found, which is what makes the
+    // extraction below worth running.
+    const rand = (function (seed) {
+      return function () {
+        seed = (seed * 1664525 + 1013904223) % 4294967296;
+        return seed / 4294967296 * 2 - 1;
+      };
+    })(20260902);
+    function tanh(x) { return Math.tanh ? Math.tanh(x) : (Math.exp(2*x)-1)/(Math.exp(2*x)+1); }
+
+    const NP_REAL = D.nPathways;
+    // Pathway scores come out of the fit standardised, so their spread says
+    // nothing about their size; explainedVariance is where the size lives.
+    const AMP = D.explainedVariance.map(Math.sqrt);
+    const MIX = [];                       // NEUR x NP_REAL, unit length per neuron
+    for (let j = 0; j < NEUR; j++) {
+      const row = [];
+      let n2 = 0;
+      for (let k = 0; k < NP_REAL; k++) { const v = rand(); row.push(v); n2 += v * v; }
+      const norm = Math.sqrt(n2) || 1;
+      MIX.push(row.map(function (v) { return v / norm; }));
+    }
+    const NOISE = 0.35;                   // private variance per neuron
+    // Every conversation's activations, once. This is the matrix the pathways
+    // are extracted FROM, and slide 17 names it exactly: "activation value for
+    // all neurons for all cases".
+    const ACT = items.map(function (it) {
+      const row = new Array(NEUR);
+      for (let j = 0; j < NEUR; j++) {
+        let s = 0;
+        for (let k = 0; k < NP_REAL; k++) s += MIX[j][k] * AMP[k] * it.act[k];
+        row[j] = tanh((s + NOISE * rand()) * 0.9);
+      }
+      return row;
+    });
+    const ACT_BY_ID = {};
+    items.forEach(function (it, i) { ACT_BY_ID[it.id] = ACT[i]; });
+    function hidden(it) { return ACT_BY_ID[it.id]; }
+
+    // ---- real factor extraction ----
+    // Power iteration with deflation over the covariance of the centred matrix.
+    // Enough for four components on an 800 x 96 matrix, and it means the numbers
+    // under each grid are measured rather than written in.
+    function extract(nComp) {
+      const n = ACT.length, m = NEUR;
+      const mean = new Array(m).fill(0);
+      for (let r = 0; r < n; r++) for (let c = 0; c < m; c++) mean[c] += ACT[r][c] / n;
+      const X = ACT.map(function (row) {
+        return row.map(function (v, c) { return v - mean[c]; });
+      });
+      // covariance, m x m
+      const C = [];
+      for (let a = 0; a < m; a++) C.push(new Array(m).fill(0));
+      for (let r = 0; r < n; r++) {
+        const row = X[r];
+        for (let a = 0; a < m; a++) {
+          const va = row[a];
+          if (!va) continue;
+          for (let b = a; b < m; b++) C[a][b] += va * row[b];
+        }
+      }
+      for (let a = 0; a < m; a++) for (let b = a; b < m; b++) {
+        C[a][b] /= (n - 1); C[b][a] = C[a][b];
+      }
+      let totalVar = 0;
+      for (let a = 0; a < m; a++) totalVar += C[a][a];
+
+      const loadings = [], eig = [];
+      for (let k = 0; k < nComp; k++) {
+        let v = [];
+        for (let a = 0; a < m; a++) v.push(Math.sin((a + 1) * (k + 1) * 12.9898));
+        let lam = 0;
+        for (let iter = 0; iter < 120; iter++) {
+          const u = new Array(m).fill(0);
+          for (let a = 0; a < m; a++) {
+            let s = 0;
+            for (let b = 0; b < m; b++) s += C[a][b] * v[b];
+            u[a] = s;
+          }
+          let norm = Math.sqrt(u.reduce(function (s, x) { return s + x * x; }, 0)) || 1;
+          for (let a = 0; a < m; a++) u[a] /= norm;
+          lam = norm;
+          v = u;
+        }
+        // Sign is arbitrary in an eigenvector; pin it so the biggest loading is
+        // positive, or the same run could paint a pathway's grid inverted.
+        let big = 0;
+        for (let a = 0; a < m; a++) if (Math.abs(v[a]) > Math.abs(v[big])) big = a;
+        if (v[big] < 0) for (let a = 0; a < m; a++) v[a] = -v[a];
+        loadings.push(v); eig.push(lam);
+        // deflate
+        for (let a = 0; a < m; a++) for (let b = 0; b < m; b++) C[a][b] -= lam * v[a] * v[b];
+      }
+      // Pathway score per case = the centred activations projected on the loading.
+      const scores = X.map(function (row) {
+        return loadings.map(function (L) {
+          let s = 0;
+          for (let a = 0; a < m; a++) s += row[a] * L[a];
+          return s;
+        });
+      });
+      return { loadings: loadings, scores: scores, mean: mean,
+               varFrac: eig.map(function (e) { return e / totalVar; }) };
+    }
+
+    // ---- shell ----
+    const wrap = document.createElement("div");
+    wrap.className = "sim-content";
+    SIM._timeouts = []; SIM._observers = [];
+    const stack = document.createElement("div");
+    stack.className = "nnm-stack";
+    wrap.appendChild(stack);
+    const toolbar = document.createElement("div");
+    toolbar.className = "d3-toolbar d1b-toolbar";
+    stack.appendChild(toolbar);
+    const filter = NNM_FILTER.buildBar(function (its) {
+      cases = its; idx = 0; render();
+    });
+    filter.el.classList.add("d3-filter");
+    toolbar.appendChild(filter.el);
+    if (filter.about) toolbar.appendChild(filter.about);
+    const root = document.createElement("div");
+    root.className = "nnm";
+    stack.appendChild(root);
+
+    function panel(parent, title, cls) {
+      const col = document.createElement("div");
+      col.className = "d3b-col " + (cls || "");
+      parent.appendChild(col);
+      const p = document.createElement("div");
+      p.className = "nnm-panel d1b-panel";
+      col.appendChild(p);
+      const h = document.createElement("div");
+      h.className = "nnm-panel-head";
+      const t = document.createElement("span");
+      t.textContent = title;
+      h.appendChild(t);
+      p.appendChild(h);
+      const b = document.createElement("div");
+      b.className = "nnm-panel-body d1b-body";
+      p.appendChild(b);
+      return { col: col, panel: p, head: h, body: b };
+    }
+
+    // ---- left: the activations one case at a time ----
+    const actCard = panel(root, "Neuron activations", "d1b-actcol");
+    const actCount = document.createElement("span");
+    actCount.className = "d3b-count";
+    actCard.head.appendChild(actCount);
+    const nav = document.createElement("div");
+    nav.className = "nnm-nav";
+    const playBtn = document.createElement("button");
+    playBtn.className = "nnm-navbtn d1b-play";
+    playBtn.innerHTML = "&#9654;";
+    playBtn.setAttribute("aria-label", "Play through the conversations");
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "nnm-navbtn"; prevBtn.innerHTML = "&#9664;";
+    prevBtn.setAttribute("aria-label", "Previous conversation");
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "nnm-navbtn"; nextBtn.innerHTML = "&#9654;";
+    nextBtn.setAttribute("aria-label", "Next conversation");
+    nav.appendChild(playBtn); nav.appendChild(prevBtn); nav.appendChild(nextBtn);
+    actCard.head.appendChild(nav);
+    const actKey = document.createElement("div");
+    actKey.className = "d1b-key";
+    actKey.innerHTML = '<span>−</span><i class="act"></i><span>+ activation</span>';
+    actCard.body.appendChild(actKey);
+    const actGrid = document.createElement("div");
+    actGrid.className = "d1b-grid d1b-actgrid";
+    actCard.body.appendChild(actGrid);
+    const actText = document.createElement("div");
+    actText.className = "d1b-casetext";
+    actCard.body.appendChild(actText);
+    const extractBtn = document.createElement("button");
+    extractBtn.className = "d1b-extract";
+    extractBtn.textContent = "Extract pathways";
+    actCard.body.appendChild(extractBtn);
+
+    // ---- right: what comes out ----
+    const outCard = panel(root, "Activated pathways", "d1b-outcol");
+    const outSub = document.createElement("span");
+    outSub.className = "d1b-headsub";
+    outSub.textContent = "loading × activation";
+    outCard.head.appendChild(outSub);
+    const pathRow = document.createElement("div");
+    pathRow.className = "d1b-pathrow";
+    outCard.body.appendChild(pathRow);
+    const loadHead = document.createElement("div");
+    loadHead.className = "d3b-subhead d1b-loadhead";
+    outCard.body.appendChild(loadHead);
+    const loadKey = document.createElement("div");
+    loadKey.className = "d1b-key d1b-loadkey";
+    loadKey.innerHTML = '<span>−</span><i class="load"></i><span>+ loading</span>';
+    outCard.body.appendChild(loadKey);
+    const loadWrap = document.createElement("div");
+    loadWrap.className = "d1b-loadwrap";
+    outCard.body.appendChild(loadWrap);
+    const note = document.createElement("div");
+    note.className = "d1b-note";
+    outCard.body.appendChild(note);
+
+    // ---- drawing ----
+    function actColour(v, scale) {
+      const t = Math.min(1, Math.abs(v) / (scale || 1));
+      if (t < 0.02) return "#FFFFFF";
+      return (v >= 0 ? FILL_POS : FILL_NEG)[level(t)];
+    }
+    // Loadings get their own ramp, per slide 17 — purple positive, yellow
+    // negative — so a loading can never be mistaken for an activation.
+    const LOAD_POS = ["#EDE7F6", "#D1C4E9", "#B39DDB", "#9575CD", "#673AB7"];
+    const LOAD_NEG = ["#FFF8E1", "#FFECB3", "#FFE082", "#FFCA28", "#F9A825"];
+    function loadColour(v, scale) {
+      const t = Math.min(1, Math.abs(v) / (scale || 1));
+      if (t < 0.02) return "#FFFFFF";
+      return (v >= 0 ? LOAD_POS : LOAD_NEG)[level(t)];
+    }
+
+    function fillGrid(host, vals, colour, scale, onPick) {
+      host.innerHTML = "";
+      for (let i = 0; i < vals.length; i++) {
+        const d = document.createElement("i");
+        d.className = "d1b-dot" + (i === selNeuron ? " picked" : "");
+        d.style.background = colour(vals[i], scale);
+        d.title = "Neuron " + (i + 1) + "   " + (vals[i] >= 0 ? "+" : "−")
+          + Math.abs(vals[i]).toFixed(3);
+        if (onPick) {
+          d.addEventListener("click", function () { onPick(i); });
+          d.classList.add("pickable");
+        }
+        host.appendChild(d);
+      }
+    }
+
+    function renderPathways(h) {
+      pathRow.innerHTML = "";
+      if (!extracted) {
+        const empty = document.createElement("div");
+        empty.className = "d1b-empty";
+        empty.textContent = "Nothing has been pulled out of these activations yet.";
+        pathRow.appendChild(empty);
+        loadHead.textContent = "";
+        loadKey.style.visibility = "hidden";
+        loadWrap.innerHTML = "";
+        note.textContent = "";
+        return;
+      }
+      loadKey.style.visibility = "";
+      // loading x activation, neuron by neuron — the quantity Scott's demo puts
+      // across the top of its right-hand panel, and the thing a pathway's score
+      // is the sum of.
+      const prods = extracted.loadings.map(function (L) {
+        return L.map(function (l, i) { return l * (h[i] - extracted.mean[i]); });
+      });
+      const scale = Math.max.apply(null, prods.map(function (p) {
+        return Math.max.apply(null, p.map(Math.abs)); })) || 1;
+      prods.forEach(function (p, k) {
+        const cell = document.createElement("div");
+        cell.className = "d1b-path" + (k === selPath ? " on" : "");
+        cell.style.animationDelay = (k * 90) + "ms";
+        const cap = document.createElement("div");
+        cap.className = "d1b-pathname";
+        cap.textContent = "Pathway " + (k + 1);
+        cell.appendChild(cap);
+        const g = document.createElement("div");
+        g.className = "d1b-grid d1b-pathgrid";
+        fillGrid(g, p, actColour, scale, null);
+        cell.appendChild(g);
+        const stat = document.createElement("div");
+        stat.className = "d1b-stat";
+        const absMax = Math.max.apply(null, p.map(Math.abs));
+        const sum = p.reduce(function (s, x) { return s + x; }, 0);
+        stat.innerHTML = "absMax " + absMax.toFixed(3) + "<br>sum "
+          + (sum >= 0 ? "+" : "−") + Math.abs(sum).toFixed(3) + "<br>"
+          + Math.round(100 * extracted.varFrac[k]) + "% of variance";
+        cell.appendChild(stat);
+        cell.addEventListener("click", function () { selPath = k; render(); });
+        pathRow.appendChild(cell);
+      });
+
+      // Loadings. A pathway's are shown on the same grid the neurons use, so the
+      // two pictures line up dot for dot; a single neuron's are four bars out
+      // from a zero line, which is the sketch under "Loadings" in the brief.
+      loadWrap.innerHTML = "";
+      if (selNeuron >= 0) {
+        loadHead.textContent = "Neuron " + (selNeuron + 1) + " — its loading on each pathway";
+        const chart = document.createElement("div");
+        chart.className = "d1b-bars";
+        const lim = Math.max.apply(null, extracted.loadings.map(function (L) {
+          return Math.abs(L[selNeuron]); })) || 1;
+        extracted.loadings.forEach(function (L, k) {
+          const v = L[selNeuron];
+          const row = document.createElement("div");
+          row.className = "d1b-barrow";
+          const lab = document.createElement("span");
+          lab.className = "d1b-barlab";
+          lab.textContent = "Pathway " + (k + 1);
+          const track = document.createElement("i");
+          track.className = "d1b-bartrack";
+          const fill = document.createElement("i");
+          fill.className = "d1b-barfill " + (v >= 0 ? "pos" : "neg");
+          const half = 50 * Math.abs(v) / lim;
+          fill.style.width = half.toFixed(2) + "%";
+          fill.style.left = (v >= 0 ? 50 : 50 - half).toFixed(2) + "%";
+          track.appendChild(fill);
+          const num = document.createElement("em");
+          num.className = "d1b-barnum";
+          num.textContent = (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(3);
+          row.appendChild(lab); row.appendChild(track); row.appendChild(num);
+          chart.appendChild(row);
+        });
+        loadWrap.appendChild(chart);
+      } else {
+        loadHead.textContent = "Pathway " + (selPath + 1)
+          + " — how much it reads from each neuron";
+        const L = extracted.loadings[selPath];
+        const lim = Math.max.apply(null, L.map(Math.abs)) || 1;
+        const g = document.createElement("div");
+        g.className = "d1b-grid d1b-loadgrid";
+        fillGrid(g, L, loadColour, lim, function (i) { selNeuron = i; render(); });
+        loadWrap.appendChild(g);
+      }
+
+      note.innerHTML = selNeuron >= 0
+        ? '<button class="d1b-clear" type="button">Back to the pathway</button>'
+          + " A neuron feeds every pathway a little and one of them a lot."
+        : "Click a neuron to see what each pathway reads from it. "
+          + "A pathway is not a part of the network — it is a way of reading one.";
+      const clear = note.querySelector(".d1b-clear");
+      if (clear) clear.addEventListener("click", function () { selNeuron = -1; render(); });
+    }
+
+    function render() {
+      const empty = cases.length === 0;
+      root.style.display = empty ? "none" : "";
+      if (empty) return;
+      if (idx >= cases.length) idx = cases.length - 1;
+      const it = cases[idx];
+      const h = hidden(it);
+
+      actCount.textContent = (idx + 1) + " / " + cases.length;
+      setAriaDisabled(prevBtn, idx === 0);
+      setAriaDisabled(nextBtn, idx === cases.length - 1);
+      playBtn.innerHTML = playing ? "&#10074;&#10074;" : "&#9654;";
+      const scale = Math.max.apply(null, h.map(Math.abs)) || 1;
+      fillGrid(actGrid, h, actColour, scale, extracted
+        ? function (i) { selNeuron = i; render(); } : null);
+      actText.textContent = it.text.split(/\s+/).slice(0, 14).join(" ") + "…";
+      extractBtn.disabled = !!extracted;
+      extractBtn.textContent = extracted ? "Pathways extracted" : "Extract pathways";
+
+      renderPathways(h);
+    }
+
+    extractBtn.addEventListener("click", function () {
+      if (extracted) return;
+      extractBtn.textContent = "Extracting…";
+      extractBtn.disabled = true;
+      // A beat first, so the label actually paints before the arithmetic — the
+      // extraction is real and takes long enough to see. A timer, NOT
+      // requestAnimationFrame: rAF does not run in a background tab, so a student
+      // who switched away mid-press would come back to a button that says
+      // "Extracting…" for ever.
+      const t = setTimeout(function () {
+        extracted = extract(NPATH);
+        root.classList.add("d1b-hasrun");
+        render();
+      }, 40);
+      SIM._timeouts.push(t);
+    });
+
+    function step() {
+      if (idx < cases.length - 1) idx++; else idx = 0;
+      render();
+    }
+    playBtn.addEventListener("click", function () {
+      playing = !playing;
+      if (playing) {
+        playTimer = setInterval(step, 700);
+        SIM._timeouts.push(playTimer);
+      } else if (playTimer) { clearInterval(playTimer); playTimer = null; }
+      render();
+    });
+    prevBtn.addEventListener("click", function () { if (idx > 0) { idx--; render(); } });
+    nextBtn.addEventListener("click", function () {
+      if (idx < cases.length - 1) { idx++; render(); }
+    });
+
+    render();
+    SIM.onResize = function () {};
+    return wrap;
+  }
+
 
   // ---- not yet built: blank content area ----
   const wrap = document.createElement("div");
