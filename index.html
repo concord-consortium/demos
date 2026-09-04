@@ -1479,6 +1479,31 @@
     position: absolute; width: 0; height: 0; overflow: visible;
     visibility: hidden; pointer-events: none;
   }
+  /* The steps sit in the toolbar row, between the query and About. About keeps its
+     margin-left:auto, so it stays hard right whatever the group in front of it. */
+  .d1a-steps { display: flex; gap: 6px; }
+  /* One word of the conversation. Inline so it wraps with the text, and it has to
+     be a box of its own so a flight can be aimed at where it actually sits. */
+  .d1a-word { display: inline-block; }
+  /* A word in flight is a copy — the original stays put, at full strength. Dimming
+     it while its copy travelled only made the sentence flicker for the whole run. */
+  /* A word in flight is two elements, because its two axes travel on different
+     schedules: the wrapper carries the HORIZONTAL move and the chip inside it the
+     VERTICAL one. One transform cannot hold two easings, and that difference is the
+     whole shape — the word drops to the unit's height first, then sweeps across into
+     it, arriving from the side rather than aiming diagonally at it from the start. */
+  .d1a-flywrap { position: absolute; z-index: 60; will-change: transform; }
+  .d1a-flyy { will-change: transform; }
+  .d1a-fly {
+    position: relative; pointer-events: none; white-space: nowrap;
+    font-family: 'Lato', sans-serif; font-size: 12.5px; line-height: 1;
+    color: var(--nnm-ink); background: #fff;
+    border: 1px solid var(--nnm-rule); border-radius: 4px; padding: 2px 5px;
+    box-shadow: 0 2px 8px -3px rgba(30,36,44,0.45);
+    will-change: transform, opacity;
+  }
+  @media (prefers-reduced-motion: reduce) { .d1a-node { transition: none; } }
+
   /* The key sits in the card head, where the Correlations key's label sits. */
   /* Type and bar height are the Prediction Chain's, so the two screens name their
      scales at the same size: .nnm-legend-label's 14px/600/0.05em, and the 12px bar
@@ -1517,11 +1542,22 @@
      white composites to about #D9D9D9. The #EDF0F4 this replaces was 1.14:1 — 6% of
      the resting edge's contrast, which is not dimmed, it is gone. */
   .d1a-net.hovering .d1a-edge { opacity: 0.35; }
-  .d1a-net.hovering .d1a-edge.near { opacity: 1; stroke: var(--nnm-ink); }
+  /* Lit in the hovered unit's own colour, set as --lit by applyHover. Near-black is
+     the fallback, and it is what a unit sitting at white on the ramp still uses —
+     its colour would be invisible. A custom property rather than an inline stroke so
+     the step animations, which DO paint the stroke inline while a fan grows, are not
+     fighting the highlight for the same declaration. */
+  .d1a-net.hovering .d1a-edge.near { opacity: 1; stroke: var(--lit, var(--nnm-ink)); }
   .d1a-node {
     stroke: #6E7580; stroke-width: 1; cursor: pointer;
-    transition: r 0.12s ease;
+    /* fill eases between ramp steps as input arrives. Short: at the fast end of
+       Step 1 the gap between landings is 30ms, and a long transition would still be
+       chasing the previous colour when the next three had already arrived. */
+    transition: r 0.12s ease, fill 0.18s ease;
   }
+  /* Not yet reached by the animation. It still shows — the shape of the network is
+     the point — but it does not answer: no pointer, no hover ring, no readout. */
+  .d1a-node.off { cursor: default; }
   /* `outline` on an SVG shape follows the bounding box and ignores border-radius,
      so any ring on a circle comes out square. Both focus states are cleared —
      :focus-visible alone left the box on a mouse click — and the ring is drawn
@@ -1537,6 +1573,10 @@
     pointer-events: none; opacity: 0;
   }
   .d1a-ring.focus { stroke: var(--nnm-neg); }
+  /* Three strengths of the same ring. Hover is the lightest — a half-strength
+     version of the selected ring, so hovering reads as a preview of clicking
+     rather than as a different kind of mark. */
+  .d1a-ring.hover { opacity: 0.5; }
   .d1a-ring.on { opacity: 1; }
   /* The selected node used to ALSO get a thicker dark border. Two indicators for
      one state, and they did not agree: the ring was driven by focus, and a click
@@ -1591,6 +1631,12 @@
   .d1a-outlabel {
     font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
     letter-spacing: 0.04em; text-transform: uppercase; fill: var(--nnm-ink);
+    /* The word paints over the pill it sits in, so without this the pointer LEFT the
+       pill the moment it crossed the text — hover died and the click missed, over
+       the largest and most obvious part of the target. Events pass through to the
+       pill beneath instead of the label growing handlers of its own, so there is
+       still one thing listening per outcome. */
+    pointer-events: none;
   }
   /* Which outcome the network chose, marked where you are already looking. It used
      to be a sentence under the diagram — and that sentence was the ONLY place on
@@ -1598,7 +1644,7 @@
      is the HUMAN's label and the two disagree on 64 of the 800. */
   /* The same two-state chip the human's label uses on the left: filled for the one
      the network chose, outline for the one it did not. One shape, one difference. */
-  .d1a-outpill { stroke-width: 2; cursor: pointer; }
+  .d1a-outpill { stroke-width: 2; cursor: pointer; transition: fill 0.35s ease; }
   .d1a-outpill.app { stroke: var(--nnm-pos); }
   .d1a-outpill.wait { stroke: var(--nnm-neg); }
   .d1a-outpill.lost { fill: #FFFFFF; }
@@ -1848,7 +1894,24 @@
   }
   .d3b-conv .nnm-nav { margin-left: 8px; }
   .d3b-panel { flex: 1; min-height: 0; }
-  .d3b-body { display: flex; flex-direction: column; gap: 12px; overflow: auto; }
+  /* The panel scrolls in its LIST, not as a whole. Scrolling the whole body pushed
+     "What the coding found" off the bottom as soon as the attribute list was long
+     enough — and that block is the result of the action the panel exists for, so it
+     is the last thing that should need hunting for. The list gives up the space
+     instead; the findings and the note above it stay put. */
+  .d3b-body {
+    display: flex; flex-direction: column; gap: 12px;
+    overflow: hidden; min-height: 0;
+  }
+  .d3b-body .d3b-subnote { flex-shrink: 0; }
+  .d3b-body .d3b-list { flex: 1 1 auto; min-height: 60px; overflow-y: auto; }
+  .d3b-results { flex-shrink: 0; }
+  /* This one rule is a section break, not a heading underline: above it is the list
+     of codings you can buy, below it is what buying them told you. Scoped to the
+     results block so the identically-classed headings over Observation notes keep
+     their hairline — those separate parts of one reading, this separates two halves
+     of the panel. */
+  .d3b-results .d3b-subhead { border-top-color: var(--nnm-ink-2); }
   .d3b-budget {
     margin-left: auto; font-family: var(--nnm-mono); font-size: 11.5px; color: var(--nnm-ink-3);
   }
@@ -1857,26 +1920,31 @@
     color: var(--nnm-ink); background: var(--nnm-surface);
     border-left: 3px solid #C6D2E2; border-radius: 0 5px 5px 0; padding: 10px 12px;
   }
-  .d3b-known { display: flex; flex-wrap: wrap; gap: 4px 12px; }
-  /* The attributes were pills. They are text now, and each carries the colour of
-     the sentence it was read from, so a chip and its line in the notes are one
-     object. Nine hues, every one over 4.5:1 on both white and the notes surface
-     (young_present is the floor at 4.81). They sit outside the signed ramp on
-     purpose: the notes are prose with no value encoded in them, so orange here
-     would be borrowing a meaning it does not have. */
+  .d3b-known { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+  .d3b-attr-all { font-style: italic; }
+  /* Pills again, but each drawn in the colour of the sentence it was read from, so a
+     chip and its line in the notes are one object. Nine hues; every one clears 4.5:1
+     as text on white, as text on its own hover tint, and as white text on itself
+     when filled. young_present went from #2E7D46 to #2A7340 for the middle of those
+     three — it measured 4.27 on its own tint. They sit outside the signed ramp on
+     purpose: the notes are prose with no value encoded in them, so orange here would
+     be borrowing a meaning it does not have. */
   .d3b-attr {
     font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
     letter-spacing: 0.03em; text-transform: uppercase;
-    padding: 2px 5px; border: 0; border-radius: 3px; background: none;
-    color: var(--ac, var(--nnm-ink-2)); cursor: pointer;
-    box-shadow: inset 0 -2px 0 transparent;
-    transition: background 0.14s ease, box-shadow 0.14s ease;
+    padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--ac, var(--nnm-rule));
+    background: #fff; color: var(--ac, var(--nnm-ink-2)); cursor: pointer;
+    transition: background 0.14s ease, color 0.14s ease;
   }
-  .d3b-attr:hover { box-shadow: inset 0 -2px 0 currentColor; }
+  /* Hover tints the pill; SELECTED fills it. Same specificity, selected declared
+     second, so a selected pill takes no hover — it is already at its final state.
+     Learned the hard way on .nnm-step, where a guard on one of them silently
+     outranked the other. */
+  .d3b-attr:hover { background: var(--ac-soft, var(--nnm-surface)); }
   .d3b-attr:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
   .d3b-attr[aria-pressed="true"] {
-    background: var(--ac-soft, var(--nnm-surface));
-    box-shadow: inset 0 -2px 0 currentColor;
+    background: var(--ac, var(--nnm-ink-2)); color: #fff;
   }
   /* Which facts were bought is the point of the screen, so a commissioned
      attribute still carries a mark now that the pill is gone. */
@@ -1889,7 +1957,16 @@
      the student is here to find. Commissioning an attribute dims its sentences,
      so the notes visibly empty out as the coding catches up. */
   .d3b-sent.coded { opacity: 0.35; }
-  .d3b-sent.sel { opacity: 1; color: var(--ac); }
+  /* A lit sentence is drawn the way its pill is when selected — white on the colour,
+     not the colour on the page — so the chip and the line read as the same object in
+     the same state. box-decoration-break keeps the padding and the rounded ends on
+     every line fragment; without it a sentence wrapping across three lines gets one
+     rounded start, one rounded end, and two ragged joins in between. */
+  .d3b-sent.sel {
+    opacity: 1; color: #fff; background: var(--ac);
+    border-radius: 3px; padding: 1px 3px;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  }
   .d3b-subhead {
     font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
     letter-spacing: 0.05em; text-transform: uppercase; color: var(--nnm-ink-2);
@@ -1919,8 +1996,9 @@
   .d3b-buy:hover:not(:disabled) { background: var(--nnm-surface); }
   .d3b-buy:disabled { opacity: 0.45; cursor: default; }
   .d3b-table { display: flex; flex-direction: column; gap: 4px; }
+  /* Two columns: the attribute, and the one pathway this screen is about. */
   .d3b-trow {
-    display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 6px; align-items: center;
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 6px; align-items: center;
   }
   .d3b-trow > div { font-family: 'Lato', sans-serif; font-size: 12.5px; color: var(--nnm-ink-2); }
   .d3b-trow.head > div { font-size: 11.5px; color: var(--nnm-ink-3); text-align: center; }
@@ -2223,7 +2301,14 @@
      a cell is, and a hard threshold made 0.29 and 0.31 look like different kinds
      of thing. */
   .d3-cell.corr.deep .d3-r { color: #fff; }
-  .d3-dot { display: block; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18); flex-shrink: 0; }
+  /* Squares, not dots. The correlation cells on 3A are squares, and this block is
+     the same reading — how strongly a coding lines up with a pathway — so it should
+     not arrive in a different shape just because it is on a different screen. The
+     small radius is 3A's cell radius, not a pill. */
+  .d3b-sq {
+    display: block; border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18); flex-shrink: 0;
+  }
   .d3-r {
     font-family: var(--nnm-mono); font-size: 12.5px; font-variant-numeric: tabular-nums;
     color: var(--nnm-ink-2); min-width: 46px;
@@ -3164,7 +3249,24 @@
      two answers — rather than a generic metaphor. currentColor so they invert
      with the button when it is the active step. */
   .nnm-step svg { width: 13px; height: 13px; flex-shrink: 0; overflow: visible; }
-  .nnm-step:hover { background: var(--nnm-surface); }
+  /* Every interactive state is gated on the button actually being interactive.
+     Without this a locked step still lit on hover and still flipped to the full
+     pressed look on mousedown, so it answered like a live control and simply did
+     nothing — which reads as broken rather than as unavailable. Both forms are
+     excluded: `disabled` is what blocks the click, `aria-disabled` is what tells a
+     screen reader, and the buttons carry both. */
+  /* HOVER and PRESS carry an identical guard — same three :not()s, same specificity
+     (0,5,0) — so which one wins is decided by source order, press being second,
+     rather than by an accident of how many conditions each happens to carry. Getting
+     that wrong twice is what motivated writing it this way: guarding hover alone put
+     it above .nnm-step.on and the pale wash beat the selected step's dark fill; then
+     adding :not(.on) to hover alone put it above :active, so a press showed a pale
+     background with the white text :active had set — invisible.
+     A selected step is excluded from both: it already shows its final state, so it
+     has nothing to preview and nothing to travel to when pressed. */
+  .nnm-step:hover:not(.on):not(:disabled):not([aria-disabled="true"]) {
+    background: var(--nnm-surface);
+  }
   /* Press states. Activation stays on click — moving it to mousedown would remove
      the escape hatch of pressing, thinking better of it and releasing off the
      button, and on the tablets this runs on it would fire whenever a scroll
@@ -3174,7 +3276,7 @@
      answer, not a grey stop on the way to it. Nothing changes on release except
      that it stays. No nudge either: a shift would mean the press was not quite
      the final state after all. */
-  .nnm-step:active {
+  .nnm-step:active:not(.on):not(:disabled):not([aria-disabled="true"]) {
     background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff;
   }
   .nnm-step.on {
@@ -3183,6 +3285,7 @@
     color: #fff;
   }
   .nnm-step:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  .nnm-step:disabled,
   .nnm-step[aria-disabled="true"] { opacity: 0.35; cursor: default; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -3202,8 +3305,8 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.9</div>
-      <div style="font-weight: 400;">Updated: 9/3/26</div>
+      <div style="font-weight: 600;">v0.10</div>
+      <div style="font-weight: 400;">Updated: 9/4/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
@@ -3506,6 +3609,16 @@ function invalidateSimCache() {
   // against a torn-down SIM. Park ids in SIM._rafs the way timers go in
   // SIM._timeouts.
   if (Array.isArray(SIM._rafs)) { SIM._rafs.forEach(cancelAnimationFrame); SIM._rafs.length = 0; }
+  // Anything a sim parked on document.body survives _simContent.remove(), because it
+  // was never inside _simContent to begin with. The Prediction Chain's flying word
+  // chips are the case: flyAnchor appends to document.body — or to a .nnm-flyclip,
+  // which is itself on body — so a chip can travel between two panels without being
+  // clipped by either. d2b clears them in its own cancelAnim(), but that only runs
+  // from d2b's handlers, so leaving the screen mid-flight stranded a chip on top of
+  // whatever came next: a stray square beside Hidden Layer 1 in Trace a Case.
+  // Swept here because this is the one path every screen change goes through —
+  // sim to sim, and the device and layout switches that rebuild content too.
+  document.querySelectorAll(".nnm-flyanchor, .nnm-flyclip").forEach(function (e) { e.remove(); });
   if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
   for (var key in SIM) delete SIM[key];
   // The wipe above takes announce with it, and the outgoing interactive can still
@@ -4478,7 +4591,7 @@ function buildSimContent() {
       known.className = "d3b-known";
       body.appendChild(known);
 
-      const pane = { idx: slot, sel: null, count: count, prev: prev, next: next,
+      const pane = { idx: slot, sel: [], count: count, prev: prev, next: next,
                      readText: readText, notes: notes, known: known, panel: panel };
       prev.addEventListener("click", function () {
         if (pane.idx > 0) { pane.idx--; render(); }
@@ -4547,7 +4660,7 @@ function buildSimContent() {
         return el;
       }
       const dot = document.createElement("i");
-      dot.className = "d3-dot";
+      dot.className = "d3b-sq";
       const side = 8 + 22 * Math.sqrt(Math.min(1, Math.abs(r)));
       dot.style.width = side.toFixed(1) + "px";
       dot.style.height = side.toFixed(1) + "px";
@@ -4592,19 +4705,18 @@ function buildSimContent() {
       if (!bought.length) return;
       const h = document.createElement("div");
       h.className = "d3b-subhead";
-      h.textContent = "What the coding found";
+      // The pathway is named once, in the heading. It used to be named again in a
+      // column header directly underneath — two labels for a single column.
+      h.textContent = "What the coding found for " + NAMES[FOCUS];
       resultEl.appendChild(h);
       const tbl = document.createElement("div");
       tbl.className = "d3b-table";
-      const hdr = document.createElement("div");
-      hdr.className = "d3b-trow head";
-      hdr.appendChild(document.createElement("div"));
-      NAMES.forEach(function (n) {
-        const c = document.createElement("div");
-        c.textContent = n;
-        hdr.appendChild(c);
-      });
-      tbl.appendChild(hdr);
+      // No column header row: with one pathway left there is nothing to tell apart,
+      // and the heading above already says which one it is. (The other two pathways
+      // went because a commissioned coding's correlation with them is not what was
+      // bought — the screen asks whether the new fact lines up with the pathway that
+      // matched nothing, and extra columns invited reading an answer off the wrong
+      // one.)
       bought.forEach(function (key) {
         const h2 = HIDDEN.filter(function (x) { return x.a.key === key; })[0];
         const rs = rowFor(h2.i);
@@ -4613,12 +4725,11 @@ function buildSimContent() {
         const lab = document.createElement("div");
         lab.textContent = h2.a.label;
         tr.appendChild(lab);
-        rs.forEach(function (r) {
-          const c = document.createElement("div");
-          if (Math.abs(r) >= 0.3) c.className = "hit";
-          c.appendChild(corrChip(r));
-          tr.appendChild(c);
-        });
+        const r = rs[FOCUS];
+        const c = document.createElement("div");
+        if (Math.abs(r) >= 0.3) c.className = "hit";
+        c.appendChild(corrChip(r));
+        tr.appendChild(c);
         tbl.appendChild(tr);
       });
       resultEl.appendChild(tbl);
@@ -4663,12 +4774,15 @@ function buildSimContent() {
     const ATTR_COLOUR = {
       voices_raised: "#0F6E6E", engaged_in_task: "#6A3FA0", group_size: "#A32D5E",
       near_water: "#10688F", food_present: "#8A5A17", resource_stressed: "#B32D2D",
-      gestures_repeated: "#4E6B12", young_present: "#2E7D46", carrying_burden: "#4A5568"
+      gestures_repeated: "#4E6B12", young_present: "#2A7340", carrying_burden: "#4A5568"
     };
+    // The "all attributes" pill is not an attribute, so it is keyed by something no
+    // attribute can be called.
+    const ALL_KEY = "__all";
     const ATTR_SOFT = {
       voices_raised: "#E0ECEC", engaged_in_task: "#ECE6F3", group_size: "#F3E4EA",
       near_water: "#E0EBF0", food_present: "#F0EAE1", resource_stressed: "#F5E4E4",
-      gestures_repeated: "#E8ECE0", young_present: "#E4EEE7", carrying_burden: "#E7E9EB"
+      gestures_repeated: "#E8ECE0", young_present: "#E3EDE6", carrying_burden: "#E7E9EB"
     };
     const SENT_ATTR = (function () {
       const holders = {};
@@ -4699,18 +4813,24 @@ function buildSimContent() {
         return !a.hidden || bought.indexOf(a.key) >= 0;
       }).map(function (a) { return a.key; });
     }
-    // Selection survives paging: on this screen the work is spotting the SAME thing
-    // recurring across conversations, so holding the attribute while you move is the
-    // whole use of it.
+    // Any number of attributes can be held at once — the question this screen asks
+    // is what several codings have in common, which cannot be seen one at a time.
+    // Selection survives paging, too: the work is spotting the SAME thing recurring
+    // across conversations, so holding attributes while you move is the use of it.
     function paintSel(pane) {
       const vis = visibleAttrKeys();
       pane.notes.querySelectorAll(".d3b-sent").forEach(function (sp) {
         const k = sp.dataset.attr;
         sp.classList.toggle("coded", !!k && vis.indexOf(k) >= 0);
-        sp.classList.toggle("sel", !!k && k === pane.sel);
+        sp.classList.toggle("sel", !!k && pane.sel.indexOf(k) >= 0);
+      });
+      const allOn = vis.length > 0 && vis.every(function (k) {
+        return pane.sel.indexOf(k) >= 0;
       });
       pane.known.querySelectorAll(".d3b-attr").forEach(function (c) {
-        c.setAttribute("aria-pressed", c.dataset.attr === pane.sel ? "true" : "false");
+        const key = c.dataset.attr;
+        const on = key === ALL_KEY ? allOn : pane.sel.indexOf(key) >= 0;
+        c.setAttribute("aria-pressed", on ? "true" : "false");
       });
     }
     function render() {
@@ -4773,11 +4893,31 @@ function buildSimContent() {
           chip.textContent = a.label + ": " + lab;
           chip.setAttribute("aria-pressed", "false");
           chip.addEventListener("click", function () {
-            pane.sel = (pane.sel === a.key) ? null : a.key;
+            const at = pane.sel.indexOf(a.key);
+            if (at >= 0) pane.sel.splice(at, 1); else pane.sel.push(a.key);
             paintSel(pane);
           });
           pane.known.appendChild(chip);
         });
+        // Last in the row, and neutral: it stands for the whole set rather than for
+        // any one coding, so it takes --nnm-ink-2 rather than a tenth hue that would
+        // read as another attribute. Clicking it selects everything, or clears
+        // everything once everything is on.
+        const allChip = document.createElement("button");
+        allChip.type = "button";
+        allChip.className = "d3b-attr d3b-attr-all";
+        allChip.dataset.attr = ALL_KEY;
+        allChip.textContent = "All attributes";
+        allChip.setAttribute("aria-pressed", "false");
+        allChip.style.setProperty("--ac", "#58616F");
+        allChip.style.setProperty("--ac-soft", "#E9EAEC");
+        allChip.addEventListener("click", function () {
+          const keys = visibleAttrKeys();
+          const every = keys.every(function (k) { return pane.sel.indexOf(k) >= 0; });
+          pane.sel = every ? [] : keys.slice();
+          paintSel(pane);
+        });
+        pane.known.appendChild(allChip);
         paintSel(pane);
       });
     }
@@ -8475,72 +8615,83 @@ function buildSimContent() {
     // same way round as the Prediction Chain's outcome. LABELS stays in target
     // order (0 = Wait) because that is how the data is coded.
     const OUT_ORDER = [1, 0];
-    const OUT_NEUTRAL = "#B9BEC6";
     let cases = items.slice();
     let idx = 0;
 
     // ---- the network ----
-    // These weights are fitted, not random, and the diagram is wired end to end.
+    // Fitted, not random, and wired end to end. 30 words -> 10 -> 8 -> 6 -> 2.
     //
-    // What was here before: Hidden 1 and Hidden 2 came from a seeded random number
-    // generator and were never trained, and the answer came from a word tally
-    // computed straight off the Input layer. The hidden layers fed nothing. The
-    // Hidden 2 -> Output edges a student traced carried no weights at all, and the
-    // decision they appeared to produce conflicted with the dataset's own model on
-    // 108 of 800 conversations — the same model Day 2 labels "Model" and Day 3
-    // checks the pathways against.
+    // The first column of the diagram is the 12-unit EMBEDDING, which is what the
+    // About panel has always promised: "text to embedding, through two hidden
+    // layers, out to a prediction". It replaced a column of one node per word
+    // PRESENT in the conversation, which ranged from 5 to 26 and so redrew the
+    // picture at a different size for every case. An embedding unit is not a word
+    // and has no name, which is why nothing is written beside it.
     //
-    // These were fitted offline to that model: a blend of its probability and its
-    // label (0.85 / 0.15), 6000 epochs of full-batch Adam over all 800. Rounded to
-    // 4 decimals the network reproduces the dataset's `pred` on 800 of 800, so what
-    // this diagram lands on is what the rest of the sim reports, and it disagrees
-    // with the human coding on exactly the same 64 conversations. Fitted offline
-    // rather than in the browser so the picture is identical every time and opening
-    // the screen costs nothing.
-    const H1 = 14, H2 = 8;
+    // Refitted at these sizes on 2026-09-05 (12/12/8 before that). Target is a blend
+    // of the dataset's own model — its probability and its label, 0.85 / 0.15 — over
+    // all 800, 6000 epochs of full-batch Adam at lr 0.01. That config over the
+    // faster one because it leaves only 4% of embedding activations saturated
+    // against 12%, and saturated units are the ones that will animate to the same
+    // flat colour as each other. Rounded to 4 decimals it reproduces
+    // that model's `pred` on 800 of 800, so this diagram lands where the rest of the
+    // sim says it lands, and it disagrees with the human coding on exactly the same
+    // 64 conversations. Fitted offline so the picture is identical every time and
+    // opening the screen costs nothing.
+    const EMB = 10, H1 = 8, H2 = 6;
     const NET = {
+      E: [
+        [0.7437,-0.1882,0.4657,0.4256,-0.1499,-0.2324,-0.5095,0.1132,-0.1586,-0.545,-0.14,-0.013,-0.2381,-0.1063,0.1848,-0.0921,0.1104,0.0999,0.0713,-0.1025,0.2472,0.0163,-0.533,0.3195,0.1302,-0.3637,-0.135,0.0116,0.3045,0.0692],
+        [-0.2238,0.2405,0.9377,0.3112,-0.105,0.6259,0.2639,0.1065,-0.1912,0.3994,0.0371,-0.3646,0.4088,-0.6301,0.715,-0.0815,-0.6215,-0.4569,1.0264,-1.659,0.3869,-0.4633,0.4546,-0.6176,-0.4113,-0.3706,-1.3239,0.6518,-0.0242,0.1328],
+        [0.4057,0.5301,-0.0094,-0.5599,-0.1943,-0.3568,-0.3685,0.3079,0.4508,0.5858,0.252,-0.2836,-0.1223,0.0066,-0.3278,-0.2475,-0.0505,-0.2296,0.1794,0.0016,0.6774,0.0591,-0.3178,0.4429,0.5451,0.4929,0.7303,-0.2501,-0.1998,0.2147],
+        [0.277,0.4525,-0.1238,0.1682,-0.5897,-0.2126,0.0576,-0.3085,-0.1745,-0.315,0.2997,-0.3881,0.3684,0.4803,0.5638,0.2333,0.1602,0.4829,-0.1289,0.2789,-0.5011,-0.0063,-0.0946,-0.2984,0.0757,-0.2142,-0.5644,-0.6013,-0.2074,-0.2174],
+        [0.1284,-0.662,-0.3428,0.3755,-0.0984,-0.1182,-0.0093,0.1232,-0.5523,0.6395,-0.7306,-0.1128,-0.1208,0.0099,0.7983,0.069,0.4848,0.5806,-0.3625,-0.1274,0.2213,0.3303,0.0605,-0.1407,-0.275,-0.4452,0.3688,-0.0988,0.3261,-0.581],
+        [-0.0974,0.1619,0.392,-0.3591,-0.0919,-0.0469,0.8391,0.4592,-0.3564,0.7673,-0.6154,0.6565,0.1867,-0.1951,-0.5983,1.4068,-0.2122,-0.8414,-0.1919,0.1332,0.2128,0.7881,0.0793,-0.0557,0.2673,-0.9388,-1.0707,0.5474,0.1444,0.5084],
+        [-0.0398,0.4934,-0.4177,-0.4864,-0.5761,0.7536,-0.8535,-0.3822,0.5706,-0.7511,-0.3885,-0.6858,-1.0886,-0.2512,0.3672,0.0039,1.0568,-0.3088,0.4109,0.6005,-0.1337,0.0777,0.0098,0.3599,0.0493,0.6629,0.2187,-0.5819,-0.0531,-0.3096],
+        [0.1751,-0.5544,-0.0055,-0.0673,-0.3239,0.7523,0.318,-0.2111,0.0365,-0.481,-0.1717,0.0072,0.3021,-0.0636,-0.5199,-0.372,0.4919,0.0087,0.1345,0.8649,-0.4274,0.6199,0.0716,-0.0432,0.0588,-0.647,0.5745,-0.3902,-0.2539,-0.2984],
+        [-0.1718,-0.3995,-0.0422,0.5867,0.0196,-0.5997,0.9202,0.7079,-0.211,0.5954,0.4068,0.2325,1.1007,0.495,-0.173,0.2674,-0.2564,0.0639,-0.3925,0.1512,-0.1613,-0.2624,0.1111,-0.4779,-1.0347,-0.6802,-0.4646,0.3303,-0.1822,0.7535],
+        [1.4462,-0.54,0.8561,-0.8123,-0.6586,-0.2886,0.6925,0.7347,-0.4799,-1.2393,-0.4276,0.3523,1.3063,-0.9929,1.5338,0.2581,0.3342,-0.6839,0.8857,-0.0114,-0.394,1.6408,-0.065,-1.0013,-0.718,-0.9242,0.0801,-0.0497,0.2104,0.5174]
+      ],
+      be: [0.0013,0.0349,-0.2524,0.1525,0.7705,1.0681,-0.3202,0.3766,-0.7119,0.9044],
       W1: [
-        [-1.3628,-0.2126,0.1355,0.0741,0.7081,0.2754,-0.2041,0.3673,-0.677,0.1922,1.0011,-0.1768,0.0233,-0.1652,0.2239,0.5291,0.8556,-0.4576,0.4906,0.0268,0.316,-0.4756,1.2423,0.6767,1.1711,-0.3923,-0.4358,-0.2955,0.0287,-0.3379],
-        [-0.2559,-0.7332,0.6126,0.4511,1.7552,-0.1153,1.1361,-1.4813,0.6498,0.0122,-0.7298,-1.4796,1.086,0.8095,-0.3633,0.0665,-0.0681,-0.761,-1.3031,-0.0675,-0.8433,-0.4242,-0.2524,0.7624,0.5267,0.033,-0.3139,1.622,0.2504,0.7672],
-        [0.2989,-0.4675,0.2921,-0.0992,-0.2868,0.5831,0.5487,-0.1938,0.4837,0.0157,0.3846,0.1666,-0.2218,-0.1236,-0.3475,-0.3464,0.1239,0.911,-0.2607,-0.6633,-0.1024,0.1199,-0.3678,0.218,0.9493,-1.1796,-0.0596,-0.3714,0.2706,-0.0251],
-        [-0.5867,1.8425,1.6532,-0.8424,-1.4982,-0.5864,-0.9274,0.9787,-1.2136,-0.6178,-0.6344,-1.5078,-1.2428,0.632,-0.6306,-0.1366,-0.5457,-1.1522,-0.3953,0.5353,0.1253,0.9778,0.7997,-0.1479,-0.8862,-0.8649,-1.2849,0.4206,-0.9405,-1.0881],
-        [0.1629,-0.2437,-0.1402,0.0836,-1.9243,0.1644,-0.837,0.9029,1.5125,0.2056,-0.1022,0.4222,-0.0507,0.2462,-2.5098,1.5318,-0.0431,0.9689,-0.8046,1.5188,-1.1455,-1.2158,1.0982,-0.468,-0.4235,0.6201,-0.6421,-1.1321,0.4484,-1.0197],
-        [-0.2575,0.5978,-0.3511,0.15,-0.4442,-0.7219,0.5531,-0.5781,0.3717,-0.2055,-1.0375,-0.9906,-0.5791,0.4401,-0.2882,-0.1535,0.2633,-0.3742,0.0431,1.0092,0.1127,0.3504,0.8345,0.8555,-0.505,0.341,0.637,-0.5238,0.1011,-0.4426],
-        [0.6269,-0.726,-0.5565,-0.2005,-0.1359,0.3098,-0.3209,-0.188,-0.0369,0.3218,-0.1313,-0.2212,0.2231,0.9334,-0.3799,0.7337,-0.4904,0.4262,-1.3273,0.4994,0.8829,1.7341,0.5228,0.1308,-0.2131,-0.684,0.0746,-0.3754,0.4502,-0.1166],
-        [0.2173,-0.241,-1.0558,0.481,0.3501,0.1809,-0.6104,-1.1302,0.5744,0.9802,-0.3408,-0.9554,0.7468,-0.1321,-0.2178,0.5209,-0.4107,-0.3455,1.0137,0.0993,-0.0345,0.8949,-0.8316,-1.7427,-0.4342,-1.6493,-1.1206,-0.4696,-0.0559,-0.2157],
-        [0.2587,-0.698,-0.1395,0.7191,-1.1345,0.125,0.2604,0.718,-0.1415,0.2175,-1.4152,-0.3635,-0.5155,-0.0371,-0.37,-1.5895,0.1721,0.2105,-0.4046,-1.0047,0.4211,-0.6961,-0.4041,0.9611,-0.8256,1.1536,0.5502,0.6802,0.4017,0.7973],
-        [-0.43,1.0327,-0.6275,-0.9537,0.6458,-0.0473,0.1048,-0.9768,0.4519,0.1364,-0.5322,0.0895,0.538,0.2871,-0.297,0.6547,-0.2229,0.5901,1.1865,-0.2385,-0.822,-0.2299,0.6947,-0.6604,-0.7064,1.2414,0.3715,-0.3283,-0.9189,-0.5001],
-        [-0.2401,0.5886,0.7477,0.3968,0.454,0.6837,0.5416,-0.466,0.1303,-0.6282,0.7054,0.66,-0.8609,0.4046,-0.4441,-0.085,-0.3636,-0.1217,-0.6683,-0.7978,-0.9565,-0.94,-0.2306,-0.3226,-0.168,-0.2386,0.3323,-0.4186,0.0822,-0.2661],
-        [-0.4116,-0.567,0.7469,-0.2777,-0.3019,0.6877,0.6627,-0.0053,1.119,0.0531,0.755,0.1708,0.5424,-0.1944,0.8504,-0.915,-0.4908,-0.275,0.1767,0.29,-0.9467,-0.3822,0.4187,-1.0281,0.9823,1.4235,-0.2326,-1.111,1.3905,-0.4209],
-        [0.0982,0.0086,-0.1406,-0.2664,0.0414,-0.2863,0.5668,0.1235,0.3521,-0.207,-0.3851,0.7308,-0.4417,-0.9816,-0.4736,0.2343,-0.4341,0.8399,0.2763,-0.4218,0.0755,0.2267,-0.0457,0.377,0.3494,-0.1335,0.3259,-0.0347,0.1705,0.1093],
-        [-0.1621,-0.9415,2.3442,1.312,-0.3892,1.8518,0.9754,0.8337,-0.361,1.3625,0.322,-1.5799,1.3887,-0.7958,-0.0826,1.3562,0.3002,-0.243,-0.4724,-1.599,-0.3945,3.0353,-0.1303,-0.8962,-1.5793,-0.6586,1.1323,0.6431,1.6024,0.9113]
+        [-5.2666,3.7516,-0.4326,1.0922,-4.2442,0.5827,-1.2193,-0.6845,-1.8646,1.5635],
+        [0.9819,1.3245,0.0508,0.201,-0.6146,1.2178,0.9781,1.0835,0.2083,0.0276],
+        [0.2675,0.7135,0.328,0.1408,0.7528,0.2404,0.2464,0.8475,0.3111,-1.5163],
+        [-0.981,-0.225,-0.2115,0.6506,-1.3377,-0.7049,1.6312,1.3517,1.4483,-6.0425],
+        [0.1994,-2.0046,1.0203,0.4587,-0.817,-0.6347,0.335,-0.4313,1.704,-0.0404],
+        [0.6563,-1.4972,-0.3296,3.3848,-0.9284,0.8931,-2.7883,-1.0127,-0.8914,0.1951],
+        [0.9192,0.0376,-1.647,-0.3317,-1.5424,0.2455,-1.6788,0.7987,0.1086,-0.1082],
+        [0.2375,-1.2829,0.4234,-0.038,0.9525,0.0871,-0.8684,2.0666,1.0873,1.3887]
       ],
-      b1: [-0.6742,0.7013,0.2432,1.0228,-0.0963,-0.0287,0.0039,0.1582,0.1456,0.9287,0.598,0.1615,0.0788,-0.2264],
+      b1: [0.5878,0.4773,0.2835,0.1624,-0.4983,-0.1591,0.1545,-0.3975],
       W2: [
-        [-0.4516,0.4322,-1.183,0.7033,-0.4705,-0.6985,0.3855,0.5884,-0.1559,-0.8745,0.5501,1.1712,1.7452,0.0545],
-        [0.5132,-2.2222,0.3464,-0.9263,-1.9195,-1.4445,-1.4571,-0.659,-1.732,-2.5273,-0.6486,-0.5116,1.1599,-0.8804],
-        [0.5991,0.0994,0.7043,-0.0899,-3.4651,-0.0818,-1.655,-4.8887,-1.6572,2.2497,-3.7375,1.1011,0.0987,5.265],
-        [-0.3468,-0.1507,-0.3944,-0.7865,-0.4473,1.0271,-1.5324,-0.1385,-0.6175,-1.2855,-0.207,-0.6362,-0.4923,0.3764],
-        [2.2372,1.4373,-1.2626,0.1336,-1.1727,0.2369,0.2991,1.0783,0.3058,-1.28,1.4169,-0.8679,0.5555,0.0574],
-        [-1.8028,-0.0658,0.0304,0.0452,1.1664,2.0479,3.5189,0.3906,-0.5436,0.7399,0.9882,-0.0392,-0.3549,2.0364],
-        [-0.2415,0.53,-0.3115,0.1763,0.7246,-0.542,-0.9272,-0.3683,-0.552,-0.6532,-0.2514,0.769,-0.8308,1.244],
-        [-0.5024,-0.1024,2.7058,0.5568,-0.9786,0.6205,1.9673,0.606,-1.0177,-0.8962,0.0839,-0.5255,2.8314,-0.859]
+        [0.7955,2.939,2.2596,-0.3705,-0.9166,0.5557,-3.0711,2.3381],
+        [-0.6503,-0.2375,-0.1071,0.6854,0.4371,-0.228,1.5082,0.5762],
+        [-2.1663,0.3579,1.3204,-0.6956,1.3056,-1.0569,-0.8379,-0.4909],
+        [0.5154,-1.1316,-0.0674,0.7914,-1.1952,-1.4111,-5.3107,0.3329],
+        [-0.8548,-0.8309,-0.8528,0.0264,-1.1156,-0.0301,0.3863,-0.3387],
+        [1.2347,0.7282,1.5021,-0.193,0.7119,-0.5984,1.5406,-0.4366]
       ],
-      b2: [0.3303,1.4835,-0.187,0.2248,0.1808,0.3812,0.1744,-0.6506],
+      b2: [0.3244,0.6067,-0.2447,1.0004,0.3072,-1.1915],
       W3: [
-        [-0.7043,0.5532,-0.7525,0.3527,-0.68,0.819,0.6645,0.432],
-        [1.2285,-0.3381,0.3267,-1.3638,0.6809,-0.2657,-0.8129,-0.396]
+        [0.5985,-0.873,1.1306,-0.1031,-1.1465,-0.6822],
+        [-0.6815,0.4857,-0.8464,1.6998,0.9387,0.1762]
       ],
-      b3: [0.1607,-0.1607]
+      b3: [-0.0645,0.0645]
     };
     function tanh(x) { return Math.tanh ? Math.tanh(x) : (Math.exp(2*x)-1)/(Math.exp(2*x)+1); }
 
     function forward(it) {
       const words = it.text.split(/\s+/);
       const inp = VOCAB.map(function (w) { return words.indexOf(w) >= 0 ? 1 : 0; });
+      const emb = NET.E.map(function (row, j) {
+        let s = NET.be[j];
+        for (let i = 0; i < inp.length; i++) if (inp[i]) s += row[i];
+        return tanh(s);
+      });
       const h1 = NET.W1.map(function (row, j) {
         let s = NET.b1[j];
-        for (let i = 0; i < inp.length; i++) if (inp[i]) s += row[i];
+        for (let k = 0; k < emb.length; k++) s += emb[k] * row[k];
         return tanh(s);
       });
       const h2 = NET.W2.map(function (row, k) {
@@ -8549,14 +8700,14 @@ function buildSimContent() {
         return tanh(s);
       });
       // Two genuinely independent logits, indexed [Wait, Approach] to match LABELS.
-      // They are not mirrors: the larger one is the answer, which is what argmax
-      // over a two-unit softmax head means in any real classifier.
+      // Not mirrors: on 451 of 800 they share a sign, so the larger one really is a
+      // comparison, which is what argmax over a two-unit softmax head means.
       const out = NET.W3.map(function (row, o) {
         let s = NET.b3[o];
         for (let k = 0; k < h2.length; k++) s += h2[k] * row[k];
         return s;
       });
-      return { inp: inp, h1: h1, h2: h2, out: out };
+      return { inp: inp, emb: emb, h1: h1, h2: h2, out: out };
     }
 
     // What each hidden neuron actually does, over all 800 conversations. Computed
@@ -8569,6 +8720,18 @@ function buildSimContent() {
     // 52% baseline while neurons 5, 11 and 13 sit at chance. A neuron can carry real
     // signal about the answer and still not stand for any one thing, which is the
     // reason Day 2 goes looking for pathways instead.
+    // The hidden layers are tanh, so they arrive on the ramp already: |v| <= 1. The
+    // logits do not — they run past 3 — so they are divided by the largest |logit|
+    // anywhere in the 800 before being coloured. One scale for the whole dataset,
+    // not per conversation, or the same number would be a different colour case to
+    // case and the column could not be compared with itself.
+    const LOGIT_SCALE = (function () {
+      let m = 0;
+      items.forEach(function (it) {
+        forward(it).out.forEach(function (z) { m = Math.max(m, Math.abs(z)); });
+      });
+      return m || 1;
+    })();
     const LEAN_N = 80;                 // how many of the 800 count as "fires hardest"
     const NEURON_FACTS = (function () {
       const acts = items.map(forward);
@@ -8587,8 +8750,14 @@ function buildSimContent() {
       }
       return {
         base: Math.round(100 * base),
+        // No drivers for the embedding: what drives one is words, and words are
+        // exactly what this column is not allowed to name. The split still says
+        // something true about the unit without naming anything.
+        emb: NET.E.map(function (row, j) {
+          return { app: split(function (h) { return h.emb[j]; }) };
+        }),
         h1: NET.W1.map(function (row, n) {
-          return { drivers: topBy(row, function (x) { return VOCAB[x.i]; }),
+          return { drivers: topBy(row, function (x) { return "Input neuron " + (x.i + 1); }),
                    app: split(function (h) { return h.h1[n]; }) };
         }),
         h2: NET.W2.map(function (row, k) {
@@ -8611,6 +8780,30 @@ function buildSimContent() {
     const filter = NNM_FILTER.buildBar(function (its) { cases = its; idx = 0; render(); });
     filter.el.classList.add("d3-filter");
     toolbar.appendChild(filter.el);
+
+    // Four steps, in the Prediction Chain's own .nnm-step, so the two days look like
+    // one piece of software. Only Step 1 is defined so far; the rest are present and
+    // disabled rather than absent, so the shape of the sequence is visible and a
+    // dead button is never clickable.
+    const stepRow = document.createElement("div");
+    stepRow.className = "d1a-steps";
+    const stepBtns = [1, 2, 3, 4].map(function (n) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "nnm-step";
+      b.textContent = "Step " + n;
+      stepRow.appendChild(b);
+      return b;
+    });
+    // Reset sits with the steps, not out by About: it undoes them, so it belongs
+    // beside them. Unavailable until something has been done — the rule the
+    // Prediction Chain's Reset already follows.
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "nnm-reset";
+    resetBtn.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
+    stepRow.appendChild(resetBtn);
+    toolbar.appendChild(stepRow);
     if (filter.about) toolbar.appendChild(filter.about);
 
     const root = document.createElement("div");
@@ -8674,8 +8867,8 @@ function buildSimContent() {
     nHead.appendChild(nTitle);
     const scaleEl = document.createElement("div");
     scaleEl.className = "d1a-scale";
-    scaleEl.innerHTML = '<span class="lo">− activation</span>'
-      + '<span class="grad"></span><span class="hi">+ activation</span>';
+    scaleEl.innerHTML = '<span class="lo">\u2212</span>'
+      + '<span class="grad"></span><span class="hi">+</span>';
     nHead.appendChild(scaleEl);
     netPanel.appendChild(nHead);
     const nBody = document.createElement("div");
@@ -8709,6 +8902,11 @@ function buildSimContent() {
 
     // Last size drawn, so the observer below can ignore the changes it causes.
     let drawnW = 0, drawnH = 0;
+    // Connections grouped by the unit they LEAVE, which is how Steps 2 and 3 grow
+    // them — one unit's whole fan at a time. Rebuilt by every drawNet.
+    const fanOut = [];    // Input -> Hidden 1
+    const fanOut2 = [];   // Hidden 1 -> Hidden 2
+    const fanOut3 = [];   // Hidden 2 -> Output
     // The pinned neuron, and the case it belongs to. Both OUTSIDE drawNet: pinning
     // one changes the readout's text, a longer message is a taller readout, a taller
     // readout is a shorter diagram — and the ResizeObserver answers that by
@@ -8724,9 +8922,9 @@ function buildSimContent() {
     // for the labels is the widest they can EVER be, over the whole vocabulary,
     // measured in the same font the labels are actually drawn in.
     const measSvg = el("svg", { class: "d1a-meas" });
-    const measIn = el("text", { class: "d1a-inlabel" });
     const measOut = el("text", { class: "d1a-outlabel" });
-    measSvg.appendChild(measIn); measSvg.appendChild(measOut);
+    const measCap = el("text", { class: "d1a-collabel" });
+    measSvg.appendChild(measOut); measSvg.appendChild(measCap);
     nBody.appendChild(measSvg);
     function widest(node, strs) {
       let w = 0;
@@ -8749,24 +8947,46 @@ function buildSimContent() {
                               class: "d1a-net" });
       const scene = el("g", { class: "d1a-scene" });
       svg.appendChild(scene);
-      // Only the words this conversation contains get an input neuron. A column of
-      // 30 with two thirds of them dark would say the absent words are doing
-      // something, and the input to the model is the presence, not the vocabulary.
-      const present = [];
-      VOCAB.forEach(function (w, i) { if (f.inp[i]) present.push({ w: w, i: i }); });
+      // Every column is a fixed size, the same in all 800 conversations. The input
+      // column used to be one node per word PRESENT, which ran from 5 to 26 and
+      // redrew the whole picture at a different size case to case; it is the
+      // 12-unit embedding now, so the diagram is one diagram.
+      // 44 clears the captions at y 17; 14 keeps the last circle off the bottom.
+      const top = 44, bot = H - 14;
+      // One radius for every neuron: nothing in the model grows left to right, so
+      // size spent on a gradient would only invite being read as importance.
+      //
+      // DERIVED, not fixed. The columns are 10 / 8 / 6 now, and the tallest of them
+      // sets how much room a node can have; a hard radius would overlap as soon as
+      // the panel got short, which it does on the iPad layouts. STEP_MAX caps how
+      // far apart they spread when there IS room, and the radius is whatever fits
+      // that step with a 6px gap left over.
+      const STEP_MAX = 30;
+      const tightest = Math.min(STEP_MAX, (bot - top) / (EMB - 1));
+      const R = Math.max(5, Math.min(12, Math.floor(tightest / 2) - 3));
+      // `label` is the caption over the column; `short` is what a neuron in it is
+      // called in the readout. They came apart when the captions gained "Layer":
+      // "Hidden Layer 1 neuron 3" is not what anything should be called.
       const cols = [
-        { n: present.length, x: 0, r: 7,  label: "Input" },
-        { n: H1, x: 0, r: 8, label: "Hidden 1" },
-        { n: H2, x: 0, r: 9, label: "Hidden 2" },
-        // 10px between the two outcome circles: they are one choice, not two
-        // separate readings, so they read better as a close pair.
-        { n: 2,  x: 0, r: 10, label: "Output", step: 36 }
+        { n: EMB, x: 0, r: R, label: "Input Layer", short: "Input" },
+        { n: H1, x: 0, r: R, label: "Hidden Layer 1", short: "Hidden 1" },
+        { n: H2, x: 0, r: R, label: "Hidden Layer 2", short: "Hidden 2" },
+        // The two outcomes are one choice, not two separate readings, so they read
+        // better as a close pair than as another evenly spaced column. The step is
+        // the pill's own height plus 10, so that 10px gap survives any radius.
+        { n: 2,  x: 0, r: R, label: "Output Layer", short: "Output", step: R * 2 + 8 + 10 }
       ];
       // Equal margins by construction, and identical from case to case: both label
       // gutters are reserved at their maximum, then the four columns spread evenly
       // across whatever is left.
       const PAD = 4;
-      const inGut = widest(measIn, VOCAB) + 6;         // the word, then its 6px gap
+      // Was the widest word plus a 6px gap. Nothing is written beside an embedding
+      // unit any more, but the gutter cannot go to zero: the column CAPTION is
+      // centred on the column, so "Input" over a node 11px from the edge hung 3.9px
+      // off the left of the viewBox and lost its I. What has to be reserved now is
+      // half the caption, less the node's own radius. Measured, not assumed — the
+      // caption is Barlow Condensed and its width is not something to guess at.
+      const inGut = Math.max(0, widest(measCap, [cols[0].label]) / 2 - cols[0].r);
       // The outcome is a pill around the node AND its word, so the gutter has to
       // hold the whole thing: the node's other half, the gap, the word, and the
       // pill's own padding.
@@ -8780,11 +9000,14 @@ function buildSimContent() {
       cols.forEach(function (c, i) {
         c.x = xFirst + (xLast - xFirst) * i / (cols.length - 1);
       });
-      // 44 clears the captions at y 17; 14 keeps the last circle off the bottom edge.
-      const top = 44, bot = H - 14;
+      // The Input column alone sits 10px right of where the even spread puts it.
+      // With the word labels gone its only left-hand neighbour is the panel edge,
+      // and flush against it the column read as clipped rather than as the start of
+      // something. The other three keep their spacing.
+      cols[0].x += 10;
       function ys(n, maxStep) {
         if (n === 1) return [(top + bot) / 2];
-        const step = Math.min(maxStep || 26, (bot - top) / (n - 1));
+        const step = Math.min(maxStep || STEP_MAX, (bot - top) / (n - 1));
         const mid = (top + bot) / 2, span = step * (n - 1);
         const out = [];
         for (let i = 0; i < n; i++) out.push(mid - span / 2 + i * step);
@@ -8792,12 +9015,31 @@ function buildSimContent() {
       }
       const pos = cols.map(function (c) { return ys(c.n, c.step); });
       const vals = [
-        present.map(function (p) { return 1; }),
-        f.h1, f.h2, OUT_ORDER.map(function (o) { return f.out[o]; })
+        f.emb, f.h1, f.h2, OUT_ORDER.map(function (o) { return f.out[o]; })
       ];
 
-      // What a highlighted edge is widened to, if it is thinner than this.
-      const LIT_MIN_W = 1.4;
+      // Three widths, not a continuous scale. The weights are steeply skewed —
+      // nine edges in ten sit under half the layer's maximum — so 0.4 + 1.6*|w|
+      // pushed almost everything into the bottom of a 0.4..2.0 range and two edges
+      // an octave apart in weight came out half a pixel apart on screen.
+      // Thresholds are the terciles of |w| WITHIN each drawn layer, so every layer
+      // shows all three widths whatever its own spread, and they are computed from
+      // the weights rather than hard-coded — a refit re-derives them.
+      const W_THIN = 1, W_MID = 2, W_THICK = 3;
+      function terciles(m) {
+        const f = [];
+        m.forEach(function (r) { r.forEach(function (v) { f.push(Math.abs(v)); }); });
+        f.sort(function (x, y) { return x - y; });
+        return [f[Math.floor(f.length / 3)], f[Math.floor(2 * f.length / 3)]];
+      }
+      function bandOf(w, t) {
+        const a = Math.abs(w);
+        return a < t[0] ? W_THIN : a < t[1] ? W_MID : W_THICK;
+      }
+      // Highlighting scales the width instead of flooring it. A floor of 1.4 made a
+      // lit thin edge exactly as wide as a lit middle one, collapsing two of the
+      // three bands at the very moment they are being looked at.
+      const LIT_MUL = 1.5;
 
       // Edges first, so every neuron sits on top of its own wiring.
       // Under the edges. An opaque pill drawn with the nodes covered the last
@@ -8808,38 +9050,66 @@ function buildSimContent() {
       const edgeG = el("g", { class: "d1a-edges" });
       scene.appendChild(edgeG);
       const edges = [];
-      function link(li, a, b, weight) {
+      function link(li, a, b, width) {
         const line = el("line", {
           x1: cols[li].x + cols[li].r, y1: pos[li][a],
           x2: cols[li+1].x - cols[li+1].r, y2: pos[li+1][b],
           class: "d1a-edge"
         });
-        // The resting width encodes |weight|. Kept on the element so the highlight
-        // can raise it and put it back without recomputing.
-        line.__w = 0.4 + 1.6 * Math.min(1, Math.abs(weight));
-        line.style.strokeWidth = line.__w.toFixed(2);
+        // The resting width is one of three bands. Kept on the element so the
+        // highlight can raise it and put it back without recomputing.
+        line.__w = width;
+        line.style.strokeWidth = width.toFixed(2);
+        // Its own length, from the coordinates rather than getTotalLength(): the svg
+        // is still detached at this point, and for a straight line the arithmetic is
+        // exact anyway. Dashed out to its full length, so it starts undrawn and a
+        // step can grow it by pulling the offset to zero.
+        const len = Math.hypot(
+          (cols[li+1].x - cols[li+1].r) - (cols[li].x + cols[li].r),
+          pos[li+1][b] - pos[li][a]);
+        line.__len = len;
+        line.style.strokeDasharray = len;
+        line.style.strokeDashoffset = len;
         edgeG.appendChild(line);
         edges.push({ el: line, from: [li, a], to: [li+1, b] });
+        return line;
       }
-      // Edge width is |weight| relative to the heaviest weight in the SAME layer.
-      // The trained layers do not share a scale — the largest are 3.04, 5.26 and
-      // 1.36 — so a single clamp at 1.0 flattened a third of Hidden 1 -> Hidden 2
-      // to maximum width and threw away the comparison the width exists to make.
-      function wScale(m) {
-        let mx = 0;
-        m.forEach(function (r) { r.forEach(function (v) { mx = Math.max(mx, Math.abs(v)); }); });
-        return mx || 1;
+      // Connections are off for now (2026-09-05) while the animation is designed.
+      // Everything that draws and lights them is left exactly as it was — the three
+      // width bands, the `near` class, the dim-the-rest hover, the widen-on-select —
+      // so switching this back to true restores the behaviour rather than rebuilding
+      // it. `edges` stays an empty array, which the hover code already handles.
+      // One switch per drawn layer. Input -> Hidden 1 is back, because Step 2 grows
+      // it; the other two stay parked until their own steps exist. Everything that
+      // draws and lights them is untouched — the three width bands, the `near`
+      // class, the dim-the-rest hover, the widen-on-select.
+      const SHOW_EDGES = [true, true, true];
+      // Each drawn layer is banded against its OWN terciles: the trained layers do
+      // not share a scale, so one set of thresholds would have flattened a whole
+      // layer into a single width.
+      const T1 = terciles(NET.W1), T2 = terciles(NET.W2), T3 = terciles(NET.W3);
+      // Grouped by the unit they LEAVE, because that is how Step 2 grows them: all
+      // of one input unit's connections at once, then the next unit's.
+      fanOut.length = 0; fanOut2.length = 0; fanOut3.length = 0;
+      if (SHOW_EDGES[0]) for (let a = 0; a < EMB; a++) {
+        const group = [];
+        for (let b = 0; b < H1; b++) group.push(link(0, a, b, bandOf(NET.W1[b][a], T1)));
+        fanOut.push(group);
       }
-      const S1 = wScale(NET.W1), S2 = wScale(NET.W2), S3 = wScale(NET.W3);
-      present.forEach(function (p, a) {
-        for (let b = 0; b < H1; b++) link(0, a, b, NET.W1[b][p.i] / S1);
-      });
-      for (let a = 0; a < H1; a++) for (let b = 0; b < H2; b++) link(1, a, b, NET.W2[b][a] / S2);
+      if (SHOW_EDGES[1]) for (let a = 0; a < H1; a++) {
+        const group = [];
+        for (let b = 0; b < H2; b++) group.push(link(1, a, b, bandOf(NET.W2[b][a], T2)));
+        fanOut2.push(group);
+      }
       // These carried a hard-coded 0.5 while the output was computed elsewhere. They
       // are real weights now, read through OUT_ORDER because the output column is
       // drawn Approach-above-Wait while the logits stay in target order.
-      for (let a = 0; a < H2; a++) for (let b = 0; b < 2; b++) {
-        link(2, a, b, NET.W3[OUT_ORDER[b]][a] / S3);
+      if (SHOW_EDGES[2]) for (let a = 0; a < H2; a++) {
+        const group = [];
+        for (let b = 0; b < 2; b++) {
+          group.push(link(2, a, b, bandOf(NET.W3[OUT_ORDER[b]][a], T3)));
+        }
+        fanOut3.push(group);
       }
 
       // Selected neurons are moved in here. Nodes live in one group per column and
@@ -8858,12 +9128,23 @@ function buildSimContent() {
       // first; and it was the only indicator of selection, driven by focus, so it
       // showed inconsistently across browsers (a click focuses an SVG element in
       // Chrome but not reliably in Safari or Firefox).
+      let hoverEl = null;
       function syncRings() {
         svg.querySelectorAll(".d1a-node").forEach(function (n) {
           if (!n.__ring) return;
           const sel = n.classList.contains("pinned");
-          const foc = n === document.activeElement;
+          // :focus-visible, not activeElement. A click leaves focus on the node, so
+          // matching on focus alone meant clicking a selected node to DEselect it
+          // swapped the dark ring for a blue one instead of clearing it — the node
+          // looked marked when nothing was chosen. :focus-visible is false after a
+          // click and true after Tab, which is exactly the distinction wanted: no
+          // ring on deselect, and keyboard focus still shows where it is.
+          let foc = false;
+          try { foc = n.matches(":focus-visible"); }
+          catch (e) { foc = n === document.activeElement; }
+          const hov = n === hoverEl;
           n.__ring.classList.toggle("on", sel || foc);
+          n.__ring.classList.toggle("hover", !sel && !foc && hov);
           // Selection wins where a node is both: it is the stronger state and the
           // one that persists.
           n.__ring.classList.toggle("focus", foc && !sel);
@@ -8889,16 +9170,35 @@ function buildSimContent() {
 
       // A click pins the highlight, so the wiring can be read without holding the
       // mouse still — and so the readout below has somewhere to point.
+      // No activation is quoted here, on any layer, at the content designer's
+      // request (2026-09-04). The number is still on the node — its colour, its
+      // tooltip, its screen-reader label — it is just not what the readout is for.
+      // What the readout says instead is what the unit is WIRED to and how it leans,
+      // which is the thing a student cannot get by looking.
       function pinText(li, i) {
-        const v = vals[li][i];
-        const num = '<span class="v">' + (v >= 0 ? "+" : "\u2212")
-          + Math.abs(v).toFixed(2) + "</span>";
         if (li === 0) {
-          return "<b>\u201C" + present[i].w + "\u201D</b> is in this conversation, so its "
-            + "input is switched on (" + num + "). It feeds all " + H1 + " Hidden 1 neurons. "
-            + "The network never sees the word \u2014 only the switch.";
+          // The input row carries no word: an embedding unit is not a word, and
+          // naming one would invite a student to read it as one. It IS a neuron
+          // though, and is called one (2026-09-04): this column is a trained tanh
+          // layer, not raw features sitting there, so it is a neuron in exactly the
+          // sense Hidden 1 is, and the hint promises "click any neuron". The two
+          // OUTPUT circles keep their outcome names — to a student they are the
+          // answer, not machinery.
+          const ef = NEURON_FACTS.emb[i];
+          return "<b>Input neuron " + (i + 1) + "</b> \u2014 one of the " + EMB + " numbers the "
+            + "network turns this conversation into before it starts reasoning about it. "
+            + "It feeds all " + H1 + " Hidden 1 neurons. Of the " + LEAN_N
+            + " conversations it responds to most strongly, " + ef.app
+            + " are <b>Approach</b> and " + (LEAN_N - ef.app) + " are <b>Wait</b>.";
         }
         if (li === 3) {
+          // Before Step 4 the two numbers are not both in yet, so there is nothing to
+          // compare and the answer is not the readout's to give: it said "the larger
+          // one is the answer: here, Wait" while both pills were still blank.
+          if (stepDone < 4) {
+            return "<b>" + LABELS[OUT_ORDER[i]] + "</b> \u2014 one of the two numbers "
+              + "the network ends on. The larger one is the answer.";
+          }
           const chose = f.out[1] > f.out[0] ? 1 : 0;
           // The model and the human agree on 736 of the 800. A standing instruction
           // to "compare these" would therefore ask a student to compare two
@@ -8906,14 +9206,15 @@ function buildSimContent() {
           // they match and says so plainly when they do not — the 8% is where the
           // comparison is worth making, and Day 3 is built on those conversations.
           const agreed = chose === it.target;
-          return "<b>" + LABELS[OUT_ORDER[i]] + "</b> " + num + " \u2014 one of the two numbers the network "
+          return "<b>" + LABELS[OUT_ORDER[i]] + "</b> \u2014 one of the two numbers the network "
             + "ends on. The larger one is the answer: here, <b>"
             + LABELS[chose] + "</b>. " + (agreed
-               ? "The human who coded this conversation said " + LABELS[it.target] + ", too."
+               ? "The human who coded this conversation said <b>" + LABELS[it.target]
+                 + "</b>, too."
                : "The human who coded this conversation said <b>" + LABELS[it.target]
                  + "</b> — the network and the human disagree here.");
         }
-        const fanIn = li === 1 ? present.length : H1;
+        const fanIn = li === 1 ? EMB : H1;
         const fanOut = li === 1 ? H2 : 2;
         const nf = (li === 1 ? NEURON_FACTS.h1 : NEURON_FACTS.h2)[i];
         const drivers = nf.drivers.slice(0, 2).join(", ") + " and " + nf.drivers[2];
@@ -8921,10 +9222,10 @@ function buildSimContent() {
         // them. Some neurons come out 73/7 and some 41/39, and noticing that is the
         // work — saying "it carries something; it is not about anything you could
         // name" did it for them, before they had looked at a second neuron.
-        return "<b>" + cols[li].label + " neuron " + (i + 1) + "</b> " + num + " \u2014 "
+        return "<b>" + cols[li].short + " neuron " + (i + 1) + "</b> \u2014 "
           + fanIn + " connections in, " + fanOut + " out. Its strongest inputs are "
           + drivers + ". Of the " + LEAN_N + " conversations it fires hardest on, "
-          + nf.app + " are Approach and " + (LEAN_N - nf.app) + " are Wait.";
+          + nf.app + " are <b>Approach</b> and " + (LEAN_N - nf.app) + " are <b>Wait</b>.";
       }
       function sizeReadout() {
         if (!pinEl.isConnected) return;
@@ -8937,12 +9238,20 @@ function buildSimContent() {
             tallest = Math.max(tallest, measureEl.getBoundingClientRect().height);
           }
         });
-        measureEl.innerHTML = "<span>Click any neuron to see what it does.</span>";
-        tallest = Math.max(tallest, measureEl.getBoundingClientRect().height);
+        // Both idle strings, since which one shows depends on how far the steps
+        // have got and the box is a fixed height for all of them.
+        ["Run Step 1 to send the conversation into the network.",
+         "Click any neuron the signal has reached to see what it does."].forEach(function (h) {
+          measureEl.innerHTML = "<span>" + h + "</span>";
+          tallest = Math.max(tallest, measureEl.getBoundingClientRect().height);
+        });
         measureEl.innerHTML = "";
         if (tallest > 0) pinEl.style.height = Math.ceil(tallest) + "px";
       }
 
+      // Parked so the step machinery, which lives outside drawNet, can ask for a
+      // repaint when a step completes and the readout's wording changes.
+      svgHost.__paintPin = function () { paintPin(); };
       function paintPin() {
         Array.prototype.forEach.call(svg.querySelectorAll(".d1a-node"), function (n) {
           n.classList.remove("pinned");
@@ -8951,7 +9260,9 @@ function buildSimContent() {
         if (!pinIdx) {
           syncRings();
           pinEl.className = "d1a-pin idle";
-          pinEl.innerHTML = "<span>Click any neuron to see what it does.</span>";
+          pinEl.innerHTML = "<span>" + (stepDone > 0
+            ? "Click any neuron the signal has reached to see what it does."
+            : "Run Step 1 to send the conversation into the network.") + "</span>";
           return;
         }
         pinEl.className = "d1a-pin";
@@ -8993,21 +9304,47 @@ function buildSimContent() {
           // off the scale altogether, in a neutral grey that is neither ramp colour
           // and is too dark to be misread as a near-zero activation. The pill carries
           // which answer it is; the number carries how strong.
-          node.style.fill = li === 3 ? OUT_NEUTRAL : actColour(v);
+          // Everything starts white. The colour each node will end on is parked on
+          // the element so the animation can pick it up without recomputing, and so
+          // nothing here has to know how that animation will run.
+          //
+          // The output pair is on the ramp now, like every other column. It was held
+          // off it while the two logits were exact mirrors, when depth would have
+          // been one darkest orange and one darkest blue in all 800 conversations —
+          // a tautology. The refitted network emits independent logits that share a
+          // sign on 451 of 800, so the colour finally carries something: two oranges
+          // of different depth, and the deeper one is the answer.
+          const ramp = li === 3 ? v / LOGIT_SCALE : v;
+          node.__v = ramp;   // the steps walk the ramp toward this as input arrives
+          node.__act = actColour(ramp);
+          node.style.fill = "#FFFFFF";
           node.dataset.layer = li; node.dataset.i = i;
           node.setAttribute("tabindex", "0");
           node.setAttribute("role", "button");
-          const name = li === 0 ? present[i].w
-            : li === 3 ? LABELS[OUT_ORDER[i]] : c.label + " neuron " + (i + 1);
-          node.setAttribute("aria-label", name + ", activation " + v.toFixed(2));
+          const name = li === 0 ? "Input neuron " + (i + 1)
+            : li === 3 ? LABELS[OUT_ORDER[i]] : c.short + " neuron " + (i + 1);
+          // The value lives on the node — tooltip and screen-reader label alike —
+          // but only once the step that computes this layer has run. Before that the
+          // number does not exist yet as far as the screen is concerned, and on the
+          // output row it IS the answer: the two logits were readable on hover while
+          // both pills were still unrevealed. syncNodeInfo fills them in as each step
+          // completes.
+          node.__name = name;
+          node.__val = v;
+          node.__title = el("title", {});
+          node.appendChild(node.__title);
           node.setAttribute("aria-pressed", "false");
-          const t = el("title", {});
-          t.textContent = name + "   " + (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
-          node.appendChild(t);
-          function on() { setHover(li, i); }
-          function off() { setHover(-1, -1); }
+          // A neuron the signal has not reached yet answers nothing: its readout
+          // would name its connections and its strongest inputs, which is exactly
+          // what Steps 2 and 3 exist to draw. Keyed to the STEP, not to whether the
+          // circle looks coloured — a unit sitting near zero renders white after a
+          // full run, and 28% of conversations end with at least one of those.
+          function live() { return !node.classList.contains("off"); }
+          function on() { if (!live()) return; setHoverNode(node); setHover(li, i); }
+          function off() { setHoverNode(null); setHover(-1, -1); }
           function toggle(ev) {
             if (ev) ev.stopPropagation();
+            if (!live()) return;
             if (pinIdx && pinIdx[0] === li && pinIdx[1] === i) { pinIdx = null; applyHover(-1, -1); }
             else { pinIdx = [li, i]; applyHover(li, i); }
             paintPin();
@@ -9030,19 +9367,20 @@ function buildSimContent() {
           // the order of focus and blur decided the outcome.
           node.addEventListener("focus", syncRings);
           node.addEventListener("blur", syncRings);
-          if (li === 0) {
-            const lbl = el("text", { x: c.x - c.r - 6, y: pos[li][i] + 3.5, class: "d1a-inlabel" });
-            lbl.setAttribute("text-anchor", "end");
-            lbl.textContent = present[i].w;
-            scene.appendChild(lbl);
-          }
           if (li === 3) {
             // The larger of the two output values is the answer. It gets a filled
             // pill, the way the human's label is a filled chip on the left; the
             // other gets the same pill as an outline. Same shape for both, so the
             // difference is the fill and nothing else.
             const chose = f.out[1] > f.out[0] ? 1 : 0;
-            const won = OUT_ORDER[i] === chose;
+            // The answer is not revealed yet (2026-09-05) — both outcomes render in
+            // the same resting state, the way every node now starts white, so the
+            // picture gives nothing away before the animation runs. Which one won is
+            // parked on the element, like a node's __act, so the reveal is a class
+            // change and not a rebuild.
+            const REVEAL_ANSWER = false;
+            const actuallyWon = OUT_ORDER[i] === chose;
+            const won = REVEAL_ANSWER && actuallyWon;
             const app = OUT_ORDER[i] === 1;
             const word = LABELS[OUT_ORDER[i]];
             const tw = widest(measOut, [word]);
@@ -9061,6 +9399,7 @@ function buildSimContent() {
             pill.addEventListener("click", toggle);
             pill.addEventListener("mouseenter", on);
             pill.addEventListener("mouseleave", off);
+            pill.__won = actuallyWon;
             pillG.appendChild(pill);
             const lbl = el("text", { x: c.x + c.r + PILL_GAP, y: pos[li][i] + 4,
               class: "d1a-outlabel " + (app ? "app" : "wait") });
@@ -9075,16 +9414,45 @@ function buildSimContent() {
       // Slide 9's "hover any neuron to see the incoming and outgoing connected
       // neurons": everything unrelated steps back rather than the related edges
       // being brightened, so the answer is what is LEFT rather than what is added.
+      // The ring follows the pointer whatever else is going on — including while
+      // something is selected, where applyHover bails out so the selected node keeps
+      // its lit edges.
+      function setHoverNode(n) { hoverEl = n; syncRings(); }
       function setHover(li, i) { if (pinIdx) return; applyHover(li, i); }
       function applyHover(li, i) {
         const on = li >= 0;
         svg.classList.toggle("hovering", on);
+        // A line is lit in the colour of the unit it LEAVES — the same rule the step
+        // animations use, where a fan grows in its source unit's colour. So the
+        // OUTGOING lines from a hovered neuron are all one colour (they all leave
+        // it), while the INCOMING ones arrive in as many colours as there are units
+        // feeding it. Painting them all with the hovered unit's colour, as this did,
+        // said the signal on those lines was its own when it belongs to ten
+        // different neurons on the left.
+        //
+        // Read live rather than from __act: part way through a step a unit is only
+        // part-coloured, and a line should agree with the circle it comes out of.
+        // White means the unit is at about zero, and a white line is no line at all,
+        // so those fall back to the stylesheet's near-black.
+        const fillOf = {};
+        if (on) {
+          svg.querySelectorAll(".d1a-node").forEach(function (n) {
+            fillOf[n.dataset.layer + ":" + n.dataset.i] = getComputedStyle(n).fill;
+          });
+        }
         const lit = [];
         edges.forEach(function (e) {
           const touched = on && ((e.from[0] === li && e.from[1] === i)
                               || (e.to[0] === li && e.to[1] === i));
           e.el.classList.toggle("near", !!touched);
-          if (touched) lit.push(e.el);
+          if (touched) {
+            const f = fillOf[e.from[0] + ":" + e.from[1]];
+            if (f && f !== "rgb(255, 255, 255)") e.el.style.setProperty("--lit", f);
+            else e.el.style.removeProperty("--lit");
+            lit.push(e.el);
+          } else {
+            e.el.style.removeProperty("--lit");
+          }
         });
         // Bring the lit ones to the front. SVG has no z-index — paint order is DOM
         // order — so a pale edge that happened to be created later was drawing over
@@ -9096,7 +9464,7 @@ function buildSimContent() {
         // supposed to stand out from. So the highlight thickens as well as darkens,
         // and only while lit: the resting hairball keeps its lightness.
         edges.forEach(function (e) {
-          const w = e.el.classList.contains("near") ? Math.max(LIT_MIN_W, e.el.__w) : e.el.__w;
+          const w = e.el.classList.contains("near") ? e.el.__w * LIT_MUL : e.el.__w;
           e.el.style.strokeWidth = w.toFixed(2);
         });
         lit.forEach(function (el) { edgeG.appendChild(el); });
@@ -9136,9 +9504,17 @@ function buildSimContent() {
       setAriaDisabled(prevBtn, idx === 0);
       setAriaDisabled(nextBtn, idx === cases.length - 1);
 
-      // No colouring on the words: on Day 1 there is nothing yet that could
-      // honestly tint one. The input column names them instead.
-      textEl.textContent = it.text;
+      // One span per word, so Step 1 can aim a flight at where each word actually
+      // sits. No colouring on them: on Day 1 there is nothing that could honestly
+      // tint one.
+      textEl.innerHTML = "";
+      it.text.split(/\s+/).forEach(function (w, k) {
+        if (k) textEl.appendChild(document.createTextNode(" "));
+        const sp = document.createElement("span");
+        sp.className = "d1a-word";
+        sp.textContent = w;
+        textEl.appendChild(sp);
+      });
       labelRow.innerHTML = "";
       const cap = document.createElement("span");
       cap.className = "d1a-labelcap";
@@ -9150,8 +9526,401 @@ function buildSimContent() {
       notesEl.textContent = it.obs || "(no notes for this conversation)";
 
       drawNet(f, it);
+      // A redraw builds new white nodes and new lines, so anything still running is
+      // pointed at elements that no longer exist.
+      if (typeof clearSteps === "function") clearSteps();
     }
 
+    // ---- Step 1: the words fly into the Input Layer ----
+    // One word at a time, and every word to every unit: 10 units x the conversation
+    // is 120 separate flights. That repetition IS what fully connected means, so it
+    // is shown rather than summarised — but it only works if it accelerates. The
+    // first few are slow enough to follow one word across; by the twentieth the gap
+    // has collapsed to a floor and the rest reads as a stream feeding the column.
+    // A unit's colour is built by the words, not switched on at the end: each word
+    // that lands moves it one step further along the signed ramp, from white toward
+    // its true activation. The step is actColour(v * fraction-landed), so the path
+    // runs through the ramp's own levels and arrives exactly on the value rather
+    // than on a colour blended toward it.
+    let stepRun = 0;                       // bumped to abandon a run in progress
+    let flyLayer = null;
+    // A fly-over is one unit's pass: the whole conversation crossing to that unit,
+    // word by word. WITHIN a pass every word takes the same time — the pass has one
+    // speed, so what you are watching is a steady delivery rather than a curve. It
+    // is BETWEEN passes that things accelerate: the first is slow enough to follow a
+    // single word across, and by the last the eye only needs the rhythm.
+    // Every word of a pass leaves at the same instant, but they arrive ONE AT A
+    // TIME, and the unit takes another step along its ramp as each one lands.
+    //
+    // What sets a word's speed is how far it has to go. Arrivals are spaced evenly
+    // through the pass in order of distance — the nearest word lands first — so a
+    // near word has both a short trip and an early arrival and ambles across, while
+    // a far word has to cover three times the distance in only twice the time and
+    // visibly rushes. Straight lines at constant speed: any easing would vary a
+    // word's speed as it travels, and the comparison between words is the point.
+    const DUR_FIRST = 1400, DUR_DECAY = 0.70, DUR_MIN = 170; // the pass, end to end
+    // How far into the pass the FIRST word lands. Higher means the arrivals are
+    // squeezed into a shorter window at the end, so more words are in the air
+    // together and the near ones dawdle harder to get there. 0.7 keeps them
+    // arriving one at a time while overlapping for most of the flight.
+    const ARRIVE_FIRST = 0.7;
+    // The last stretch of a flight, where the word stops being a word and becomes
+    // part of the unit: it fades out and collapses into the node's centre. Kept to
+    // the tail so the crossing itself is still full-size and unscaled.
+    const FADE_AT = 0.86, END_SCALE = 0.12;
+    // The two halves of the S. Vertical starts gently and is largely spent by the
+    // middle of the flight; horizontal barely moves at first and finishes at the
+    // end. Together the word drops, curves, and enters the unit from the side.
+    // Both still start slow, so the opening flight is followable.
+    const EASE_Y = "cubic-bezier(.45,.05,.3,1)";
+    const EASE_X = "cubic-bezier(.7,0,.75,.75)";
+    const PASS_OVERLAP = 1;    // 1 = passes run back to back
+
+    // The steps are a sequence, not a menu: exactly one is available at a time, and
+    // only once the one before it has FINISHED — a half-grown layer feeding the next
+    // step would be showing something that had not happened yet. `stepDone` counts
+    // completed steps, so button i is live only when i === stepDone and nothing is
+    // running. Reset takes it back to the start.
+    let stepDone = 0, running = false;
+    const STEP_RUNNERS = [];        // filled in as each step is defined
+
+    function syncSteps() {
+      stepBtns.forEach(function (b, i) {
+        const live = !running && i === stepDone && !!STEP_RUNNERS[i];
+        setAriaDisabled(b, !live);
+        b.disabled = !live;
+      });
+      const any = stepDone > 0 || running;
+      resetBtn.disabled = !any;
+      setAriaDisabled(resetBtn, !any);
+    }
+
+    // A layer's numbers become readable only once the step that produces them has
+    // finished: layer L is computed by step L+1.
+    function syncNodeInfo() {
+      svgHost.querySelectorAll(".d1a-node").forEach(function (n) {
+        if (!n.__title) return;
+        const known = stepDone >= (+n.dataset.layer) + 1;
+        const v = n.__val;
+        n.setAttribute("aria-label",
+          known ? n.__name + ", activation " + v.toFixed(2) : n.__name);
+        n.__title.textContent = known
+          ? n.__name + "   " + (v >= 0 ? "+" : "\u2212") + Math.abs(v).toFixed(2)
+          : n.__name;
+        // Not reached yet: inert, and out of the tab order rather than merely
+        // unresponsive, so keyboard users are not walked through 26 stops that do
+        // nothing.
+        n.classList.toggle("off", !known);
+        n.setAttribute("tabindex", known ? "0" : "-1");
+        if (known) n.removeAttribute("aria-disabled");
+        else n.setAttribute("aria-disabled", "true");
+      });
+      // A selection can be left pointing at a layer that has just gone inert — a
+      // reset while a neuron was open.
+      if (pinIdx && stepDone < pinIdx[0] + 1) pinIdx = null;
+    }
+
+    // Called when a step's animation has actually finished, not when it was clicked.
+    function stepFinished(n, mine) {
+      if (mine !== stepRun) return;   // a reset or a redraw overtook it
+      running = false;
+      stepDone = Math.max(stepDone, n);
+      syncSteps();
+      syncNodeInfo();
+      // A readout already open has to be rewritten: the output one withholds the
+      // answer until Step 4, so it changes the moment Step 4 lands.
+      if (svgHost.__paintPin) svgHost.__paintPin();
+    }
+
+    function clearStep1() {
+      stepRun++;
+      if (flyLayer) { flyLayer.remove(); flyLayer = null; }
+      svgHost.querySelectorAll(".d1a-node").forEach(function (n) {
+        n.style.fill = "#FFFFFF";
+      });
+      stepBtns[0].classList.remove("on");
+    }
+
+    function runStep1() {
+      clearStep1();
+      const mine = ++stepRun;
+      const words = Array.prototype.slice.call(textEl.querySelectorAll(".d1a-word"));
+      const nodes = Array.prototype.slice.call(
+        svgHost.querySelectorAll('.d1a-node[data-layer="0"]'));
+      if (!words.length || !nodes.length) return;
+      stepBtns[0].classList.add("on");
+      running = true;
+      syncSteps();
+
+      const reduced = window.matchMedia
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduced) {
+        nodes.forEach(function (n) { n.style.fill = n.__act; });
+        stepFinished(1, mine);
+        return;
+      }
+
+      flyLayer = document.createElement("div");
+      // The class the teardown sweep looks for, so leaving the screen mid-flight
+      // cannot strand a chip the way the Prediction Chain's used to.
+      flyLayer.className = "nnm-flyanchor";
+      document.body.appendChild(flyLayer);
+
+      // Measured once, up front: reading a rect per flight would be 120 forced
+      // layouts interleaved with 120 animations.
+      const wordRects = words.map(function (w) { return w.getBoundingClientRect(); });
+      const nodeRects = nodes.map(function (n) { return n.getBoundingClientRect(); });
+
+      let t = 0;
+      nodes.forEach(function (node, ni) {
+        const nr = nodeRects[ni];
+        const tx = nr.left + nr.width / 2, ty = nr.top + nr.height / 2;
+        const dur = Math.max(DUR_MIN, DUR_FIRST * Math.pow(DUR_DECAY, ni));
+        const passStart = t;
+        t += dur * PASS_OVERLAP;
+        // Sorted by how far each word has to travel TO THIS UNIT — which is a
+        // different order for every unit, since the column runs down the panel.
+        const order = words.map(function (w, wi) {
+          const r = wordRects[wi];
+          return { wi: wi, d: Math.hypot(tx - (r.left + r.width / 2),
+                                         ty - (r.top + r.height / 2)) };
+        }).sort(function (a, b) { return a.d - b.d; });
+        const go = setTimeout(function () {
+          if (mine !== stepRun) return;
+          // Made first, measured in one batch, then animated. A chip is wider than
+          // the word it copies — it carries its own padding and border — so aiming
+          // from the WORD's centre landed it about 6px past the node. The target has
+          // to come from the chip's own box, and reading all twelve together keeps
+          // that to a single layout instead of twelve interleaved ones.
+          const batch = order.map(function (o, k) {
+            const r = wordRects[o.wi];
+            const wrap = document.createElement("div");
+            wrap.className = "d1a-flywrap";
+            wrap.style.left = r.left + "px";
+            wrap.style.top = r.top + "px";
+            const mid = document.createElement("div");
+            mid.className = "d1a-flyy";
+            const chip = document.createElement("div");
+            chip.className = "d1a-fly";
+            chip.textContent = words[o.wi].textContent;
+            mid.appendChild(chip);
+            wrap.appendChild(mid);
+            flyLayer.appendChild(wrap);
+            return { wrap: wrap, mid: mid, chip: chip, k: k };
+          });
+          batch.forEach(function (b) {
+            const cr = b.chip.getBoundingClientRect();
+            b.dx = tx - (cr.left + cr.width / 2);
+            b.dy = ty - (cr.top + cr.height / 2);
+          });
+          batch.forEach(function (b) {
+            const k = b.k, last = k === words.length - 1;
+            // Evenly spaced arrivals: nearest lands at ARRIVE_FIRST of the pass, the
+            // farthest right at the end.
+            const arrive = dur * (ARRIVE_FIRST + (1 - ARRIVE_FIRST)
+              * (words.length < 2 ? 1 : k / (words.length - 1)));
+            // Horizontal on the wrapper, vertical on the chip, each with its own
+            // easing. The vertical is mostly spent early and the horizontal late, so
+            // the word falls, turns, and comes into the unit sideways.
+            b.wrap.animate(
+              [{ transform: "translateX(0)" },
+               { transform: "translateX(" + b.dx + "px)" }],
+              { duration: arrive, easing: EASE_X, fill: "forwards" });
+            const anim = b.mid.animate(
+              [{ transform: "translateY(0)" },
+               { transform: "translateY(" + b.dy + "px)" }],
+              { duration: arrive, easing: EASE_Y, fill: "forwards" });
+            // Fade and collapse ride on their own clock — linear, so "the last
+            // stretch" means the last stretch of TIME. Hanging them off either axis
+            // would have made the word start vanishing whenever that axis happened
+            // to be near done, which is early for the vertical one.
+            //
+            // On a THIRD element, and this is not tidiness. CSS applies the
+            // individual `scale` property BEFORE `transform`, so a chip carrying both
+            // had its translateY multiplied by the scale: the word crept back toward
+            // its start as it shrank and landed 32px short of the unit. Each element
+            // now owns exactly one moving part — wrapper X, middle Y, chip scale.
+            b.chip.animate([
+              { offset: 0, opacity: 1, scale: "1" },
+              { offset: FADE_AT, opacity: 1, scale: "1" },
+              { offset: 1, opacity: 0, scale: String(END_SCALE) }
+            ], { duration: arrive, easing: "linear", fill: "forwards" });
+            anim.onfinish = function () { b.wrap.remove(); };
+            // Every word deepens the unit; the last one lands it exactly on __act.
+            const land = setTimeout(function () {
+              if (mine !== stepRun) return;
+              node.style.fill = last ? node.__act
+                : actColour(node.__v * ((k + 1) / words.length));
+              if (last && ni === nodes.length - 1) {
+                const tidy = setTimeout(function () {
+                  if (mine !== stepRun) return;
+                  if (flyLayer) { flyLayer.remove(); flyLayer = null; }
+                }, 500);
+                SIM._timeouts.push(tidy);
+              }
+            }, arrive);
+            SIM._timeouts.push(land);
+          });
+        }, passStart);
+        SIM._timeouts.push(go);
+      });
+      // `t` is where the last pass starts; it ends one pass later.
+      const doneAt = setTimeout(function () { stepFinished(1, mine); }, t + 60);
+      SIM._timeouts.push(doneAt);
+    }
+
+    // ---- Step 2: the connections grow, one input unit at a time ----
+    // Every connection this unit makes grows at once — that is the fact being shown,
+    // that one unit reaches all eight — and then the next unit's, faster. The three
+    // widths are already on the lines from the weights, so what grows out is the
+    // real fan, thick where the weight is large.
+    const GROW_FIRST = 900, GROW_DECAY = 0.76, GROW_MIN = 150;
+
+    // How far along its final colour a node is when only part of its input has
+    // arrived: actColour of a scaled activation, so the path runs through the ramp's
+    // own levels and lands exactly on the value. Every column works the same way now
+    // that the output pair is on the ramp too.
+    function partialFill(node, frac) {
+      return frac >= 1 ? node.__act : actColour(node.__v * frac);
+    }
+
+    // The answer, held back until every connection is in. Both pills sit in the
+    // same resting state until then; the winner is already on the element as __won,
+    // so this is a class change rather than anything being worked out late.
+    function revealAnswer(on) {
+      svgHost.querySelectorAll(".d1a-outpill").forEach(function (pill) {
+        const win = on && pill.__won;
+        pill.classList.toggle("won", !!win);
+        pill.classList.toggle("lost", !win);
+      });
+    }
+
+    function clearFan(fan) {
+      fan.forEach(function (group) {
+        group.forEach(function (line) {
+          line.getAnimations().forEach(function (a) { a.cancel(); });
+          line.style.strokeDashoffset = line.__len;
+          line.style.stroke = "";
+        });
+      });
+    }
+
+    // One unit's whole fan grows at once — that is the fact being shown, that a unit
+    // reaches every unit in the next layer — and then the next unit's, faster. The
+    // three widths are already on the lines from the weights, so what unfolds is the
+    // real fan, thick where the weight is large. Identical for both hidden layers,
+    // so it is one function rather than two that drift apart.
+    function runFan(fan, bi, stepNo, targetLayer) {
+      const mine = ++stepRun;
+      if (!fan.length) { stepFinished(stepNo, mine); return; }
+      // The layer being fed. Every fan that lands moves ALL of its units one step
+      // further along, because each of them has just received one more input — the
+      // same accumulation Step 1 does with words, one layer further on.
+      const targets = Array.prototype.slice.call(
+        svgHost.querySelectorAll('.d1a-node[data-layer="' + targetLayer + '"]'));
+      // The units the fans leave FROM. Each group of lines is drawn in its own
+      // source unit's colour, so what crosses the gap is visibly that unit's signal
+      // and not an anonymous line.
+      const sources = Array.prototype.slice.call(
+        svgHost.querySelectorAll('.d1a-node[data-layer="' + (targetLayer - 1) + '"]'));
+      stepBtns[bi].classList.add("on");
+      running = true;
+      syncSteps();
+      const reduced = window.matchMedia
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduced) {
+        fan.forEach(function (g) { g.forEach(function (l) { l.style.strokeDashoffset = 0; }); });
+        targets.forEach(function (n) { n.style.fill = n.__act; });
+        stepFinished(stepNo, mine);
+        return;
+      }
+      let t = 0;
+      fan.forEach(function (group, ai) {
+        const dur = Math.max(GROW_MIN, GROW_FIRST * Math.pow(GROW_DECAY, ai));
+        const at = t;
+        t += dur;
+        const src = sources[ai];
+        // A unit sitting at almost zero is WHITE on the ramp, and a white line on a
+        // white panel is no line at all — those keep the resting grey, which is also
+        // the honest reading: that unit is passing on nothing much.
+        const tint = src && src.__act && src.__act !== "#FFFFFF" ? src.__act : null;
+        const go = setTimeout(function () {
+          if (mine !== stepRun) return;
+          group.forEach(function (line) {
+            if (tint) line.style.stroke = tint;
+            // Grown from the offset the line is parked at, so it draws OUT of the
+            // unit it leaves rather than in from the far end: x1 is that side.
+            const a = line.animate(
+              [{ strokeDashoffset: line.__len }, { strokeDashoffset: 0 }],
+              { duration: dur, easing: "cubic-bezier(.3,.05,.4,1)", fill: "forwards" });
+            a.onfinish = function () { line.style.strokeDashoffset = 0; };
+          });
+        }, at);
+        SIM._timeouts.push(go);
+        // As the NEXT unit's fan sets off, this one's lines drop back to the resting
+        // grey — so at any moment the coloured lines are the ones being drawn, and
+        // what is left behind is the wiring. Clearing the inline stroke rather than
+        // assigning grey hands the colour back to the stylesheet, which is what the
+        // hover highlight needs in order to override it later.
+        const cool = setTimeout(function () {
+          if (mine !== stepRun) return;
+          group.forEach(function (line) { line.style.stroke = ""; });
+        }, at + dur);
+        SIM._timeouts.push(cool);
+        // Painted as the fan ARRIVES, not as it sets off.
+        const paint = setTimeout(function () {
+          if (mine !== stepRun) return;
+          const frac = (ai + 1) / fan.length;
+          targets.forEach(function (n) { n.style.fill = partialFill(n, frac); });
+        }, at + dur);
+        SIM._timeouts.push(paint);
+      });
+      const doneAt = setTimeout(function () {
+        if (mine !== stepRun) return;
+        // Every line is in: the two numbers are complete, so the larger one can be
+        // called.
+        if (stepNo === 4) revealAnswer(true);
+        stepFinished(stepNo, mine);
+      }, t + 60);
+      SIM._timeouts.push(doneAt);
+    }
+
+    function clearFanStep(fan, bi, targetLayer) {
+      stepRun++;
+      clearFan(fan);
+      svgHost.querySelectorAll('.d1a-node[data-layer="' + targetLayer + '"]')
+        .forEach(function (n) { n.style.fill = "#FFFFFF"; });
+      stepBtns[bi].classList.remove("on");
+    }
+    function clearStep2() { clearFanStep(fanOut, 1, 1); }
+    function clearStep3() { clearFanStep(fanOut2, 2, 2); }
+    function clearStep4() { clearFanStep(fanOut3, 3, 3); revealAnswer(false); }
+    function runStep2() { clearStep2(); runFan(fanOut, 1, 2, 1); }
+    function runStep3() { clearStep3(); runFan(fanOut2, 2, 3, 2); }
+    function runStep4() { clearStep4(); runFan(fanOut3, 3, 4, 3); }
+
+    function clearSteps() {
+      clearStep1(); clearStep2(); clearStep3(); clearStep4();
+      running = false; stepDone = 0;
+      syncSteps();
+      // Also the path every redraw takes, so this is where the tooltips get their
+      // initial "name only" state as well as their reset.
+      syncNodeInfo();
+      if (svgHost.__paintPin) svgHost.__paintPin();
+    }
+
+    STEP_RUNNERS[0] = runStep1;
+    STEP_RUNNERS[1] = runStep2;
+    STEP_RUNNERS[2] = runStep3;
+    STEP_RUNNERS[3] = runStep4;
+    stepBtns.forEach(function (b, i) {
+      b.addEventListener("click", function () {
+        if (b.disabled || !STEP_RUNNERS[i]) return;
+        STEP_RUNNERS[i]();
+      });
+    });
+    resetBtn.addEventListener("click", clearSteps);
+    syncSteps();
     prevBtn.addEventListener("click", function () { if (idx > 0) { idx--; render(); } });
     nextBtn.addEventListener("click", function () {
       if (idx < cases.length - 1) { idx++; render(); }
