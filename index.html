@@ -827,6 +827,9 @@
        that scale. Its own value, not --nnm-ink-3, which is quiet TEXT in half a
        dozen places that should stay as they are. */
     --nnm-count: #766581;
+    /* One number for the attribute icon, so the placeholder and everything sized
+       against it cannot drift apart. */
+    --nnm-attr-ico: 24px;
     --nnm-rule: #CCD3DD;
     --nnm-rule-soft: #E4E9F0;
     --nnm-surface: #F4F6FA;
@@ -1482,6 +1485,15 @@
   /* The steps sit in the toolbar row, between the query and About. About keeps its
      margin-left:auto, so it stays hard right whatever the group in front of it. */
   .d1a-steps { display: flex; gap: 6px; }
+  /* Extract Pathways and its Reset sit between the find bar and About, centred in
+     whatever room those two leave. True centring on the toolbar would have run the
+     pair under the find bar's right edge. */
+  .d1a-exrow { margin: 0 auto; }
+  .d1a-tools-right {
+    position: relative; flex: 1 1 0; min-width: 0;
+    display: flex; align-items: center;
+  }
+  .d1a-tools-right .nnm-about-btn { position: absolute; right: 0; margin-left: 0; }
   /* One word of the conversation. Inline so it wraps with the text, and it has to
      be a box of its own so a flight can be aimed at where it actually sits. */
   .d1a-word { display: inline-block; }
@@ -1516,11 +1528,22 @@
     font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
     letter-spacing: 0.05em; text-transform: uppercase; color: var(--nnm-ink-2);
   }
-  .d1a-scale .grad {
-    width: 78px; height: 12px; border-radius: 3px;
-    background: linear-gradient(to right, var(--nnm-neg), #fff, var(--nnm-pos));
-    box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18);
+  /* Miniature neurons, not colour chips: a circle at the node's own size, filled
+     from the middle the way the diagram fills them — orange upward for positive,
+     blue downward for negative. The key is then a sample of the encoding itself
+     rather than of two colours, and it shows the direction as well as the hue,
+     which is the half of the rule a flat swatch could not carry. The hard stop at
+     50% is the centre line every gauge grows from. */
+  .d1a-scale .sw {
+    /* 24px — the diameter the diagram actually draws a neuron at (r = 12), so the
+       key is the same object at the same size rather than a shrunken echo of it. */
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px #6E7580;          /* the node's own outline */
   }
+  .d1a-scale .sw.pos { background: linear-gradient(to bottom, #A84A2C 50%, #FFFFFF 50%); }
+  .d1a-scale .sw.neg { background: linear-gradient(to bottom, #FFFFFF 50%, #1F4E8F 50%); }
+  /* The sign sits right after its swatch, so the pairs do not drift apart. */
+  .d1a-scale .lo { margin-right: 4px; }
   /* #CCD3DD measured 1.51:1 on white — these lines ARE the wiring, so they are
      graphics required to understand the content and 3:1 applies. A plain grey
      rather than the blue-grey the rules use, since these are not rules. #909090 is
@@ -1528,6 +1551,44 @@
      reaches 3:1 at all (3.033:1), which leaves nothing for a ground that is ever
      less than pure white. Not the thinness: even the 2px edges only ever reached
      their nominal colour, so the colour was the whole fix. */
+  /* The three pathways, once extracted. Boxes rather than circles: a pathway is a
+     grouping over neurons, not another neuron, and it should not look like one. */
+  .d1a-pathbox { fill: #FFFFFF; stroke: var(--nnm-ink-2); stroke-width: 2; }
+  /* Which units make which pathway. Slide 17 gives loadings a ramp of their own —
+     purple positive, yellow negative — so a loading can never be mistaken for an
+     activation, and the pathway's own square stays on the orange/blue activation
+     ramp beside it.
+
+     Two colours, not the slide's five steps. As a filled heatmap cell the pale end
+     of each ramp is readable; as a 0.6px line it is not — against white the purple
+     ramp passes 3:1 only at its top two steps (7.33 and 3.68) and the yellow ramp
+     fails at every step, its darkest at 1.97. So sign is the hue and magnitude is
+     the width, which is what the neurons already do. The yellow is slide 17's own
+     #F9A825 darkened along its hue until it clears 4.5:1. */
+  /* A loading, drawn as a bar beside the thing it belongs to: length is the
+     magnitude on one scale across the whole matrix, direction and hue the sign.
+     Purple positive, yellow negative, per the deck — so a loading can never be
+     mistaken for an activation, which is orange and blue two inches away. The
+     yellow is the deck's own #F9A825 darkened along its hue until it clears
+     4.5:1 against white; at this size the pale end of the deck's five-step ramp
+     is invisible. */
+  .d1a-loadbar.pos { fill: #673AB7; }
+  .d1a-loadbar.neg { fill: #A76905; }
+  .d1a-loadwire { stroke: #909090; stroke-width: 0.5; fill: none; }
+  .d1a-loadring { fill: none; stroke: var(--nnm-ink); stroke-width: 2; }
+  .d1a-loadtip {
+    font-family: 'Lato', sans-serif; font-size: 13px; fill: var(--nnm-ink-2);
+    pointer-events: none; transition: opacity 0.2s ease;
+  }
+  /* Both sides of the matrix are pickable, and both say so. */
+  .d1a-pathbox.pick, .d1a-node.pick { cursor: pointer; }
+  .d1a-pathbox.on { stroke: var(--nnm-ink); stroke-width: 3; }
+  .d1a-pathbox.pick:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+  .d1a-pathlabel {
+    font-family: 'Lato', sans-serif; font-size: 13px; fill: var(--nnm-ink);
+  }
+  /* The permanent wiring. Hairline and pale, drawn under every signal line. */
+  .d1a-wire { stroke: #909090; stroke-width: 0.5; }
   .d1a-edge {
     stroke: #909090;
     /* The dim is an opacity now, not a second stroke colour — one colour to reason
@@ -1538,10 +1599,13 @@
   }
   /* Hovering dims everything unrelated rather than brightening what is related:
      the answer to "what is this neuron wired to" should be what is LEFT. */
-  /* The unrelated edges fade back rather than changing colour. 0.35 of #909090 on
-     white composites to about #D9D9D9. The #EDF0F4 this replaces was 1.14:1 — 6% of
-     the resting edge's contrast, which is not dimmed, it is gone. */
-  .d1a-net.hovering .d1a-edge { opacity: 0.35; }
+  /* The unrelated edges fade back rather than changing colour. 0.35 was set when
+     every edge was grey #909090, where it composited to about #D9D9D9; against the
+     saturated orange and blue the edges carry now it left them clearly visible, so
+     the dim was doing much less work than it was tuned for. At 0.2 a full-strength
+     line composites to about #EEDCD5 orange / #D2DBE9 blue — lighter than the grey
+     edges ever were, so the lit ones carry the picture on their own. */
+  .d1a-net.hovering .d1a-edge { opacity: 0.2; }
   /* Lit in the hovered unit's own colour, set as --lit by applyHover. Near-black is
      the fallback, and it is what a unit sitting at white on the ramp still uses —
      its colour would be invisible. A custom property rather than an inline stroke so
@@ -1558,6 +1622,16 @@
   /* Not yet reached by the animation. It still shows — the shape of the network is
      the point — but it does not answer: no pointer, no hover ring, no readout. */
   .d1a-node.off { cursor: default; }
+  /* Restoring a conversation must not animate into place. Every node is built white
+     and then painted, so the fill transition turned each return into a visible blink:
+     empty circles for a fifth of a second, then colour. Suppressed for the single
+     frame the state is applied in, then handed straight back — the transition still
+     does its job while the steps are actually running. Pills and edges are in here
+     for the same reason: the answer would fade in, and a tinted line would fade out,
+     on a screen that is supposed to have simply arrived. */
+  .d1a-svghost.no-anim .d1a-node,
+  .d1a-svghost.no-anim .d1a-outpill,
+  .d1a-svghost.no-anim .d1a-edge { transition: none; }
   /* `outline` on an SVG shape follows the bounding box and ignores border-radius,
      so any ring on a circle comes out square. Both focus states are cleared —
      :focus-visible alone left the box on a mouse click — and the ring is drawn
@@ -1786,6 +1860,13 @@
   .d3b-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; flex: 1 1 0; }
   .d3b-buycol { flex: 0 0 314px; }
   .d3b-conv, .d3b-panel { flex: 1; min-height: 0; }
+  /* Both heads in this screen stand the same height. The conversation cards reach 54
+     on their own — 36px of nav buttons inside 9/8 padding — while Commission coding
+     carries only a title and a count, so it fell back to .nnm-panel-head's 44 and sat
+     10px short of the cards beside it. Stated for both, so the pair moves together if
+     the nav buttons ever change size. Trace a Case pins its head the same way. */
+  .d3b-conv .nnm-panel-head,
+  .d3b-panel .nnm-panel-head { min-height: 54px; }
   .d3b-convbody { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
   /* Nothing in this toolbar is elastic once the prompt is gone, so the query would
      stretch across the whole row and stop matching the one on Correlations. Held
@@ -1894,24 +1975,16 @@
   }
   .d3b-conv .nnm-nav { margin-left: 8px; }
   .d3b-panel { flex: 1; min-height: 0; }
-  /* The panel scrolls in its LIST, not as a whole. Scrolling the whole body pushed
-     "What the coding found" off the bottom as soon as the attribute list was long
-     enough — and that block is the result of the action the panel exists for, so it
-     is the last thing that should need hunting for. The list gives up the space
-     instead; the findings and the note above it stay put. */
+  /* The panel scrolls in its LIST, not as a whole, so the note at the top stays put
+     while the codings scroll under it. (It also used to hold a findings block below
+     the list on screen; that block is gone, but scrolling the list rather than the
+     panel is still the right behaviour for the note.) */
   .d3b-body {
     display: flex; flex-direction: column; gap: 12px;
     overflow: hidden; min-height: 0;
   }
   .d3b-body .d3b-subnote { flex-shrink: 0; }
   .d3b-body .d3b-list { flex: 1 1 auto; min-height: 60px; overflow-y: auto; }
-  .d3b-results { flex-shrink: 0; }
-  /* This one rule is a section break, not a heading underline: above it is the list
-     of codings you can buy, below it is what buying them told you. Scoped to the
-     results block so the identically-classed headings over Observation notes keep
-     their hairline — those separate parts of one reading, this separates two halves
-     of the panel. */
-  .d3b-results .d3b-subhead { border-top-color: var(--nnm-ink-2); }
   .d3b-budget {
     margin-left: auto; font-family: var(--nnm-mono); font-size: 11.5px; color: var(--nnm-ink-3);
   }
@@ -1921,7 +1994,14 @@
     border-left: 3px solid #C6D2E2; border-radius: 0 5px 5px 0; padding: 10px 12px;
   }
   .d3b-known { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
-  .d3b-attr-all { font-style: italic; }
+  /* No icon on this one — it stands for the whole set, not for a coding, so a
+     placeholder circle would promise artwork that will never exist. It keeps the
+     others' height instead, and takes their left padding back since there is
+     nothing to sit beside the text. */
+  /* Two classes, because .d3b-attr's `padding` shorthand is declared after this rule
+     and a single class ties with it on specificity — the longhand lost and the pill
+     kept the 6px gutter it has no icon to fill. */
+  .d3b-attr.d3b-attr-all { padding-left: 12px; }
   /* Pills again, but each drawn in the colour of the sentence it was read from, so a
      chip and its line in the notes are one object. Nine hues; every one clears 4.5:1
      as text on white, as text on its own hover tint, and as white text on itself
@@ -1930,9 +2010,14 @@
      purpose: the notes are prose with no value encoded in them, so orange here would
      be borrowing a meaning it does not have. */
   .d3b-attr {
+    display: inline-flex; align-items: center; gap: 7px;
     font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
     letter-spacing: 0.03em; text-transform: uppercase;
-    padding: 3px 9px; border-radius: 999px;
+    padding: 3px 12px 3px 6px; border-radius: 999px;
+    /* Every pill stands the same height whether it carries an icon or not — the
+       All pill has none, and without this it sat 8px shorter than its neighbours.
+       Derived from the icon so the two cannot drift: 3+3 padding, 1+1 border. */
+    min-height: calc(var(--nnm-attr-ico) + 8px);
     border: 1px solid var(--ac, var(--nnm-rule));
     background: #fff; color: var(--ac, var(--nnm-ink-2)); cursor: pointer;
     transition: background 0.14s ease, color 0.14s ease;
@@ -1974,19 +2059,27 @@
   }
   .d3b-subnote { font-family: 'Lato', sans-serif; font-size: 12px; color: var(--nnm-ink-3); margin-top: -6px; }
   .d3b-list { display: flex; flex-direction: column; gap: 6px; }
+  /* A third column for the icon, spanning both rows of the row's own two-line
+     layout so the circle is centred against name AND description together. */
   .d3b-item {
-    display: grid; grid-template-columns: 1fr auto; gap: 2px 10px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 2px 10px;
     align-items: center; padding: 8px 10px;
     border: 1px solid var(--nnm-rule-soft); border-radius: 6px; background: #fff;
   }
   .d3b-item.done { background: #FBF1EC; border-color: #E4CBBF; }
-  .d3b-itemname { font-family: 'Lato', sans-serif; font-size: 13.5px; color: var(--nnm-ink); }
+  .d3b-itemname {
+    grid-area: 1 / 2;
+    font-family: 'Lato', sans-serif; font-size: 13.5px; color: var(--nnm-ink);
+  }
+  /* Full width from the left edge — the title is indented past the icon, the
+     description is not. */
   .d3b-itemdesc {
-    grid-column: 1; font-family: 'Lato', sans-serif; font-size: 11.5px;
+    grid-row: 2; grid-column: 1 / span 2;
+    font-family: 'Lato', sans-serif; font-size: 11.5px;
     line-height: 1.4; color: var(--nnm-ink-3);
   }
   .d3b-buy {
-    grid-row: 1 / span 2; grid-column: 2;
+    grid-row: 1 / span 2; grid-column: 3;
     font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
     letter-spacing: 0.04em; text-transform: uppercase;
     padding: 0 12px; height: 32px; box-sizing: border-box;
@@ -1995,18 +2088,30 @@
   }
   .d3b-buy:hover:not(:disabled) { background: var(--nnm-surface); }
   .d3b-buy:disabled { opacity: 0.45; cursor: default; }
-  .d3b-table { display: flex; flex-direction: column; gap: 4px; }
-  /* Two columns: the attribute, and the one pathway this screen is about. */
-  .d3b-trow {
-    display: grid; grid-template-columns: 1.4fr 1fr; gap: 6px; align-items: center;
+
+  /* ---- attribute icon placeholders (2026-09-05) ----
+     Standing in for artwork that does not exist yet, at the size being tested.
+     One class everywhere so a single change swaps every site at once, and one grey
+     that is obviously a placeholder rather than a colour anyone chose. */
+  .attr-ico {
+    flex: 0 0 auto; border-radius: 50%; background: #C6CBD1; display: block;
+    width: var(--nnm-attr-ico); height: var(--nnm-attr-ico);
   }
-  .d3b-trow > div { font-family: 'Lato', sans-serif; font-size: 12.5px; color: var(--nnm-ink-2); }
-  .d3b-trow.head > div { font-size: 11.5px; color: var(--nnm-ink-3); text-align: center; }
-  .d3b-trow > div.hit { background: #F7F9FC; border-radius: 5px; }
-  .d3b-chip {
-    display: flex; align-items: center; justify-content: center; gap: 7px; padding: 4px 0;
-    font-family: var(--nnm-mono); font-size: 12px; font-variant-numeric: tabular-nums;
-  }
+  /* Beside the name in the correlation headings, which only fits at this size — the
+     arithmetic is on HEAD in the 3A block. The counts underneath are absolutely
+     positioned against .d3-headinner, so making the inner a flex row leaves them
+     exactly where they were. */
+  .d3-headinner { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  /* The name box shrinks to its text rather than filling the column, so the icon and
+     the title centre together as one group. Filling it left the icon pinned to the
+     column's left edge with the centred title floating away from it, and the gap
+     changed from column to column with the length of the name. */
+  .d3-headinner .d3-colname { flex: 0 1 auto; min-width: 0; }
+  .d3b-attr .attr-ico { margin-left: -4px; }
+  /* Beside the title only. Every cell in this row is placed explicitly rather than
+     left to auto-flow: adding the icon column moved the Commission button, which was
+     pinned to column 2 and found itself in the middle. */
+  .d3b-item .attr-ico { grid-area: 1 / 1; align-self: center; }
 
   /* ---- 3A Correlations ---- */
   /* padding-top matches .nnm-stack so the toolbar sits on the same line as 2B's. */
@@ -2227,6 +2332,7 @@
      rows you otherwise lose track of which pathway a column is. Opaque, or the
      cells show through; the corner sits above both where they cross. */
   .d3-colhead, .d3-rowhead, .d3-corner { position: sticky; background: #fff; }
+
   .d3-colhead { top: 0; z-index: 2; }
   /* A band naming the columns Investigate Pathway 3 bought, sitting ON TOP of the
      table rather than inside it — the table's own height is not its to spend. It
@@ -2301,14 +2407,6 @@
      a cell is, and a hard threshold made 0.29 and 0.31 look like different kinds
      of thing. */
   .d3-cell.corr.deep .d3-r { color: #fff; }
-  /* Squares, not dots. The correlation cells on 3A are squares, and this block is
-     the same reading — how strongly a coding lines up with a pathway — so it should
-     not arrive in a different shape just because it is on a different screen. The
-     small radius is 3A's cell radius, not a pill. */
-  .d3b-sq {
-    display: block; border-radius: 3px;
-    box-shadow: inset 0 0 0 1px rgba(30,36,44,0.18); flex-shrink: 0;
-  }
   .d3-r {
     font-family: var(--nnm-mono); font-size: 12.5px; font-variant-numeric: tabular-nums;
     color: var(--nnm-ink-2); min-width: 46px;
@@ -2324,7 +2422,6 @@
      reads as a gap in the matrix rather than as a very small measured result. */
   .d3-cell.corr.undef { justify-content: center; }
   .d3-cell.corr.undef .d3-r { color: var(--nnm-ink-3); min-width: 0; }
-  .d3b-chip.undef { color: var(--nnm-ink-3); }
   /* 5, not 2: the band labels sat 1.8px off the cell's left edge and the axis
      labels 0.5px off its bottom. */
   .d3-cell.hist { padding: 5px; align-items: stretch; }
@@ -3305,8 +3402,8 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.10</div>
-      <div style="font-weight: 400;">Updated: 9/4/26</div>
+      <div style="font-weight: 600;">v0.11</div>
+      <div style="font-weight: 400;">Updated: 9/9/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
@@ -3314,7 +3411,7 @@
       <div role="group" aria-labelledby="day1-label">
         <div class="day-sublabel" id="day1-label">Day 1</div>
         <button class="toggle-btn" data-sim="d1a" aria-pressed="false">Trace a Case</button>
-        <button class="toggle-btn" data-sim="d1b" aria-pressed="false">Extract Pathways</button>
+        <button class="toggle-btn active" data-sim="d1b" aria-pressed="true">Extract Pathways</button>
       </div>
 
       <div role="group" aria-labelledby="day2-label">
@@ -3325,7 +3422,7 @@
       <div role="group" aria-labelledby="day3-label">
         <div class="day-sublabel" id="day3-label">Day 3</div>
         <button class="toggle-btn" data-sim="d3a" aria-pressed="false">Correlations</button>
-        <button class="toggle-btn active" data-sim="d3b" aria-pressed="true">Investigate P3</button>
+        <button class="toggle-btn" data-sim="d3b" aria-pressed="false">Investigate P3</button>
         <button class="toggle-btn" data-sim="d3c" aria-pressed="false">Correlations Part 2</button>
       </div>
     </div>
@@ -3365,12 +3462,10 @@
 
 </div>
 
-<!-- Two datasets on purpose. Day 2 teaches the mechanism on the three-pathway
-     model; Day 3 investigates the four-pathway one. They are different exports —
-     alien3 and alien — and share no conversations, so a case seen on Day 2 does
-     not exist on Day 3. See SIMS[...].pathways and simData(). -->
+<!-- One dataset: the three-pathway export, alien3. A four-pathway one (alien) was
+     loaded alongside it while Day 3 used four; Day 3 came back to three, and this
+     stopped being read by anything. -->
 <script src="data/nnm-data.js"></script>
-<script src="data/nnm-data-4.js"></script>
 <script>
 const DEVICES = {
   none: {
@@ -3558,7 +3653,7 @@ const SIMS = {
 // here models that yet — there is no localStorage in this file at all.
 const NNM_COMMISSIONED = [];
 
-let activeSim = "d3b";
+let activeSim = "d1b";
 let activeDevice = "chromebook";
 let activeLayout = "ap-full";
 let sidebarExpanded = true;
@@ -3899,8 +3994,10 @@ const PATH_OFFSET = 1;
 // written against D.nPathways and D.importance rather than a literal 3, so the
 // fourth pathway appears on its own wherever this returns the four-pathway set.
 function simData() {
-  const sim = SIMS[activeSim];
-  return (sim && sim.pathways === 4) ? window.NNM_DATA_4 : window.NNM_DATA;
+  // One dataset now. Kept as a function rather than inlining window.NNM_DATA at its
+  // eleven call sites because it is the seam that let Day 2 and Day 3 read different
+  // exports when they briefly needed to, and it costs nothing to leave in place.
+  return window.NNM_DATA;
 }
 
 // One instance per dataset, built on first use. This used to be a single IIFE
@@ -4256,6 +4353,51 @@ function tokMax(D) {
     return Math.abs(D.vocabulary[w][1]);
   }));
 }
+
+// One colour per attribute, shared by every screen that names one. Investigate
+// Pathway 3 uses the full colour for a pill's text and border and the soft tint for
+// its hover and selected states; Correlations uses that same tint on the matching
+// column heading, so a coding looks like itself wherever it turns up.
+//
+// Nine hues, each clearing 4.5:1 as text on white, as text on its own tint, and as
+// white text on itself. They sit outside the signed orange/blue ramp on purpose —
+// nothing here encodes a value.
+const ATTR_COLOUR = {
+  voices_raised: "#0F6E6E", engaged_in_task: "#6A3FA0", group_size: "#A32D5E",
+  near_water: "#10688F", food_present: "#8A5A17", resource_stressed: "#B32D2D",
+  gestures_repeated: "#4E6B12", young_present: "#2A7340", carrying_burden: "#4A5568"
+};
+// The two tables below are DERIVED FROM ATTR_COLOUR, not chosen independently. Each
+// entry is its attribute's colour laid over white:
+//
+//     SOFT  = colour at 13% over white   ->  a pill's hover and selected fill
+//     FAINT = colour at  7% over white   ->  that attribute's Correlations heading
+//
+// Written out as literals rather than mixed at render, so you can read this file and
+// know what colour you are going to get — which is how every other colour in this
+// piece is handled, and which color-mix() takes away (DevTools reports it back as
+// color(srgb 0.934118 …) rather than a hex).
+//
+// The cost of that choice: CHANGING A HUE MEANS RECOMPUTING BOTH OF ITS TINTS. They
+// do not follow on their own, and if they are not updated the pill and its column
+// heading drift into different colours. It has already happened once — young_present
+// was darkened from #2E7D46 for contrast and its tint was left behind.
+//
+//     r' = round(r * f + 255 * (1 - f))   for f = 0.13 and 0.07, per channel
+//
+// SOFT (13%) is what a pill wears on hover and when selected.
+const ATTR_SOFT = {
+  voices_raised: "#E0ECEC", engaged_in_task: "#ECE6F3", group_size: "#F3E4EA",
+  near_water: "#E0EBF0", food_present: "#F0EAE1", resource_stressed: "#F5E4E4",
+  gestures_repeated: "#E8ECE0", young_present: "#E3EDE6", carrying_burden: "#E7E9EB"
+};
+// FAINT (7%) is the Correlations column heading — a ground under a whole column of
+// readings rather than something you are pointing at, so it sits lighter than hover.
+const ATTR_FAINT = {
+  voices_raised: "#EEF5F5", engaged_in_task: "#F5F2F8", group_size: "#F9F0F4",
+  near_water: "#EEF4F7", food_present: "#F7F3EF", resource_stressed: "#FAF0F0",
+  gestures_repeated: "#F3F5EE", young_present: "#F0F5F2", carrying_burden: "#F2F3F4"
+};
 
 function pathNames(D) {
   return Array.from({ length: D.nPathways }, function (_, i) {
@@ -4638,39 +4780,7 @@ function buildSimContent() {
     const listEl = document.createElement("div");
     listEl.className = "d3b-list";
     pBody.appendChild(listEl);
-    const resultEl = document.createElement("div");
-    resultEl.className = "d3b-results";
-    pBody.appendChild(resultEl);
 
-    function rowFor(attrIndex) {
-      const vals = items.map(function (it) { return it.attrs[attrIndex]; });
-      const out = [];
-      for (let p = 0; p < NP; p++) {
-        out.push(pearson(vals, items.map(function (it) { return it.act[p]; })));
-      }
-      return out;
-    }
-    function corrChip(r) {
-      const el = document.createElement("span");
-      el.className = "d3b-chip";
-      if (!isFinite(r)) {
-        el.classList.add("undef");
-        el.textContent = "\u2014";
-        el.title = "Not defined: this attribute has the same value on every conversation here.";
-        return el;
-      }
-      const dot = document.createElement("i");
-      dot.className = "d3b-sq";
-      const side = 8 + 22 * Math.sqrt(Math.min(1, Math.abs(r)));
-      dot.style.width = side.toFixed(1) + "px";
-      dot.style.height = side.toFixed(1) + "px";
-      dot.style.background = r === 0 ? "#FFFFFF"
-        : (r > 0 ? FILL_POS : FILL_NEG)[level(Math.min(1, Math.abs(r)))];
-      const n = document.createElement("span");
-      n.textContent = (r >= 0 ? "+" : "−") + Math.abs(r).toFixed(2);
-      el.appendChild(dot); el.appendChild(n);
-      return el;
-    }
     function renderList() {
       listEl.innerHTML = "";
       HIDDEN.forEach(function (h) {
@@ -4696,43 +4806,13 @@ function buildSimContent() {
             render();
           });
         }
+        const lico = document.createElement("span");
+        lico.className = "attr-ico";
+        lico.setAttribute("aria-hidden", "true");
+        row.appendChild(lico);
         row.appendChild(name); row.appendChild(desc); row.appendChild(btn);
         listEl.appendChild(row);
       });
-    }
-    function renderResults() {
-      resultEl.innerHTML = "";
-      if (!bought.length) return;
-      const h = document.createElement("div");
-      h.className = "d3b-subhead";
-      // The pathway is named once, in the heading. It used to be named again in a
-      // column header directly underneath — two labels for a single column.
-      h.textContent = "What the coding found for " + NAMES[FOCUS];
-      resultEl.appendChild(h);
-      const tbl = document.createElement("div");
-      tbl.className = "d3b-table";
-      // No column header row: with one pathway left there is nothing to tell apart,
-      // and the heading above already says which one it is. (The other two pathways
-      // went because a commissioned coding's correlation with them is not what was
-      // bought — the screen asks whether the new fact lines up with the pathway that
-      // matched nothing, and extra columns invited reading an answer off the wrong
-      // one.)
-      bought.forEach(function (key) {
-        const h2 = HIDDEN.filter(function (x) { return x.a.key === key; })[0];
-        const rs = rowFor(h2.i);
-        const tr = document.createElement("div");
-        tr.className = "d3b-trow";
-        const lab = document.createElement("div");
-        lab.textContent = h2.a.label;
-        tr.appendChild(lab);
-        const r = rs[FOCUS];
-        const c = document.createElement("div");
-        if (Math.abs(r) >= 0.3) c.className = "hit";
-        c.appendChild(corrChip(r));
-        tr.appendChild(c);
-        tbl.appendChild(tr);
-      });
-      resultEl.appendChild(tbl);
     }
 
     // Only the focus pathway is lit. Every word in the vocabulary belongs to
@@ -4771,19 +4851,9 @@ function buildSimContent() {
       const m = String(t || "").trim().match(/[^.!?]+[.!?]+/g);
       return m ? m.map(function (x) { return x.trim(); }).filter(Boolean) : [];
     }
-    const ATTR_COLOUR = {
-      voices_raised: "#0F6E6E", engaged_in_task: "#6A3FA0", group_size: "#A32D5E",
-      near_water: "#10688F", food_present: "#8A5A17", resource_stressed: "#B32D2D",
-      gestures_repeated: "#4E6B12", young_present: "#2A7340", carrying_burden: "#4A5568"
-    };
     // The "all attributes" pill is not an attribute, so it is keyed by something no
     // attribute can be called.
     const ALL_KEY = "__all";
-    const ATTR_SOFT = {
-      voices_raised: "#E0ECEC", engaged_in_task: "#ECE6F3", group_size: "#F3E4EA",
-      near_water: "#E0EBF0", food_present: "#F0EAE1", resource_stressed: "#F5E4E4",
-      gestures_repeated: "#E8ECE0", young_present: "#E3EDE6", carrying_burden: "#E7E9EB"
-    };
     const SENT_ATTR = (function () {
       const holders = {};
       D.items.forEach(function (it, i) {
@@ -4844,7 +4914,6 @@ function buildSimContent() {
         && filter.input.value === DEFAULT_QUERY
         && panes.every(function (p, i) { return p.idx === i; });
       renderList();
-      renderResults();
       if (empty) return;
 
       panes.forEach(function (pane) {
@@ -4890,7 +4959,11 @@ function buildSimContent() {
           chip.dataset.attr = a.key;
           if (ATTR_COLOUR[a.key]) chip.style.setProperty("--ac", ATTR_COLOUR[a.key]);
           if (ATTR_SOFT[a.key]) chip.style.setProperty("--ac-soft", ATTR_SOFT[a.key]);
-          chip.textContent = a.label + ": " + lab;
+          const pico = document.createElement("span");
+          pico.className = "attr-ico";
+          pico.setAttribute("aria-hidden", "true");
+          chip.appendChild(pico);
+          chip.appendChild(document.createTextNode(a.label + ": " + lab));
           chip.setAttribute("aria-pressed", "false");
           chip.addEventListener("click", function () {
             const at = pane.sel.indexOf(a.key);
@@ -5354,7 +5427,17 @@ function buildSimContent() {
     // below, "CORRELATION (r)" (92.3px) — so 110px of content is comfortable and
     // 100 is not. 120 was the other candidate and returns 1.4px per column over
     // this, which is not worth halving that margin.
-    const STUB = 130, ROW = 70, HEAD = 77, GAP = 1;
+    // 77 is 7 padding + 31 name + 4 gap + 26 counts + 7 padding + 2. The attribute
+    // icon costs nothing at 24px: it sits BESIDE the two-line name, needing
+    // 24 + 6 + 74 (the widest line, "Engaged in a") + 12 padding = 116 of the 126 a
+    // column has. At 40px it needed 161, had to go above the name instead, and that
+    // pushed this to 123 — 46px straight off every plot row.
+    // 100. Was 130. "Pathway 1" needs 59.8 of ink and the row head has 18 of
+    // padding, so the names have room to spare; what sets the floor is the key's
+    // "Correlation (r)" label, which is pinned to this width so it lines up under
+    // them — 92.3 of ink plus its own 16 of padding wants 109, and below that it
+    // wraps to two lines.
+    const STUB = 100, ROW = 70, HEAD = 77, GAP = 1;
     // The "Commissioned" band above the bought columns. It grows UPWARD — its
     // bottom is pinned to the table's top edge and placeBand() subtracts this from
     // there — so the table never gives up a pixel for it. The ceiling is the About
@@ -6510,13 +6593,34 @@ function buildSimContent() {
         const inner = document.createElement("div");
         inner.className = "d3-headinner" + (view === "corr" ? " nocounts" : "");
         h.appendChild(inner);
+        // Attributes only. The outcome columns are the first two — the same `ri < 2`
+        // the .outcome class above keys off — and they are not attributes: there is
+        // no coding to illustrate for "Actual label", and no colour to give it.
+        if (ri >= 2 && ATTR_FAINT[row.key]) {
+          // The attribute's colour at its lightest, on the heading of that
+          // attribute's column. Set on the head rather than the inner because the
+          // head is what is sticky and what paints the white it would otherwise
+          // scroll under.
+          h.style.background = ATTR_FAINT[row.key];
+        }
+        if (ri >= 2) {
+          const ico = document.createElement("span");
+          ico.className = "attr-ico";
+          ico.setAttribute("aria-hidden", "true");
+          inner.appendChild(ico);
+        }
         const nm = document.createElement("div");
         nm.className = "d3-colname";
-        // Broken at the last space, so every heading is two lines and they all sit
+        // Broken at the FIRST space, so every heading is two lines and they all sit
         // on the same two baselines. Left to wrap naturally the band was ragged —
         // "Group size" and "Near water" fit on one line at this width while
-        // "Model was correct" and "Engaged in a task" took two.
-        const cut = row.label.lastIndexOf(" ");
+        // "Engaged in a task" took two.
+        //
+        // First rather than last: every two-word name breaks identically either way,
+        // but the longer ones read properly. "Engaged in a task" was splitting as
+        // "Engaged in a / task", which orphans an article and a preposition on the
+        // first line; it is "Engaged / in a task" now. Same for "Carrying a burden".
+        const cut = row.label.indexOf(" ");
         if (cut > 0) {
           nm.appendChild(document.createTextNode(row.label.slice(0, cut)));
           nm.appendChild(document.createElement("br"));
@@ -8606,7 +8710,15 @@ function buildSimContent() {
   //           case, responsive to the text, and not a depiction of the trained
   //           model's own 64x64.
   // ---------------------------------------------------------------
-  if (activeSim === "d1a") {
+  // Both Day 1 screens are this one screen. Trace a Case runs it forwards a step at
+  // a time; Extract Pathways opens on the state Trace a Case ends in — every step
+  // already applied, the network lit — and builds from there. Rather than two
+  // diagrams that have to be kept identical, it is one, with what differs passed in:
+  //   steps    the step row and its buttons
+  //   hover    the highlight-a-neuron-and-its-wiring behaviour
+  //   title    the right panel's heading
+  //   opened   apply all four steps on arrival, with no animation
+  function buildNetScreen(opts) {
     const D = simData();
     const items = D.items;
     const VOCAB = Object.keys(D.vocabulary).sort();
@@ -8785,6 +8897,8 @@ function buildSimContent() {
     // one piece of software. Only Step 1 is defined so far; the rest are present and
     // disabled rather than absent, so the shape of the sequence is visible and a
     // dead button is never clickable.
+    // Hidden rather than skipped: the row reserves the height that keeps the two
+    // panels starting level, and building it keeps every reference below valid.
     const stepRow = document.createElement("div");
     stepRow.className = "d1a-steps";
     const stepBtns = [1, 2, 3, 4].map(function (n) {
@@ -8803,8 +8917,58 @@ function buildSimContent() {
     resetBtn.className = "nnm-reset";
     resetBtn.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
     stepRow.appendChild(resetBtn);
-    toolbar.appendChild(stepRow);
-    if (filter.about) toolbar.appendChild(filter.about);
+    // Extract Pathways opens on the finished run, so there is nothing to step. It
+    // gets its own control in the same place instead, so the row keeps the height
+    // that starts the two panels level.
+    let exBtn = null, exReset = null, exWrap = null;
+    if (opts.steps) {
+      toolbar.appendChild(stepRow);
+    } else if (opts.extract) {
+      const exRow = document.createElement("div");
+      exRow.className = "d1a-steps d1a-exrow";
+      exBtn = document.createElement("button");
+      exBtn.type = "button";
+      exBtn.className = "nnm-step d1a-extract";
+      exBtn.textContent = "Extract Pathways";
+      exBtn.addEventListener("click", function () {
+        exBtn.disabled = true;
+        if (exReset) exReset.disabled = false;
+        // The readout goes with everything else — it has nothing to say once the
+        // neurons are no longer hoverable, and its 60-odd pixels are the difference
+        // between a column that fills the panel and one that is cramped into the
+        // top two thirds. Hiding it grows the host, so the diagram is rebuilt at
+        // the new height BEFORE the extraction animates; leaving that to the
+        // ResizeObserver would have redrawn mid-animation and wiped it.
+        extracted = true;
+        pinEl.style.display = "none";
+        measureEl.style.display = "none";
+        growNet();
+        runExtract();
+      });
+      exRow.appendChild(exBtn);
+      // Reset undoes the extraction, so it sits beside the button that does it —
+      // the same pairing the four steps have. Disabled until there is something to
+      // undo.
+      exReset = document.createElement("button");
+      exReset.type = "button";
+      exReset.className = "nnm-reset";
+      exReset.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
+      exReset.disabled = true;
+      exReset.addEventListener("click", function () { clearExtract(); });
+      exRow.appendChild(exReset);
+      // The pair is centred on the NETWORK panel below, not in the room left over
+      // between the find bar and About. That is what this wrapper is for: it takes
+      // `flex: 1 1 0` against the find bar's 447px basis, which is exactly the split
+      // the two panels underneath use, so the wrapper's box and the network panel's
+      // box are the same box. `margin: 0 auto` inside it then centres on the panel.
+      // About is taken out of the flow (absolute, right) so its width cannot pull
+      // the centre off — the reason `margin-left: auto` was not enough on its own.
+      exWrap = document.createElement("div");
+      exWrap.className = "d1a-tools-right";
+      exWrap.appendChild(exRow);
+      toolbar.appendChild(exWrap);
+    }
+    if (filter.about) (exWrap || toolbar).appendChild(filter.about);
 
     const root = document.createElement("div");
     root.className = "nnm";
@@ -8863,12 +9027,16 @@ function buildSimContent() {
     const nHead = document.createElement("div");
     nHead.className = "nnm-panel-head";
     const nTitle = document.createElement("span");
-    nTitle.textContent = "The network";
+    nTitle.textContent = opts.title;
     nHead.appendChild(nTitle);
     const scaleEl = document.createElement("div");
     scaleEl.className = "d1a-scale";
-    scaleEl.innerHTML = '<span class="lo">\u2212</span>'
-      + '<span class="grad"></span><span class="hi">+</span>';
+    // Two swatches, not a ramp. Nothing on this screen reads a magnitude off a
+    // colour any more — magnitude is the height of a neuron's fill and the weight of
+    // an edge — so the key has only a sign to explain.
+    scaleEl.innerHTML =
+      '<span class="sw neg"></span><span class="lo">\u2212</span>'
+      + '<span class="sw pos"></span><span class="hi">+</span>';
     nHead.appendChild(scaleEl);
     netPanel.appendChild(nHead);
     const nBody = document.createElement("div");
@@ -8893,6 +9061,46 @@ function buildSimContent() {
       return (v >= 0 ? FILL_POS : FILL_NEG)[level(t)];
     }
 
+    // Two colours, not a ramp. Sign is the only thing hue carries here; magnitude
+    // is the height of the fill.
+    //
+    // The ramp's DEEPEST step, not the fourth. Measured against white the fourth
+    // sits at 3.06 and 3.12 — scraping past the 3:1 a graphical object is asked for,
+    // and thin for a 1px line. The deepest are 5.71 and 8.25. It matters more that
+    // the two are 1.02 apart in luminance at step four and 1.45 at step five: at
+    // step four, in greyscale or on a washed-out projector, the orange and the blue
+    // are the same colour. On the neurons direction carries the sign as well, but on
+    // the edges hue is the only channel there is.
+    const POS = FILL_POS[4], NEG = FILL_NEG[4];
+    function signColour(v) { return v >= 0 ? POS : NEG; }
+
+    // A neuron is a gauge that fills OUT FROM ITS CENTRE — orange upward when the
+    // activation is positive, blue downward when it is negative — so magnitude is a
+    // length rather than a step on a ramp, and zero is an empty circle rather than
+    // a white one. That distinction matters: on the ramp a unit at about zero
+    // rendered the same white as a unit the signal had not reached, and 28% of
+    // conversations end with at least one of those.
+    //
+    // frac is how much of the value has arrived, 0 to 1, so the same call serves
+    // the resting state and every frame of the reveal.
+    function setNodeLevel(node, frac) {
+      const bar = node.__bar;
+      if (!bar) return;
+      const v = node.__v * Math.max(0, Math.min(1, frac));
+      const r = node.__r, cy = node.__cy;
+      const h = r * Math.min(1, Math.abs(v));
+      if (h < 0.35) { bar.setAttribute("height", 0); return; }
+      bar.setAttribute("x", node.__cx - r);
+      bar.setAttribute("width", r * 2);
+      bar.setAttribute("y", v >= 0 ? cy - h : cy);
+      bar.setAttribute("height", h);
+      bar.setAttribute("fill", signColour(v));
+      node.__level = v;
+    }
+
+    // Bumped on every draw, so gradient ids from an old diagram cannot be picked
+    // up by a new one.
+    let drawSeq = 0;
     const NS = "http://www.w3.org/2000/svg";
     function el(name, attrs) {
       const e = document.createElementNS(NS, name);
@@ -8945,8 +9153,21 @@ function buildSimContent() {
       const H = drawnH = Math.max(300, Math.round(svgHost.clientHeight || 400));
       const svg = el("svg", { viewBox: "0 0 " + W + " " + H, width: W, height: H,
                               class: "d1a-net" });
+      drawSeq++;
       const scene = el("g", { class: "d1a-scene" });
       svg.appendChild(scene);
+      // The clip shapes for the neuron gauges and the gradients for the split
+      // edges. One defs for the whole diagram, rebuilt with it.
+      const defs = el("defs", {});
+      svg.appendChild(defs);
+      // Three layers make up a neuron, in this order: a white disc that hides the
+      // edges running behind it, the gauge clipped to that disc, and finally the
+      // circle itself carrying only the outline and the pointer target. Painting
+      // the node last is what keeps its edge crisp over the fill; giving it a white
+      // fill instead — as it had when colour was the whole encoding — would have
+      // buried the gauge underneath it.
+      const discs = el("g", { class: "d1a-discs" });
+      const bars = el("g", { class: "d1a-bars" });
       // Every column is a fixed size, the same in all 800 conversations. The input
       // column used to be one node per word PRESENT, which ran from 5 to 26 and
       // redrew the whole picture at a different size case to case; it is the
@@ -9036,10 +9257,6 @@ function buildSimContent() {
         const a = Math.abs(w);
         return a < t[0] ? W_THIN : a < t[1] ? W_MID : W_THICK;
       }
-      // Highlighting scales the width instead of flooring it. A floor of 1.4 made a
-      // lit thin edge exactly as wide as a lit middle one, collapsing two of the
-      // three bands at the very moment they are being looked at.
-      const LIT_MUL = 1.5;
 
       // Edges first, so every neuron sits on top of its own wiring.
       // Under the edges. An opaque pill drawn with the nodes covered the last
@@ -9047,16 +9264,58 @@ function buildSimContent() {
       // pill's outline rather than arriving at the neuron.
       const pillG = el("g", { class: "d1a-pills" });
       scene.appendChild(pillG);
+      // The permanent wiring: one grey hairline per connection, never animated and
+      // never recoloured. It is what the diagram looks like before anything runs and
+      // what is left behind afterwards. The signal is a SEPARATE line on top, so a
+      // fan can sweep without the scaffold underneath it disappearing — which is
+      // what happened while both were the same element.
+      const wireG = el("g", { class: "d1a-wires" });
+      scene.appendChild(wireG);
       const edgeG = el("g", { class: "d1a-edges" });
       scene.appendChild(edgeG);
+      scene.appendChild(discs);      // over the edges, under the gauges
+      scene.appendChild(bars);       // over the discs, under the node outlines
       const edges = [];
-      function link(li, a, b, width) {
-        const line = el("line", {
-          x1: cols[li].x + cols[li].r, y1: pos[li][a],
-          x2: cols[li+1].x - cols[li+1].r, y2: pos[li+1][b],
-          class: "d1a-edge"
-        });
-        // The resting width is one of three bands. Kept on the element so the
+      function link(li, a, b, width, weight) {
+        const x1 = cols[li].x + cols[li].r, y1 = pos[li][a];
+        const x2 = cols[li+1].x - cols[li+1].r, y2 = pos[li+1][b];
+        // The scaffold. Not a .d1a-edge, so none of the hover or highlight logic
+        // touches it — it is background, not a participant.
+        const wire = el("line", { x1: x1, y1: y1, x2: x2, y2: y2, class: "d1a-wire" });
+        wireG.appendChild(wire);
+        const line = el("line", { x1: x1, y1: y1, x2: x2, y2: y2, class: "d1a-edge" });
+        line.__wire = wire;
+        // Each edge carries its own two-stop gradient, hard-changing at the middle:
+        // the near half is the activation LEAVING the source, the far half is the
+        // contribution ARRIVING — activation times weight. Where the weight is
+        // negative the line changes colour halfway, which is the same sign rule the
+        // Prediction Chain spends an animation on, drawn on the wire.
+        // userSpaceOnUse with the line's own endpoints, so the split lands at the
+        // true midpoint of a diagonal rather than of its bounding box.
+        // Unique per draw: drawNet runs again on resize, and two gradients sharing
+        // an id would leave every line pointing at whichever one the document found
+        // first — usually the one belonging to a diagram that no longer exists.
+        const gid = "d1ag-" + drawSeq + "-" + li + "-" + a + "-" + b;
+        const grad = el("linearGradient", { id: gid, gradientUnits: "userSpaceOnUse",
+                                            x1: x1, y1: y1, x2: x2, y2: y2 });
+        // Four stops, not two. A pair both sitting at 50% spans nothing, and the
+        // hard change has to be expressed as two coincident stops with the flat runs
+        // on either side of them stated explicitly.
+        const s0 = el("stop", { offset: "0%" });
+        const s0b = el("stop", { offset: "50%" });
+        const s1a = el("stop", { offset: "50%" });
+        const s1 = el("stop", { offset: "100%" });
+        [s0, s0b, s1a, s1].forEach(function (st) { grad.appendChild(st); });
+        line.__s0b = s0b; line.__s1a = s1a;
+        defs.appendChild(grad);
+        line.__grad = gid; line.__s0 = s0; line.__s1 = s1;
+        line.__weight = weight;
+        // Two states. Until the layer it leaves has been computed an edge is just
+        // wiring: grey from the stylesheet and hairline thin. Once signal has passed
+        // through it, it takes its weight band and its two colours. So the diagram
+        // starts as a faint scaffold and gains ink only where something has
+        // actually flowed.
+        // __w is the band it will grow to, kept on the element so the hover
         // highlight can raise it and put it back without recomputing.
         line.__w = width;
         line.style.strokeWidth = width.toFixed(2);
@@ -9069,9 +9328,13 @@ function buildSimContent() {
           pos[li+1][b] - pos[li][a]);
         line.__len = len;
         line.style.strokeDasharray = len;
+        // The SIGNAL line rests undrawn — the grey wire beneath it is what shows
+        // until a step sends something along this connection.
         line.style.strokeDashoffset = len;
         edgeG.appendChild(line);
-        edges.push({ el: line, from: [li, a], to: [li+1, b] });
+        const rec = { el: line, from: [li, a], to: [li+1, b], w: weight };
+        line.__edge = rec;
+        edges.push(rec);
         return line;
       }
       // Connections are off for now (2026-09-05) while the animation is designed.
@@ -9093,12 +9356,12 @@ function buildSimContent() {
       fanOut.length = 0; fanOut2.length = 0; fanOut3.length = 0;
       if (SHOW_EDGES[0]) for (let a = 0; a < EMB; a++) {
         const group = [];
-        for (let b = 0; b < H1; b++) group.push(link(0, a, b, bandOf(NET.W1[b][a], T1)));
+        for (let b = 0; b < H1; b++) group.push(link(0, a, b, bandOf(NET.W1[b][a], T1), NET.W1[b][a]));
         fanOut.push(group);
       }
       if (SHOW_EDGES[1]) for (let a = 0; a < H1; a++) {
         const group = [];
-        for (let b = 0; b < H2; b++) group.push(link(1, a, b, bandOf(NET.W2[b][a], T2)));
+        for (let b = 0; b < H2; b++) group.push(link(1, a, b, bandOf(NET.W2[b][a], T2), NET.W2[b][a]));
         fanOut2.push(group);
       }
       // These carried a hard-coded 0.5 while the output was computed elsewhere. They
@@ -9107,7 +9370,7 @@ function buildSimContent() {
       if (SHOW_EDGES[2]) for (let a = 0; a < H2; a++) {
         const group = [];
         for (let b = 0; b < 2; b++) {
-          group.push(link(2, a, b, bandOf(NET.W3[OUT_ORDER[b]][a], T3)));
+          group.push(link(2, a, b, bandOf(NET.W3[OUT_ORDER[b]][a], T3), NET.W3[OUT_ORDER[b]][a]));
         }
         fanOut3.push(group);
       }
@@ -9252,6 +9515,46 @@ function buildSimContent() {
       // Parked so the step machinery, which lives outside drawNet, can ask for a
       // repaint when a step completes and the readout's wording changes.
       svgHost.__paintPin = function () { paintPin(); };
+      // Parked so the step machinery outside this closure can repaint the wiring
+      // as each layer lands.
+      svgHost.__edges = edges;
+      svgHost.__vals = vals;
+      // What the extraction needs to reach: the scene to add to, the two hidden
+      // columns to keep, and everything else to take away.
+      // A redraw — a resize, or a different conversation — rebuilds the diagram in
+      // state 1, so the button becomes available again.
+      extractDone = false;
+      if (exBtn) exBtn.disabled = extracted;
+      if (exReset) exReset.disabled = !extracted;
+      // The node lists are resolved when the button is pressed, not here: the
+      // neurons are drawn further down this same function, so querying now would
+      // capture nothing. Only the group references, which already exist, are held.
+      svgHost.__extract = {
+        W: W, H: H, top: top, bot: bot, r: cols[1].r, scene: scene, svg: svg,
+        // A neuron is four elements in four groups. Fading only the outline left
+        // the input column's gauges and the output pills' labels hanging in empty
+        // space, so every part goes.
+        layer: function (li) {
+          const out = [];
+          Array.prototype.forEach.call(
+            svg.querySelectorAll('.d1a-node[data-layer="' + li + '"]'), function (n) {
+              [n, n.__disc, n.__bar, n.__ring].forEach(function (e) { if (e) out.push(e); });
+            });
+          return out;
+        },
+        nodes: function (li) {
+          return Array.prototype.slice.call(
+            svg.querySelectorAll('.d1a-node[data-layer="' + li + '"]'));
+        },
+        groups: [wireG, edgeG, pillG, frontG],
+        get keep() { return [this.nodes(1), this.nodes(2)]; },
+        get fade() {
+          return this.groups.concat(
+            Array.prototype.slice.call(svg.querySelectorAll(".d1a-collabel")),
+            Array.prototype.slice.call(svg.querySelectorAll(".d1a-outlabel")),
+            this.layer(0), this.layer(3));
+        }
+      };
       function paintPin() {
         Array.prototype.forEach.call(svg.querySelectorAll(".d1a-node"), function (n) {
           n.classList.remove("pinned");
@@ -9315,9 +9618,30 @@ function buildSimContent() {
           // sign on 451 of 800, so the colour finally carries something: two oranges
           // of different depth, and the deeper one is the answer.
           const ramp = li === 3 ? v / LOGIT_SCALE : v;
-          node.__v = ramp;   // the steps walk the ramp toward this as input arrives
+          node.__v = ramp;   // the steps grow the gauge toward this as input arrives
           node.__act = actColour(ramp);
-          node.style.fill = "#FFFFFF";
+          node.__cx = c.x; node.__cy = pos[li][i]; node.__r = c.r;
+          // The circle stays white and keeps its outline; the gauge is a rect
+          // clipped to it, so the node still reads as a circle and the fill has a
+          // flat top edge you can compare across a column.
+          // No fill of its own — the disc below supplies the white and the gauge
+          // supplies the colour. pointer-events keeps it hoverable and clickable
+          // despite being unfilled.
+          node.style.fill = "none";
+          node.style.pointerEvents = "all";
+          const disc = el("circle", { cx: c.x, cy: pos[li][i], r: c.r, fill: "#FFFFFF" });
+          discs.appendChild(disc);
+          node.__disc = disc;
+          const clipId = "d1aclip-" + li + "-" + i;
+          const cp = el("clipPath", { id: clipId });
+          cp.appendChild(el("circle", { cx: c.x, cy: pos[li][i], r: c.r }));
+          defs.appendChild(cp);
+          const bar = el("rect", { x: c.x - c.r, y: pos[li][i], width: c.r * 2,
+                                   height: 0, "clip-path": "url(#" + clipId + ")",
+                                   class: "d1a-bar" });
+          bar.setAttribute("pointer-events", "none");
+          node.__bar = bar;
+          bars.appendChild(bar);
           node.dataset.layer = li; node.dataset.i = i;
           node.setAttribute("tabindex", "0");
           node.setAttribute("role", "button");
@@ -9339,9 +9663,9 @@ function buildSimContent() {
           // what Steps 2 and 3 exist to draw. Keyed to the STEP, not to whether the
           // circle looks coloured — a unit sitting near zero renders white after a
           // full run, and 28% of conversations end with at least one of those.
-          function live() { return !node.classList.contains("off"); }
+          function live() { return opts.hover && !node.classList.contains("off"); }
           function on() { if (!live()) return; setHoverNode(node); setHover(li, i); }
-          function off() { setHoverNode(null); setHover(-1, -1); }
+          function off() { if (!opts.hover) return; setHoverNode(null); setHover(-1, -1); }
           function toggle(ev) {
             if (ev) ev.stopPropagation();
             if (!live()) return;
@@ -9459,14 +9783,14 @@ function buildSimContent() {
         // the dark ones, and a highlighted line came out broken into segments that
         // read as it tapering. Re-appending moves them to the end of the edge group,
         // which still sits under every node.
-        // A lit edge is near-black, but a 0.47px stroke paints only about a third of
-        // a pixel — measured at 1.73:1, indistinguishable from the dimmed lines it is
-        // supposed to stand out from. So the highlight thickens as well as darkens,
-        // and only while lit: the resting hairball keeps its lightness.
-        edges.forEach(function (e) {
-          const w = e.el.classList.contains("near") ? e.el.__w * LIT_MUL : e.el.__w;
-          e.el.style.strokeWidth = w.toFixed(2);
-        });
+        // Width is left alone. The highlight used to thicken the lit edges, from a
+        // time when every edge already rested at its full weight band and a dimmed
+        // hairline could not be told from a lit one. Now width means one thing only
+        // — the weight, once signal has passed through — and hovering must not
+        // rewrite it: it made the untouched wiring jump from a 0.5 hairline to its
+        // full band just for passing the pointer over the diagram. Dimming
+        // everything unrelated to 0.35 is what separates the lit ones now, and they
+        // carry their own colour to be seen by.
         lit.forEach(function (el) { edgeG.appendChild(el); });
         bringToFront(on
           ? svg.querySelector('.d1a-node[data-layer="' + li + '"][data-i="' + i + '"]')
@@ -9498,6 +9822,18 @@ function buildSimContent() {
       if (idx >= cases.length) idx = cases.length - 1;
       if (pinnedFor !== idx) { pinIdx = null; pinnedFor = idx; }
       const it = cases[idx];
+      // A different conversation is a different set of activations, so it arrives
+      // in the default state rather than inheriting the last one's extraction.
+      // Tracked by id, not by index: filtering resets the index to 0 while putting
+      // an entirely different conversation there. A RESIZE keeps whatever state the
+      // screen is in — same conversation, same id — which is the distinction the
+      // ResizeObserver on its own could not make.
+      if (extracted && shownId !== null && shownId !== it.id) {
+        extracted = false;
+        pinEl.style.display = "";
+        measureEl.style.display = "";
+      }
+      shownId = it.id;
       const f = forward(it);
 
       countEl.textContent = (idx + 1) + " / " + cases.length;
@@ -9527,8 +9863,14 @@ function buildSimContent() {
 
       drawNet(f, it);
       // A redraw builds new white nodes and new lines, so anything still running is
-      // pointed at elements that no longer exist.
-      if (typeof clearSteps === "function") clearSteps();
+      // pointed at elements that no longer exist. What this conversation had already
+      // finished is put back on the new ones.
+      if (typeof restoreSteps === "function") restoreSteps();
+      // Same argument one level up: a screen that has been extracted stays
+      // extracted through a resize or a change of conversation. Instantly, with no
+      // fade or settle — the reveal is a thing you watch once, not every time the
+      // window moves.
+      if (extracted) runExtract(true);
     }
 
     // ---- Step 1: the words fly into the Input Layer ----
@@ -9582,6 +9924,11 @@ function buildSimContent() {
     // completed steps, so button i is live only when i === stepDone and nothing is
     // running. Reset takes it back to the start.
     let stepDone = 0, running = false;
+    // How far each conversation got, keyed by its id rather than its index — the
+    // filter reorders the list, and progress belongs to the conversation, not to
+    // slot 4. Leaving one at Step 3 and coming back should find it at Step 3.
+    const stepState = {};
+    function hereId() { return cases.length ? cases[idx].id : null; }
     const STEP_RUNNERS = [];        // filled in as each step is defined
 
     function syncSteps() {
@@ -9602,11 +9949,18 @@ function buildSimContent() {
         if (!n.__title) return;
         const known = stepDone >= (+n.dataset.layer) + 1;
         const v = n.__val;
+        // The tooltip names the neuron and stops there. No activation is quoted
+        // anywhere a reader can see it now — not the readout, not on hover — so the
+        // colour is the only reading of a value on this screen, which is the point of
+        // having a ramp and a key at the top of the card.
+        n.__title.textContent = n.__name;
+        // The screen-reader label DOES carry the number, once the step that computes
+        // the layer has run. That is not a leak of something the screen withholds:
+        // the fill is a visual encoding of exactly this value, and the label is its
+        // text equivalent. Removing it would leave a screen-reader user with no
+        // access to the one thing every sighted user can see.
         n.setAttribute("aria-label",
           known ? n.__name + ", activation " + v.toFixed(2) : n.__name);
-        n.__title.textContent = known
-          ? n.__name + "   " + (v >= 0 ? "+" : "\u2212") + Math.abs(v).toFixed(2)
-          : n.__name;
         // Not reached yet: inert, and out of the tab order rather than merely
         // unresponsive, so keyboard users are not walked through 26 stops that do
         // nothing.
@@ -9618,6 +9972,64 @@ function buildSimContent() {
       // A selection can be left pointing at a layer that has just gone inert — a
       // reset while a neuron was open.
       if (pinIdx && stepDone < pinIdx[0] + 1) pinIdx = null;
+      paintEdges();
+    }
+
+    // The two halves of every edge. An edge only says anything once the layer it
+    // leaves has been computed, so until then it keeps the stylesheet's grey — the
+    // wiring is visible, the signal on it is not.
+    // One edge. The colour is the edge's RESTING state now, not something the fan
+    // animation paints on and takes off again, so everything that used to blank the
+    // stroke calls this instead.
+    // Colour and weight only — no reveal. Used both by paintEdge and by the fan,
+    // which needs the line finished before it starts drawing it.
+    function paintSignal(line) {
+      const e = line.__edge;
+      if (!e || !svgHost.__vals) return;
+      const a = svgHost.__vals[e.from[0]][e.from[1]];
+      const near = signColour(a), far = signColour(a * e.w);
+      line.__s0.setAttribute("stop-color", near);
+      line.__s0b.setAttribute("stop-color", near);
+      line.__s1a.setAttribute("stop-color", far);
+      line.__s1.setAttribute("stop-color", far);
+      line.style.stroke = "url(#" + line.__grad + ")";
+      line.style.strokeWidth = line.__w.toFixed(2);
+    }
+
+    // The grey wire is the track the coloured line is drawn along, so it stays for
+    // as long as the drawing takes and goes only once the line has arrived. Removing
+    // it when the sweep STARTED left the far half of the connection with nothing in
+    // it until the signal got there.
+    function showWire(line) { if (line.__wire) line.__wire.style.display = ""; }
+    function hideWire(line) { if (line.__wire) line.__wire.style.display = "none"; }
+
+    function paintEdge(line) {
+      const e = line.__edge;
+      if (!e || !svgHost.__vals) return;
+      // li + 2, not li + 1. A NODE in layer L is computed by step L+1, but an EDGE
+      // leaving layer L is not travelled until the step that computes layer L+1 —
+      // which is step L+2. Keyed to L+1 the input layer's whole fan took its colour
+      // and its weight the moment Step 1 finished, before Step 2 had drawn a single
+      // one of those connections.
+      const li = e.from[0];
+      if (stepDone < li + 2) {
+        // Not travelled yet: the signal line is simply not drawn, and the grey wire
+        // is all there is to see. Restored explicitly, so stepping back or resetting
+        // brings the scaffold with it.
+        line.style.strokeDashoffset = line.__len;
+        showWire(line);
+        return;
+      }
+      // Already travelled — restoring a step rather than watching it — so the line
+      // is simply there and the wire is simply gone, with nothing in between.
+      paintSignal(line);
+      line.style.strokeDashoffset = 0;
+      hideWire(line);
+    }
+
+    function paintEdges() {
+      if (!svgHost.__edges) return;
+      svgHost.__edges.forEach(function (e) { paintEdge(e.el); });
     }
 
     // Called when a step's animation has actually finished, not when it was clicked.
@@ -9625,6 +10037,8 @@ function buildSimContent() {
       if (mine !== stepRun) return;   // a reset or a redraw overtook it
       running = false;
       stepDone = Math.max(stepDone, n);
+      const id = hereId();
+      if (id) stepState[id] = stepDone;
       syncSteps();
       syncNodeInfo();
       // A readout already open has to be rewritten: the output one withholds the
@@ -9636,7 +10050,7 @@ function buildSimContent() {
       stepRun++;
       if (flyLayer) { flyLayer.remove(); flyLayer = null; }
       svgHost.querySelectorAll(".d1a-node").forEach(function (n) {
-        n.style.fill = "#FFFFFF";
+        setNodeLevel(n, 0);
       });
       stepBtns[0].classList.remove("on");
     }
@@ -9655,7 +10069,7 @@ function buildSimContent() {
       const reduced = window.matchMedia
         && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (reduced) {
-        nodes.forEach(function (n) { n.style.fill = n.__act; });
+        nodes.forEach(function (n) { setNodeLevel(n, 1); });
         stepFinished(1, mine);
         return;
       }
@@ -9749,8 +10163,7 @@ function buildSimContent() {
             // Every word deepens the unit; the last one lands it exactly on __act.
             const land = setTimeout(function () {
               if (mine !== stepRun) return;
-              node.style.fill = last ? node.__act
-                : actColour(node.__v * ((k + 1) / words.length));
+              setNodeLevel(node, last ? 1 : (k + 1) / words.length);
               if (last && ni === nodes.length - 1) {
                 const tidy = setTimeout(function () {
                   if (mine !== stepRun) return;
@@ -9780,10 +10193,6 @@ function buildSimContent() {
     // arrived: actColour of a scaled activation, so the path runs through the ramp's
     // own levels and lands exactly on the value. Every column works the same way now
     // that the output pair is on the ramp too.
-    function partialFill(node, frac) {
-      return frac >= 1 ? node.__act : actColour(node.__v * frac);
-    }
-
     // The answer, held back until every connection is in. Both pills sit in the
     // same resting state until then; the winner is already on the element as __won,
     // so this is a class change rather than anything being worked out late.
@@ -9795,12 +10204,26 @@ function buildSimContent() {
       });
     }
 
+    // The finished state of a fan, arrived at instantly. Restoring a conversation
+    // must not replay four animations — you asked to come back to Step 3, not to
+    // watch it happen again.
+    // Both leave the decision to paintEdge, which knows from stepDone whether this
+    // connection has been travelled: drawn and coloured if so, undrawn if not, with
+    // the grey wire showing through either way.
+    function drawFan(fan) {
+      fan.forEach(function (group) {
+        group.forEach(function (line) {
+          line.getAnimations().forEach(function (a) { a.cancel(); });
+          paintEdge(line);
+        });
+      });
+    }
+
     function clearFan(fan) {
       fan.forEach(function (group) {
         group.forEach(function (line) {
           line.getAnimations().forEach(function (a) { a.cancel(); });
-          line.style.strokeDashoffset = line.__len;
-          line.style.stroke = "";
+          paintEdge(line);
         });
       });
     }
@@ -9830,7 +10253,7 @@ function buildSimContent() {
         && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (reduced) {
         fan.forEach(function (g) { g.forEach(function (l) { l.style.strokeDashoffset = 0; }); });
-        targets.forEach(function (n) { n.style.fill = n.__act; });
+        targets.forEach(function (n) { setNodeLevel(n, 1); });
         stepFinished(stepNo, mine);
         return;
       }
@@ -9840,38 +10263,32 @@ function buildSimContent() {
         const at = t;
         t += dur;
         const src = sources[ai];
-        // A unit sitting at almost zero is WHITE on the ramp, and a white line on a
-        // white panel is no line at all — those keep the resting grey, which is also
-        // the honest reading: that unit is passing on nothing much.
-        const tint = src && src.__act && src.__act !== "#FFFFFF" ? src.__act : null;
         const go = setTimeout(function () {
           if (mine !== stepRun) return;
           group.forEach(function (line) {
-            if (tint) line.style.stroke = tint;
-            // Grown from the offset the line is parked at, so it draws OUT of the
-            // unit it leaves rather than in from the far end: x1 is that side.
+            // Coloured and weighted BEFORE it grows, so what sweeps along the wire
+            // is the finished line rather than a grey one that changes at the end.
+            paintSignal(line);
+            // Grown from the far offset, so it draws OUT of the unit it leaves
+            // rather than in from the far end: x1 is that side.
             const a = line.animate(
               [{ strokeDashoffset: line.__len }, { strokeDashoffset: 0 }],
               { duration: dur, easing: "cubic-bezier(.3,.05,.4,1)", fill: "forwards" });
-            a.onfinish = function () { line.style.strokeDashoffset = 0; };
+            a.onfinish = function () {
+              line.style.strokeDashoffset = 0;
+              hideWire(line);          // only now, with the line all the way across
+            };
           });
         }, at);
         SIM._timeouts.push(go);
-        // As the NEXT unit's fan sets off, this one's lines drop back to the resting
-        // grey — so at any moment the coloured lines are the ones being drawn, and
-        // what is left behind is the wiring. Clearing the inline stroke rather than
-        // assigning grey hands the colour back to the stylesheet, which is what the
-        // hover highlight needs in order to override it later.
-        const cool = setTimeout(function () {
-          if (mine !== stepRun) return;
-          group.forEach(function (line) { line.style.stroke = ""; });
-        }, at + dur);
-        SIM._timeouts.push(cool);
+        // Nothing cools off any more. A swept connection keeps its colour and its
+        // weight — the grey wire it was drawn over is still there beneath it, which
+        // is what "what is left behind is the wiring" now means.
         // Painted as the fan ARRIVES, not as it sets off.
         const paint = setTimeout(function () {
           if (mine !== stepRun) return;
           const frac = (ai + 1) / fan.length;
-          targets.forEach(function (n) { n.style.fill = partialFill(n, frac); });
+          targets.forEach(function (n) { setNodeLevel(n, frac); });
         }, at + dur);
         SIM._timeouts.push(paint);
       });
@@ -9889,7 +10306,7 @@ function buildSimContent() {
       stepRun++;
       clearFan(fan);
       svgHost.querySelectorAll('.d1a-node[data-layer="' + targetLayer + '"]')
-        .forEach(function (n) { n.style.fill = "#FFFFFF"; });
+        .forEach(function (n) { setNodeLevel(n, 0); });
       stepBtns[bi].classList.remove("on");
     }
     function clearStep2() { clearFanStep(fanOut, 1, 1); }
@@ -9899,7 +10316,419 @@ function buildSimContent() {
     function runStep3() { clearStep3(); runFan(fanOut2, 2, 3, 2); }
     function runStep4() { clearStep4(); runFan(fanOut3, 3, 4, 3); }
 
+    // Put the diagram into the state it would be in after `n` steps, with nothing
+    // animating. Step s colours layer s-1, and every step past the first also draws
+    // the fan that feeds that layer.
+    function applyStepState(n) {
+      stepRun++;
+      if (flyLayer) { flyLayer.remove(); flyLayer = null; }
+      running = false;
+      stepDone = n;
+      svgHost.classList.add("no-anim");
+      const fans = [fanOut, fanOut2, fanOut3];
+      fans.forEach(clearFan);
+      svgHost.querySelectorAll(".d1a-node").forEach(function (nd) {
+        setNodeLevel(nd, 0);
+      });
+      revealAnswer(false);
+      stepBtns.forEach(function (b) { b.classList.remove("on"); });
+      for (let sN = 1; sN <= n; sN++) {
+        stepBtns[sN - 1].classList.add("on");
+        svgHost.querySelectorAll('.d1a-node[data-layer="' + (sN - 1) + '"]')
+          .forEach(function (nd) { setNodeLevel(nd, 1); });
+        if (sN >= 2) drawFan(fans[sN - 2]);
+      }
+      if (n >= 4) revealAnswer(true);
+      syncSteps();
+      syncNodeInfo();
+      if (svgHost.__paintPin) svgHost.__paintPin();
+      // Read a layout property to flush every fill above while the suppression is
+      // still on. That commit is what makes this safe: by the time the class comes
+      // off, the new fill is already the current style, so re-enabling the transition
+      // cannot start one for a change that has already happened.
+      //
+      // A timer rather than requestAnimationFrame — rAF does not run in a background
+      // tab, and a restore that happened there would leave the suppression on for
+      // good, silently killing the transition during the next live run.
+      const unlock = setTimeout(function () { svgHost.classList.remove("no-anim"); }, 0);
+      SIM._timeouts.push(unlock);
+    }
+
+    // Called by every redraw — a new conversation, and also a resize, which used to
+    // throw the animation away along with the old svg.
+    // ---- Extract Pathways, state 2 ----
+    // Everything but the two hidden layers goes; the 14 units that are left gather
+    // into one column; then the pathways appear beside them. Staged rather than
+    // simultaneous, because the claim is sequential: THESE are the units, they are
+    // one population, and a pathway is a grouping over that population.
+    // ---- How strongly each hidden unit loads on each pathway ----
+    // A loading matrix, not a partition: every unit loads on every pathway, which
+    // is what a factor extraction produces and what the parked 96-neuron version
+    // of this screen drew. Rows in column order — Hidden 1's eight units, then
+    // Hidden 2's six; columns are the three pathways.
+    //
+    // Measured, not invented: each value is the correlation between that unit's
+    // activation and that pathway's score across all 800 conversations. None of
+    // the 42 is zero (they run 0.006 to 0.585), so a picture that gave each unit
+    // ONE pathway had to invent the other two answers. An earlier version of this
+    // did exactly that, under 5/4/5 quotas, and the quotas pushed five of the
+    // fourteen units onto a pathway they do not track hardest. With the whole
+    // matrix drawn there is no assignment to get wrong.
+    //
+    // What the picture then says is true and uncomfortable: Pathway 1 is loaded
+    // heavily by most of the network and Pathways 2 and 3 only weakly by any of
+    // it. That is this network — it was fitted to reproduce the model's
+    // PREDICTION, and Pathway 1 is what carries the prediction. Regressing each
+    // pathway on all 14 units recovers Pathway 1 at R2 0.70 and Pathways 2 and 3
+    // at 0.14 and 0.17.
+    const PATH_LOAD = [
+      [+0.525, -0.008, -0.267],   // Hidden 1, unit 1
+      [-0.370, +0.293, -0.116],
+      [-0.135, -0.257, +0.343],
+      [+0.227, -0.249, +0.302],
+      [-0.437, -0.177, -0.006],
+      [-0.293, +0.176, +0.039],
+      [+0.318, +0.152, -0.238],
+      [-0.567, -0.105, -0.135],
+      [-0.564, -0.016, +0.051],   // Hidden 2, unit 1
+      [-0.081, -0.102, -0.045],
+      [-0.585, -0.071, +0.274],
+      [-0.132, -0.163, +0.222],
+      [+0.520, +0.215, +0.063],
+      [+0.373, -0.011, -0.141]
+    ];
+
+    // One scale for the whole dataset, as with the logits: a pathway activation is
+    // only comparable case to case if the same number is always the same length.
+    // Same formula the Prediction Chain uses, so a pathway that looks half full
+    // here is half full there.
+    const ACT_SCALE = Math.max.apply(null,
+      D.scoreMin.map(Math.abs).concat(D.scoreMax.map(Math.abs)));
+
+    const EX_FADE = 320, EX_MOVE = 620, EX_SHOW = 320, EX_FILL = 300;
+    // extractDone is per DRAWING — reset by every drawNet so the new scene can be
+    // extracted again. extracted is per SCREEN: once true, a resize or a change of
+    // conversation rebuilds the diagram and puts it straight back into state 2
+    // rather than winding it back to state 1.
+    let extractDone = false, extracted = false;
+    // Which conversation the drawing on screen belongs to.
+    let shownId = null;
+
+    // A neuron is drawn as three elements in three groups — white disc, gauge, and
+    // the outline that carries the pointer — so that paint order works. Moving one
+    // means moving all three by the same amount. Defined out here beside runExtract,
+    // not inside drawNet, which is a closure runExtract cannot see into.
+    function moveNode(node, dx, dy) {
+      const t = (dx || dy) ? "translate(" + dx + "px," + dy + "px)" : "";
+      [node, node.__disc, node.__bar].forEach(function (e) {
+        if (e) e.style.transform = t;
+      });
+    }
+
+    // Hiding the readout makes the host taller. Stretching the EXISTING drawing
+    // into that space — height attribute and viewBox together, so one unit stays one
+    // pixel — leaves every node exactly where it was. Redrawing instead re-laid the
+    // four columns over the new height, which moved all 33 neurons a frame before
+    // the animation started: the jump. drawnH is updated so the ResizeObserver reads
+    // this as a size it already knows about and does not redraw over the top of it.
+    function growNet() {
+      const X = svgHost.__extract;
+      if (!X || !X.svg) return;
+      const h = Math.max(300, Math.round(svgHost.clientHeight || 400));
+      if (h <= X.H) return;
+      X.svg.setAttribute("height", h);
+      X.svg.setAttribute("viewBox", "0 0 " + X.W + " " + h);
+      X.H = h;
+      drawnH = h;
+    }
+
+    // Back to state 1: the readout returns, the diagram is rebuilt at the shorter
+    // height, and the button is available again.
+    function clearExtract() {
+      if (!extracted) return;
+      extracted = false;
+      pinEl.style.display = "";
+      measureEl.style.display = "";
+      render();
+    }
+
+    function runExtract(instant) {
+      const X = svgHost.__extract;
+      if (!X || extractDone) return;
+      extractDone = true;
+      const quick = !!instant || !!(window.matchMedia
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      const units = X.keep[0].concat(X.keep[1]);          // 8 + 6, in layer order
+
+      // One column, left of where the pathways will sit, using the WHOLE height of
+      // the drawing rather than the band the four columns occupied: the captions
+      // and the readout are gone, so the only reserve needed is half a neuron at
+      // each end. The spacing is whatever that gives — no cap, because a gap that
+      // stopped growing would leave the panel half empty at the sizes where there
+      // is most room.
+      const colX = Math.round(X.W * 0.34);
+      const pad = X.r + 2;
+      const y0 = pad;
+      const gap = (X.H - pad - y0) / (units.length - 1);
+
+      X.fade.forEach(function (e) {
+        e.style.transition = quick ? "none" : "opacity " + EX_FADE + "ms ease";
+        e.style.opacity = "0";
+        // Opacity 0 is still hit-testable. The column collapses to x = 0.34W and
+        // the "Hidden Layer 1" caption sits at very nearly that x at y = 20, so an
+        // invisible run of text was swallowing every click aimed at the top unit.
+        // Nothing here is coming back without a redraw, so nothing here should
+        // take the pointer.
+        e.style.pointerEvents = "none";
+      });
+
+      const settle = function () {
+        units.forEach(function (n, k) {
+          const dx = colX - n.__cx, dy = (y0 + k * gap) - n.__cy;
+          [n, n.__disc, n.__bar].forEach(function (e) {
+            if (e) e.style.transition = quick ? "none"
+              : "transform " + EX_MOVE + "ms cubic-bezier(.34,1.02,.5,1)";
+          });
+          moveNode(n, Math.round(dx), Math.round(dy));
+        });
+      };
+      let made = null;
+      const boxes = function () {
+        made = addPathwayBoxes(X, colX, y0, gap, units.length, quick);
+      };
+      // Which unit sits where, now that they are one column — the loading lines
+      // start from these points, not from where the neurons were drawn.
+      const at = function (k) { return { x: colX, y: y0 + k * gap }; };
+      const wire = function () { drawLoadings(X, units, at, made, quick); };
+
+      if (quick) { settle(); boxes(); wire(); return; }
+      const t1 = setTimeout(settle, EX_FADE);
+      const t2 = setTimeout(boxes, EX_FADE + EX_MOVE);
+      const t3 = setTimeout(wire, EX_FADE + EX_MOVE + EX_SHOW);
+      SIM._timeouts.push(t1, t2, t3);
+    }
+
+    // ---- The third beat: which units make which pathway ----
+    // One pathway at a time, its own lines drawing together, and then its box
+    // filling. Sequential because the claim is: THESE units, therefore THIS value —
+    // and a student who watches all three at once sees only that something happened.
+    // ---- Reading the loading matrix, one row or one column at a time ----
+    // Slide 2's sketch, rotated: nothing is drawn at rest, and picking one side
+    // shows its loadings against the other. Pick a pathway and its fourteen
+    // loadings appear beside the units; pick a unit and its three appear beside
+    // the pathways. Both readings are the same table — a loading matrix has no
+    // direction, which is exactly what the sketch demonstrates by drawing it from
+    // both ends on one page — so neither side is presented as making the other.
+    //
+    // Drawing all 42 at once was the alternative and it was unreadable: the
+    // corridor between the two columns is 130px, and forty-two lines crossing it
+    // say only that everything connects to everything.
+    const BAR_H = 7, BAR_MAX = 44;
+    const LOAD_MAX = 0.585;          // the largest |loading| in the matrix
+    let loadSel = null;              // {kind: "path"|"unit", i} or null
+
+    function drawLoadings(X, units, at, made, quick) {
+      if (!made) return;
+      const it = cases[idx];
+      const act = (it && it.act) || [];
+      // The layer the connectors and bars live on. Under the neurons and boxes,
+      // like every other wire on this screen.
+      const g = el("g", { class: "d1a-loadgroup" });
+      X.scene.insertBefore(g, X.scene.firstChild);
+      // A bar sits on the FAR side of the thing it describes, away from the
+      // connector that arrives at it — so a line never crosses a bar and a bar is
+      // never read as belonging to the item at the other end of the line. Picking
+      // a pathway puts the connectors in the corridor and the bars out on the left
+      // of the units; picking a unit puts the connectors in the corridor and the
+      // bars against the boxes at the far end of it.
+      const rr = X.r;
+      // A bar always butts against the item it describes, on the side the connector
+      // arrives from, and grows away from it — so the connector runs into the bar
+      // and the two read as one continuous run: hairline, then colour, then the
+      // thing itself. Symmetric in both directions, which is the point: the same
+      // number is being read from either end of the same table.
+      //
+      // Sign is the hue, not the direction — which is how the deck draws a loading
+      // (the neurons inside a pathway are shaded purple or yellow, not offset one
+      // way or the other). Growing positives one way and negatives the other made
+      // the gap between bar and item depend on the sign, which reads as a second
+      // variable that is not there.
+      const UNIT_BASE = made.colX + rr + 6;    // bars grow right, toward the boxes
+      const BOX_BASE = made.bx - 10;           // bars grow left, toward the units
+      loadSel = null;
+
+      // The unit's own ring is not reused: syncRings owns it and recomputes it
+      // from hover and focus, so it would be wiped by the next mouse move. This
+      // one belongs to the load group and is cleared with everything else.
+      function clear() {
+        while (g.firstChild) g.removeChild(g.firstChild);
+        made.boxes.forEach(function (b) { b.box.classList.remove("on"); });
+      }
+
+      // One bar plus its connector: the bar's length is the magnitude on a single
+      // scale across the whole matrix, its direction and hue the sign.
+      // (x1,y1) is where the connector starts — the picked item. It runs to
+      // (x2, atY), the near edge of the thing being described, and the bar sits at
+      // that same y with its zero at baseX.
+      // dir is which way the bar grows from its item: +1 right, -1 left. The
+      // connector always stops exactly where the bar ends.
+      function mark(x1, y1, atY, baseX, dir, v) {
+        const len = Math.max(2, Math.abs(v) / LOAD_MAX * BAR_MAX);
+        const far = baseX + dir * len;
+        g.appendChild(el("line", { x1: x1, y1: y1, x2: far, y2: atY,
+                                   class: "d1a-loadwire" }));
+        g.appendChild(el("rect", {
+          x: dir > 0 ? baseX : far, y: atY - BAR_H / 2, width: len, height: BAR_H,
+          class: "d1a-loadbar " + (v >= 0 ? "pos" : "neg")
+        }));
+      }
+
+      // Out from the box, one line per unit, each ending in the bar that is that
+      // unit's loading on it.
+      function showPath(pi) {
+        clear();
+        const b = made.boxes[pi];
+        b.box.classList.add("on");
+        units.forEach(function (n, k) {
+          mark(b.x, b.cy, at(k).y, UNIT_BASE, 1, PATH_LOAD[k][pi]);
+        });
+      }
+      // The same run read from the other end: out from the unit, one line per
+      // pathway, each ending in the bar that sits against its box.
+      function showUnit(k) {
+        clear();
+        const q = at(k);
+        g.appendChild(el("circle", { cx: q.x, cy: q.y, r: rr + 3.5,
+                                     class: "d1a-loadring" }));
+        made.boxes.forEach(function (b, pi) {
+          mark(q.x + rr, q.y, b.cy, BOX_BASE, -1, PATH_LOAD[k][pi]);
+        });
+      }
+      function pick(kind, i) {
+        if (loadSel && loadSel.kind === kind && loadSel.i === i) {
+          loadSel = null; clear(); return;
+        }
+        loadSel = { kind: kind, i: i };
+        if (kind === "path") showPath(i); else showUnit(i);
+      }
+
+      made.boxes.forEach(function (b, pi) {
+        b.box.classList.add("pick");
+        b.box.setAttribute("tabindex", "0");
+        b.box.setAttribute("role", "button");
+        b.box.setAttribute("aria-label",
+          "Pathway " + (pi + PATH_OFFSET) + ", show its loadings on the units");
+        b.box.addEventListener("click", function () { pick("path", pi); });
+        b.box.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick("path", pi); }
+        });
+      });
+      units.forEach(function (n, k) {
+        n.classList.add("pick");
+        n.addEventListener("click", function () { pick("unit", k); });
+      });
+
+      // Nothing on this screen says it can be clicked, and both halves of the
+      // matrix are only reachable by trying. The prompt sits above the pathways
+      // and arrives once the reveal has finished — before that there is nothing to
+      // click. It then STAYS: it is the only statement of what the two halves do,
+      // and picking one of them does not teach you that the other is pickable too.
+      // It also names both readings, so it stays true whichever one is showing.
+      const tip = el("text", { x: made.bx, y: 20, class: "d1a-loadtip" });
+      ["Click a pathway or a neuron", "to see how strongly they link."]
+        .forEach(function (line, i) {
+          const t = el("tspan", { x: made.bx, dy: i ? 16 : 0 });
+          t.textContent = line;
+          tip.appendChild(t);
+        });
+      made.g.appendChild(tip);
+      function showTip(on) { tip.style.opacity = on ? "1" : "0"; }
+
+      // The squares still land one pathway at a time — the reveal is the only
+      // thing that was carried by the lines, and it survives without them.
+      const fill = function (p) {
+        setBoxLevel(made.boxes[p], (act[p] || 0) / ACT_SCALE, quick);
+      };
+      if (quick) { [0, 1, 2].forEach(fill); showTip(true); return; }
+      tip.style.opacity = "0";
+      tip.style.transition = "opacity " + EX_FILL + "ms ease";
+      [0, 1, 2].forEach(function (p) {
+        const t = setTimeout(function () { fill(p); }, p * EX_FILL + 20);
+        SIM._timeouts.push(t);
+      });
+      const tt = setTimeout(function () { showTip(true); }, 3 * EX_FILL + 20);
+      SIM._timeouts.push(tt);
+    }
+
+    // Day 2's sizing, to the letter: sqrt of the magnitude over the shared scale,
+    // between a floor that keeps a near-zero pathway visible as a mark and a
+    // ceiling that fits inside the box. Grown from the centre outwards.
+    const SQ_MIN = 6, SQ_MAX = 26;
+    function setBoxLevel(b, v, quick) {
+      const t = Math.sqrt(Math.min(1, Math.abs(v)));
+      const side = SQ_MIN + (SQ_MAX - SQ_MIN) * t;
+      b.sq.style.transition = quick ? "none"
+        : "x " + EX_FILL + "ms ease, y " + EX_FILL + "ms ease, width " + EX_FILL
+          + "ms ease, height " + EX_FILL + "ms ease";
+      b.sq.setAttribute("x", b.x + b.side / 2 - side / 2);
+      b.sq.setAttribute("y", b.cy - side / 2);
+      b.sq.setAttribute("width", side);
+      b.sq.setAttribute("height", side);
+      b.sq.setAttribute("fill", signColour(v));
+    }
+
+    // Three boxes to the right of the column, each labelled. Sized and spaced off
+    // the column so they read as belonging to it rather than as a separate diagram.
+    function addPathwayBoxes(X, colX, y0, gap, n, quick) {
+      const NP = 3, side = 34;
+      const bx = Math.round(X.W * 0.58);
+      const span = (n - 1) * gap;
+      const step = span / (NP + 1);
+      const g = el("g", { class: "d1a-pathgroup" });
+      X.scene.appendChild(g);
+      const boxes = [];
+      for (let i = 0; i < NP; i++) {
+        const cy = Math.round(y0 + step * (i + 1));
+        const box = el("rect", { x: bx, y: cy - side / 2, width: side, height: side,
+                                 rx: 6, class: "d1a-pathbox" });
+        g.appendChild(box);
+        // What goes INSIDE the box is the pathway's activation for this
+        // conversation, drawn exactly as the Prediction Chain draws it: a square,
+        // sized on the square root of the value over the same dataset-wide scale,
+        // coloured by its sign. Not a fill gauge — a gauge would have needed a
+        // scale of its own, and 76% of activations are under 1.0 against a maximum
+        // of 4.78, so a linear fill left three-quarters of the dataset looking
+        // empty. Reusing Day 2's mark means the last thing seen here is the first
+        // thing seen there.
+        const sq = el("rect", { x: bx + side / 2, y: cy, width: 0, height: 0,
+                                rx: 1, class: "d1a-pathsq" });
+        sq.setAttribute("pointer-events", "none");
+        g.appendChild(sq);
+        const lab = el("text", { x: bx + side + 10, y: cy + 4, class: "d1a-pathlabel" });
+        lab.textContent = "Pathway " + (i + 1);
+        g.appendChild(lab);
+        boxes.push({ x: bx, cy: cy, side: side, sq: sq, box: box });
+      }
+      const made = { g: g, boxes: boxes, bx: bx, colX: colX };
+      g.style.opacity = "0";
+      if (quick) { g.style.opacity = "1"; return made; }
+      g.style.transition = "opacity " + EX_SHOW + "ms ease";
+      const t = setTimeout(function () { g.style.opacity = "1"; }, 20);
+      SIM._timeouts.push(t);
+      return made;
+    }
+
+    function restoreSteps() {
+      // opened: every conversation arrives already run, on this screen and on every
+      // redraw of it — a resize must not wind the network back to nothing.
+      if (opts.opened) { applyStepState(4); return; }
+      const id = hereId();
+      applyStepState(id ? (stepState[id] || 0) : 0);
+    }
+
     function clearSteps() {
+      const id = hereId();
+      if (id) delete stepState[id];
       clearStep1(); clearStep2(); clearStep3(); clearStep4();
       running = false; stepDone = 0;
       syncSteps();
@@ -9943,9 +10772,21 @@ function buildSimContent() {
     return wrap;
   }
 
+  if (activeSim === "d1a") {
+    return buildNetScreen({ steps: true, hover: true, title: "The Network" });
+  }
+
+  // Extract Pathways, state 1: where Trace a Case leaves off. No steps to run —
+  // they are all already applied — and no hover, because nothing here is asking
+  // "what is this neuron wired to" yet.
+  if (activeSim === "d1b") {
+    return buildNetScreen({ steps: false, hover: false, opened: true, extract: true,
+                            title: "The Network → Activated Pathways" });
+  }
+
 
   // ---------------------------------------------------------------
-  // 1B — Extract Pathways.  Design Sketches slides 17-18, and Scott's heatmap
+  // 1B (previous design) — Extract Pathways.  Design Sketches slides 17-18, and Scott's heatmap
   // demo: a grid of neuron activations on the left, and on the right one grid
   // per pathway showing loading x activation. 1A ends on "the network is real
   // and unreadable"; this is where the readable thing comes from.
@@ -9964,7 +10805,13 @@ function buildSimContent() {
   // Slide 18 is the framing this has to keep: a pathway is not causal, not a
   // substitute for a hidden neuron, just an explanation tool.
   // ---------------------------------------------------------------
-  if (activeSim === "d1b") {
+  // Superseded 2026-09-09: Extract Pathways now opens on the network end-state
+  // instead. Left in place rather than deleted — the factor extraction here is real
+  // (power iteration with deflation over a live 800 x 96 activation matrix) and
+  // nothing else in the prototype computes loadings — so it is available if a later
+  // state wants it. Unreachable until something sets this flag.
+  const D1B_HEATMAP = false;
+  if (D1B_HEATMAP && activeSim === "d1b") {
     const D = simData();
     const items = D.items;
     const VOCAB = Object.keys(D.vocabulary).sort();
