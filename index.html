@@ -1655,6 +1655,16 @@
      network draws, minus the gauge — there is no activation to show at this point,
      only that a conversation went through and came out as one thing. */
   .d1a-convnode { fill: #FFFFFF; stroke: var(--nnm-ink-2); stroke-width: 1.5; }
+  /* A neuron in a stacked conversation. Outline only — the white disc and the gauge
+     are drawn under it, so the ring is the last thing over both. */
+  .d1a-stacknode { fill: none; stroke: var(--nnm-ink-2); stroke-width: 1; }
+  /* One name per column, full size — only ever one on screen at a time, so it does
+     not have to fit beside its neighbours. It hands over as the next column lands. */
+  .d1a-stacklabel {
+    font-family: 'Lato', sans-serif; font-size: 14px;
+    fill: var(--nnm-ink); pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
   .d1a-convrow { will-change: transform; }
   /* The edge of the set, once all 800 are in. Hairline and unfilled: it is naming
      the collection, not adding another object to it. */
@@ -3597,8 +3607,8 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.12</div>
-      <div style="font-weight: 400;">Updated: 9/10/26</div>
+      <div style="font-weight: 600;">v0.13</div>
+      <div style="font-weight: 400;">Updated: 9/11/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
@@ -10385,6 +10395,15 @@ function buildSimContent() {
       notesTextEl.textContent = it.obs || "(no notes for this conversation)";
       paintMarks(it);
 
+      // Once the deck is up, the network is EIGHT HUNDRED conversations and not the
+      // one on the left, so paging or filtering changes the panel and leaves the
+      // drawing alone. Redrawing rebuilt it around whichever conversation was
+      // selected, which put a different conversation 1 in the deck every time the
+      // arrow was pressed.
+      if (extracted) {
+        if (typeof restoreSteps === "function") restoreSteps();
+        return;
+      }
       drawNet(f, it);
       // A redraw builds new white nodes and new lines, so anything still running is
       // pointed at elements that no longer exist. What this conversation had already
@@ -11064,6 +11083,8 @@ function buildSimContent() {
     const EX_FADE = 320, EX_MOVE = 620, EX_SHOW = 320, EX_FILL = 300;
     // The pathway half of the sequence, parked while the merge is designed.
     const EX_PATHWAYS = false;
+    // Everything after the fourteen line up. Off while the next idea is designed.
+    const EX_AFTER = false;
     // How many conversations end up in the column, and how the arrivals accelerate.
     const CONV_ROWS = 10, CONV_FIRST = 430, CONV_DECAY = 0.88, CONV_MIN = 230;
     const CONV_NAMES_OUT = 280, CONV_HEAD_IN = 320;
@@ -11094,9 +11115,20 @@ function buildSimContent() {
     // the outline that carries the pointer — so that paint order works. Moving one
     // means moving all three by the same amount. Defined out here beside runExtract,
     // not inside drawNet, which is a closure runExtract cannot see into.
-    function moveNode(node, dx, dy) {
-      const t = (dx || dy) ? "translate(" + dx + "px," + dy + "px)" : "";
-      [node, node.__disc, node.__bar].forEach(function (e) {
+    function moveNode(node, dx, dy, scale) {
+      let t = (dx || dy) ? "translate(" + dx + "px," + dy + "px)" : "";
+      // Scaled about the NEURON's centre, set explicitly in user coordinates on all
+      // three elements. Not each element's own centre: the gauge is a partial rect
+      // whose box runs from the neuron's middle to wherever the fill reaches, so
+      // scaling it about itself walked it off the circle it belongs to.
+      if (scale && scale !== 1) {
+        t += " scale(" + scale + ")";
+        const org = node.__cx + "px " + node.__cy + "px";
+        [node, node.__disc, node.__bar, node.__half].forEach(function (e) {
+          if (e) { e.style.transformBox = "view-box"; e.style.transformOrigin = org; }
+        });
+      }
+      [node, node.__disc, node.__bar, node.__half].forEach(function (e) {
         if (e) e.style.transform = t;
       });
     }
@@ -11120,10 +11152,83 @@ function buildSimContent() {
 
     // Back to state 1: the readout returns, the diagram is rebuilt at the shorter
     // height, and the button is available again.
+    // ---- the panels come back ----
+    // Filter and Conversation were taken off this screen so the network could have
+    // the whole width. They return once the deck is built, and the network panel's
+    // left edge steps right by 457 to make the room.
+    //
+    // The drawing is capped at 537 and centred, so that edge moving does not SHRINK
+    // the host — it slides it right by half the panel's width. Left alone, the whole
+    // deck would travel with it. Translating the scene left by exactly the same
+    // amount pins the deck to the glass, so what the reader sees is the panel edge
+    // coming across and cutting the left off it. Both run on one duration and one
+    // easing, and the host's offset is linear in the panel's width, so they stay
+    // together for every frame rather than only at the ends.
+    let panelsOpen = false;
+    const PANEL_MS = 620;
+    function openPanels(now) {
+      if (panelsOpen) return;
+      panelsOpen = true;
+      const X = svgHost.__extract;
+      const before = svgHost.getBoundingClientRect().left;
+      if (!filter.el.parentNode) toolbar.insertBefore(filter.el, toolbar.firstChild);
+      if (!leftCol.parentNode) {
+        leftCol.style.flexBasis = now ? "" : "0px";
+        leftCol.style.overflow = "hidden";
+        root.insertBefore(leftCol, root.firstChild);
+      }
+      const after = (function () {
+        const keep = leftCol.style.flexBasis;
+        leftCol.style.flexBasis = "";
+        const l = svgHost.getBoundingClientRect().left;
+        leftCol.style.flexBasis = keep;
+        return l;
+      })();
+      // As far as it can go without opening white at the right. Pinning the deck
+      // exactly would slide the window 229 and put its right edge 100px past the end
+      // of the deck; the deck only overhangs the canvas by so much, and that overhang
+      // is the whole of the travel available. So it slides that far and the deck
+      // creeps right by the remainder rather than leaving a gap.
+      const over = Math.max(0, Math.round((X && X.deckRight || 0) - X.W));
+      const d = Math.min(Math.round(after - before), over);
+      // The deck still fills the canvas at this point, so the count stays where it
+      // was — which means undoing the slide it would otherwise ride.
+      const headTx = "translate(" + d + "px,0)";
+      if (now) {
+        if (X && X.scene) X.scene.style.transform = "translate(" + (-d) + "px,0)";
+        if (X && X.headEl) X.headEl.style.transform = headTx;
+        leftCol.style.overflow = "";
+        return;
+      }
+      void leftCol.getBoundingClientRect();
+      leftCol.style.transition = "flex-basis " + PANEL_MS + "ms ease";
+      leftCol.style.flexBasis = "";
+      if (X && X.scene) {
+        X.scene.style.transition = "transform " + PANEL_MS + "ms ease";
+        X.scene.style.transform = "translate(" + (-d) + "px,0)";
+      }
+      if (X && X.headEl) {
+        X.headEl.style.transition = "transform " + PANEL_MS + "ms ease";
+        X.headEl.style.transform = headTx;
+      }
+      const tt = setTimeout(function () { leftCol.style.overflow = ""; }, PANEL_MS + 40);
+      SIM._timeouts.push(tt);
+    }
+    function closePanels() {
+      if (!panelsOpen) return;
+      panelsOpen = false;
+      const X = svgHost.__extract;
+      if (filter.el.parentNode) filter.el.parentNode.removeChild(filter.el);
+      if (leftCol.parentNode) leftCol.parentNode.removeChild(leftCol);
+      leftCol.style.transition = ""; leftCol.style.flexBasis = ""; leftCol.style.overflow = "";
+      if (X && X.scene) { X.scene.style.transition = ""; X.scene.style.transform = ""; }
+    }
+
     function clearExtract() {
       if (!extracted) return;
       extracted = false;
       loadSel = null;
+      closePanels();
       // The grid took the cap off the drawing's width so it could reach the margins.
       // Putting it back is what returns the network to its own size — without this,
       // Reset redrew it stretched across the whole panel.
@@ -11166,13 +11271,10 @@ function buildSimContent() {
       }
       const mx = Math.round(X.W * 0.5), my = Math.round(X.H * 0.5);
 
-      // The key goes too. It explains the orange and the blue on the neurons, and
-      // there is not a coloured neuron left after the merge — it lives in the panel
-      // head rather than in the drawing, so X.fade cannot reach it.
-      if (scaleEl) {
-        scaleEl.style.transition = quick ? "none" : "opacity " + EX_FADE + "ms ease";
-        scaleEl.style.opacity = "0";
-      }
+      // The key STAYS. It was faded out with everything else back when the fourteen
+      // merged into one white neuron and there was no colour left for it to explain —
+      // but the stack keeps every gauge lit, so 800 conversations' worth of orange and
+      // blue are on screen at the end and the key is the only thing that reads them.
       X.fade.forEach(function (e) {
         e.style.transition = quick ? "none" : "opacity " + EX_FADE + "ms ease";
         e.style.opacity = "0";
@@ -11183,22 +11285,196 @@ function buildSimContent() {
         e.style.pointerEvents = "none";
       });
 
+      // The fourteen line up into one column, keeping what they are: the gauges stay
+      // lit, so this is the same fourteen neurons rearranged rather than fourteen
+      // things becoming one.
+      //
+      // Shorter than the panel allows, and pushed down: STACK_BAND at the top is for
+      // the label, and the room at the foot is what the columns stacked in front of
+      // this one drop into. Each of those sits STACK_DY lower and STACK_DX to the
+      // left, so the set recedes up and to the right.
+      // Ten conversations, each 20px lower and half a neuron to the left of the one
+      // behind it. That drop costs 180px of the panel, and fourteen neurons at their
+      // drawn size need 312 more — 492 in a 428px panel — so the neurons come down
+      // with the stack rather than the stack being cut to fit them. STACK_R is the
+      // largest that still leaves the rows clear once the drop is taken out.
+      // The drop is half a neuron's height, and the left shift half its width — so
+      // a column clears the one behind it by exactly the same amount in both
+      // directions. Solving for the largest neuron that still fits: the column needs
+      // 13 pitches of at least 2r, the stack costs r per extra conversation, and the
+      // ends cost r+2 each, which lands on r = (H - band - 4) / (N + 27).
+      // Twenty conversations, the first ten named one at a time and the rest simply
+      // arriving. Sized for twenty from the start so nothing has to resize halfway:
+      // at N = 20 the neuron comes out at 8.3 and the rows are exactly clear.
+      // Twenty conversations, every one named as it lands. Only at the end does the
+      // count appear, taking the place of the twentieth name.
+      //
+      // The first two arrive at reading pace so the pattern is legible, then the beat
+      // eases down to STACK_STEP_MIN by the twentieth — the stack should feel like it
+      // is filling up, not like twenty separate events.
+      const STACK_N = 20;
+      const STACK_BAND = 34, STACK_STEP = 620, STACK_STEP_MIN = 200, STACK_HOLD = 2;
+      function stackGap(d) {                 // the beat before column d lands
+        if (d <= STACK_HOLD) return STACK_STEP;
+        const t = (d - STACK_HOLD) / (STACK_N - 1 - STACK_HOLD);
+        return Math.round(STACK_STEP_MIN +
+          (STACK_STEP - STACK_STEP_MIN) * Math.pow(1 - t, 1.5));
+      }
+      const STACK_R = Math.min(X.r,
+        Math.floor((X.H - STACK_BAND - 4) / (STACK_N + 27) * 10) / 10);
+      const STACK_DY = STACK_R;               // half a neuron's height
+      const STACK_DX = -STACK_R;              // half its width
+      const STACK_SCALE = STACK_R / X.r;
+      const colPad = STACK_R + 2;
+      const colTop = STACK_BAND + colPad;
+      const colBot = X.H - colPad - STACK_DY * (STACK_N - 1);
+      const colStep = (colBot - colTop) / (units.length - 1);
+      function colRowY(i) { return colTop + i * colStep; }
+
+      // ---- a second twenty ----
+      // Twenty columns lean STACK_R further left with each one, so a block is
+      // (STACK_N + 1) radii wide and drops the same amount. Another twenty cannot
+      // continue that diagonal — they would leave the panel through the floor — so
+      // they build as a second block of the same shape and tuck in behind the first.
+      const BLOCK_W = (STACK_N + 1) * STACK_R;
+      const BLOCK_L = mx - STACK_N * STACK_R;     // the block's left edge
+      // The second twenty do not sit BESIDE the first — side by side left a notch
+      // down the middle, because one block restarts at the top while the other has
+      // dropped its full depth. They tuck in behind instead: conversation 21's column
+      // butts against conversation 1's, so the pair grows by one node's width and the
+      // second set reads as a layer of the same deck rather than a second deck.
+      const G2_BUILD = 6 - BLOCK_L;               // built pinned 6px off the left
+      const STACK_STEP2 = 120;                    // the second twenty arrive quickly
+      // The seam column of every set — its twentieth, the one at the front of its own
+      // twenty with the next set's first column landing right behind it — builds its
+      // overlay the way set 1 does, a quarter of a percent for each set laid in behind
+      // it. Held here so every one of them can be re-shaded when a set arrives.
+      const SEAM_SHADE = 0.0025;
+      const seam = [];
+      // The top row of set 1 is the deck's top SURFACE — nothing sits above it — so it
+      // does not take the whole overlay the rest of the column takes. It takes half a
+      // circle, cut on the deck's own 45 degrees: the chord runs top-right to
+      // bottom-left, the same line the top edge steps along, and the black fills below
+      // it. What is left above the chord is the surface, at the colour it was drawn.
+      const HALF_K = Math.SQRT1_2;
+      function halfPath(cx, cy, r) {
+        const k = r * HALF_K;
+        return "M " + (cx + k).toFixed(2) + " " + (cy - k).toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
+               (cx - k).toFixed(2) + " " + (cy + k).toFixed(2) + " Z";
+      }
+      // Conversation 20 of set 1 is the corner of the box: it is the last column of
+      // the right face AND the front of its own slab, so it carries two greys. The
+      // dividing line is vertical through the centre — right of it belongs to the
+      // right face, left of it to the front. Below the top row that is a plain
+      // half-circle; on the top row the 45 degree chord has already taken the surface
+      // out, and since that chord runs through the centre, what is left on the right
+      // is the sector from the chord round to the bottom of the circle.
+      function rightHalf(cx, cy, r) {
+        return "M " + cx.toFixed(2) + " " + (cy - r).toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
+               cx.toFixed(2) + " " + (cy + r).toFixed(2) + " Z";
+      }
+      // A SEAM column's top circle is cut straight across instead of on the 45: it is
+      // the front of its slab, not a step in the staircase, so its surface is the flat
+      // top half and the grey is the bottom half. On the corner the right face then
+      // takes the bottom-RIGHT quarter of it.
+      function bottomHalf(cx, cy, r) {
+        return "M " + (cx + r).toFixed(2) + " " + cy.toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
+               (cx - r).toFixed(2) + " " + cy.toFixed(2) + " Z";
+      }
+      // The corner's top circle answers to both faces at once, and each face cuts it
+      // its own way. LEFT of centre is the front face, cut straight across like every
+      // other seam top. RIGHT of centre is the right face, cut on the 45 like every
+      // other column of set 1. So the white left on it is the top-left quarter plus
+      // the wedge above the diagonal — which is the shape in the sketch.
+      function bottomLeft(cx, cy, r) {
+        return "M " + cx.toFixed(2) + " " + cy.toFixed(2) +
+               " L " + (cx - r).toFixed(2) + " " + cy.toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 0 " +
+               cx.toFixed(2) + " " + (cy + r).toFixed(2) + " Z";
+      }
+      function rightSector(cx, cy, r) {
+        const k = r * HALF_K;
+        return "M " + cx.toFixed(2) + " " + cy.toFixed(2) +
+               " L " + (cx + k).toFixed(2) + " " + (cy - k).toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
+               cx.toFixed(2) + " " + (cy + r).toFixed(2) + " Z";
+      }
+      // Set 1's own columns, so its overlay can be laid on them one at a time. It
+      // cannot go on the group: the seam column is inside the group, and a filter
+      // above a seam puts it 35 points off the other thirty-nine. Nor can it be
+      // divided back out — a child's filter runs BEFORE its parent's, so brightening
+      // the seam first clips white at 255 and the parent then darkens the clipped
+      // value. Exempting it is the only order that composes.
+      const firstCols = [];
+
+      // ---- and then all forty sets ----
+      // Every further twenty is one more layer of the same deck, laid in behind the
+      // last. NO COMPRESSING: the offset is one node's width for the first set and
+      // one node's width for the fortieth, so a conversation is the same size at 800
+      // as it was at 1. Forty sets are 812px wide in a 537px panel, which means most
+      // of the deck ends up past the right-hand edge — and that is the point. What
+      // stays on screen is the arrival and everything already there moving over.
+      const NSETS = Math.max(2, Math.min(40, Math.floor(cases.length / STACK_N)));
+      const SET_MOVE = 300;
+      // A set does not land in its place — it arrives short of it and closes up, the
+      // gesture the second set makes when it is pushed home. Set 3 does it at almost
+      // set 2's scale and each set after that comes in a little less far out, until
+      // by set 10 it is down to SET_ENTER_MIN. It never reaches nothing: a set that
+      // simply appeared in its place read as a jump cut, so every set to the last one
+      // arrives a few pixels out and closes. Eight is small enough to stop being the
+      // subject and big enough that the deck is always taking something in rather
+      // than having it turn up already there.
+      const SET_ENTER0 = 90, SET_ENTER_MIN = 8, SET_ENTER_N = 7;
+      function setEnter(k) {
+        const step = k - 2;
+        if (step >= SET_ENTER_N) return SET_ENTER_MIN;
+        return SET_ENTER_MIN + (SET_ENTER0 - SET_ENTER_MIN) * (1 - step / SET_ENTER_N);
+      }
+      function setOff(S) { return S < 2 ? 0 : 2 * STACK_R; }
+      // The deck is CENTRED on the panel at every depth, so each set arriving on the
+      // left carries everything already there back to the middle — half the new set's
+      // width, not all of it. Once the deck is wider than the panel that centring is
+      // what puts equal amounts of it past either edge, instead of pinning one side
+      // and letting the whole overflow happen on the other.
+      function setLeft(S) { return (X.W - setSpan(S)) / 2; }
+      function setX(k, S) { return setLeft(S) + (S - 1 - k) * setOff(S) - BLOCK_L; }
+      function setSpan(S) { return BLOCK_W + (S - 1) * setOff(S); }
+      // Unhurried at first so the third and fourth sets are seen arriving and closing
+      // up, then faster and faster as the count runs away — by the thirtieth set the
+      // number is the subject and the individual twenty is not worth a beat of its
+      // own. 440ms down to 80, on a curve that spends most of its length accelerating.
+      function setGap(k) {
+        const t = (k - 2) / (NSETS - 3);
+        return Math.round(80 + 360 * Math.pow(1 - t, 1.9));
+      }
+      // The close has to fit inside the beat, or by the end every set is arriving on
+      // top of the last one's move and nothing reads as closing at all.
+      function setMove(gap) {
+        return Math.max(90, Math.min(SET_MOVE, Math.round(gap * 1.15)));
+      }
+      // Set 3 arrives and is SEEN before it moves — two beats, not one — and set 4
+      // does the same with a shorter pause. From set 5 the appearing and the closing
+      // are one gesture again. Spelling it out twice is what makes the closing legible
+      // later, when it is only eight pixels and shares a frame with the fade.
+      function setHold(k) { return k === 2 ? 340 : k === 3 ? 170 : 0; }
+      // A set's own pause pushes the next one out, so the beat never runs under the
+      // gesture in front of it.
+      function setBeat(k) { return setGap(k) + setHold(k - 1); }
+
       const settle = function () {
-        units.forEach(function (n) {
-          const dx = mx - n.__cx, dy = my - n.__cy;
-          [n, n.__disc, n.__bar].forEach(function (e) {
+        units.forEach(function (n, k) {
+          const dx = mx - n.__cx, dy = colRowY(k) - n.__cy;
+          // Kept so the block can be stepped sideways later without recomputing
+          // the line-up — the second twenty need the room.
+          n.__stkdx = Math.round(dx); n.__stkdy = Math.round(dy);
+          [n, n.__disc, n.__bar, n.__half].forEach(function (e) {
             if (e) e.style.transition = quick ? "none"
               : "transform " + EX_MOVE + "ms cubic-bezier(.34,1.02,.5,1)";
           });
-          moveNode(n, Math.round(dx), Math.round(dy));
-          // The colour goes with the journey. Fading the gauge rather than emptying
-          // it: setNodeLevel(n, 0) collapses the bar against whichever edge it grew
-          // from, which reads as the fill draining sideways instead of away.
-          if (n.__bar) {
-            n.__bar.style.transition = (n.__bar.style.transition ? n.__bar.style.transition + ", " : "")
-              + (quick ? "opacity 0s" : "opacity " + EX_MOVE + "ms ease");
-            n.__bar.style.opacity = "0";
-          }
+          moveNode(n, Math.round(dx), Math.round(dy), STACK_SCALE);
         });
       };
 
@@ -11676,6 +11952,545 @@ function buildSimContent() {
         }
       }
 
+      // Everything past the line-up is the previous design — the naming, the twenty,
+      // the eight hundred, the pathways off the block — and all of it was built on
+      // the fourteen becoming ONE neuron. None of it follows from a column, so it is
+      // switched off rather than deleted while the new one is worked out.
+      // One conversation's fourteen units, drawn as a column of its own. The clips
+      // are cut once at the base column's row positions and shared by every column —
+      // a clipPath resolves in the coordinate space of the element referencing it,
+      // so a group's own transform carries its clips with it.
+      const stackG = el("g", { class: "d1a-stack" });
+      X.scene.appendChild(stackG);
+      const rowClip = [];
+      for (let i = 0; i < units.length; i++) {
+        const id = "d1astk-" + drawSeq + "-" + i;
+        const cp = el("clipPath", { id: id });
+        cp.appendChild(el("circle", { cx: mx, cy: colRowY(i), r: STACK_R }));
+        stackG.appendChild(cp);
+        rowClip.push(id);
+      }
+      function convColumn(convIdx, depth, host) {
+        const it = cases[convIdx] || cases[0];
+        const f = it ? forward(it) : null;
+        const vals = f ? f.h1.concat(f.h2) : [];
+        const g = el("g", { class: "d1a-stackcol" });
+        g.style.transform = "translate(" + (STACK_DX * depth) + "px,"
+                          + (STACK_DY * depth) + "px)";
+        // Row 0 in its own group, rows 1-13 in another, so an overlay can be put on
+        // the body of a column while its top row is treated differently.
+        const topG = el("g", {}), bodyG = el("g", {});
+        const isSeam = depth === STACK_N - 1;
+        const isCorner = isSeam && convIdx < STACK_N;   // set 1's conversation 20
+        g.__right = [];
+        g.appendChild(topG);
+        g.appendChild(bodyG);
+        for (let i = 0; i < units.length; i++) {
+          const cy = colRowY(i), v = vals[i] || 0, host = i ? bodyG : topG;
+          host.appendChild(el("circle", { cx: mx, cy: cy, r: STACK_R, fill: "#FFFFFF" }));
+          const h = STACK_R * Math.min(1, Math.abs(v));
+          if (h >= 0.35) {
+            host.appendChild(el("rect", { x: mx - STACK_R, y: v >= 0 ? cy - h : cy,
+                                          width: STACK_R * 2, height: h,
+                                          "clip-path": "url(#" + rowClip[i] + ")",
+                                          fill: signColour(v) }));
+          }
+          // Under the ring, over the gauge: the ring is what separates one circle from
+          // the next and stays at full strength.
+          //
+          // The top row loses the surface to the 45 degree chord — on set 1's columns
+          // and on every set's seam column, the two things that carry an overlay.
+          if (i === 0 && (convIdx < STACK_N || isSeam)) {
+            const topD = isCorner ? bottomLeft : isSeam ? bottomHalf : halfPath;
+            g.__half = el("path", { d: topD(mx, cy, STACK_R),
+                                    fill: "#000000", "fill-opacity": "0" });
+            topG.appendChild(g.__half);
+          }
+          // ...and the corner column carries the right face on top of that, over the
+          // half so the two compose.
+          if (isCorner) {
+            const rp = el("path", { d: i ? rightHalf(mx, cy, STACK_R)
+                                         : rightSector(mx, cy, STACK_R),
+                                    fill: "#000000", "fill-opacity": "0" });
+            host.appendChild(rp);
+            // Row 0 is outside the body's filter and its left quarter carries no front
+            // grey underneath, so its right piece is the right face OUTRIGHT. Rows 1
+            // and down sit on the front grey already and take only the difference.
+            if (i) g.__right.push(rp); else g.__rightTop = rp;
+          }
+          host.appendChild(el("circle", { cx: mx, cy: cy, r: STACK_R,
+                                          class: "d1a-stacknode" }));
+        }
+        g.__body = bodyG;
+        if (depth === STACK_N - 1) seam[Math.floor(convIdx / STACK_N)] = g;
+        if (convIdx < STACK_N) firstCols.push(g);
+        // Last in, so a later conversation stands in FRONT of the one behind it.
+        (host || stackG).appendChild(g);
+        return g;
+      }
+
+      if (!EX_AFTER) {
+        // A column and its name arrive together — the name is the point of the
+        // column, so it should not turn up a beat later.
+        const add = function (d) {
+          const g = convColumn(d, d);
+          if (!quick) {
+            g.style.opacity = "0";
+            void g.getBoundingClientRect();
+            g.style.transition = "opacity " + EX_SHOW + "ms ease";
+            g.style.opacity = "1";
+          } else {
+            g.style.opacity = "1";
+          }
+          const t = stackName(d);
+          t.style.opacity = "0";
+          showName(t);
+        };
+        // ---- naming the stack ----
+        // One name at a time, at full size. Ten of them at once would have to be
+        // 10px to clear each other — the columns are only STACK_R apart — so instead
+        // each name arrives with its column and hands over to the next. What is left
+        // at the end is the front conversation's name.
+        //
+        // Each hangs off the top-left of its own column, anchored at its end so it
+        // runs away from the stack, and every column's top is on the same diagonal,
+        // so that space is open wherever the name currently is.
+        let headEl2 = null, shownName = null;
+        function showName(t) {
+          if (shownName && shownName !== t) shownName.style.opacity = "0";
+          shownName = t;
+          if (t) { void t.getBoundingClientRect(); t.style.opacity = "1"; }
+        }
+        function stackName(d) {
+          const t = el("text", { class: "d1a-stacklabel",
+                                 x: (mx - STACK_R - 8 + d * STACK_DX).toFixed(1),
+                                 y: (colTop + d * STACK_DY + 3).toFixed(1) });
+          t.setAttribute("text-anchor", "end");
+          t.textContent = "Conversation " + (d + 1);
+          stackG.appendChild(t);
+          return t;
+        }
+        // The count over the stack. It arrives as the tenth name leaves — the names
+        // stop being one-at-a-time and become a number — and is rewritten once the
+        // second ten have landed.
+        // Centred on the PANEL, not on the deck, and it never moves again. The deck
+        // grows past both edges in the end, so a count that tracked it would have to
+        // leave with it; anchoring to the container is what keeps the one piece of
+        // text on this screen in the one place the eye can go back to.
+        function stackHead(n) {
+          if (!headEl2) {
+            headEl2 = el("text", { x: (X.W / 2).toFixed(1),
+                                   y: (colTop - STACK_R - 12).toFixed(1),
+                                   class: "d1a-mergelabel d1a-colhead" });
+            headEl2.setAttribute("text-anchor", "middle");
+            headEl2.style.transition = "opacity 0.28s ease";
+            headEl2.style.opacity = "0";
+            // In the SCENE, not in stackG. Inside stackG it was a child of a group
+            // whose transform animates on every set, so it rode along with the deck
+            // for the length of each move and only landed back on centre when the
+            // move finished — a compensating transform cannot undo that, because it
+            // applies at once and the parent's takes 200ms. Out here nothing moves
+            // it: no transform, no parent transform, one x for the whole run.
+            X.scene.appendChild(headEl2);
+            // Handed up so the crop can hold it in view: the count belongs to the
+            // deck, and the deck is about to be pushed off the left of the panel.
+            X.headEl = headEl2;
+            void headEl2.getBoundingClientRect();
+          }
+          headEl2.textContent = n + " Conversations";
+          headEl2.style.opacity = "1";
+        }
+
+        // ---- the second twenty ----
+        // The first block steps right to open the space. The neurons are not inside
+        // stackG — they are the real network, moved into line by moveNode — so they
+        // are stepped by adding the same offset to the line-up they already hold.
+        const EASE = "cubic-bezier(.34,1.02,.5,1)";
+        // Behind EVERYTHING, not just behind stackG: conversation 1's column is the
+        // real network, drawn into X.scene before the stack was, so the second set
+        // has to go in at the front of the scene to sit under both.
+        // setG[0] is the first twenty — stackG plus the real neurons, which are not
+        // in it and are moved by moveNode. Every later set is one group, inserted at
+        // the FRONT of the scene so each new one lies under all of its predecessors.
+        const setG = [];
+        // ---- depth ----
+        // Two overlays, both built up rather than painted on. SET 1 takes 1% of black
+        // for each set laid in behind it, and every set's SEAM column — its twentieth —
+        // takes a quarter of a percent on the same count. Everything else is drawn the
+        // colour it is.
+        //
+        // Filters, not repaints: one style write per group rather than 840 fills. Set
+        // 1's seam sits inside stackG, so its two filters multiply the way two overlays
+        // would.
+        // Half a percent per set, not a whole one: at forty sets a whole percent put
+        // the right face at 39% black, which read as a grey slab rather than a shaded
+        // one. The seam keeps its quarter-percent, so the two faces are now half a
+        // step apart instead of four times apart.
+        const SET_SHADE = 0.005, SET_SHADE_CAP = 40;
+        function bright(x) { return (x && x !== 1) ? "brightness(" + x.toFixed(4) + ")" : ""; }
+        let shadeLvl = -1;
+        function reshade(S) {
+          const lvl = Math.min(SET_SHADE_CAP, S - 1);
+          if (shadeLvl === lvl) return;
+          shadeLvl = lvl;
+          const css = bright(lvl && 1 - SET_SHADE * lvl);
+          const op = (lvl * SET_SHADE).toFixed(4);
+          firstCols.forEach(function (g) {
+            if (g === seam[0]) return;
+            (g.__body || g).style.filter = css;
+            if (g.__half) g.__half.setAttribute("fill-opacity", op);
+          });
+          // Conversation 1 is the real network rather than a drawn column — moved into
+          // line by moveNode — so the first set takes the overlay in two places. Its
+          // top neuron is on the surface like every other column's, so it is left out
+          // of the filter and given the same half circle, hung off the node itself so
+          // that moveNode carries and scales it with everything else.
+          units.forEach(function (n, i) {
+            if (i === 0) {
+              if (!n.__half) {
+                n.__half = el("path", { d: halfPath(n.__cx, n.__cy, X.r),
+                                        fill: "#000000", "fill-opacity": "0" });
+                n.parentNode.appendChild(n.__half);
+                moveNode(n, n.__stkdx, n.__stkdy, STACK_SCALE);
+              }
+              n.__half.setAttribute("fill-opacity", op);
+              return;
+            }
+            [n, n.__disc, n.__bar].forEach(function (e) { if (e) e.style.filter = css; });
+          });
+          // Every seam takes the SAME overlay, built on the count of sets rather than
+          // on how many landed behind each one: the forty seams are one surface, so
+          // they have to read as one value. Counting per-seam gave them a 0.25% ramp
+          // front to back, which is a different surface at every slab.
+          //
+          // On the body of the column, so that here too the top row keeps the surface
+          // and takes only the half below the chord.
+          const sc = bright(lvl && 1 - SEAM_SHADE * lvl);
+          const sOp = (lvl * SEAM_SHADE).toFixed(4);
+          for (let k = 0; k < S; k++) {
+            const g = seam[k];
+            if (!g) continue;
+            g.style.filter = "";
+            (g.__body || g).style.filter = sc;
+            if (g.__half) g.__half.setAttribute("fill-opacity", sOp);
+          }
+          // The corner. Its right half has to land on the right face's value, and it
+          // already carries the front face's — so the extra is whatever takes one to
+          // the other. Black at that alpha over a surface already at (1 - seam) gives
+          // (1 - set), which is the right face exactly.
+          if (seam[0] && seam[0].__right.length) {
+            const rOp = lvl
+              ? 1 - (1 - SET_SHADE * lvl) / (1 - SEAM_SHADE * lvl) : 0;
+            seam[0].__right.forEach(function (rp) {
+              rp.setAttribute("fill-opacity", rOp.toFixed(4));
+            });
+            if (seam[0].__rightTop) seam[0].__rightTop.setAttribute("fill-opacity", op);
+          }
+        }
+        // ---- the pathway view ----
+        // The deck gives up the right half of the panel, conversation 1 is COPIED out
+        // of it at full size, and the three pathway boxes assemble beside the copy.
+        // The original stays in the deck: the claim is that this conversation is one
+        // of the eight hundred, which is only visible if it is still among them.
+        //
+        // Everything here lives in viewG, which carries the exact inverse of the
+        // scene's crop offset. The crop is what pushes the deck off to the left, and
+        // without the inverse the column and the boxes would ride along with it.
+        // The deck stops at PV_RIGHT, the column stands clear of it, and the boxes
+        // stand clear of the column. PV_BX is as far right as the tip above them can
+        // go: it is 174 wide and starts at the boxes, so past about 353 it would run
+        // out of the panel.
+        const PV_COLX = 262, PV_BX = 378, PV_RIGHT = 228, PV_MOVE = 620;
+        let viewG = null, sceneSlide = 0, pvMade = null, pvRings = null;
+        function pvHost() {
+          if (!viewG) {
+            viewG = el("g", { class: "d1a-pathview" });
+            X.scene.appendChild(viewG);
+          }
+          viewG.style.transform = "translate(" + sceneSlide.toFixed(1) + "px,0)";
+          return viewG;
+        }
+        // Slides the scene until the deck's right edge lands on x, so the deck ends
+        // where the pathway view begins.
+        function cropDeck(ms) {
+          sceneSlide = Math.max(0, Math.round((X.deckRight || X.W) - PV_RIGHT));
+          X.scene.style.transition = ms ? "transform " + ms + "ms ease" : "none";
+          X.scene.style.transform = "translate(" + (-sceneSlide) + "px,0)";
+          if (viewG) {
+            viewG.style.transition = ms ? "transform " + ms + "ms ease" : "none";
+            viewG.style.transform = "translate(" + sceneSlide.toFixed(1) + "px,0)";
+          }
+          // The count goes with what is left of the deck rather than off the edge
+          // with the rest of it — centred on the strip the crop leaves standing,
+          // not on the canvas it was centred on when the deck filled it.
+          if (headEl2) {
+            headEl2.style.transition = ms ? "transform " + ms + "ms ease" : "none";
+            headEl2.style.transform = "translate("
+              + (PV_RIGHT / 2 - X.W / 2 + sceneSlide).toFixed(1) + "px,0)";
+          }
+        }
+        const pvPad = X.r + 2;
+        const pvY0 = pvPad, pvGap = (X.H - pvPad - pvY0) / (units.length - 1);
+        function pvAt(k) { return { x: PV_COLX, y: pvY0 + k * pvGap }; }
+        // A copy, not the thing itself: built at the column's geometry and then put
+        // back onto conversation 1's place in the deck, so that letting it go is the
+        // move. Each node carries its own transform because the two columns do not
+        // differ by one scale — the deck's rows are 16.75 apart at r 8.2 and the
+        // column's are 30.8 apart at r 12.
+        function pullOut(ms) {
+          if (pvRings) return;
+          const host = pvHost();
+          const g = el("g", { class: "d1a-copycol" });
+          host.appendChild(g);
+          const it = cases[idx] || cases[0];
+          const f = it ? forward(it) : null;
+          const vals = f ? f.h1.concat(f.h2) : [];
+          pvRings = [];
+          for (let k = 0; k < units.length; k++) {
+            // EMPTY. These fourteen are the network's units, not one conversation's
+            // activations — what is being read off them is a loading, which belongs to
+            // the unit whatever conversation is on screen. Filling them would say the
+            // opposite, and would have to change every time the arrows were pressed.
+            const q = pvAt(k);
+            const ng = el("g", {});
+            ng.appendChild(el("circle", { cx: q.x, cy: q.y, r: X.r, fill: "#FFFFFF" }));
+            const ring = el("circle", { cx: q.x, cy: q.y, r: X.r, class: "d1a-node" });
+            ring.style.fill = "none";
+            // An unfilled circle is only hit-testable on its 1px stroke, so a click
+            // aimed at the middle of one fell through to the white disc underneath,
+            // which carries no handler. pointer-events "all" makes the area inside
+            // the path count even where there is no paint.
+            ring.setAttribute("pointer-events", "all");
+            ng.appendChild(ring);
+            g.appendChild(ng);
+            pvRings.push(ring);
+            // Where conversation 1 is sitting in the deck right now, in this group's
+            // coordinates — which is the deck's own less the crop it is carrying.
+            const n = units[k];
+            const sx = n.__cx + (n.__stkdx || 0) + (X.setT0 || 0) - sceneSlide;
+            const sy = n.__cy + (n.__stkdy || 0);
+            const org = q.x + "px " + q.y + "px";
+            ng.style.transformBox = "view-box";
+            ng.style.transformOrigin = org;
+            ng.style.transform = "translate(" + (sx - q.x).toFixed(2) + "px,"
+                               + (sy - q.y).toFixed(2) + "px) scale(" + STACK_SCALE + ")";
+            if (!ms) { ng.style.transform = ""; continue; }
+            void ng.getBoundingClientRect();
+            ng.style.transition = "transform " + ms + "ms cubic-bezier(.34,1.02,.5,1)";
+            ng.style.transform = "";
+          }
+        }
+        function showPathways(now) {
+          if (pvMade || !pvRings) return;
+          const host = pvHost();
+          const PV = { scene: host, W: X.W, H: X.H, r: X.r, svg: X.svg };
+          pvMade = addPathwayBoxes(PV, PV_COLX, pvY0, pvGap, units.length, now, PV_BX);
+          // Empty boxes too, for the same reason: the squares are this conversation's
+          // pathway activations, and nothing here is about this conversation yet.
+          drawLoadings(PV, pvRings, pvAt, pvMade, now, true);
+        }
+
+        let g2 = null;
+        function ensureTwo() {
+          if (g2) return;
+          g2 = el("g", { class: "d1a-stack2" });
+          g2.style.transform = "translate(" + G2_BUILD.toFixed(1) + "px,0)";
+          X.scene.insertBefore(g2, X.scene.firstChild);
+          setG[1] = g2;
+        }
+        // Conversations 21-40, same shape, no names: at this pace a name could not
+        // be read, and the point of the second block is the quantity, not the case.
+        const add2 = function (j) {
+          ensureTwo();
+          const g = convColumn(STACK_N + j, j, g2);
+          reshade(2);
+          if (quick) { g.style.opacity = "1"; return; }
+          g.style.opacity = "0";
+          void g.getBoundingClientRect();
+          g.style.transition = "opacity 140ms ease";
+          g.style.opacity = "1";
+        };
+        // The second set closing up is the first time the deck re-centres, so it is
+        // the same move every later set makes — one call, not a special case.
+        function pushTwo(now) {
+          ensureTwo();
+          layoutSets(2, now ? 0 : 620);
+        }
+
+        // ---- sets three to forty ----
+        // A whole twenty at once now: past the second set the individual column has
+        // stopped being the unit, and the deck closing up is what there is to watch.
+        function buildSet(k) {
+          const g = el("g", { class: "d1a-stackset" });
+          for (let j = 0; j < STACK_N; j++) convColumn(k * STACK_N + j, j, g);
+          g.style.transform =
+            "translate(" + (setX(k, k + 1) - setEnter(k)).toFixed(1) + "px,0)";
+          X.scene.insertBefore(g, X.scene.firstChild);
+          setG[k] = g;
+          return g;
+        }
+        // Re-spaces every set for a deck of S, and moves the count with the fan's
+        // centre. The first set is stackG and the fourteen real neurons together, so
+        // it takes the same offset twice — once as a group transform, once folded
+        // into the line-up each neuron already holds.
+        function layoutSets(S, ms) {
+          // The newest set is fading in as it closes, so the transition carries both
+          // — setting it here rather than on the group would wipe the fade.
+          const tr = ms ? "transform " + ms + "ms ease, opacity 160ms ease" : "none";
+          for (let k = 1; k < S; k++) {
+            const g = setG[k];
+            if (!g) continue;
+            g.style.transition = tr;
+            g.style.transform = "translate(" + setX(k, S).toFixed(1) + "px,0)";
+          }
+          // Where the deck's right edge sits in canvas coordinates, for whoever needs
+          // to know how far the view can travel before it runs off the end of it.
+          X.deckRight = setLeft(S) + setSpan(S);
+          const t0 = setX(0, S);
+          X.setT0 = t0;                       // the first set's offset, for whoever
+                                              // needs to find conversation 1 again
+          stackG.style.transition = tr;
+          stackG.style.transform = "translate(" + t0.toFixed(1) + "px,0)";
+          units.forEach(function (n) {
+            [n, n.__disc, n.__bar, n.__half].forEach(function (e) {
+              if (e) e.style.transition = tr;
+            });
+            moveNode(n, n.__stkdx + t0, n.__stkdy, STACK_SCALE);
+          });
+          // The count is not in stackG and takes no transform — only its text
+          // changes as the deck deepens, and it changes when the arriving set has
+          // CLOSED, not when it starts moving. Setting it here read "40" while the
+          // second twenty was still crossing the gap towards the first.
+          // Two sets is headPair's — it crossfades 20 into 40 rather than swapping.
+          if (headEl2 && S > 2) {
+            const txt = (S * STACK_N) + " Conversations";
+            if (ms) {
+              const tt = setTimeout(function () { headEl2.textContent = txt; }, ms);
+              SIM._timeouts.push(tt);
+            } else {
+              headEl2.textContent = txt;
+            }
+          }
+        }
+        const addSet = function (k) {
+          const g = buildSet(k);
+          reshade(k + 1);
+          if (quick) { g.style.opacity = "1"; layoutSets(k + 1, 0); return; }
+          // Committed at the short position and invisible, THEN given the transition
+          // and the real position — otherwise it is only ever drawn where it belongs
+          // and there is nothing to watch.
+          g.style.opacity = "0";
+          void g.getBoundingClientRect();
+          const ms = setMove(setGap(k)), hold = setHold(k);
+          if (!hold) {
+            layoutSets(k + 1, ms);
+            g.style.opacity = "1";
+            return;
+          }
+          // Fade first and let it stand there, then close.
+          g.style.transition = "opacity 220ms ease";
+          g.style.opacity = "1";
+          const th = setTimeout(function () { layoutSets(k + 1, ms); }, hold);
+          SIM._timeouts.push(th);
+        };
+        // The count belongs to the pair now, so it moves to the pair's centre. It
+        // does it behind its own fade rather than sliding: the number changes at the
+        // same time, and a figure sliding while it rewrites itself reads as a glitch.
+        function headPair(now) {
+          const place = function () {
+            headEl2.textContent = (2 * STACK_N) + " Conversations";
+            headEl2.style.opacity = "1";
+          };
+          if (now) { place(); return; }
+          headEl2.style.opacity = "0";
+          const t = setTimeout(place, 300);
+          SIM._timeouts.push(t);
+        }
+
+        if (quick) {
+          settle();
+          showName(stackName(0));
+          for (let d = 1; d < STACK_N; d++) add(d);
+          showName(null);
+          stackHead(STACK_N);
+          for (let j = 0; j < STACK_N; j++) add2(j);
+          pushTwo(true);
+          headPair(true);
+          for (let k = 2; k < NSETS; k++) addSet(k);
+          layoutSets(NSETS, 0);
+          openPanels(true);
+          cropDeck(0);
+          pullOut(0);
+          showPathways(true);
+        } else {
+          const t0 = setTimeout(settle, EX_FADE);
+          SIM._timeouts.push(t0);
+          // The first column is named as it lands, then one conversation every
+          // STACK_STEP. Even, not accelerating: each name is meant to be read as it
+          // arrives, and a decay would hurry the later ones past that.
+          let at = EX_FADE + EX_MOVE;
+          const t1 = setTimeout(function () {
+            const t = stackName(0);
+            t.style.opacity = "0";
+            showName(t);
+          }, at);
+          SIM._timeouts.push(t1);
+          for (let d = 1; d < STACK_N; d++) {
+            at += stackGap(d);
+            const dd = d;
+            const ta = setTimeout(function () { add(dd); }, at);
+            SIM._timeouts.push(ta);
+          }
+          // The last name goes and the count takes its place, in the same beat.
+          at += 380;
+          const tf = setTimeout(function () {
+            showName(null);
+            stackHead(STACK_N);
+          }, at);
+          SIM._timeouts.push(tf);
+
+          // A beat to read "20 Conversations", then the next twenty come in.
+          at += 900;
+          for (let j = 0; j < STACK_N; j++) {
+            const jj = j;
+            const tc = setTimeout(function () { add2(jj); }, at + j * STACK_STEP2);
+            SIM._timeouts.push(tc);
+          }
+          at += (STACK_N - 1) * STACK_STEP2 + 340;
+          const tp = setTimeout(function () { pushTwo(false); }, at);
+          SIM._timeouts.push(tp);
+          // Started 300ms BEFORE the push lands, not after it: headPair fades the
+          // old count out over 280ms and swaps the text 300ms in, so the fade runs
+          // through the last of the travel and "40" arrives on the frame the second
+          // set abuts the first — the same beat every later set keeps.
+          at += 620 - 300;
+          const t4 = setTimeout(function () { headPair(false); }, at);
+          SIM._timeouts.push(t4);
+          at += 640;
+          for (let k = 2; k < NSETS; k++) {
+            at += setBeat(k);
+            const kk = k;
+            const tk = setTimeout(function () { addSet(kk); }, at);
+            SIM._timeouts.push(tk);
+          }
+          // A beat on the finished deck, then the panels come back in, the deck
+          // retreats to the left half, and conversation 1 comes out of it.
+          at += 900;
+          const tpa = setTimeout(function () { openPanels(false); }, at);
+          SIM._timeouts.push(tpa);
+          at += PANEL_MS + 380;
+          const tcr = setTimeout(function () { cropDeck(PV_MOVE); }, at);
+          SIM._timeouts.push(tcr);
+          at += PV_MOVE + 300;
+          const tpu = setTimeout(function () { pullOut(PV_MOVE); }, at);
+          SIM._timeouts.push(tpu);
+          at += PV_MOVE + 220;
+          const tbx = setTimeout(function () { showPathways(false); }, at);
+          SIM._timeouts.push(tbx);
+        }
+        return;
+      }
+
       if (quick) {
         settle(); label();
         for (let i = 1; i < GRID_ROWS; i++) { addRow(i).style.opacity = "1"; }
@@ -11810,7 +12625,7 @@ function buildSimContent() {
     // you turn to the next conversation. Only Reset clears it.
     let loadSel = null;              // {kind: "path"|"unit", i} or null
 
-    function drawLoadings(X, units, at, made, quick) {
+    function drawLoadings(X, units, at, made, quick, noFill) {
       if (!made) return;
       const it = cases[idx];
       const act = (it && it.act) || [];
@@ -11916,10 +12731,13 @@ function buildSimContent() {
       // click. It then STAYS: it is the only statement of what the two halves do,
       // and picking one of them does not teach you that the other is pickable too.
       // It also names both readings, so it stays true whichever one is showing.
-      const tip = el("text", { x: made.bx, y: 20, class: "d1a-loadtip" });
+      // Normally flush with the boxes, but it is 174 wide and they can be pushed
+      // further right than that leaves room for — so it stops where the panel does.
+      const tipX = Math.min(made.bx, X.W - 186);
+      const tip = el("text", { x: tipX, y: 20, class: "d1a-loadtip" });
       ["Click a pathway or a neuron", "to see how strongly they link."]
         .forEach(function (line, i) {
-          const t = el("tspan", { x: made.bx, dy: i ? 16 : 0 });
+          const t = el("tspan", { x: tipX, dy: i ? 16 : 0 });
           t.textContent = line;
           tip.appendChild(t);
         });
@@ -11937,14 +12755,17 @@ function buildSimContent() {
       const fill = function (p) {
         setBoxLevel(made.boxes[p], (act[p] || 0) / ACT_SCALE, quick);
       };
-      if (quick) { [0, 1, 2].forEach(fill); showTip(true); return; }
+      if (quick) { if (!noFill) [0, 1, 2].forEach(fill); showTip(true); return; }
       tip.style.opacity = "0";
       tip.style.transition = "opacity " + EX_FILL + "ms ease";
-      [0, 1, 2].forEach(function (p) {
-        const t = setTimeout(function () { fill(p); }, p * EX_FILL + 20);
-        SIM._timeouts.push(t);
-      });
-      const tt = setTimeout(function () { showTip(true); }, 3 * EX_FILL + 20);
+      if (!noFill) {
+        [0, 1, 2].forEach(function (p) {
+          const t = setTimeout(function () { fill(p); }, p * EX_FILL + 20);
+          SIM._timeouts.push(t);
+        });
+      }
+      const tt = setTimeout(function () { showTip(true); },
+                            (noFill ? 1 : 3) * EX_FILL + 20);
       SIM._timeouts.push(tt);
     }
 
@@ -11967,9 +12788,11 @@ function buildSimContent() {
 
     // Three boxes to the right of the column, each labelled. Sized and spaced off
     // the column so they read as belonging to it rather than as a separate diagram.
-    function addPathwayBoxes(X, colX, y0, gap, n, quick) {
+    function addPathwayBoxes(X, colX, y0, gap, n, quick, bxIn) {
       const NP = 3, side = 34;
-      const bx = Math.round(X.W * 0.58);
+      // 0.58 of the width when the drawing had the whole panel. The pathway view now
+      // shares the panel with the deck, so the caller says where.
+      const bx = bxIn || Math.round(X.W * 0.58);
       const span = (n - 1) * gap;
       const step = span / (NP + 1);
       const g = el("g", { class: "d1a-pathgroup" });
