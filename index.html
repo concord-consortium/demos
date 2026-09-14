@@ -815,6 +815,24 @@
   .sim-content {
     --nnm-pos: #D9722E;
     --nnm-pos-soft: #FAE6D6;
+    /* Control height, one number for the whole set: the four steps, Reset, About,
+       the nav arrows, Animate, the view switch, the filter bar and the rules drawn
+       to match them. 44 rather than the 36 this was built at, because WCAG 2.5.5
+       (Target Size, Enhanced) asks for 44x44 and three of the five device targets
+       are tablets used by eleven-to-fourteen-year-olds. Everything that is a
+       POINTER TARGET reads this; the data cells and captions do not. */
+    --nnm-ctl-h: 44px;
+    /* Label size for that same set. The buttons were 14px when they were 36 tall;
+       at 44 the type no longer filled them. Barlow Condensed is narrow, so the two
+       extra points cost almost nothing in width. */
+    --nnm-ctl-fs: 16px;
+    /* Icon size for that set. All six button icons scale proportionally — three are
+       filled paths and the three that stroke carry their stroke in viewBox units —
+       so this is a straight enlargement, not a redraw.
+       20, not 24: 24 read heavy against a 16px label. Neither figure is an
+       accessibility question — 2.5.5 measures the BUTTON, and the only icons with no
+       text beside them are the nav arrows, which carry 6.26:1 at any size. */
+    --nnm-ctl-icon: 20px;
     --nnm-neg: #3A72BE;
     --nnm-neg-soft: #DCE7F7;
     --nnm-ink: #1E242C;
@@ -851,26 +869,26 @@
      the height of the bar, with a drawn icon and a word, it reads as a peer of the
      step buttons instead — which is what it is. */
   .nnm-about-btn {
-    height: 36px;
+    height: var(--nnm-ctl-h);
     box-sizing: border-box;
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 0 10px;
+    padding: 0 8px;
     border: 2px solid var(--nnm-rule);
     border-radius: 5px;
     background: #fff;
     color: var(--nnm-ink-2);
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
+    font-size: var(--nnm-ctl-fs);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     cursor: pointer;
   }
-  .nnm-blankhead { display: flex; justify-content: flex-end; height: 36px; flex-shrink: 0; }
-  .nnm-about-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .nnm-blankhead { display: flex; justify-content: flex-end; height: var(--nnm-ctl-h); flex-shrink: 0; }
+  .nnm-about-btn svg { width: var(--nnm-ctl-icon); height: var(--nnm-ctl-icon); flex-shrink: 0; }
   .nnm-about-btn:hover { background: var(--nnm-surface); }
   /* Same press-is-the-answer rule as every other button here. */
   .nnm-about-btn:active,
@@ -884,7 +902,7 @@
     border: 2px solid var(--nnm-rule);
     border-radius: 7px;
     padding: 0 8px 0 12px;
-    height: 36px;
+    height: var(--nnm-ctl-h);
     box-sizing: border-box;
   }
   .nnm-filterbar.bad { border-color: #C0503E; }
@@ -899,9 +917,20 @@
     color: var(--nnm-ink-2);
     flex-shrink: 0;
   }
+  .nnm-filter-help::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: var(--nnm-ctl-h); height: var(--nnm-ctl-h);
+    transform: translate(-50%, -50%);
+  }
   .nnm-filter-input {
     flex: 1;
     min-width: 0;
+    /* Full height of the bar rather than the height of its own text, so the box you
+       can click to start typing is the box you can see. An input cannot carry a
+       pseudo-element, so the bar itself picks up the last 4px — see makeFilter. */
+    align-self: stretch;
     border: none;
     outline: none;
     background: transparent;
@@ -930,6 +959,13 @@
   .nnm-filter-help {
     width: 22px; height: 22px;
     flex-shrink: 0;
+    /* The circle stays 22 — a 44px button will not fit inside a 44px bar with 2px
+       borders, and blowing the bar out to hold one would leave it taller than every
+       button beside it. The TARGET is what 2.5.5 measures, so the target is what is
+       enlarged: a transparent 44x44 pseudo-element centred on the circle. Nothing
+       moves, and the nearest other target is 31px away, so the bigger area steals
+       no clicks. */
+    position: relative;
     /* Same 2px rule the buttons carry. border-box keeps it 22px across — without
        it the thicker border would push it to 24 and unbalance the filter bar. */
     box-sizing: border-box;
@@ -1042,7 +1078,8 @@
   /* --- case navigator --- */
   .nnm-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
   .nnm-navbtn {
-    width: 36px; height: 36px;
+    font-size: var(--nnm-ctl-fs);   /* the arrow glyphs were falling through to the UA default, 13.3px Arial */
+    width: var(--nnm-ctl-h); height: var(--nnm-ctl-h);
     box-sizing: border-box;
     display: flex; align-items: center; justify-content: center;
     border: 2px solid var(--nnm-rule);
@@ -1055,7 +1092,7 @@
   /* Drawn rather than typed. The ◀ ▶ characters carry their own side bearings and
      baseline offset, so they sit off-centre in the button by an amount that
      depends on the font — a symmetric viewBox centres exactly and always. */
-  .nnm-navbtn svg { width: 19px; height: 19px; display: block; }
+  .nnm-navbtn svg { width: var(--nnm-ctl-icon); height: var(--nnm-ctl-icon); display: block; }
   .nnm-navbtn:hover:not([aria-disabled="true"]) { background: var(--nnm-surface); }
   /* Same press as the step buttons: the dark fill, no nudge. The glyph is drawn
      in currentColor, so it turns white with the rest of the button. */
@@ -1145,8 +1182,18 @@
     border-radius: 11px;
     border: 1px solid currentColor;
   }
-  .nnm-pill.approach { color: var(--nnm-pos); background: var(--nnm-pos-soft); }
-  .nnm-pill.wait { color: var(--nnm-neg); background: var(--nnm-neg-soft); }
+  /* Text a shade darker than the tokens, and the same two values Trace a Case's
+     chips already use, for the same reason: --nnm-pos on its own soft ground is
+     2.71:1 and --nnm-neg is 3.88:1, both under the 4.5 this size needs. The BORDER
+     keeps the token, so each chip still reads as its own colour — only the text has
+     to carry contrast. (border: 1px solid currentColor above would otherwise have
+     darkened the outline along with the label.) */
+  .nnm-pill.approach {
+    color: #A15522; border-color: var(--nnm-pos); background: var(--nnm-pos-soft);
+  }
+  .nnm-pill.wait {
+    color: #3568AD; border-color: var(--nnm-neg); background: var(--nnm-neg-soft);
+  }
   .nnm-flag {
     font-size: 12px;
     font-weight: 700;
@@ -1245,7 +1292,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    height: 36px;
+    height: var(--nnm-ctl-h);
     box-sizing: border-box;
     flex-shrink: 0;
   }
@@ -1254,13 +1301,16 @@
      puts the first button flush with the card below it. */
   .nnm-stepgroup {
     /* Sized to its five buttons rather than to the row, so the free space to the
-       right of them is the rule's to centre in. */
+       right of them is the rule's to centre in.
+       The gap and the buttons' 8px side padding are what pay for 24px icons beside
+       16px labels: the row has 567px, and at the 12px padding these were drawn with
+       that combination wanted 594. Measured, not guessed — see the budget below. */
     flex: 0 1 auto;
     min-width: 0;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 6px;
+    gap: 4px;
   }
   /* The divider between the five steps and About. `margin: 0 auto` makes it take
      an equal share of the row's free space on each side, which centres it in the
@@ -1270,11 +1320,21 @@
      2px and --nnm-rule: the same line the buttons are drawn with. */
   .nnm-steprule {
     width: 2px;
-    height: 36px;
+    height: var(--nnm-ctl-h);
     margin: 0 auto;
     flex-shrink: 0;
     background: var(--nnm-rule);
   }
+  /* The same rule, in a flex ROW rather than a column: the auto margins that centre
+     it over there would push its neighbours apart here, and the head's own 10px gap
+     is what sets the space on either side of it. 36px, as over there: the head's
+     content box is 38 tall — the speed control sets that, not the key — so the rule
+     spans it the way it spans the step pills, and the head does not grow. */
+  .d1a-headrule { margin: 0; height: var(--nnm-ctl-h); }
+  /* Over in the Prediction Chain, Animate is what gets pushed to the right. Here the
+     KEY is — it comes first and carries the auto margin — so Animate has to give its
+     own up, or the two autos share the slack and open an 88px hole at the divider. */
+  .d1a-panel .nnm-animtoggle { margin-left: 0; }
   .nnm-leftcol {
     display: flex;
     flex-direction: column;
@@ -1524,7 +1584,9 @@
      same line. The Conversation head is 54 because it carries the 36px nav buttons
      (36 + 9 + 8 of padding + 1 of border); The Network head holds only a title and
      the scale, so it was sitting at the 44px floor and its body began 10px higher. */
-  .d1a-panel .nnm-panel-head { min-height: 54px; }
+  /* Sized to hold a control plus the head's 9/8 padding and 1px rule, so it follows
+     the control height rather than restating it. */
+  .d1a-panel .nnm-panel-head { min-height: calc(var(--nnm-ctl-h) + 18px); }
 
   /* The column captions sit 10px under the header rule, so the body gives up
      most of its top padding and the SVG carries the rest. */
@@ -1657,6 +1719,9 @@
   .d1a-convnode { fill: #FFFFFF; stroke: var(--nnm-ink-2); stroke-width: 1.5; }
   /* A neuron in a stacked conversation. Outline only — the white disc and the gauge
      are drawn under it, so the ring is the last thing over both. */
+  /* TEMPORARY, and it should look it: a dashed outline so nobody mistakes it
+     for part of the interactive. Goes when the particle stage is settled. */
+  .nnm-step.d1a-temp { border-style: dashed; opacity: 0.85; }
   .d1a-stacknode { fill: none; stroke: var(--nnm-ink-2); stroke-width: 1; }
   /* One name per column, full size — only ever one on screen at a time, so it does
      not have to fit beside its neighbours. It hands over as the next column lands. */
@@ -1804,7 +1869,7 @@
      always one line. */
   .d1a-pinclear {
     margin-left: auto; flex-shrink: 0; align-self: center;
-    width: 36px; height: 36px; box-sizing: border-box;
+    width: var(--nnm-ctl-h); height: var(--nnm-ctl-h); box-sizing: border-box;
     display: flex; align-items: center; justify-content: center;
     font-family: 'Lato', sans-serif; font-size: 19px; line-height: 1;
     color: var(--nnm-ink-2); background: #fff;
@@ -1921,10 +1986,10 @@
     color: var(--nnm-ink-2); line-height: 1.4; margin-bottom: 10px;
   }
   .d1b-extract {
-    margin-top: auto; flex-shrink: 0; height: 36px; box-sizing: border-box;
+    margin-top: auto; flex-shrink: 0; height: var(--nnm-ctl-h); box-sizing: border-box;
     border: 2px solid var(--nnm-ink); border-radius: 5px; background: var(--nnm-ink);
     color: #fff; cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
+    font-family: 'Barlow Condensed', sans-serif; font-size: var(--nnm-ctl-fs); font-weight: 600;
     letter-spacing: 0.04em; text-transform: uppercase;
   }
   .d1b-extract:hover:not(:disabled) { background: #2C3541; border-color: #2C3541; }
@@ -2019,7 +2084,7 @@
      10px short of the cards beside it. Stated for both, so the pair moves together if
      the nav buttons ever change size. Trace a Case pins its head the same way. */
   .d3b-conv .nnm-panel-head,
-  .d3b-panel .nnm-panel-head { min-height: 54px; }
+  .d3b-panel .nnm-panel-head { min-height: calc(var(--nnm-ctl-h) + 18px); }
   .d3b-convbody { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
   /* Nothing in this toolbar is elastic once the prompt is gone, so the query would
      stretch across the whole row and stop matching the one on Correlations. Held
@@ -2344,9 +2409,9 @@
      so nothing competes with the thumb for the "which is it on" reading. */
   .d3-viewswitch { display: flex; align-items: center; gap: 10px; }
   .d3-viewbtn {
-    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
+    font-family: 'Barlow Condensed', sans-serif; font-size: var(--nnm-ctl-fs); font-weight: 600;
     letter-spacing: 0.04em; text-transform: uppercase;
-    padding: 0; height: 36px; box-sizing: border-box;
+    padding: 0; height: var(--nnm-ctl-h); box-sizing: border-box;
     border: 0; background: none; color: var(--nnm-ink-2);
     cursor: pointer; white-space: nowrap;
   }
@@ -3013,7 +3078,7 @@
     /* In the flow, as the fifth member of .nnm-stepgroup. It was absolute at the
        row's right edge back when the four steps were centred and it had to stay
        clear of them; that job belongs to About now. */
-    height: 36px;
+    height: var(--nnm-ctl-h);
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
@@ -3024,14 +3089,17 @@
     border-radius: 5px;
     cursor: pointer;
     color: var(--nnm-ink-2);
-    padding: 0 12px;
+    padding: 0 8px;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
+    font-size: var(--nnm-ctl-fs);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
-  .nnm-reset .glyph { font-size: 19px; line-height: 1; padding-bottom: 2px; }
+  /* On the icon token like every other button mark, now that it is one. */
+  .nnm-reset svg {
+    width: var(--nnm-ctl-icon); height: var(--nnm-ctl-icon); flex-shrink: 0;
+  }
   .nnm-reset:hover:not(:disabled) { background: var(--nnm-surface); }
   /* Same press as the step and nav buttons: the dark fill, no nudge. The glyph is
      a text character, so it inherits the colour and turns white with the rest of
@@ -3063,7 +3131,11 @@
        thumb occupied, so a bigger thumb does not make this header taller than
        the conversation header beside it. The thumb still draws at full size —
        margins do not clip. */
-    width: 92px; height: 40px; margin: 0; cursor: pointer; background: transparent;
+    /* Height from the control token, and the padding below takes the content box
+       back down to the 18px bar — so the thumb stays up on the track while the
+       draggable area reaches the full 44. */
+    width: 92px; height: var(--nnm-ctl-h); margin: 0; cursor: pointer;
+    background: transparent;
   }
   /* The bar is drawn by .nnm-trackline, so the native one is invisible. */
   /* The input is stretched over the whole block — bar AND labels — so the entire
@@ -3077,7 +3149,10 @@
   }
   .nnm-speed input[type=range] {
     position: absolute; top: 0; left: 0; z-index: 1;
-    box-sizing: border-box; padding-bottom: 22px;
+    /* The 18px track plus padding below it IS the target — the padding reaches down
+       over the tick labels, which are not targets themselves. Derived from the
+       control height so the slider stands the same as the buttons. */
+    box-sizing: border-box; padding-bottom: calc(var(--nnm-ctl-h) - 18px);
   }
   .nnm-speed input[type=range]::-webkit-slider-runnable-track {
     height: 4px; background: transparent;
@@ -3165,10 +3240,10 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    height: 36px;
+    height: var(--nnm-ctl-h);
     padding: 0 4px;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
+    font-size: var(--nnm-ctl-fs);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -3530,16 +3605,21 @@
   /* --- step control --- */
   .nnm-step {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
+    font-size: var(--nnm-ctl-fs);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    padding: 0 12px;
-    height: 36px;
+    padding: 0 8px;
+    height: var(--nnm-ctl-h);
     box-sizing: border-box;
+    /* A button label breaking over two lines is how the row reported that it had run
+       out of width — "Add Up" wrapped rather than the row overflowing, which hid the
+       problem from a scrollWidth check. Held to one line so a future overrun shows
+       itself instead. */
+    white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;   /* icon to label; a 24px icon needs the pixel back */
     border: 2px solid var(--nnm-rule);
     background: #fff;
     color: var(--nnm-ink-2);
@@ -3550,7 +3630,7 @@
      marked-up text, the multiply glyph, the three lines converging, the fork to
      two answers — rather than a generic metaphor. currentColor so they invert
      with the button when it is the active step. */
-  .nnm-step svg { width: 13px; height: 13px; flex-shrink: 0; overflow: visible; }
+  .nnm-step svg { width: var(--nnm-ctl-icon); height: var(--nnm-ctl-icon); flex-shrink: 0; overflow: visible; }
   /* Every interactive state is gated on the button actually being interactive.
      Without this a locked step still lit on hover and still flipped to the full
      pressed look on mousedown, so it answered like a live control and simply did
@@ -3607,8 +3687,8 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.13</div>
-      <div style="font-weight: 400;">Updated: 9/11/26</div>
+      <div style="font-weight: 600;">v0.14</div>
+      <div style="font-weight: 400;">Updated: 9/14/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
@@ -3617,6 +3697,7 @@
         <div class="day-sublabel" id="day1-label">Day 1</div>
         <button class="toggle-btn" data-sim="d1a" aria-pressed="false">Trace a Case</button>
         <button class="toggle-btn active" data-sim="d1b" aria-pressed="true">Extract Pathways</button>
+        <button class="toggle-btn" data-sim="d1c" aria-pressed="false">Investigate P1-P3</button>
       </div>
 
       <div role="group" aria-labelledby="day2-label">
@@ -3771,6 +3852,24 @@ const SIMS = {
       '<h3>The point</h3>' +
       '<p>Meaning lives above the individual neuron. A pathway is a group of neurons acting as one factor.</p>'
   },
+  d1c: {
+    day: 1, id: "1C",
+    name: "Investigate the Pathways",
+    description: "Read what each pathway is made of",
+    theme: PLACEHOLDER_THEME,
+    about:
+      '<p>Placeholder. The extraction has happened: eight hundred conversations are ' +
+        'stacked behind, one of them is out in front at full size, and the three ' +
+        'pathways stand beside it.</p>' +
+      '<h3>Reading a loading</h3>' +
+      '<p>Click a pathway and every neuron shows how strongly it loads on that ' +
+        'pathway. Click a neuron instead and the same numbers come back the other way ' +
+        'round \u2014 that neuron\u2019s loading on each of the three. It is one table, ' +
+        'read from either end.</p>' +
+      '<h3>The point</h3>' +
+      '<p>Every neuron loads on every pathway. A pathway is not a box some neurons ' +
+        'are in and others are not \u2014 it is a weighting over all of them.</p>'
+  },
   d2b: {
     day: 2, id: "2B",
     name: "The Prediction Chain",
@@ -3858,6 +3957,31 @@ const SIMS = {
 // here models that yet — there is no localStorage in this file at all.
 const NNM_COMMISSIONED = [];
 
+// ---- what each interactive remembers when you leave it ----
+// Switching sims tears the screen down and builds the next one from scratch, so
+// every closure the outgoing screen was holding its state in goes with it: which
+// conversation you were on, how far you had stepped it, what you had filtered to.
+// Keyed by sim, written by whatever the outgoing screen parks on SIM.saveState,
+// and read back by that screen's builder.
+//
+// Deliberately in memory rather than in storage: the file has no localStorage in
+// it at all (see NNM_COMMISSIONED), and a reload is still a fresh start.
+const NNM_VIEWSTATE = {};
+
+// About is ONE shared modal, mounted on the content area, but its text is the text
+// of whichever screen opened it — so it is that screen's state, not the app's, and
+// it should come back when you come back and not follow you elsewhere. Reopening is
+// deferred: the content area the modal mounts into is not in the document until
+// after the builder has returned it.
+function aboutIsOpen() { return !!document.querySelector(".info-modal"); }
+function reopenAbout() {
+  setTimeout(function () {
+    if (aboutIsOpen()) return;
+    const b = document.querySelector(".nnm-about-btn");
+    if (b && b.closest(".content-area")) b.click();
+  }, 0);
+}
+
 let activeSim = "d1b";
 let activeDevice = "chromebook";
 let activeLayout = "ap-full";
@@ -3909,6 +4033,12 @@ function invalidateSimCache() {
   // against a torn-down SIM. Park ids in SIM._rafs the way timers go in
   // SIM._timeouts.
   if (Array.isArray(SIM._rafs)) { SIM._rafs.forEach(cancelAnimationFrame); SIM._rafs.length = 0; }
+  // Intervals too. A setInterval survives everything above — it is not a timeout, a
+  // frame or an observer — so one left running would go on polling a screen that no
+  // longer exists. Extract Pathways uses one to chain its four steps.
+  if (Array.isArray(SIM._intervals)) {
+    SIM._intervals.forEach(clearInterval); SIM._intervals.length = 0;
+  }
   // Anything a sim parked on document.body survives _simContent.remove(), because it
   // was never inside _simContent to begin with. The Prediction Chain's flying word
   // chips are the case: flyAnchor appends to document.body — or to a .nnm-flyclip,
@@ -3920,6 +4050,12 @@ function invalidateSimCache() {
   // sim to sim, and the device and layout switches that rebuild content too.
   document.querySelectorAll(".nnm-flyanchor, .nnm-flyclip").forEach(function (e) { e.remove(); });
   if (SIM.panelNavHandler) document.removeEventListener("keydown", SIM.panelNavHandler);
+  // Before the wipe, not after: this is the last moment the outgoing screen's
+  // closure is still reachable. Guarded, because a screen that parks nothing is
+  // simply one that has nothing worth keeping.
+  if (typeof SIM.saveState === "function") {
+    try { SIM.saveState(); } catch (e) {}
+  }
   for (var key in SIM) delete SIM[key];
   // The wipe above takes announce with it, and the outgoing interactive can still
   // have something in flight that calls it — switching sims faster than about
@@ -4110,9 +4246,24 @@ function alienMark(key, size) {
     'stroke-linejoin="round" aria-hidden="true" focusable="false">' + d + '</svg>';
 }
 
-const infoIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M11,7 L13,7 L13,9 L11,9 L11,7 Z M11,11 L13,11 L13,17 L11,17 L11,11 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z"/></svg>';
-const closeIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon fill="currentColor" points="19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12"/></svg>';
-const doubleArrowIconSVG = '<svg aria-hidden="true" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path fill="#FFFFFF" fill-rule="evenodd" d="M16.2,8.25 C16.3346077,8.25 16.4536688,8.30176503 16.5572144,8.40531062 L17.3337675,9.18186373 C17.4373131,9.28540932 17.4890782,9.40447044 17.4890782,9.53907816 C17.4890782,9.67368587 17.4373131,9.79274699 17.3337675,9.89629259 L11.2300601,16 L17.3337675,22.1037074 C17.4373131,22.207253 17.4890782,22.3263141 17.4890782,22.4609218 C17.4890782,22.5955296 17.4373131,22.7145907 17.3337675,22.8181363 L16.5572144,23.5946894 C16.4536688,23.698235 16.3346077,23.75 16.2,23.75 C16.0653923,23.75 15.9463312,23.698235 15.8427856,23.5946894 L8.60531062,16.3572144 C8.50176503,16.2536688 8.45,16.1346077 8.45,16 C8.45,15.8653923 8.50176503,15.7463312 8.60531062,15.6427856 L15.8427856,8.40531062 C15.9463312,8.30176503 16.0653923,8.25 16.2,8.25 Z M22.2,8.25 C22.3346077,8.25 22.4536688,8.30176503 22.5572144,8.40531062 L23.3337675,9.18186373 C23.4373131,9.28540932 23.4890782,9.40447044 23.4890782,9.53907816 C23.4890782,9.67368587 23.4373131,9.79274699 23.3337675,9.89629259 L17.2300601,16 L23.3337675,22.1037074 C23.4373131,22.207253 23.4890782,22.3263141 23.4890782,22.4609218 C23.4890782,22.5955296 23.4373131,22.7145907 23.3337675,22.8181363 L22.5572144,23.5946894 C22.4536688,23.698235 22.3346077,23.75 22.2,23.75 C22.0653923,23.75 21.9463312,23.698235 21.8427856,23.5946894 L14.6053106,16.3572144 C14.501765,16.2536688 14.45,16.1346077 14.45,16 C14.45,15.8653923 14.501765,15.7463312 14.6053106,15.6427856 L21.8427856,8.40531062 C21.9463312,8.30176503 22.0653923,8.25 22.2,8.25 Z"/></svg>';
+const infoIconSVG = 
+  '<svg aria-hidden="true" viewBox="0 0 20 20">' +
+  '<path d="M 9.1667 14.1667 L 10.8333 14.1667 L 10.8333 9.1667 L 9.1667 9.1667 L 9.1667 14.1667 Z M 10.5938 7.2604 C 10.7535 7.1007 10.8333 6.9028 10.8333 6.6667 C 10.8333 6.4306 10.7535 6.2326 10.5938 6.0729 C 10.434 5.9132 10.2361 5.8333 10 5.8333 C 9.7639 5.8333 9.566 5.9132 9.4062 6.0729 C 9.2465 6.2326 9.1667 6.4306 9.1667 6.6667 C 9.1667 6.9028 9.2465 7.1007 9.4062 7.2604 C 9.566 7.4201 9.7639 7.5 10 7.5 C 10.2361 7.5 10.434 7.4201 10.5938 7.2604 Z M 10 18.3333 C 8.8472 18.3333 7.7639 18.1146 6.75 17.6771 C 5.7361 17.2396 4.8542 16.6458 4.1042 15.8958 C 3.3542 15.1458 2.7604 14.2639 2.3229 13.25 C 1.8854 12.2361 1.6667 11.1528 1.6667 10 C 1.6667 8.8472 1.8854 7.7639 2.3229 6.75 C 2.7604 5.7361 3.3542 4.8542 4.1042 4.1042 C 4.8542 3.3542 5.7361 2.7604 6.75 2.3229 C 7.7639 1.8854 8.8472 1.6667 10 1.6667 C 11.1528 1.6667 12.2361 1.8854 13.25 2.3229 C 14.2639 2.7604 15.1458 3.3542 15.8958 4.1042 C 16.6458 4.8542 17.2396 5.7361 17.6771 6.75 C 18.1146 7.7639 18.3333 8.8472 18.3333 10 C 18.3333 11.1528 18.1146 12.2361 17.6771 13.25 C 17.2396 14.2639 16.6458 15.1458 15.8958 15.8958 C 15.1458 16.6458 14.2639 17.2396 13.25 17.6771 C 12.2361 18.1146 11.1528 18.3333 10 18.3333 Z M 10 16.6667 C 11.8611 16.6667 13.4375 16.0208 14.7292 14.7292 C 16.0208 13.4375 16.6667 11.8611 16.6667 10 C 16.6667 8.1389 16.0208 6.5625 14.7292 5.2708 C 13.4375 3.9792 11.8611 3.3333 10 3.3333 C 8.1389 3.3333 6.5625 3.9792 5.2708 5.2708 C 3.9792 6.5625 3.3333 8.1389 3.3333 10 C 3.3333 11.8611 3.9792 13.4375 5.2708 14.7292 C 6.5625 16.0208 8.1389 16.6667 10 16.6667 Z" fill="currentColor" fill-rule="nonzero">' +
+  '</path></svg>';
+// Reset's mark. Was the text character U+21BA, which could not be drawn in an
+// editor and whose ink is only about half its font-size — so it needed a 1.5x
+// multiplier to stand with the SVG icons and still could not be edited with
+// them. Now artwork like the rest: icons/ui-reset.svg, via sync-icons.py.
+const resetIconSVG = 
+  '<svg aria-hidden="true" viewBox="0 0 20 20">' +
+  '<path d="M 10 17.5 C 8.0694 17.5 6.3958 16.8646 4.9792 15.5938 C 3.5625 14.3229 2.75 12.7361 2.5417 10.8333 L 4.25 10.8333 C 4.4444 12.2778 5.0868 13.4722 6.1771 14.4167 C 7.2674 15.3611 8.5417 15.8333 10 15.8333 C 11.625 15.8333 13.0035 15.2674 14.1354 14.1354 C 15.2674 13.0035 15.8333 11.625 15.8333 10 C 15.8333 8.375 15.2674 6.9965 14.1354 5.8646 C 13.0035 4.7326 11.625 4.1667 10 4.1667 C 9.0417 4.1667 8.1458 4.3889 7.3125 4.8333 C 6.4792 5.2778 5.7778 5.8889 5.2083 6.6667 L 7.5 6.6667 L 7.5 8.3333 L 2.5 8.3333 L 2.5 3.3333 L 4.1667 3.3333 L 4.1667 5.2917 C 4.875 4.4028 5.7396 3.7153 6.7604 3.2292 C 7.7813 2.7431 8.8611 2.5 10 2.5 C 11.0417 2.5 12.0174 2.6979 12.9271 3.0938 C 13.8368 3.4896 14.6285 4.0243 15.3021 4.6979 C 15.9757 5.3715 16.5104 6.1632 16.9063 7.0729 C 17.3021 7.9826 17.5 8.9583 17.5 10 C 17.5 11.0417 17.3021 12.0174 16.9063 12.9271 C 16.5104 13.8368 15.9757 14.6285 15.3021 15.3021 C 14.6285 15.9757 13.8368 16.5104 12.9271 16.9063 C 12.0174 17.3021 11.0417 17.5 10 17.5 Z" fill="currentColor" fill-rule="evenodd">' +
+  '</path></svg>';
+const closeIconSVG = 
+  '<svg aria-hidden="true" viewBox="0 0 20 20">' +
+  '<polygon fill="currentColor" points="15.8333 5.3417 14.6583 4.1667 10 8.825 5.3417 4.1667 4.1667 5.3417 8.825 10 4.1667 14.6583 5.3417 15.8333 10 11.175 14.6583 15.8333 15.8333 14.6583 11.175 10"/></svg>';
+const doubleArrowIconSVG = 
+  '<svg aria-hidden="true" viewBox="0 0 20 20">' +
+  '<path fill="#FFFFFF" fill-rule="evenodd" d="M 10.125 5.1562 C 10.2091 5.1562 10.2835 5.1886 10.3483 5.2533 L 10.8336 5.7387 C 10.8983 5.8034 10.9307 5.8778 10.9307 5.9619 C 10.9307 6.0461 10.8983 6.1205 10.8336 6.1852 L 7.0188 10 L 10.8336 13.8148 C 10.8983 13.8795 10.9307 13.9539 10.9307 14.0381 C 10.9307 14.1222 10.8983 14.1966 10.8336 14.2613 L 10.3483 14.7467 C 10.2835 14.8114 10.2091 14.8438 10.125 14.8438 C 10.0409 14.8438 9.9665 14.8114 9.9017 14.7467 L 5.3783 10.2233 C 5.3136 10.1585 5.2812 10.0841 5.2812 10 C 5.2812 9.9159 5.3136 9.8415 5.3783 9.7767 L 9.9017 5.2533 C 9.9665 5.1886 10.0409 5.1562 10.125 5.1562 Z M 13.875 5.1562 C 13.9591 5.1562 14.0335 5.1886 14.0983 5.2533 L 14.5836 5.7387 C 14.6483 5.8034 14.6807 5.8778 14.6807 5.9619 C 14.6807 6.0461 14.6483 6.1205 14.5836 6.1852 L 10.7688 10 L 14.5836 13.8148 C 14.6483 13.8795 14.6807 13.9539 14.6807 14.0381 C 14.6807 14.1222 14.6483 14.1966 14.5836 14.2613 L 14.0983 14.7467 C 14.0335 14.8114 13.9591 14.8438 13.875 14.8438 C 13.7909 14.8438 13.7165 14.8114 13.6517 14.7467 L 9.1283 10.2233 C 9.0636 10.1585 9.0312 10.0841 9.0312 10 C 9.0312 9.9159 9.0636 9.8415 9.1283 9.7767 L 13.6517 5.2533 C 13.7165 5.1886 13.7909 5.1562 13.875 5.1562 Z"/></svg>';
 
 function setAriaDisabled(el, disabled) {
   if (disabled) el.setAttribute("aria-disabled", "true");
@@ -4590,6 +4741,13 @@ function makeFilter(D) {
         : r.items.length + " of " + D.items.length;
       if (live) onChange(r.items);
     }
+    // The bar is the input's target: the input can only stretch to the bar's inner
+    // height, which the 2px border leaves 4 short of the 44 that 2.5.5 asks for. A
+    // press anywhere in the bar puts the caret in the field, so the whole 44 counts.
+    // mousedown, not click, so the caret lands before the browser moves focus.
+    rowEl.addEventListener("mousedown", function (e) {
+      if (e.target === rowEl || e.target === label) { e.preventDefault(); input.focus(); }
+    });
     input.addEventListener("input", apply);
     apply();
     live = true;   // the caller renders the initial state itself
@@ -4784,9 +4942,9 @@ function pearson(a, b) {
 }
 
 function navGlyph(dir) {
-  return '<svg viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" ' +
-    'stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="' +
-    (dir < 0 ? "M8.4 1.9 L3.6 6 L8.4 10.1 Z" : "M3.6 1.9 L8.4 6 L3.6 10.1 Z") +
+  return '<svg viewBox="0 0 20 20" aria-hidden="true" fill="currentColor" ' +
+    'stroke="currentColor" stroke-width="2.3333" stroke-linejoin="round"><path d="' +
+    (dir < 0 ? "M 14 3.1667 L 6 10 L 14 16.8333 Z" : "M 6 3.1667 L 14 10 L 6 16.8333 Z") +
     '"/></svg>';
 }
 
@@ -4950,6 +5108,7 @@ function buildSimContent() {
     const wrap = document.createElement("div");
     wrap.className = "sim-content";
     SIM._timeouts = []; SIM._observers = []; SIM._rafs = [];
+    const myKey = activeSim;    // see NNM_VIEWSTATE
     const stack = document.createElement("div");
     stack.className = "nnm-stack";
     wrap.appendChild(stack);
@@ -4972,7 +5131,7 @@ function buildSimContent() {
     // if it has been edited away from the one the day opens on.
     const resetBtn = document.createElement("button");
     resetBtn.className = "nnm-reset";
-    resetBtn.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
+    resetBtn.innerHTML = resetIconSVG + '<span>Reset</span>';
     resetBtn.setAttribute("aria-label", "Clear the commissions and start over");
     resetBtn.addEventListener("click", function () {
       bought.length = 0;
@@ -5389,6 +5548,40 @@ function buildSimContent() {
     filter.input.value = DEFAULT_QUERY;
     filter.input.dispatchEvent(new Event("input", { bubbles: true }));
 
+    // ---- leaving, and coming back ----
+    // Both panes: which conversation each is showing and which codings are ticked
+    // on it. The commissioned codings themselves already survive on their own —
+    // NNM_COMMISSIONED is global for exactly that reason.
+    SIM.saveState = function () {
+      NNM_VIEWSTATE[myKey] = {
+        query: filter && filter.input ? filter.input.value : "",
+        panes: panes.map(function (p) { return { idx: p.idx, sel: p.sel.slice() }; }),
+        about: aboutIsOpen()
+      };
+    };
+    const saved = NNM_VIEWSTATE[myKey];
+    if (saved) {
+      // The query is set above to the day's opening question; a saved one replaces
+      // it, and has to go in before the indices because it decides the list they
+      // are indices into.
+      if (saved.query && filter && filter.input
+          && saved.query !== filter.input.value) {
+        filter.input.value = saved.query;
+        filter.input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      if (saved.panes) {
+        panes.forEach(function (p, i) {
+          const sv = saved.panes[i];
+          if (!sv) return;
+          if (typeof sv.idx === "number") {
+            p.idx = Math.max(0, Math.min(cases.length - 1, sv.idx));
+          }
+          if (sv.sel) p.sel = sv.sel.slice();
+        });
+      }
+      if (saved.about) reopenAbout();
+    }
+
     render();
     SIM.onResize = function () {};
     return wrap;
@@ -5423,6 +5616,8 @@ function buildSimContent() {
     wrap.className = "sim-content d3-wrap";
     // invalidateSimCache disconnects whatever is parked here when the sim changes.
     SIM._timeouts = []; SIM._observers = []; SIM._rafs = [];
+    // d3a and d3c share this builder, so the key has to be captured, not assumed.
+    const myKey = activeSim;    // see NNM_VIEWSTATE
 
     // ---- the series we can correlate a pathway against ----
     const HIDE = ["resource_stressed", "gestures_repeated", "young_present", "carrying_burden"];
@@ -6045,8 +6240,10 @@ function buildSimContent() {
     // the number, with the number stated beside it. That is what makes the two
     // views an overview and its detail rather than two separate screens.
     let detailEl = null;
+    let openDet = null;   // which plot is open, so it can be put back
 
     function closeDetail() {
+      openDet = null;
       if (!detailEl) return;
       const trigger = detailEl._trigger;
       detailEl.remove();
@@ -6119,6 +6316,7 @@ function buildSimContent() {
 
     function openDetail(row, ri, pi, trigger) {
       closeDetail();
+      openDet = { kind: "cell", ri: ri, pi: pi };
       const pa = paths[pi];
       const r = R[ri][pi];
       const gv = row.gvals || row.vals;
@@ -6214,6 +6412,7 @@ function buildSimContent() {
     // a full spread above, a single spike below.
     function openPathwayDetail(pa, pi, trigger) {
       closeDetail();
+      openDet = { kind: "path", pi: pi };
       const full = pa.full || pa.vals;
       const fLo = Math.min.apply(null, full), fHi = Math.max.apply(null, full);
       const vLo = Math.min.apply(null, pa.vals), vHi = Math.max.apply(null, pa.vals);
@@ -7052,6 +7251,7 @@ function buildSimContent() {
           lab.setAttribute("role", "button");
           lab.setAttribute("tabindex", "0");
           lab.setAttribute("aria-label", pa.label + ", show across all conversations");
+          lab.dataset.pathPi = pi;      // so a saved open plot can be found again
           lab.addEventListener("click", function () { openPathwayDetail(pa, pi, lab); });
           lab.addEventListener("keydown", function (e) {
             if (e.key === "Enter" || e.key === " ") {
@@ -7075,6 +7275,8 @@ function buildSimContent() {
             cell.setAttribute("tabindex", "0");
             cell.setAttribute("aria-label",
               paths[pi].label + " against " + row.label + ", show detail");
+            cell.dataset.cellRi = ri;
+            cell.dataset.cellPi = pi;
             cell.addEventListener("click", function () { openDetail(row, ri, pi, cell); });
             cell.addEventListener("keydown", function (e) {
               if (e.key === "Enter" || e.key === " ") {
@@ -7108,6 +7310,45 @@ function buildSimContent() {
     // and only in here does it become the strongest thing in the matrix.
     filter.input.value = "model_correct:0";
     filter.input.dispatchEvent(new Event("input", { bubbles: true }));
+
+    // ---- leaving, and coming back ----
+    // The query and which of the two matrices is showing. Opened plots are not
+    // kept: a modal is where you are looking right now, not work you did.
+    SIM.saveState = function () {
+      NNM_VIEWSTATE[myKey] = {
+        query: filter && filter.input ? filter.input.value : "",
+        view: view,
+        openDet: openDet,
+        about: aboutIsOpen()
+      };
+    };
+    const saved = NNM_VIEWSTATE[myKey];
+    if (saved) {
+      if (saved.query && filter && filter.input
+          && saved.query !== filter.input.value) {
+        filter.input.value = saved.query;
+        filter.input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      // prevView along with it: the switch animates from where it was, and coming
+      // back to a screen is not a switch.
+      if (saved.view) { view = saved.view; prevView = saved.view; }
+      if (saved.about) reopenAbout();
+      // The open plot, put back by clicking the cell or label it came from rather
+      // than by calling the opener with a rebuilt trigger: the handler already
+      // closes over the right row and pathway, and the trigger is the element the
+      // modal returns focus to when it closes. Deferred past render(), which is
+      // what creates those elements, and past mounting.
+      if (saved.openDet) {
+        const d = saved.openDet;
+        const sel = d.kind === "path"
+          ? '[data-path-pi="' + d.pi + '"]'
+          : '[data-cell-ri="' + d.ri + '"][data-cell-pi="' + d.pi + '"]';
+        setTimeout(function () {
+          const el = wrap.querySelector(sel);
+          if (el) el.click();
+        }, 0);
+      }
+    }
 
     render();
 
@@ -7323,6 +7564,7 @@ function buildSimContent() {
       requestAnimationFrame(function () { liveAnnounce.textContent = msg; });
     };
     SIM._timeouts = []; SIM._observers = []; SIM._rafs = [];
+    const myKey = activeSim;    // see NNM_VIEWSTATE — saved under its own identity
 
     const stack = document.createElement("div");
     stack.className = "nnm-stack";
@@ -7369,35 +7611,29 @@ function buildSimContent() {
     chainHead.appendChild(chainHeadTitle);
 
     // Words read off the page: three lines of text with some words marked.
-    const ICON_ACTIVATE =
-      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">' +
-      '<rect x="1" y="2.4" width="5.5" height="2.6" rx="1.1"/>' +
-      '<rect x="8" y="2.4" width="7" height="2.6" rx="1.1" opacity=".3"/>' +
-      '<rect x="1" y="6.7" width="4" height="2.6" rx="1.1" opacity=".3"/>' +
-      '<rect x="5.5" y="6.7" width="6.5" height="2.6" rx="1.1"/>' +
-      '<rect x="1" y="11" width="6.5" height="2.6" rx="1.1"/>' +
-      '<rect x="9" y="11" width="4.5" height="2.6" rx="1.1" opacity=".3"/></svg>';
+    const ICON_ACTIVATE = 
+      '<svg aria-hidden="true" viewBox="0 0 20 20">' +
+      '<path d="M 13.5417 13.75 L 17.2917 13.75 C 17.867 13.75 18.3333 14.2164 18.3333 14.7917 L 18.3333 16.4583 C 18.3333 17.0336 17.867 17.5 17.2917 17.5 L 13.5417 17.5 C 12.9664 17.5 12.5 17.0336 12.5 16.4583 L 12.5 14.7917 C 12.5 14.2164 12.9664 13.75 13.5417 13.75 Z M 2.7083 8.125 L 5.625 8.125 C 6.2003 8.125 6.6667 8.5914 6.6667 9.1667 L 6.6667 10.8333 C 6.6667 11.4086 6.2003 11.875 5.625 11.875 L 2.7083 11.875 C 2.133 11.875 1.6667 11.4086 1.6667 10.8333 L 1.6667 9.1667 C 1.6667 8.5914 2.133 8.125 2.7083 8.125 Z M 11.0417 2.5 L 17.2917 2.5 C 17.867 2.5 18.3333 2.9664 18.3333 3.5417 L 18.3333 5.2083 C 18.3333 5.7836 17.867 6.25 17.2917 6.25 L 11.0417 6.25 C 10.4664 6.25 10 5.7836 10 5.2083 L 10 3.5417 C 10 2.9664 10.4664 2.5 11.0417 2.5 Z" fill-opacity="0.5" fill="currentColor" fill-rule="evenodd">' +
+      '</path><path d="M 2.7083 13.75 L 9.7917 13.75 C 10.367 13.75 10.8333 14.2164 10.8333 14.7917 L 10.8333 16.4583 C 10.8333 17.0336 10.367 17.5 9.7917 17.5 L 2.7083 17.5 C 2.133 17.5 1.6667 17.0336 1.6667 16.4583 L 1.6667 14.7917 C 1.6667 14.2164 2.133 13.75 2.7083 13.75 Z M 9.375 8.125 L 17.2917 8.125 C 17.867 8.125 18.3333 8.5914 18.3333 9.1667 L 18.3333 10.8333 C 18.3333 11.4086 17.867 11.875 17.2917 11.875 L 9.375 11.875 C 8.7997 11.875 8.3333 11.4086 8.3333 10.8333 L 8.3333 9.1667 C 8.3333 8.5914 8.7997 8.125 9.375 8.125 Z M 2.7083 2.5 L 7.2917 2.5 C 7.867 2.5 8.3333 2.9664 8.3333 3.5417 L 8.3333 5.2083 C 8.3333 5.7836 7.867 6.25 7.2917 6.25 L 2.7083 6.25 C 2.133 6.25 1.6667 5.7836 1.6667 5.2083 L 1.6667 3.5417 C 1.6667 2.9664 2.133 2.5 2.7083 2.5 Z" fill="currentColor" fill-rule="evenodd">' +
+      '</path></svg>';
 
     // The multiply glyph itself, the same shape that sits in every row.
-    const ICON_WEIGH =
-      '<svg viewBox="0 0 32 32" aria-hidden="true" fill="currentColor">' +
-      '<path d="M6 2 L16 12 L26 2 L30 6 L20 16 L30 26 L26 30 L16 20 L6 30 L2 26 L12 16 L2 6 Z"/></svg>';
+    const ICON_WEIGH = 
+      '<svg aria-hidden="true" viewBox="0 0 20 20">' +
+      '<polygon fill="currentColor" fill-rule="nonzero" points="18.2496 2.9289 11.1785 10 18.2496 17.0711 17.0711 18.2496 10 11.1785 2.9289 18.2496 1.7504 17.0711 8.8215 10 1.7504 2.9289 2.9289 1.7504 10 8.8215 17.0711 1.7504">' +
+      '</polygon></svg>';
 
     // Three contributions converging on one total.
-    const ICON_ADDUP =
-      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" ' +
-      'stroke-width="1.7" stroke-linecap="round">' +
-      '<path d="M1 1.4 L10 8"/><path d="M1 8 H10"/><path d="M1 14.6 L10 8"/>' +
-      '<circle cx="12.8" cy="8" r="2.4" fill="currentColor" stroke="none"/></svg>';
+    const ICON_ADDUP = 
+      '<svg aria-hidden="true" viewBox="0 0 20 20">' +
+      '<path d="M 1.6667 1.6592 L 11.6667 8.9675 L 11.6667 7.5 C 11.6667 7.0398 12.0398 6.6667 12.5 6.6667 L 17.5 6.6667 C 17.9602 6.6667 18.3333 7.0398 18.3333 7.5 L 18.3333 12.5 C 18.3333 12.9602 17.9602 13.3333 17.5 13.3333 L 12.5 13.3333 C 12.0398 13.3333 11.6667 12.9602 11.6667 12.5 L 11.6667 11.0317 L 1.6667 18.3392 L 1.6667 16.2742 L 9.1125 10.8333 L 1.6667 10.8333 L 1.6667 9.1667 L 9.1133 9.1667 L 1.6667 3.7242 L 1.6667 1.6592 Z" fill="currentColor" fill-rule="nonzero">' +
+      '</path></svg>';
 
     // One score forking to two answers; the one it picks is filled.
-    const ICON_PREDICT =
-      '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" ' +
-      'stroke-width="1.7" stroke-linecap="round">' +
-      '<path d="M0.8 8 H5"/><path d="M5 8 C8 8 7.5 2.6 10.2 2.6"/>' +
-      '<path d="M5 8 C8 8 7.5 13.4 10.2 13.4"/>' +
-      '<circle cx="12.9" cy="2.6" r="2.7" fill="currentColor" stroke="none"/>' +
-      '<circle cx="12.9" cy="13.4" r="2"/></svg>';
+    const ICON_PREDICT = 
+      '<svg aria-hidden="true" viewBox="0 0 20 20">' +
+      '<path d="M 11.7699 5.8264 L 11.7187 5.8317 L 11.6667 5.8333 C 10.6594 5.8333 9.9787 6.3256 8.6975 7.7944 C 8.6499 7.8489 8.4852 8.0383 8.4774 8.0473 C 7.6641 8.9812 7.2006 9.4514 6.5797 9.8962 L 6.4283 9.9988 C 6.479 10.0328 6.5295 10.0678 6.5797 10.1038 C 7.2006 10.5486 7.6641 11.0188 8.4774 11.9527 C 8.4852 11.9617 8.6499 12.1511 8.6975 12.2056 C 9.9787 13.6744 10.6594 14.1667 11.6667 14.1667 C 11.7016 14.1667 11.736 14.1688 11.7698 14.173 C 12.138 12.732 13.4446 11.6667 15 11.6667 C 16.8409 11.6667 18.3333 13.1591 18.3333 15 C 18.3333 16.8409 16.8409 18.3333 15 18.3333 C 13.4443 18.3333 12.1375 17.2676 11.7699 15.8264 C 11.736 15.8312 11.7016 15.8333 11.6667 15.8333 C 10.7464 15.8333 9.9329 15.5393 9.1692 14.987 C 8.6119 14.5839 8.1718 14.1384 7.4415 13.3012 C 7.3931 13.2456 7.2277 13.0555 7.2205 13.0473 C 6.4897 12.2081 6.092 11.8047 5.6091 11.4587 C 5.0842 11.0826 4.5557 10.8769 3.9536 10.8396 L 3.75 10.8333 L 1.6667 10.8333 L 1.6667 9.1667 L 3.75 9.1667 C 4.4382 9.1667 5.0259 8.9591 5.6091 8.5413 C 6.092 8.1953 6.4897 7.7919 7.2205 6.9527 C 7.2277 6.9445 7.3931 6.7544 7.4415 6.6988 C 8.1718 5.8616 8.6119 5.4161 9.1692 5.013 C 9.9329 4.4607 10.7464 4.1667 11.6667 4.1667 C 11.7016 4.1667 11.736 4.1688 11.7698 4.173 C 12.138 2.732 13.4446 1.6667 15 1.6667 C 16.8409 1.6667 18.3333 3.1591 18.3333 5 C 18.3333 6.8409 16.8409 8.3333 15 8.3333 C 13.4443 8.3333 12.1375 7.2676 11.7699 5.8264 Z M 15 13.3333 C 14.0795 13.3333 13.3333 14.0795 13.3333 15 C 13.3333 15.9205 14.0795 16.6667 15 16.6667 C 15.9205 16.6667 16.6667 15.9205 16.6667 15 C 16.6667 14.0795 15.9205 13.3333 15 13.3333 Z" fill="currentColor" fill-rule="nonzero">' +
+      '</path></svg>';
 
     const STEP_LABELS = ["Activate", "Weigh", "Add Up", "Predict"];
     const STEP_ICONS = [ICON_ACTIVATE, ICON_WEIGH, ICON_ADDUP, ICON_PREDICT];
@@ -8358,7 +8594,7 @@ function buildSimContent() {
     });
     const resetBtn = document.createElement("button");
     resetBtn.className = "nnm-reset";
-    resetBtn.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
+    resetBtn.innerHTML = resetIconSVG + '<span>Reset</span>';
     resetBtn.setAttribute("aria-label", "Clear the steps and start over");
     resetBtn.addEventListener("click", function () { setStep(0); });
     // One group of five. Reset is the same 36px pill as the four steps and reads
@@ -9076,6 +9312,46 @@ function buildSimContent() {
     prevBtn.addEventListener("click", function () { if (idx > 0) goToCase(idx - 1); });
     nextBtn.addEventListener("click", function () { if (idx < cases.length - 1) goToCase(idx + 1); });
 
+    // ---- leaving, and coming back ----
+    SIM.saveState = function () {
+      NNM_VIEWSTATE[myKey] = {
+        query: filter && filter.input ? filter.input.value : "",
+        idx: idx,
+        // Where every conversation got to, not just this one — the same reason
+        // stepByCase exists in the first place.
+        stepByCase: JSON.parse(JSON.stringify(stepByCase)),
+        animateOn: animBox ? animBox.checked : true,
+        speed: speedIn ? speedIn.value : "1",
+        about: aboutIsOpen()
+      };
+    };
+    const saved = NNM_VIEWSTATE[myKey];
+    if (saved) {
+      // Query first: it rewrites `cases` through onFilter, which also sends the list
+      // back to case 0 — so the index has to be put back after it, not before.
+      if (saved.query && filter && filter.input) {
+        filter.input.value = saved.query;
+        filter.input.dispatchEvent(new Event("input"));
+      }
+      if (saved.stepByCase) {
+        for (const k in saved.stepByCase) stepByCase[k] = saved.stepByCase[k];
+      }
+      if (animBox && saved.animateOn === false) {
+        animBox.checked = false;
+        animBox.dispatchEvent(new Event("change"));
+      }
+      if (speedIn && saved.speed != null && saved.speed !== speedIn.value) {
+        speedIn.value = saved.speed;
+        speedIn.dispatchEvent(new Event("input"));
+      }
+      if (typeof saved.idx === "number" && cases.length) {
+        // goToCase reads stepByCase for the case it lands on, so the step comes back
+        // with the conversation rather than needing to be restored separately.
+        goToCase(Math.max(0, Math.min(cases.length - 1, saved.idx)));
+      }
+      if (saved.about) reopenAbout();
+    }
+
     SIM.onResize = function () { SIM._rafs.push(requestAnimationFrame(render)); };
     render();
 
@@ -9310,7 +9586,13 @@ function buildSimContent() {
 
     const wrap = document.createElement("div");
     wrap.className = "sim-content";
-    SIM._timeouts = []; SIM._observers = []; SIM._rafs = [];
+    SIM._timeouts = []; SIM._observers = []; SIM._rafs = []; SIM._intervals = [];
+    // Which screen this IS, captured now. Not read at save time from activeSim: the
+    // toggle sets activeSim BEFORE it calls invalidateSimCache, so a screen saving
+    // against the live value files its state under the sim it is being replaced by.
+    // Trace a Case's work went into Extract Pathways' slot, came back out on the
+    // return trip, and lost everything the other screen has no control for.
+    const myKey = activeSim;
     const stack = document.createElement("div");
     stack.className = "nnm-stack";
     wrap.appendChild(stack);
@@ -9347,23 +9629,25 @@ function buildSimContent() {
     const resetBtn = document.createElement("button");
     resetBtn.type = "button";
     resetBtn.className = "nnm-reset";
-    resetBtn.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
+    resetBtn.innerHTML = resetIconSVG + '<span>Reset</span>';
     stepRow.appendChild(resetBtn);
     // Extract Pathways opens on the finished run, so there is nothing to step. It
     // gets its own control in the same place instead, so the row keeps the height
     // that starts the two panels level.
-    let exBtn = null, exReset = null, exWrap = null;
+    let exBtn = null, exCube = null, exReset = null, exWrap = null;
     if (opts.steps) {
       toolbar.appendChild(stepRow);
-    } else if (opts.extract) {
+    } else if (opts.extract && !opts.investigate) {
       const exRow = document.createElement("div");
       exRow.className = "d1a-steps d1a-exrow";
       exBtn = document.createElement("button");
       exBtn.type = "button";
       exBtn.className = "nnm-step d1a-extract";
       exBtn.textContent = "Extract Pathways";
-      exBtn.addEventListener("click", function () {
+      function startExtract(fromCube) {
+        exFromCube = fromCube;
         exBtn.disabled = true;
+        if (exCube) exCube.disabled = true;
         if (exReset) exReset.disabled = false;
         // The readout goes with everything else — it has nothing to say once the
         // neurons are no longer hoverable, and its 60-odd pixels are the difference
@@ -9376,17 +9660,29 @@ function buildSimContent() {
         measureEl.style.display = "none";
         growNet();
         runExtract();
-      });
+      }
+      exBtn.addEventListener("click", function () { startExtract(false); });
       exRow.appendChild(exBtn);
+      // TEMPORARY. A way to reach the particle stage without sitting through the
+      // minute of build in front of it. It runs the same calls the animation runs,
+      // with every duration set to zero, so what it lands on cannot drift from what
+      // the sequence actually arrives at. Delete it once the stage is settled.
+      exCube = document.createElement("button");
+      exCube.type = "button";
+      exCube.className = "nnm-step d1a-extract d1a-temp";
+      exCube.textContent = "TEMP: Start at Cube";
+      exCube.addEventListener("click", function () { startExtract(true); });
+      exRow.appendChild(exCube);
       // Reset undoes the extraction, so it sits beside the button that does it —
       // the same pairing the four steps have. Disabled until there is something to
       // undo.
       exReset = document.createElement("button");
       exReset.type = "button";
       exReset.className = "nnm-reset";
-      exReset.innerHTML = '<span class="glyph">&#8634;</span><span>Reset</span>';
+      exReset.innerHTML = resetIconSVG + '<span>Reset</span>';
       exReset.disabled = true;
       exReset.addEventListener("click", function () { clearExtract(); });
+      exReset.style.marginLeft = "4px";
       exRow.appendChild(exReset);
       // The pair is centred on the NETWORK panel below, not in the room left over
       // between the find bar and About. That is what this wrapper is for: it takes
@@ -9496,6 +9792,101 @@ function buildSimContent() {
       '<span class="sw neg"></span><span class="lo">\u2212</span>'
       + '<span class="sw pos"></span><span class="hi">+</span>';
     nHead.appendChild(scaleEl);
+
+    // ---- Animate, and the speed it runs at ----
+    // The Prediction Chain's pair, in the Prediction Chain's place: hard right of the
+    // panel head, Animate then the slider, with the key and a divider to their left.
+    // The key keeps its margin-left:auto, so it is still what pushes the group over —
+    // there are now four things travelling together rather than one.
+    let animateOn = true, animSpeed = 1;
+    const SPEEDS_D1A = [1.7, 1, 0.6];
+    const SPEED_NAMES_D1A = ["Slow", "Med", "Fast"];
+    let animBox = null, speedIn = null, speedWrap = null;
+    // Reduced-motion users get the un-animated version whether or not the box is
+    // ticked, the same rule the Prediction Chain follows.
+    function motionOff() {
+      return !animateOn || (window.matchMedia
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    }
+    if (opts.steps) {
+      // Between the key and the checkbox, taking the head's own 10px gap on each
+      // side — the divider the Prediction Chain puts between Reset and About.
+      const headRule = document.createElement("span");
+      headRule.className = "nnm-steprule d1a-headrule";
+      headRule.setAttribute("aria-hidden", "true");
+      nHead.appendChild(headRule);
+      const animWrap = document.createElement("label");
+      animWrap.className = "nnm-animtoggle";
+      animBox = document.createElement("input");
+      animBox.type = "checkbox";
+      animBox.checked = true;
+      const animText = document.createElement("span");
+      animText.textContent = "Animate";
+      animWrap.appendChild(animBox);
+      animWrap.appendChild(animText);
+      animBox.addEventListener("change", function () {
+        animateOn = animBox.checked;
+        speedIn.disabled = !animateOn;
+        speedWrap.classList.toggle("off", !animateOn);
+        // Whatever was mid-flight is abandoned and the diagram is left in the state
+        // the run had reached, which is what the un-animated version would show.
+        applyStepState(stepDone);
+      });
+      // The browser focuses a form control on MOUSEDOWN, before any click handler
+      // can run, so blurring afterwards is always a frame late and the ring has
+      // already been painted. Cancelling the mousedown default stops the pointer
+      // giving it focus at all; the click still toggles, because a label activates
+      // its control on click. Tab is untouched.
+      animWrap.addEventListener("mousedown", function (e) { e.preventDefault(); });
+      nHead.appendChild(animWrap);
+
+      speedWrap = document.createElement("div");
+      speedWrap.className = "nnm-speed";
+      speedIn = document.createElement("input");
+      speedIn.type = "range";
+      speedIn.min = "0"; speedIn.max = "2"; speedIn.step = "1"; speedIn.value = "1";
+      speedIn.setAttribute("aria-label", "Animation speed");
+      const speedTicks = document.createElement("div");
+      speedTicks.className = "nnm-speedticks";
+      // Each name pinned to the x the thumb actually rests at: its centre travels
+      // from half a thumb in to half a thumb from the far end. space-between would
+      // line up their EDGES and miss the stops by however wide each word is.
+      const SPEED_W = 92, THUMB = 24;
+      const speedLabs = SPEED_NAMES_D1A.map(function (nm, i) {
+        const t = document.createElement("span");
+        t.textContent = nm;
+        t.style.left = (THUMB / 2 + i * (SPEED_W - THUMB) / 2).toFixed(1) + "px";
+        speedTicks.appendChild(t);
+        return t;
+      });
+      const setSpeed = function (i) {
+        animSpeed = SPEEDS_D1A[i];
+        speedLabs.forEach(function (t, k) { t.classList.toggle("on", k === i); });
+        speedIn.setAttribute("aria-valuetext", SPEED_NAMES_D1A[i]);
+      };
+      speedIn.addEventListener("input", function () {
+        setSpeed(parseInt(speedIn.value, 10));
+      });
+      setSpeed(1);
+      // The native track spans the whole input, which runs half a thumb past the
+      // outer stops at each end. Drawn here instead so it starts and stops where the
+      // thumb does.
+      const TRACK_H = 4;
+      const speedTrack = document.createElement("div");
+      speedTrack.className = "nnm-speedtrack";
+      const trackLine = document.createElement("i");
+      trackLine.className = "nnm-trackline";
+      trackLine.style.left = (THUMB / 2 - TRACK_H / 2) + "px";
+      trackLine.style.width = ((SPEED_W - THUMB) + TRACK_H) + "px";
+      trackLine.style.height = TRACK_H + "px";
+      trackLine.style.borderRadius = (TRACK_H / 2) + "px";
+      speedTrack.appendChild(trackLine);
+      speedTrack.appendChild(speedIn);
+      speedWrap.appendChild(speedTrack);
+      speedWrap.appendChild(speedTicks);
+      nHead.appendChild(speedWrap);
+    }
+
     netPanel.appendChild(nHead);
     const nBody = document.createElement("div");
     nBody.className = "nnm-panel-body d1a-netbody";
@@ -9503,12 +9894,17 @@ function buildSimContent() {
     const svgHost = document.createElement("div");
     svgHost.className = "d1a-svghost";
     nBody.appendChild(svgHost);
+    // The readout under the diagram. Built either way so every reference below stays
+    // valid, but only attached where something reads it out — Extract Pathways has no
+    // hover and nothing to say, so the box sat empty and took 71px the diagram wanted.
     const pinEl = document.createElement("div");
     pinEl.className = "d1a-pin idle";
-    nBody.appendChild(pinEl);
     const measureEl = document.createElement("div");
     measureEl.className = "d1a-pin d1a-pinmeasure";
-    nBody.appendChild(measureEl);
+    if (opts.readout !== false) {
+      nBody.appendChild(pinEl);
+      nBody.appendChild(measureEl);
+    }
 
     // Colour for an activation on the project's ramp: orange positive, blue
     // negative, as slide 9 has it. (Two later slides say the reverse; the rest of
@@ -9631,7 +10027,17 @@ function buildSimContent() {
       // redrew the whole picture at a different size case to case; it is the
       // 12-unit embedding now, so the diagram is one diagram.
       // 44 clears the captions at y 17; 14 keeps the last circle off the bottom.
-      const top = 44, bot = H - 14;
+      //
+      // Any height beyond what the columns can use is split above and below rather
+      // than all falling below them. STEP_MAX caps how far apart the neurons spread,
+      // so a taller panel does not make a taller diagram — it makes the same diagram
+      // with slack under it, which is what the readout box used to occupy. On the
+      // screens that still carry a readout there is no slack and none of this moves.
+      const STEP_MAX = 30;
+      const COL_H = (EMB - 1) * STEP_MAX + 24;     // the tallest the column can draw
+      const slack = Math.max(0, (H - 14) - 44 - COL_H);
+      const yShift = Math.round(slack / 2);
+      const top = 44 + yShift, bot = H - 14 - yShift;
       // One radius for every neuron: nothing in the model grows left to right, so
       // size spent on a gradient would only invite being read as importance.
       //
@@ -9640,7 +10046,6 @@ function buildSimContent() {
       // the panel got short, which it does on the iPad layouts. STEP_MAX caps how
       // far apart they spread when there IS room, and the radius is whatever fits
       // that step with a 6px gap left over.
-      const STEP_MAX = 30;
       const tightest = Math.min(STEP_MAX, (bot - top) / (EMB - 1));
       const R = Math.max(5, Math.min(12, Math.floor(tightest / 2) - 3));
       // `label` is the caption over the column; `short` is what a neuron in it is
@@ -10008,6 +10413,9 @@ function buildSimContent() {
       // state 1, so the button becomes available again.
       extractDone = false;
       if (exBtn) exBtn.disabled = extracted;
+      // The temp way in comes back with the real one. It is a second door to the
+      // same state, so it is available exactly when that state can be entered.
+      if (exCube) exCube.disabled = extracted;
       if (exReset) exReset.disabled = !extracted;
       // The node lists are resolved when the button is pressed, not here: the
       // neurons are drawn further down this same function, so querying now would
@@ -10078,7 +10486,7 @@ function buildSimContent() {
       cols.forEach(function (c, li) {
         const g = el("g", {});
         scene.appendChild(g);
-        const cap = el("text", { x: c.x, y: 20, class: "d1a-collabel" });
+        const cap = el("text", { x: c.x, y: 20 + yShift, class: "d1a-collabel" });
         cap.setAttribute("text-anchor", "middle");
         cap.textContent = c.label;
         scene.appendChild(cap);
@@ -10400,7 +10808,10 @@ function buildSimContent() {
       // drawing alone. Redrawing rebuilt it around whichever conversation was
       // selected, which put a different conversation 1 in the deck every time the
       // arrow was pressed.
-      if (extracted) {
+      // ...but only once there IS one. On the first render of a rebuilt screen —
+      // coming back to Extract Pathways with its state restored — nothing has been
+      // drawn yet, and returning here would leave an empty panel.
+      if (extracted && svgHost.__extract) {
         if (typeof restoreSteps === "function") restoreSteps();
         return;
       }
@@ -10525,15 +10936,35 @@ function buildSimContent() {
     function hereId() { return cases.length ? cases[idx].id : null; }
     const STEP_RUNNERS = [];        // filled in as each step is defined
 
+    // `on` is the state you are LOOKING AT, not how far you have got — the
+    // Prediction Chain's reading. The diagram already shows the progress, in lit
+    // layers and drawn fans; what the row has to say is which of the four states is
+    // on screen. Marking every step up to n instead made the row a progress bar and
+    // left no way to see that pressing Step 2 had taken you back to Step 2.
+    let stepShown = 0;        // the state on screen, which is not stepDone
+    function markStep(n) {
+      stepShown = n;
+      stepBtns.forEach(function (b, i) {
+        const cur = (i + 1) === n;
+        b.classList.toggle("on", cur);
+        b.setAttribute("aria-pressed", cur ? "true" : "false");
+      });
+      // Reset lives here rather than in syncSteps because it has to come alive the
+      // moment a step is PRESSED, the way it does in the Prediction Chain. Keyed on
+      // stepDone it waited for the animation to finish first — so through the whole
+      // of Step 1 there was a run going and no way to undo it.
+      resetBtn.disabled = !n;
+      setAriaDisabled(resetBtn, !n);
+    }
+    // Never disabled, exactly as over there. The four are states to jump between,
+    // and one of them is always reachable — including while another is mid-flight,
+    // which is how a run gets interrupted rather than having to be waited out.
     function syncSteps() {
       stepBtns.forEach(function (b, i) {
-        const live = !running && i === stepDone && !!STEP_RUNNERS[i];
+        const live = !!STEP_RUNNERS[i];
         setAriaDisabled(b, !live);
         b.disabled = !live;
       });
-      const any = stepDone > 0 || running;
-      resetBtn.disabled = !any;
-      setAriaDisabled(resetBtn, !any);
     }
 
     // A layer's numbers become readable only once the step that produces them has
@@ -10669,7 +11100,6 @@ function buildSimContent() {
       svgHost.querySelectorAll(".d1a-node").forEach(function (n) {
         setNodeLevel(n, 0);
       });
-      stepBtns[0].classList.remove("on");
     }
 
     function runStep1() {
@@ -10679,7 +11109,7 @@ function buildSimContent() {
       const nodes = Array.prototype.slice.call(
         svgHost.querySelectorAll('.d1a-node[data-layer="0"]'));
       if (!words.length || !nodes.length) return;
-      stepBtns[0].classList.add("on");
+      markStep(1);
       running = true;
       syncSteps();
 
@@ -10706,7 +11136,10 @@ function buildSimContent() {
       nodes.forEach(function (node, ni) {
         const nr = nodeRects[ni];
         const tx = nr.left + nr.width / 2, ty = nr.top + nr.height / 2;
-        const dur = Math.max(DUR_MIN, DUR_FIRST * Math.pow(DUR_DECAY, ni));
+        // The slider lands here: passStart, t and `arrive` are all derived from this
+        // one number, so multiplying it carries the speed through the whole pass
+        // rather than through a dozen call sites.
+        const dur = Math.max(DUR_MIN, DUR_FIRST * Math.pow(DUR_DECAY, ni)) * animSpeed;
         const passStart = t;
         t += dur * PASS_OVERLAP;
         // Sorted by how far each word has to travel TO THIS UNIT — which is a
@@ -10785,7 +11218,7 @@ function buildSimContent() {
                 const tidy = setTimeout(function () {
                   if (mine !== stepRun) return;
                   if (flyLayer) { flyLayer.remove(); flyLayer = null; }
-                }, 500);
+                }, 500 * animSpeed);
                 SIM._timeouts.push(tidy);
               }
             }, arrive);
@@ -10891,7 +11324,7 @@ function buildSimContent() {
       // and not an anonymous line.
       const sources = Array.prototype.slice.call(
         svgHost.querySelectorAll('.d1a-node[data-layer="' + (targetLayer - 1) + '"]'));
-      stepBtns[bi].classList.add("on");
+      markStep(bi + 1);
       running = true;
       syncSteps();
       const reduced = window.matchMedia
@@ -10919,12 +11352,12 @@ function buildSimContent() {
       const wl = setTimeout(function () {
         if (mine !== stepRun) return;
         showWeightLabel(targetLayer - 1);
-      }, Math.max(GROW_MIN, GROW_FIRST) / 2);
+      }, Math.max(GROW_MIN, GROW_FIRST) / 2 * animSpeed);
       SIM._timeouts.push(wl);
 
       let t = 0;
       fan.forEach(function (group, ai) {
-        const dur = Math.max(GROW_MIN, GROW_FIRST * Math.pow(GROW_DECAY, ai));
+        const dur = Math.max(GROW_MIN, GROW_FIRST * Math.pow(GROW_DECAY, ai)) * animSpeed;
         const at = t;
         t += dur;
         const src = sources[ai];
@@ -10982,7 +11415,6 @@ function buildSimContent() {
       clearFan(fan);
       svgHost.querySelectorAll('.d1a-node[data-layer="' + targetLayer + '"]')
         .forEach(function (n) { setNodeLevel(n, 0); });
-      stepBtns[bi].classList.remove("on");
     }
     function clearStep2() { clearFanStep(fanOut, 1, 1); }
     function clearStep3() { clearFanStep(fanOut2, 2, 2); }
@@ -11006,9 +11438,8 @@ function buildSimContent() {
         setNodeLevel(nd, 0);
       });
       revealAnswer(false);
-      stepBtns.forEach(function (b) { b.classList.remove("on"); });
+      markStep(n);
       for (let sN = 1; sN <= n; sN++) {
-        stepBtns[sN - 1].classList.add("on");
         svgHost.querySelectorAll('.d1a-node[data-layer="' + (sN - 1) + '"]')
           .forEach(function (nd) { setNodeLevel(nd, 1); });
         if (sN >= 2) drawFan(fans[sN - 2]);
@@ -11085,6 +11516,37 @@ function buildSimContent() {
     const EX_PATHWAYS = false;
     // Everything after the fourteen line up. Off while the next idea is designed.
     const EX_AFTER = false;
+    // Stage 0 is the new opening: copies of the fourteen hidden units lifted into a
+    // column beside an untouched diagram. Set false to run the whole sequence again.
+    const EX_STAGE0_ONLY = true;
+    // ---- a way in at the cube ----
+    // The particle stage is being designed, and sitting through a minute of build to
+    // reach it every time is not a way to design anything. The second button puts the
+    // eight hundred on screen at once and carries on from there; Extract Pathways
+    // still plays the whole thing. Set by the button that was pressed, read by the
+    // stage that has to decide which it is.
+    let exFromCube = false;
+    // The fourteen travel a long way — from two columns in the middle of the diagram
+    // out to the right edge — and all of them at once, so the journey has to be slow
+    // enough to follow back to where each one came from.
+    const LIFT_MS = 800;
+    // Everything that is NOT one of the fourteen drops to half first, so what lifts
+    // out is the only thing at full strength and its two source columns are obvious.
+    // It dims rather than disappearing: the diagram is still the point, and these
+    // fourteen are being taken FROM it.
+    const LIFT_DIM = 0.5, LIFT_DIM_MS = 350, LIFT_HOLD = 200;
+    const LIFT_LAND_GAP = 80;  // between one circle LANDING and the next
+    const UNDIM_MS = 320;      // the diagram coming back to full strength
+    // The four steps at a fraction of their Trace a Case timing. They are the
+    // recap here, not the lesson — that was Trace a Case's job.
+    // The fans at well under a third of their Trace a Case timing, and Step 1
+    // replaced outright by a fill — see fillInputs.
+    const STEP_SPEED = 0.26, STEP_GAP = 110, FILL_GAP = 55;
+    // A beat on the finished network before it is taken apart again.
+    const STEPS_REST = 700;
+    // Between one conversation landing in the cube and the next one arriving in the
+    // diagram, and between that arriving and being taken.
+    const NEXT_REST = 450, NEXT_HOLD = 550;
     // How many conversations end up in the column, and how the arrivals accelerate.
     const CONV_ROWS = 10, CONV_FIRST = 430, CONV_DECAY = 0.88, CONV_MIN = 230;
     const CONV_NAMES_OUT = 280, CONV_HEAD_IN = 320;
@@ -11227,8 +11689,21 @@ function buildSimContent() {
     function clearExtract() {
       if (!extracted) return;
       extracted = false;
+      exFromCube = false;
       loadSel = null;
       closePanels();
+      // The four steps the extraction plays are part of the ANIMATION, not something
+      // the student did — but they go through the real runners, so stepFinished
+      // recorded them like any other progress. Left there, the redraw restored a
+      // fully stepped network and Reset came back to the diagram lit up, with the
+      // recap having nothing left to replay. Extract Pathways shows no step buttons,
+      // so it has no progress worth keeping.
+      const id = hereId();
+      if (id) delete stepState[id];
+      stepDone = 0;
+      running = false;
+      // Reset can land mid-recap, with the multiplier still wound down.
+      animSpeed = 1;
       // The grid took the cap off the drawing's width so it could reach the margins.
       // Putting it back is what returns the network to its own size — without this,
       // Reset redrew it stretched across the whole panel.
@@ -11275,6 +11750,1358 @@ function buildSimContent() {
       // merged into one white neuron and there was no colour left for it to explain —
       // but the stack keeps every gauge lit, so 800 conversations' worth of orange and
       // blue are on screen at the end and the key is the only thing that reads them.
+      // ---- the cube's own geometry ----
+      // Declared up here because stage 2 lands its column on these rows at this
+      // radius, and stage 2 runs inside a branch that RETURNS — a const declared
+      // further down would still be in its temporal dead zone when reached.
+
+      const STACK_N = 20;
+      const STACK_BAND = 34, STACK_STEP = 620, STACK_STEP_MIN = 200, STACK_HOLD = 2;
+      function stackGap(d) {                 // the beat before column d lands
+        if (d <= STACK_HOLD) return STACK_STEP;
+        const t = (d - STACK_HOLD) / (STACK_N - 1 - STACK_HOLD);
+        return Math.round(STACK_STEP_MIN +
+          (STACK_STEP - STACK_STEP_MIN) * Math.pow(1 - t, 1.5));
+      }
+      const STACK_R = Math.min(X.r,
+        Math.floor((X.H - STACK_BAND - 4) / (STACK_N + 27) * 10) / 10);
+      const STACK_DY = STACK_R;               // half a neuron's height
+      const STACK_DX = -STACK_R;              // half its width
+      const STACK_SCALE = STACK_R / X.r;
+      const colPad = STACK_R + 2;
+      const colTop = STACK_BAND + colPad;
+      const colBot = X.H - colPad - STACK_DY * (STACK_N - 1);
+      const colStep = (colBot - colTop) / (units.length - 1);
+      function colRowY(i) { return colTop + i * colStep; }
+
+      // ---- stage 0: the fourteen come out ----
+      // COPIES of Hidden Layer 1 and Hidden Layer 2, lifted into one column on the
+      // right. The diagram itself is not touched — it stays whole behind them, which
+      // is the claim: these fourteen are a population drawn FROM the network, not the
+      // network rearranged.
+      //
+      // There is no room on the right until the canvas is widened. The drawing is
+      // capped at 537 and centred, so lifting the cap moves its left edge 229px left
+      // and hands back 229px on the right; the scene is pushed by the same amount, so
+      // nothing already drawn appears to move. Same arithmetic the panel-opening crop
+      // uses later, from the same cap.
+      let liftShift = 0, liftCols = null, liftW0 = 0;
+      function widenForLift() {
+        if (!X.svg) return 0;
+        const before = svgHost.getBoundingClientRect().left;
+        svgHost.style.maxWidth = "none";
+        const wNew = Math.round(svgHost.clientWidth || X.W);
+        liftShift = Math.round(before - svgHost.getBoundingClientRect().left);
+        if (wNew > X.W) {
+          liftW0 = X.W;                          // the canvas before it was widened
+          X.svg.setAttribute("width", wNew);
+          X.svg.setAttribute("viewBox", "0 0 " + wNew + " " + X.H);
+          X.scene.style.transform = "translate(" + liftShift + "px,0)";
+          X.W = wNew;
+        }
+        return liftShift;
+      }
+      // The column sits in the room the widening opened, centred in it and centred
+      // down the panel. Full size, because nothing has shrunk yet.
+      // In the SCENE's own coordinates, not the screen's. The scene carries the
+      // widening shift, so anything placed in it is drawn liftShift further right —
+      // measuring the free space on screen and placing into the scene added that
+      // offset twice and put the column off the end of the canvas.
+      function liftGeom() {
+        const r = X.r;
+        const right = X.W - liftShift;           // canvas right edge, scene space
+        const freeL = liftW0;                    // where the old canvas ended
+        const cx = Math.round((freeL + right) / 2);
+        const pitch = Math.min(28, (X.H - 2 * (r + 8)) / (units.length - 1));
+        const span = (units.length - 1) * pitch;
+        const top = Math.round((X.H - span) / 2);
+        return { cx: cx, r: r, y: function (k) { return top + k * pitch; } };
+      }
+      // Half strength, not gone, and pointer events left alone — nothing here is
+      // clickable yet, and the later full fade is what takes the diagram away.
+      function dimRest(ms) {
+        X.fade.forEach(function (e) {
+          // Anything already hidden stays hidden. Every neuron carries a .d1a-ring
+          // sibling parked at opacity 0 until it is hovered or pinned, so setting the
+          // whole fade set to 0.5 did not dim those — it turned them ON, which is the
+          // heavy dark ring that appeared around the input and output circles. The
+          // later full fade never showed this because 0 over 0 is still 0.
+          if (parseFloat(getComputedStyle(e).opacity) === 0) return;
+          e.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          e.style.opacity = String(LIFT_DIM);
+        });
+      }
+      // Fourteen circles leaving at once, on identical straight lines, at identical
+      // speed, read as one rigid block sliding. Three things break that up, and none
+      // of them is random — the same run has to look the same every time:
+      //
+      //   the PATH curves, because x and y are carried on separate nested groups
+      //     with different easings. It is the trick the Prediction Chain's word
+      //     chips already use (EASE_X / EASE_Y), and it costs one extra <g>.
+      //   the DURATION follows the distance, so a neuron from the far column takes
+      //     longer than one already near the column. Constant-ish speed rather than
+      //     constant time is what stops them arriving in a rank.
+      //   the START is staggered down the two source columns, so they leave in the
+      //     order the eye would read them.
+      // One flight, used by both columns. `make(inner, k, cx, cy, r)` draws whatever a
+      // copy is this time — an empty circle for the first column, a filled gauge for
+      // the second — and everything about the motion is shared, so the two moves
+      // cannot drift apart.
+      function flyInto(g, cls, make, ms, host) {
+        const wrap = el("g", { class: cls });
+        (host || X.scene).appendChild(wrap);
+        const made = [];
+        // Longest journey first, so every duration can be read against it.
+        let far = 1;
+        units.forEach(function (n, k) {
+          far = Math.max(far, Math.hypot(n.__cx - g.cx, n.__cy - g.y(k)));
+        });
+        units.forEach(function (n, k) {
+          const outer = el("g", {});                 // carries x
+          const inner = el("g", {});                 // carries y
+          outer.appendChild(inner);
+          make(inner, k, g.cx, g.y(k), g.r);
+          wrap.appendChild(outer);
+          made.push(outer);
+          // Built where it is GOING and then put back on the neuron it copies, so
+          // letting go is the move — including the SIZE. A copy is drawn at the
+          // column's radius and starts scaled up to the diagram's, so it leaves at the
+          // size of the neuron it came from and shrinks in flight. Scaling about its
+          // own target centre means the scale does not move it: the centre still lands
+          // on the source whatever the factor, so the two can be set independently.
+          // For a column drawn at full size the factor is 1 and nothing scales.
+          const dx = n.__cx - g.cx, dy = n.__cy - g.y(k);
+          const grow = X.r / g.r;
+          const org = g.cx + "px " + g.y(k) + "px";
+          inner.style.transformBox = "view-box";
+          inner.style.transformOrigin = org;
+          outer.style.transform = "translate(" + dx.toFixed(1) + "px,0)";
+          inner.style.transform = "translate(0," + dy.toFixed(1) + "px) scale("
+                                + grow.toFixed(4) + ")";
+          if (!ms) { outer.style.transform = ""; inner.style.transform = ""; return; }
+          // Scheduled by when it LANDS, not when it leaves. Hidden Layer 2 sits
+          // closer to the column than Hidden Layer 1, so at constant-ish speed its
+          // six overtook the eight and the column filled in a jumbled order. Fixing
+          // the arrival and solving back for the departure fills it top to bottom:
+          // row k lands one gap after row k-1, whatever distance it had to cover.
+          const reach = Math.hypot(dx, dy) / far;             // 0..1
+          const dur = Math.round(ms * (0.72 + 0.45 * reach));
+          const land = Math.round(ms * 1.17) + k * LIFT_LAND_GAP;
+          const delay = Math.max(0, land - dur);
+          void outer.getBoundingClientRect();
+          outer.style.transition = "transform " + dur + "ms " + EASE_X + " " + delay + "ms";
+          inner.style.transition = "transform " + dur + "ms " + EASE_Y + " " + delay + "ms";
+          outer.style.transform = "";
+          inner.style.transform = "";
+        });
+        // The WRAP, not the row list: a flown column has to be registered, shaded and
+        // moved as one thing like any other. Its rows are parked on it for the
+        // shading, which treats row 0 differently from the rest.
+        wrap.__rows = made;
+        return wrap;
+      }
+      // An empty circle: the first column is the population, not any conversation.
+      function makeEmpty(inner, k, cx, cy, r) {
+        inner.appendChild(el("circle", { cx: cx, cy: cy, r: r, fill: "#FFFFFF" }));
+        const ring = el("circle", { cx: cx, cy: cy, r: r, class: "d1a-node" });
+        ring.style.fill = "none";
+        inner.appendChild(ring);
+      }
+      function liftOut(ms) {
+        if (liftCols) return;
+        liftCols = [flyInto(liftGeom(), "d1a-lift", makeEmpty, ms)];
+      }
+
+      // ---- stage 2: the cube's first column ----
+      // The same fourteen again, but carrying THIS conversation now — the steps have
+      // run, so each one has a value and a sign. They fly LEFT, into the strip the
+      // widening opened on that side, and that column is the first of the cube.
+      // THE CUBE'S geometry, not the diagram's: STACK_R and the colRowY rows, which
+      // is what every column of the deck is drawn at. The copies scale down on the way
+      // over, so what lands is already the first column of the cube rather than a
+      // full-size column that has to be resized afterwards. The rows sit high in the
+      // panel on purpose — the deck drops half a neuron per column as it grows, and
+      // that fall is the room colBot leaves under them.
+      //
+      // In SCENE space, like liftGeom. The strip the widening opened runs from 0 to
+      // liftShift on screen; the scene is drawn liftShift further right, so the same
+      // strip is -liftShift..0 here. Using the screen figure put the column at 344 —
+      // inside the diagram — which is the second time this frame has caught me.
+      function leftGeom() {
+        return { cx: Math.round(-liftShift / 2), r: STACK_R,
+                 y: function (k) { return colRowY(k); } };
+      }
+      // A gauge, drawn the way every neuron in this file is drawn: filling out from
+      // the centre, up for positive and down for negative, clipped to the circle. The
+      // clip is cut per row and shared, the same trick the deck's columns use.
+      let clipSeq = 0;
+      // ---- the deck's depth ----
+      // Set 1's columns are the box's RIGHT face and every set's twentieth column is
+      // the FRONT face, so those are the two surfaces that take an overlay; the rest
+      // of a set is interior and never seen. The overlay goes on the COLUMN and not
+      // on the set's group, because a filter above a seam would put that seam 35
+      // points off the other thirty-nine, and it cannot be divided back out — a
+      // child's filter runs before its parent's, so brightening the seam first clips
+      // white at 255 and the parent then darkens the clipped value. Exempting it is
+      // the only order that composes.
+      const CB_SHADE = 0.005, CB_SHADE_CAP = 40, CB_SEAM_SHADE = 0.0025;
+      const CB_HALF_K = Math.SQRT1_2;
+      // The top row of a set-1 column is the deck's top SURFACE — nothing sits above
+      // it — so it does not take the whole overlay the rest of the column takes. It
+      // takes half a circle cut on the deck's own 45 degrees: the chord runs
+      // top-right to bottom-left, the same line the top edge steps along, and the
+      // black fills below it.
+      function cbHalfPath(cx, cy, r) {
+        const k = r * CB_HALF_K;
+        return "M " + (cx + k).toFixed(2) + " " + (cy - k).toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
+               (cx - k).toFixed(2) + " " + (cy + k).toFixed(2) + " Z";
+      }
+      // A SEAM column's top circle is cut straight across instead of on the 45: it is
+      // the front of its slab, not a step in the staircase, so its surface is the flat
+      // top half and the grey is the bottom half.
+      function cbBottomHalf(cx, cy, r) {
+        return "M " + (cx + r).toFixed(2) + " " + cy.toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
+               (cx - r).toFixed(2) + " " + cy.toFixed(2) + " Z";
+      }
+      // The corner's top circle answers to both faces at once and each cuts it its own
+      // way. LEFT of centre is the front face, cut straight across like every other
+      // seam top; RIGHT of centre is the right face, cut on the 45 like every other
+      // column of set 1. What is left white is the top-left quarter plus the wedge
+      // above the diagonal.
+      function cbBottomLeft(cx, cy, r) {
+        return "M " + cx.toFixed(2) + " " + cy.toFixed(2) +
+               " L " + (cx - r).toFixed(2) + " " + cy.toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 0 " +
+               cx.toFixed(2) + " " + (cy + r).toFixed(2) + " Z";
+      }
+      // Conversation 20 of set 1 is the corner of the box — the last column of the
+      // right face AND the front of its own slab — so it carries two greys. The
+      // dividing line is vertical through the centre: right of it belongs to the right
+      // face, left of it to the front. Below the top row that is a plain half circle;
+      // on the top row the 45 degree chord has already taken the surface out, and
+      // since that chord runs through the centre, what is left on the right is the
+      // sector from the chord round to the bottom.
+      function cbRightHalf(cx, cy, r) {
+        return "M " + cx.toFixed(2) + " " + (cy - r).toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
+               cx.toFixed(2) + " " + (cy + r).toFixed(2) + " Z";
+      }
+      function cbRightSector(cx, cy, r) {
+        const k = r * CB_HALF_K;
+        return "M " + cx.toFixed(2) + " " + cy.toFixed(2) +
+               " L " + (cx + k).toFixed(2) + " " + (cy - k).toFixed(2) +
+               " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
+               cx.toFixed(2) + " " + (cy + r).toFixed(2) + " Z";
+      }
+      function cbOverlay(d) {
+        return el("path", { d: d, fill: "#000000", "fill-opacity": "0" });
+      }
+      const cbFirst = [];        // set 1's twenty columns — the right face
+      const cbSeam = [];         // every set's twentieth — the front face
+      function cbRegister(g, set, depth) {
+        if (!set) cbFirst.push(g);
+        if (depth === CUBE_TOTAL - 1) cbSeam[set] = g;
+      }
+      // Which column flyInto is currently building. Its make() is called per ROW and
+      // knows nothing else about the column the row belongs to, so the surface cut on
+      // row 0 has to be hung somewhere the caller can pick it up again.
+      let flyingCol = null;
+
+      function makeFilled(inner, k, cx, cy, r) {
+        makeGauge(inner, units[k].__v || 0, cx, cy, r, k === 0 ? cbHalfPath : null);
+      }
+      function makeGauge(inner, v, cx, cy, r, shape) {
+        inner.appendChild(el("circle", { cx: cx, cy: cy, r: r, fill: "#FFFFFF" }));
+        const h = r * Math.min(1, Math.abs(v));
+        if (h >= 0.5) {
+          // A COUNTER, not the row number. Keyed on k the id repeated on every
+          // column, and a duplicate id does not error — url(#id) simply resolves to
+          // the first one in the document, so the second column's fills were being
+          // clipped by the FIRST column's circles, half a neuron up and to the
+          // right of where they belong.
+          const id = "d1acube-" + drawSeq + "-" + (clipSeq++);
+          const cp = el("clipPath", { id: id });
+          cp.appendChild(el("circle", { cx: cx, cy: cy, r: r }));
+          inner.appendChild(cp);
+          inner.appendChild(el("rect", { x: cx - r, y: v >= 0 ? cy - h : cy,
+                                         width: r * 2, height: h,
+                                         "clip-path": "url(#" + id + ")",
+                                         fill: signColour(v) }));
+        }
+        // Under the ring, over the gauge: the ring is what separates one circle from
+        // the next and stays at full strength whatever the overlay does.
+        if (shape && flyingCol) {
+          flyingCol.__half = cbOverlay(shape(cx, cy, r));
+          inner.appendChild(flyingCol.__half);
+        }
+        const ring = el("circle", { cx: cx, cy: cy, r: r, class: "d1a-node" });
+        ring.style.fill = "none";
+        inner.appendChild(ring);
+      }
+      // Column c of the cube: each one half a neuron down and half a neuron left of
+      // the one behind it, and drawn later so it stands in front — the deck's own
+      // offsets, so these columns are the deck rather than something that will have
+      // to be reconciled with it later.
+      let cubeCols = [];
+      function cubeGeom(c) {
+        const g = leftGeom();
+        return { cx: g.cx + c * STACK_DX, r: g.r,
+                 y: function (k) { return g.y(k) + c * STACK_DY; } };
+      }
+      // One group for the whole deck: from conversation 7 the cube has to move as a
+      // unit, and moving it is one transform here rather than a transform on each
+      // column. Created empty and at identity, so the six flights that land in it
+      // are not thrown off by a parent transform they did not expect.
+      let cubeG = null;
+      function cubeHost() {
+        if (!cubeG) {
+          cubeG = el("g", { class: "d1a-cubeg" });
+          X.scene.appendChild(cubeG);
+          cbSetG[0] = cubeG;    // conversations 1-20 ARE the deck's first set
+        }
+        return cubeG;
+      }
+      function cubeColumn(c, ms) {
+        const hold = flyingCol = {};
+        const g = flyInto(cubeGeom(c), "d1a-cube", makeFilled, ms, cubeHost());
+        flyingCol = null;
+        g.__half = hold.__half;
+        cubeCols[c] = g;
+        cbRegister(g, 0, c);
+      }
+
+      // ---- the diagram goes, and the cube takes over ----
+      const CUBE_TOTAL = 20;         // columns built one at a time, each one named
+      const HIDE_MS = 420;           // the diagram fading out
+      const CUBE_MOVE_MS = 700;      // and the cube taking the room it leaves
+      const COL_SLIDE = 16, COL_IN_MS = 420;
+      // The beat before column d lands. Conversations 7 to 10 arrive at reading
+      // pace — each is being named, and a name needs time to be read — and from
+      // there it eases down, so twenty conversations read as a deck filling up
+      // rather than as twenty separate events.
+      const COL_SLOW = 900, COL_FAST = 240, COL_EASE_FROM = 9;
+      function colGap(d) {
+        if (d <= COL_EASE_FROM) return COL_SLOW;
+        const t = (d - COL_EASE_FROM) / (CUBE_TOTAL - 1 - COL_EASE_FROM);
+        return Math.round(COL_FAST + (COL_SLOW - COL_FAST) * Math.pow(1 - t, 1.6));
+      }
+
+      // The cube grows down and to the LEFT, so every column added moves its centre
+      // half a neuron further left. Shifting the whole thing back by that much as
+      // each one lands is what keeps it centred instead of walking off the panel —
+      // the same rule the deck already used when a new set pushed the old one over.
+      //
+      // Scene coordinates, with the widening shift taken out exactly once: X.scene
+      // carries translate(liftShift), so the canvas centre — X.W / 2 in the svg's
+      // own coordinates — is X.W / 2 - liftShift in here.
+      // The room the deck actually has. Centred on the whole panel, the deepest sets
+      // ran straight over the lifted column — and those fourteen circles are the one
+      // thing still saying what a row IS, so the deck gets the space to their left
+      // and centres in that instead.
+      // Exactly between the two, with no margin of its own: a clearance here is not
+      // clearance, it is a bias — it shortens the right side of the room only, so the
+      // deck ends up nearer the panel's edge than the column it was moved to avoid.
+      // The deck is narrower than the room, and that surplus is the gap.
+      function deckMid() {
+        return (-liftShift + (liftGeom().cx - X.r)) / 2;
+      }
+      function centreCube(n, ms) {
+        const host = cubeHost();
+        const base = colBaseX();                        // column 0's centre
+        const mid = base - (n - 1) * STACK_R / 2;       // the block's centre
+        const dx = Math.round(deckMid() - mid);
+        host.style.transition = ms ? "transform " + ms + "ms " + EASE_X : "none";
+        host.style.transform = "translate(" + dx + "px,0)";
+      }
+
+      // One clipPath per ROW, cut once and shared by every column in the deck. Each
+      // column is drawn at the SAME local coordinates and carried into place by its
+      // own transform, and a clipPath resolves in the coordinate space of the
+      // element referencing it — so a column's transform takes its clips with it.
+      // Cut per circle instead, eight hundred conversations would need eleven
+      // thousand clipPaths.
+      // A FUNCTION, not a const. liftShift is set by widenForLift when the button is
+      // pressed, which is after this body has run — captured as a const it was still
+      // 0, so every column built from it sat 114px right of the six that flew in
+      // from leftGeom(), which reads it live.
+      function colBaseX() { return Math.round(-liftShift / 2); }
+      let rowClips = null;
+      function rowClipIds() {
+        if (rowClips) return rowClips;
+        rowClips = [];
+        const defs = el("g", { class: "d1a-cubedefs" });
+        X.scene.appendChild(defs);
+        for (let i = 0; i < units.length; i++) {
+          const id = "d1acol-" + drawSeq + "-" + i;
+          const cp = el("clipPath", { id: id });
+          cp.appendChild(el("circle", { cx: colBaseX(), cy: colRowY(i), r: STACK_R }));
+          defs.appendChild(cp);
+          rowClips.push(id);
+        }
+        return rowClips;
+      }
+
+      // From conversation 7 there is no diagram to read a value off and nothing to
+      // fly from, so a column is built straight from the numbers and simply arrives.
+      // depth is its position within its own twenty: every set is the same shape, so
+      // a column's local place is the same whichever set it belongs to, and the set's
+      // transform is what says which one that is.
+      function addColumn(depth, n, ms, host, set) {
+        const f = forward(cases[n] || cases[0]);
+        const vs = f.h1.concat(f.h2);
+        const clip = rowClipIds();
+        const wrap = el("g", { class: "d1a-cube" });
+        const home = "translate(" + (STACK_DX * depth).toFixed(1) + "px,"
+                   + (STACK_DY * depth).toFixed(1) + "px)";
+        // Row 0 in its own group and rows 1-13 in another, so an overlay can go on
+        // the body of a column while its top row — which is the deck's surface — is
+        // treated differently.
+        const topG = el("g", {}), bodyG = el("g", {});
+        wrap.appendChild(topG);
+        wrap.appendChild(bodyG);
+        wrap.__body = bodyG;
+        wrap.__right = [];
+        const isSeam = depth === CUBE_TOTAL - 1;
+        const isCorner = isSeam && !set;
+        const bx = colBaseX();
+        vs.forEach(function (v, i) {
+          const into = i ? bodyG : topG;
+          gaugeAt(into, v, bx, colRowY(i), STACK_R, clip[i], function (cx, cy, r) {
+            // The top row loses the surface to its own cut, on set 1's columns and on
+            // every set's seam — the two things that carry an overlay.
+            if (i === 0 && (!set || isSeam)) {
+              wrap.__half = cbOverlay(
+                (isCorner ? cbBottomLeft : isSeam ? cbBottomHalf : cbHalfPath)(cx, cy, r));
+              into.appendChild(wrap.__half);
+            }
+            // ...and the corner carries the right face on top of that, over the half
+            // so the two compose.
+            if (isCorner) {
+              const rp = cbOverlay((i ? cbRightHalf : cbRightSector)(cx, cy, r));
+              into.appendChild(rp);
+              // Row 0 is outside the body's filter and its left quarter carries no
+              // front grey underneath, so its right piece is the right face OUTRIGHT.
+              // Rows 1 and down sit on the front grey already and take the difference.
+              if (i) wrap.__right.push(rp); else wrap.__rightTop = rp;
+            }
+          });
+        });
+        cbRegister(wrap, set || 0, depth);
+        wrap.style.transform = home;
+        // Last in, so a later conversation stands in FRONT of the one behind it.
+        (host || cubeHost()).appendChild(wrap);
+        if (!ms) return wrap;
+        // It comes in a little to the left and abuts, rather than appearing where it
+        // belongs: the slide is what says it is being added to a stack.
+        wrap.style.transform = "translate(" + (STACK_DX * depth - COL_SLIDE).toFixed(1)
+                             + "px," + (STACK_DY * depth).toFixed(1) + "px)";
+        wrap.style.opacity = "0";
+        void wrap.getBoundingClientRect();
+        wrap.style.transition = "transform " + ms + "ms " + EASE_X
+                              + ", opacity " + Math.round(ms * 0.6) + "ms ease";
+        wrap.style.opacity = "";
+        wrap.style.transform = home;
+        return wrap;
+      }
+      function gaugeAt(host, v, cx, cy, r, clipId, extras) {
+        host.appendChild(el("circle", { cx: cx, cy: cy, r: r, fill: "#FFFFFF" }));
+        const h = r * Math.min(1, Math.abs(v));
+        if (h >= 0.35) {
+          host.appendChild(el("rect", { x: cx - r, y: v >= 0 ? cy - h : cy,
+                                        width: r * 2, height: h,
+                                        "clip-path": "url(#" + clipId + ")",
+                                        fill: signColour(v) }));
+        }
+        // Under the ring, over the gauge.
+        if (extras) extras(cx, cy, r);
+        host.appendChild(el("circle", { cx: cx, cy: cy, r: r, class: "d1a-stacknode" }));
+      }
+
+      // Lays the two faces in at the depth a deck of S sets has reached. One level
+      // for every column of a face, not a ramp along it: the forty seams are ONE
+      // surface, so they have to read as one value — counting per-column gave them a
+      // quarter-percent ramp front to back, which is a different surface at every slab.
+      function cbBright(x) { return (x && x !== 1) ? "brightness(" + x.toFixed(4) + ")" : ""; }
+      function cbBody(g, css) {
+        if (g.__body) { g.__body.style.filter = css; return; }
+        // A flown column is fourteen row groups rather than a body and a top, so the
+        // filter goes on rows 1-13 one at a time. brightness() over thirteen siblings
+        // is the same picture as brightness() over their shared parent — they do not
+        // overlap — so the two structures shade identically.
+        (g.__rows || []).forEach(function (row, i) { if (i) row.style.filter = css; });
+      }
+      let cbShadeLvl = -1;
+      function cbShade(S) {
+        const lvl = Math.min(CB_SHADE_CAP, S - 1);
+        if (cbShadeLvl === lvl) return;
+        cbShadeLvl = lvl;
+        const css = cbBright(lvl && 1 - CB_SHADE * lvl);
+        const op = (lvl * CB_SHADE).toFixed(4);
+        cbFirst.forEach(function (g) {
+          if (g === cbSeam[0]) return;        // the corner is shaded with the seams
+          cbBody(g, css);
+          if (g.__half) g.__half.setAttribute("fill-opacity", op);
+        });
+        const sc = cbBright(lvl && 1 - CB_SEAM_SHADE * lvl);
+        const sOp = (lvl * CB_SEAM_SHADE).toFixed(4);
+        for (let k = 0; k < S; k++) {
+          const g = cbSeam[k];
+          if (!g) continue;
+          cbBody(g, sc);
+          if (g.__half) g.__half.setAttribute("fill-opacity", sOp);
+        }
+        // The corner. Its right half has to land on the right face's value and it
+        // already carries the front face's, so the extra is whatever takes one to the
+        // other: black at that alpha over a surface already at (1 - seam) gives
+        // (1 - set), which is the right face exactly.
+        const corner = cbSeam[0];
+        if (corner && corner.__right && corner.__right.length) {
+          const rOp = lvl ? 1 - (1 - CB_SHADE * lvl) / (1 - CB_SEAM_SHADE * lvl) : 0;
+          corner.__right.forEach(function (rp) {
+            rp.setAttribute("fill-opacity", rOp.toFixed(4));
+          });
+          if (corner.__rightTop) corner.__rightTop.setAttribute("fill-opacity", op);
+        }
+      }
+
+      // One name at a time. The column tops sit on a 7.9px diagonal and a name is
+      // some 110px wide, so twenty at once would be twenty names inside a 158px
+      // band. The previous one leaves as the next arrives, which also makes it read
+      // as "this column is conversation 8" rather than as a list.
+      let nameEl = null;
+      function nameColumn(c, n) {
+        const t = el("text", { class: "d1a-stacklabel",
+                               x: (colBaseX() + STACK_DX * c - STACK_R - 8).toFixed(1),
+                               y: (colRowY(0) + STACK_DY * c + 4).toFixed(1) });
+        t.setAttribute("text-anchor", "end");
+        t.textContent = "Conversation " + (n + 1);
+        cubeHost().appendChild(t);
+        if (nameEl) {
+          const old = nameEl;
+          old.style.opacity = "0";
+          after0(400, function () {
+            if (old.parentNode) old.parentNode.removeChild(old);
+          });
+        }
+        nameEl = t;
+        t.style.opacity = "0";
+        void t.getBoundingClientRect();
+        t.style.opacity = "1";
+      }
+
+      // Everything that is the diagram: the parts that were only ever dimmed, the
+      // two hidden layers that were kept, and the name over the top. Six
+      // conversations have been through it and the cube is now the thing being
+      // built, so it has said what it can.
+      //
+      // The lifted column is NOT part of that. It is the fourteen units the whole
+      // extraction was about, and it is why the cube has fourteen rows — taking it
+      // away at the moment the cube starts standing on its own would remove the one
+      // thing still saying what a row is. It comes back up to full instead: it was
+      // only ever dimmed to put the flights in front of it, and with the diagram
+      // gone there is nothing left for it to stand behind.
+      function hideDiagram(ms) {
+        const els = X.fade.concat(X.layer(1), X.layer(2));
+        if (convLabelEl) els.push(convLabelEl);
+        els.forEach(function (e) {
+          if (!e) return;
+          e.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          e.style.opacity = "0";
+        });
+        (liftCols || []).forEach(function (g) {
+          g.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          g.style.opacity = "";
+        });
+      }
+
+      // The count takes the place of the twentieth name: the deck stops being a list
+      // of cases and becomes a number. Centred on the PANEL and outside the cube's
+      // group — the deck goes on moving from here, and this is the one piece of text
+      // on the screen the eye can go back to. X.scene carries the widening shift, so
+      // panel centre is X.W / 2 less that, the same as centreCube's target.
+      let cubeHeadEl = null;
+      function showCount(n, ms) {
+        if (!cubeHeadEl) {
+          // Over the deck's room, not the panel's, so the count sits above the thing
+          // it names. It still never moves: deckMid does not change as sets arrive.
+          cubeHeadEl = el("text", { x: deckMid().toFixed(1),
+                                    y: (colTop - STACK_R - 12).toFixed(1),
+                                    class: "d1a-mergelabel d1a-colhead" });
+          cubeHeadEl.setAttribute("text-anchor", "middle");
+          cubeHeadEl.style.opacity = "0";
+          X.scene.appendChild(cubeHeadEl);
+          X.headEl = cubeHeadEl;        // the name the crop already looks for
+          void cubeHeadEl.getBoundingClientRect();
+        }
+        cubeHeadEl.textContent = n + " Conversations";
+        cubeHeadEl.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+        cubeHeadEl.style.opacity = "1";
+      }
+      function dropName(ms) {
+        if (!nameEl) return;
+        const old = nameEl;
+        nameEl = null;
+        old.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+        old.style.opacity = "0";
+        after0(ms + 80, function () {
+          if (old.parentNode) old.parentNode.removeChild(old);
+        });
+      }
+
+      const COUNT_REST = 520, COUNT_FADE = 320;
+      function buildRest(c) {
+        if (c >= CUBE_TOTAL) {
+          // Together, not one after the other: the name is not being replaced by a
+          // different name, it is being replaced by a count, and the two crossing
+          // is what says so.
+          after0(COUNT_REST, function () {
+            dropName(COUNT_FADE);
+            showCount(CUBE_TOTAL, COUNT_FADE);
+            after0(COUNT_FADE + 340, function () { cbSetTwo(0); });
+          });
+          return;
+        }
+        const gap = colGap(c);
+        centreCube(c + 1, gap);
+        addColumn(c, c, COL_IN_MS, null, 0);
+        nameColumn(c, c);
+        after0(gap, function () { buildRest(c + 1); });
+      }
+      // ---- the particles ----
+      // What flies is what is on the screen. Every particle is one conversation's
+      // reading on one unit, lifted straight off the FACE of the deck with the colour
+      // of the circle it leaves — so the orange and blue crossing the panel is the
+      // same orange and blue that was sitting in the cube. Only the two visible faces
+      // emit, set 1 and the forty seams: the inside of the deck is not something
+      // anyone has ever seen, and particles streaming out of it would be claiming
+      // otherwise.
+      // Enough of them to cover the faces. The deck is eight hundred conversations
+      // and fourteen units each, so a handful of dots crossing the panel understates
+      // it by three orders of magnitude; what should read is that the whole surface
+      // lifts. They fade up where they SIT first and leave over a long stagger, so
+      // there is a cloud on the cube the whole time rather than a burst and a gap.
+      const PT_N = 1500, PT_R = 1.7, PT_IN = 500;
+      const PT_FLY = 1500, PT_STAGGER = 2600, PT_TAIL = 400;
+      // How many have to land before a pathway shows itself. Not one — a single
+      // arrival is an accident; a stream is what the box is claiming to be made of.
+      const PT_REVEAL = 12;
+      // The deck gives up seventy pixels so the boxes have somewhere to be. It is the
+      // deck that moves rather than the boxes being squeezed: there are eight hundred
+      // conversations and three pathways, and the three are what is being read.
+      const PT_SLIDE = 70, PT_SLIDE_MS = 700, PT_BX = 700;
+
+      // Screen to scene, measured rather than derived. The scene carries the widening
+      // shift and now a slide as well, and deriving that instead of reading it is how
+      // a column ended up 114px out earlier in this build.
+      function toScene(px, py) {
+        const q = X.svg.createSVGPoint();
+        q.x = px; q.y = py;
+        return q.matrixTransform(X.scene.getScreenCTM().inverse());
+      }
+      // Every gauge on the two visible faces, with the row it sits in — the row is
+      // what says which unit the reading belongs to, and that is what decides which
+      // pathway it goes to.
+      function faceGauges() {
+        const out = [];
+        const take = function (g) {
+          if (!g) return;
+          const rows = g.querySelectorAll("rect");
+          Array.prototype.forEach.call(rows, function (rc) {
+            const b = rc.getBoundingClientRect();
+            if (!b.width) return;
+            const q = toScene(b.x + b.width / 2, b.y + b.height / 2);
+            out.push({ x: q.x, y: q.y, c: rc.getAttribute("fill"),
+                       row: nearestRow(rc) });
+          });
+        };
+        cbFirst.forEach(take);
+        for (let k = 1; k < CB_NSETS; k++) take(cbSeam[k]);
+        return out;
+      }
+      // A gauge's rect is drawn at its row's centre give or take the fill height, so
+      // the row is whichever colRowY it is nearest. Read off the element rather than
+      // tracked while building, because the two column structures — flown and built —
+      // hold their rows differently.
+      function nearestRow(rc) {
+        const y = +rc.getAttribute("y") + +rc.getAttribute("height") / 2;
+        let best = 0, d = 1e9;
+        for (let i = 0; i < units.length; i++) {
+          const dd = Math.abs(colRowY(i) - y);
+          if (dd < d) { d = dd; best = i; }
+        }
+        return best;
+      }
+      // Which pathway a reading joins, in proportion to how hard its unit loads on
+      // each one. Not an even three-way split: every unit loads on every pathway, and
+      // Pathway 1 is loaded heavily by most of the network while 2 and 3 are loaded
+      // weakly by any of it. The streams come out lopsided because the network is.
+      function pickPath(row) {
+        const w = PATH_LOAD[row] || [1, 1, 1];
+        const tot = Math.abs(w[0]) + Math.abs(w[1]) + Math.abs(w[2]);
+        let r = Math.random() * tot;
+        for (let i = 0; i < 3; i++) { r -= Math.abs(w[i]); if (r <= 0) return i; }
+        return 2;
+      }
+
+      let ptLayer = null, ptList = null, ptEnd = 0, pvMade2 = null;
+      let ptArrived = [0, 0, 0], ptShown = [false, false, false];
+      let ptLabs = null, ptWired = false;
+      function particleStage() {
+        // The deck moves over first and settles, so the room the particles cross is
+        // room that exists before any of them sets off.
+        X.scene.style.transition = "transform " + PT_SLIDE_MS + "ms ease";
+        X.scene.style.transform = "translate(" + (liftShift - PT_SLIDE) + "px,0)";
+        after0(PT_SLIDE_MS + 160, flyParticles);
+      }
+      function pathTargets() {
+        const g = liftGeom();
+        const y0 = g.y(0), gap = g.y(1) - g.y(0);
+        const step = (units.length - 1) * gap / 4;
+        const out = [];
+        for (let i = 0; i < 3; i++) {
+          out.push({ x: PT_BX + 17, y: Math.round(y0 + step * (i + 1)) });
+        }
+        return out;
+      }
+      function flyParticles() {
+        const src = faceGauges();
+        if (!src.length) return;
+        const tgt = pathTargets();
+        ptLayer = el("g", { class: "d1a-particles" });
+        X.scene.appendChild(ptLayer);
+        ptList = [];
+        ptArrived = [0, 0, 0];
+        ptShown = [false, false, false];
+        ptBoxes();
+        const want = PT_N;
+        // Spread the sample across the whole face rather than taking the first n:
+        // consecutive gauges are one column, so the head of the list is the front of
+        // the deck and nothing behind it would ever emit.
+        const stride = Math.max(1, src.length / want);
+        for (let n = 0; n < want; n++) {
+          const sp = src[Math.floor(n * stride) % src.length];
+          const pi = pickPath(sp.row);
+          const p = tgt[pi];
+          const c = el("circle", { cx: 0, cy: 0, r: PT_R, fill: sp.c });
+          c.style.opacity = "0";
+          c.style.transform = "translate(" + sp.x.toFixed(1) + "px," + sp.y.toFixed(1) + "px)";
+          ptLayer.appendChild(c);
+          const rise = 40 + Math.random() * 90;
+          ptList.push({
+            el: c, pi: pi, sx: sp.x, sy: sp.y, tx: p.x, ty: p.y,
+            // The control point is what makes a stream rather than 450 straight
+            // lines: pulled right and lifted, by a different amount for each one.
+            cx: (sp.x + p.x) / 2 + 30 + Math.random() * 70,
+            cy: (sp.y + p.y) / 2 - rise,
+            // Nothing leaves before the cloud has finished fading up. Without the
+            // floor, the earliest departures were in flight while the fade-up was
+            // still running — so they never got it, and crossed the panel invisible.
+            d: PT_IN + Math.random() * PT_STAGGER,
+            ms: PT_FLY * (0.8 + Math.random() * 0.45), done: false
+          });
+        }
+        ptEnd = PT_IN + PT_STAGGER + PT_FLY * 1.25 + PT_TAIL;
+        // Exposed so the motion can be read at a given moment. Headless cannot
+        // advance requestAnimationFrame, so without this the only measurable state
+        // is frame one.
+        svgHost.__ptAt = ptFrame;
+        // The boxes are scheduled, not left to the last frame. requestAnimationFrame
+        // does not run in a background tab — and does not advance under a headless
+        // measurement at all — so a stage that only ever completed inside the frame
+        // loop would never complete in either.
+        after0(ptEnd + 80, ptWire);
+        const slot = SIM._rafs.push(0) - 1;
+        let t0 = 0;
+        (function tick(now) {
+          if (!t0) t0 = now;
+          const t = now - t0;
+          ptFrame(t);
+          if (t < ptEnd) SIM._rafs[slot] = requestAnimationFrame(tick);
+          else ptDone();
+        })(performance.now());
+      }
+      function ptFrame(t) {
+        for (let i = 0; i < ptList.length; i++) {
+          const p = ptList[i];
+          const u = (t - p.d) / p.ms;
+          if (u <= 0) {
+            // Waiting on the deck. It fades up where it sits, so the faces are
+            // covered in readings before any of them has gone anywhere.
+            p.el.style.opacity = Math.min(1, t / PT_IN).toFixed(3);
+            continue;
+          }
+          if (u >= 1) {
+            if (!p.done) {
+              p.done = true;
+              p.el.style.opacity = "0";
+              // A pathway appears once its own stream is arriving — not on a timer,
+              // and not all three together: what shows it is the thing reaching it.
+              if (++ptArrived[p.pi] === PT_REVEAL) revealBox(p.pi);
+            }
+            continue;
+          }
+          p.el.style.opacity = "1";
+          const e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+          const k = 1 - e;
+          const x = k * k * p.sx + 2 * k * e * p.cx + e * e * p.tx;
+          const y = k * k * p.sy + 2 * k * e * p.cy + e * e * p.ty;
+          p.el.style.transform = "translate(" + x.toFixed(1) + "px," + y.toFixed(1) + "px)";
+          // The last fifth is the coalescing: the particle is already on its
+          // pathway's point, and it goes out there rather than stopping short.
+          if (u > 0.8) p.el.style.opacity = ((1 - u) / 0.2).toFixed(3);
+        }
+      }
+      // Built up front and held invisible: the boxes have to EXIST before the
+      // particles set off, because they are what the particles are aiming at — but
+      // nothing of them shows until its own stream starts landing.
+      function ptBoxes() {
+        if (pvMade2) return;
+        const g = liftGeom();
+        const PV = { scene: X.scene, W: X.W, H: X.H, r: X.r, svg: X.svg };
+        pvMade2 = addPathwayBoxes(PV, g.cx, g.y(0), g.y(1) - g.y(0),
+                                  units.length, true, PT_BX);
+        ptLabs = Array.prototype.slice.call(
+          pvMade2.g.querySelectorAll(".d1a-pathlabel"));
+        pvMade2.boxes.forEach(function (b, i) {
+          [b.box, b.sq, ptLabs[i]].forEach(function (e) {
+            if (e) e.style.opacity = "0";
+          });
+        });
+      }
+      function revealBox(i) {
+        if (!pvMade2 || ptShown[i]) return;
+        ptShown[i] = true;
+        [pvMade2.boxes[i].box, pvMade2.boxes[i].sq, ptLabs[i]].forEach(function (e) {
+          if (!e) return;
+          e.style.transition = "opacity 420ms ease";
+          e.style.opacity = "1";
+        });
+      }
+      // The loadings last, once all three boxes are standing: a line runs from a unit
+      // to a pathway, so there has to be a pathway at the other end of it first.
+      function ptWire() {
+        if (ptWired) return;
+        ptWired = true;
+        for (let i = 0; i < 3; i++) revealBox(i);
+        if (ptLayer) {
+          ptLayer.style.transition = "opacity 300ms ease";
+          ptLayer.style.opacity = "0";
+        }
+        const g = liftGeom();
+        const PV = { scene: X.scene, W: X.W, H: X.H, r: X.r, svg: X.svg };
+        // Empty boxes and the loadings, exactly as Investigate P1-P3 has them: the
+        // squares are one conversation's pathway activations, and nothing here is
+        // about one conversation.
+        const rings = liftCols && liftCols[0]
+          ? Array.prototype.slice.call(liftCols[0].querySelectorAll(".d1a-node"))
+          : [];
+        const at = [];
+        for (let i = 0; i < units.length; i++) at.push(g.y(i));
+        if (!rings.length) return;
+        drawLoadings(PV, rings, at, pvMade2, false, true);
+        // Not on this screen. drawLoadings puts up the only statement of what the two
+        // halves do, which is right where they can be pressed — but this is the end
+        // of an animation, nothing has been offered to press yet, and an instruction
+        // to click arriving on its own is an instruction about nothing.
+        const tip = pvMade2.g.querySelector(".d1a-loadtip");
+        if (tip && tip.parentNode) tip.parentNode.removeChild(tip);
+      }
+
+      // The finished deck, with no beats in between. Same calls the animation makes
+      // and in the same order, so this cannot drift from what the sequence actually
+      // arrives at — it is the sequence with every duration set to zero.
+      function cubeInstant() {
+        liftOut(0);
+        hideDiagram(0);               // after liftOut: it is what brings the lift back up
+        for (let c = 0; c < CUBE_TOTAL; c++) addColumn(c, c, 0, null, 0);
+        for (let k = 1; k < CB_NSETS; k++) {
+          const g = cbNewSet(k);
+          for (let j = 0; j < CUBE_TOTAL; j++) addColumn(j, k * CUBE_TOTAL + j, 0, g, k);
+        }
+        cbShade(CB_NSETS);
+        showCount(CB_NSETS * CUBE_TOTAL, 0);
+        cbLayout(CB_NSETS, 0);
+        after0(700, particleStage);
+      }
+
+      function handOver() {
+        after0(NEXT_REST, function () {
+          hideDiagram(HIDE_MS);
+          after0(200, function () {
+            centreCube(CUBE_N + 1, CUBE_MOVE_MS);
+            after0(CUBE_MOVE_MS, function () { buildRest(CUBE_N); });
+          });
+        });
+      }
+
+      // ---- conversations 21 to 800 ----
+      // Twenty more at a time, and they do not sit BESIDE what is already there —
+      // they tuck in BEHIND it. Side by side left a notch down the middle, because
+      // one block restarts at the top while the other has dropped its full depth.
+      // Conversation 21's column butts against conversation 1's, so the pair reads
+      // as one deck getting deeper rather than as two decks.
+      const CB_NSETS = Math.max(2, Math.min(40, Math.floor(cases.length / CUBE_TOTAL)));
+      const CB_SET_OFF = 2 * STACK_R;                    // one neuron's width per set
+      const CB_BLOCK_W = (CUBE_TOTAL + 1) * STACK_R;
+      // Also a function, for the same reason.
+      function cbBlockL() { return colBaseX() - CUBE_TOTAL * STACK_R; }
+      function cbSetSpan(S) { return CB_BLOCK_W + (S - 1) * CB_SET_OFF; }
+      // The deck is CENTRED on the panel at every depth, so each set arriving on the
+      // left carries everything already there back to the middle — half the new
+      // set's width, not all of it. Once the deck is wider than the panel that
+      // centring is what puts equal amounts of it past either edge instead of
+      // pinning one side and letting the whole overflow happen on the other.
+      function cbSetLeft(S) { return deckMid() - cbSetSpan(S) / 2; }
+      function cbSetX(k, S) { return cbSetLeft(S) + (S - 1 - k) * CB_SET_OFF - cbBlockL(); }
+
+      // A set does not land in its place — it arrives short of it and closes up, the
+      // gesture the second set makes when it is pushed home. Set 3 does it at almost
+      // set 2's scale and each set after comes in a little less far out, down to
+      // CB_ENTER_MIN by set 10. It never reaches nothing: a set that simply appeared
+      // in its place read as a jump cut, so every set to the last arrives a few
+      // pixels out and closes.
+      const CB_ENTER0 = 90, CB_ENTER_MIN = 8, CB_ENTER_N = 7;
+      function cbSetEnter(k) {
+        const step = k - 2;
+        if (step >= CB_ENTER_N) return CB_ENTER_MIN;
+        return CB_ENTER_MIN + (CB_ENTER0 - CB_ENTER_MIN) * (1 - step / CB_ENTER_N);
+      }
+      // Unhurried at first so the third and fourth sets are seen arriving and closing
+      // up, then faster and faster as the count runs away — by the thirtieth set the
+      // number is the subject and the individual twenty is not worth a beat of its
+      // own.
+      function cbSetGap(k) {
+        const t = (k - 2) / Math.max(1, CB_NSETS - 3);
+        return Math.round(80 + 360 * Math.pow(1 - t, 1.9));
+      }
+      // The close has to fit inside the beat, or by the end every set arrives on top
+      // of the last one's move and nothing reads as closing at all.
+      function cbSetMove(gap) { return Math.max(90, Math.min(300, Math.round(gap * 1.15))); }
+      // Set 3 arrives and is SEEN before it moves — two beats, not one — and set 4
+      // does the same with a shorter pause. From set 5 the appearing and the closing
+      // are one gesture again. Spelling it out twice is what makes the closing
+      // legible later, when it is only eight pixels and shares a frame with the fade.
+      function cbSetHold(k) { return k === 2 ? 340 : k === 3 ? 170 : 0; }
+
+      const cbSetG = [];
+      function cbNewSet(k) {
+        const g = el("g", { class: "d1a-stackset" });
+        // BEHIND everything already drawn: a new set is further back in the deck,
+        // and paint order is the only depth an svg has.
+        X.scene.insertBefore(g, X.scene.firstChild);
+        cbSetG[k] = g;
+        return g;
+      }
+      // Re-spaces every set for a deck of S. The count is not in any set and takes no
+      // transform — only its text changes, and it changes when the arriving set has
+      // CLOSED, not when it starts moving. Set here, it read "40 Conversations" while
+      // the second twenty was still crossing the gap towards the first.
+      function cbLayout(S, ms) {
+        // The newest set is fading in as it closes, so the transition carries both —
+        // setting it on the group separately would wipe the fade.
+        const tr = ms ? "transform " + ms + "ms ease, opacity 160ms ease" : "none";
+        for (let k = 0; k < S; k++) {
+          const g = cbSetG[k];
+          if (!g) continue;
+          g.style.transition = tr;
+          g.style.transform = "translate(" + cbSetX(k, S).toFixed(1) + "px,0)";
+        }
+        X.deckRight = cbSetLeft(S) + cbSetSpan(S);
+        if (cubeHeadEl && S > 2) {
+          const txt = (S * CUBE_TOTAL) + " Conversations";
+          if (ms) after0(ms, function () { cubeHeadEl.textContent = txt; });
+          else cubeHeadEl.textContent = txt;
+        }
+      }
+
+      // Conversations 21-40, one column at a time and NO names: at this pace a name
+      // could not be read, and the point of the second block is the quantity, not the
+      // case. It builds off to the left and is then pushed home — the first time the
+      // deck re-centres, and the same move every later set makes.
+      // Just short of where it belongs, not off at the panel's edge: the gesture is
+      // a set closing up against the one in front of it, and from across the panel
+      // that reads as a separate block travelling rather than a layer settling in.
+      const CB_SET2_STEP = 120, CB_SET2_CLOSE = 620, CB_SET2_ENTER = 50;
+      function cbSetTwo(j) {
+        if (j === 0) {
+          const g = cbNewSet(1);
+          g.style.transform = "translate("
+            + (cbSetX(1, 2) - CB_SET2_ENTER).toFixed(1) + "px,0)";
+        }
+        const w = addColumn(j, CUBE_TOTAL + j, 0, cbSetG[1], 1);
+        w.style.opacity = "0";
+        void w.getBoundingClientRect();
+        w.style.transition = "opacity 140ms ease";
+        w.style.opacity = "1";
+        if (j + 1 < CUBE_TOTAL) {
+          after0(CB_SET2_STEP, function () { cbSetTwo(j + 1); });
+          return;
+        }
+        after0(CB_SET2_STEP + 160, function () {
+          cbShade(2);
+          cbLayout(2, CB_SET2_CLOSE);
+          cbHeadPair();
+          after0(CB_SET2_CLOSE + 280, function () { cbAddSet(2); });
+        });
+      }
+      // The count belongs to the pair now. It changes behind its own fade rather than
+      // being swapped: a figure that rewrites itself in place reads as a glitch.
+      function cbHeadPair() {
+        if (!cubeHeadEl) return;
+        cubeHeadEl.style.transition = "opacity 300ms ease";
+        cubeHeadEl.style.opacity = "0";
+        after0(320, function () {
+          cubeHeadEl.textContent = (2 * CUBE_TOTAL) + " Conversations";
+          cubeHeadEl.style.opacity = "1";
+        });
+      }
+
+      // ---- sets three to forty ----
+      // A whole twenty at once now: past the second set the individual column has
+      // stopped being the unit, and the deck closing up is what there is to watch.
+      function cbAddSet(k) {
+        if (k >= CB_NSETS) { after0(900, particleStage); return; }
+        const g = cbNewSet(k);
+        for (let j = 0; j < CUBE_TOTAL; j++) addColumn(j, k * CUBE_TOTAL + j, 0, g, k);
+        cbShade(k + 1);
+        // Committed at the short position and invisible, THEN given the transition
+        // and the real position — otherwise it is only ever drawn where it belongs
+        // and there is nothing to watch.
+        g.style.transform = "translate("
+          + (cbSetX(k, k + 1) - cbSetEnter(k)).toFixed(1) + "px,0)";
+        g.style.opacity = "0";
+        void g.getBoundingClientRect();
+        const ms = cbSetMove(cbSetGap(k)), hold = cbSetHold(k);
+        if (!hold) {
+          cbLayout(k + 1, ms);
+          g.style.opacity = "1";
+        } else {
+          // Fade in and let it stand there, then close.
+          g.style.transition = "opacity 220ms ease";
+          g.style.opacity = "1";
+          after0(hold, function () { cbLayout(k + 1, ms); });
+        }
+        after0(cbSetGap(k) + hold, function () { cbAddSet(k + 1); });
+      }
+
+      // ---- the diagram takes the next conversation ----
+      // Updated in place, not redrawn: a redraw would build a new scene and take the
+      // cube with it. Every node keeps its element and is handed the new value, which
+      // is all that changes between one conversation and the next — the wiring is the
+      // same network.
+      let showing = idx;
+      const REFILL_GAP = 16;                          // the shorthand sweep
+      const REFILL_GAP_SLOW = 30;
+      const DRAIN_GAP = 12, DRAIN_LAYER_GAP = 60, EMPTY_HOLD = 420;
+      // A gap's lines take this long to cross, and the next layer waits for them:
+      // sized any shorter, the circles on the far side lit before the signal that
+      // is supposed to have caused them had arrived.
+      const SWEEP_MS = 360, SWEEP_EASE = "cubic-bezier(.3,.05,.4,1)";
+
+      // A connection belongs to the conversation, not to the network: the grey wire
+      // underneath is the network, and the coloured line on top is this
+      // conversation's signal travelling it. So when the diagram takes a different
+      // conversation the coloured lines have to go and come back, exactly as the
+      // circles do — leaving them up would say the old signal is still running
+      // while the new one is being computed.
+      //
+      // Both halves, and cancelEdge first: the far half's sweep is fill:"forwards",
+      // so a finished animation keeps overriding whatever is written here.
+      function eachFrom(li, fn) {
+        if (!svgHost.__edges) return;
+        svgHost.__edges.forEach(function (e) { if (e.from[0] === li) fn(e); });
+      }
+      function clearFrom(li) {
+        eachFrom(li, function (e) {
+          const line = e.el;
+          cancelEdge(line);
+          line.style.strokeDashoffset = line.__len;
+          if (e.far) e.far.style.strokeDashoffset = e.far.__len;
+          showWire(line);
+        });
+      }
+      // Drawn back in, near half then far half, the way a step draws them. ms 0
+      // snaps instead — the shorthand does not have room for a sweep.
+      function sweepFrom(li, ms) {
+        eachFrom(li, function (e) {
+          const line = e.el, far = e.far;
+          cancelEdge(line);
+          paintSignal(line);                 // the colour is the NEW conversation's
+          if (!ms) {
+            line.style.strokeDashoffset = 0;
+            if (far) far.style.strokeDashoffset = 0;
+            hideWire(line);
+            return;
+          }
+          const half = Math.round(ms / 2);
+          line.animate([{ strokeDashoffset: line.__len }, { strokeDashoffset: 0 }],
+            { duration: half, easing: SWEEP_EASE, fill: "forwards" })
+            .onfinish = function () { line.style.strokeDashoffset = 0; };
+          if (!far) { hideWire(line); return; }
+          far.animate([{ strokeDashoffset: far.__len }, { strokeDashoffset: 0 }],
+            { duration: half, delay: half, easing: SWEEP_EASE, fill: "forwards" })
+            .onfinish = function () {
+              far.style.strokeDashoffset = 0;
+              hideWire(line);                // only once the line is all the way across
+            };
+        });
+      }
+
+      // Swapping one conversation for the next, at two speeds.
+      //
+      // Slow: the gauges drain, the diagram sits visibly BLANK for a beat, and then
+      // the new conversation is taken one layer at a time with the wiring
+      // recolouring behind it. That blank moment is the whole point — without it
+      // one set of numbers simply becomes another and there is nothing to say a
+      // different conversation is being run.
+      //
+      // Fast: one quick sweep, no pause. By the third or fourth column the claim
+      // has stopped being "here is how a conversation goes through" and become
+      // "and again, eight hundred times", and a shorthand is the honest way to say
+      // the second one.
+      //
+      // Returns how long it takes, so the caller does not have to keep a duplicate
+      // copy of these numbers in order to schedule what comes next.
+      function setConversation(n, slow) {
+        showing = n;
+        const it = cases[n] || cases[0];
+        const f = forward(it);
+        const vals = [f.emb, f.h1, f.h2,
+                      OUT_ORDER.map(function (o) { return f.out[o]; })];
+        const layers = [0, 1, 2, 3].map(function (li) {
+          return Array.prototype.slice.call(
+            svgHost.querySelectorAll('.d1a-node[data-layer="' + li + '"]'));
+        });
+        // Which of the two answers wins is a property of the conversation, not of
+        // the drawing, so it is recomputed rather than left on the pill from
+        // whichever conversation the diagram was built around.
+        const chose = f.out[1] > f.out[0] ? 1 : 0;
+        function claimAnswer() {
+          svgHost.querySelectorAll(".d1a-outpill").forEach(function (pill, i) {
+            pill.__won = OUT_ORDER[i] === chose;
+          });
+        }
+        // Handed over a layer at a time, because __vals is what the edges read: set
+        // all at once, the wiring would show the new conversation's colours while
+        // the circles were still empty, which gives the answer away before the
+        // signal has got anywhere near it.
+        function takeLayer(li) {
+          layers[li].forEach(function (node, i) {
+            const v = vals[li][i];
+            node.__v = li === 3 ? v / LOGIT_SCALE : v;
+            node.__act = actColour(node.__v);
+          });
+          if (svgHost.__vals) svgHost.__vals[li] = vals[li];
+        }
+        function after(ms, fn) {
+          const t = setTimeout(fn, Math.max(0, ms));
+          SIM._timeouts.push(t);
+        }
+        function label() {
+          if (convLabelEl) convLabelEl.textContent = "Conversation " + (n + 1);
+        }
+
+        if (!slow) {
+          layers.forEach(function (ns, li) {
+            ns.forEach(function (node) { setNodeLevel(node, 0); });
+            clearFrom(li);
+          });
+          claimAnswer();
+          label();
+          let at = 0;
+          layers.forEach(function (ns, li) {
+            ns.forEach(function (node, i) {
+              after(at + i * REFILL_GAP, function () {
+                if (!i) takeLayer(li);
+                setNodeLevel(node, 1);
+              });
+            });
+            at += (ns.length - 1) * REFILL_GAP;
+            after(at + 20, function () { sweepFrom(li, 0); });
+            at += REFILL_GAP;
+          });
+          after(at + 40, function () { revealAnswer(true); });
+          return at + 40;
+        }
+
+        let at = 0;
+        layers.forEach(function (ns, li) {
+          ns.forEach(function (node, i) {
+            after(at + i * DRAIN_GAP, function () { setNodeLevel(node, 0); });
+          });
+          at += (ns.length - 1) * DRAIN_GAP;
+          after(at + 20, function () { clearFrom(li); });   // its lines go with it
+          at += DRAIN_LAYER_GAP;
+        });
+        // Blank is the moment the diagram takes a different conversation, so that is
+        // where the label changes and where the old answer stops being claimed. What
+        // is on screen here is the bare network: empty circles and grey wires, the
+        // state the whole sequence opened in.
+        after(at, function () { label(); revealAnswer(false); claimAnswer(); });
+        at += EMPTY_HOLD;
+        layers.forEach(function (ns, li) {
+          ns.forEach(function (node, i) {
+            after(at + i * REFILL_GAP_SLOW, function () {
+              if (!i) takeLayer(li);       // the values arrive with the first circle
+              setNodeLevel(node, 1);
+            });
+          });
+          at += (ns.length - 1) * REFILL_GAP_SLOW;
+          after(at + 30, function () { sweepFrom(li, SWEEP_MS); });
+          at += SWEEP_MS;                  // the next layer waits for the signal
+        });
+        after(at, function () { revealAnswer(true, true); });
+        return at + 60;
+      }
+
+      // Building the cube, one conversation to a column. Conversation 1 is the one
+      // the four steps ran on; 2 and 3 are taken slowly, and 4 onward in shorthand.
+      const CUBE_N = 6, CUBE_DELIB = 3;
+      function flightMs() {
+        return Math.round(LIFT_MS * 1.17) + (units.length - 1) * LIFT_LAND_GAP;
+      }
+      function takeNext(c) {
+        if (c >= CUBE_N) { handOver(); return; }
+        after0(NEXT_REST, function () {
+          undim(UNDIM_MS);
+          after0(UNDIM_MS, function () {
+            const ms = setConversation(showing + 1, c < CUBE_DELIB);
+            after0(ms + NEXT_HOLD, function () {
+              dimAll(LIFT_DIM_MS);
+              after0(LIFT_DIM_MS + LIFT_HOLD, function () {
+                cubeColumn(c, LIFT_MS);
+                after0(flightMs(), function () { takeNext(c + 1); });
+              });
+            });
+          });
+        });
+      }
+      function after0(ms, fn) {
+        const t = setTimeout(fn, Math.max(0, ms));
+        SIM._timeouts.push(t);
+      }
+      // Everything goes half — the diagram AND the empty column from stage 0, which
+      // has had its moment. Only the fourteen about to fly stay at full.
+      function dimAll(ms) {
+        dimRest(ms);
+        if (!liftCols) return;
+        liftCols.forEach(function (g) {
+          g.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          g.style.opacity = String(LIFT_DIM);
+        });
+      }
+
+      // ---- stage 1: the diagram comes back and runs ----
+      // The fourteen are out; the diagram that produced them returns to full strength
+      // and is then put through all four steps, quickly. It is the Trace a Case
+      // sequence, played by the same runners at a fraction of their normal timing —
+      // not a re-implementation, so the two screens cannot drift.
+      function undim(ms) {
+        X.fade.forEach(function (e) {
+          if (e.style.opacity === "" || parseFloat(e.style.opacity) === 0) return;
+          e.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          e.style.opacity = "";
+        });
+      }
+      // Above the diagram, centred on it — the diagram sits in the left part of the
+      // widened canvas, so "centre" is its own span, not the canvas's.
+      let convLabelEl = null;
+      function showConvLabel(ms) {
+        if (convLabelEl) return;
+        const t = el("text", { x: Math.round(liftW0 / 2), y: 22,
+                               class: "d1a-mergelabel" });
+        t.setAttribute("text-anchor", "middle");
+        t.textContent = "Conversation " + (idx + 1);
+        X.scene.appendChild(t);
+        convLabelEl = t;
+        if (!ms) { t.style.opacity = "1"; return; }
+        t.style.opacity = "0";
+        void t.getBoundingClientRect();
+        t.style.transition = "opacity " + ms + "ms ease";
+        t.style.opacity = "1";
+      }
+      // One step at a time, each started only when the last has finished. The runners
+      // report through `running`, so this watches that rather than guessing at
+      // durations that vary with the speed multiplier.
+      // Step 1 here is NOT Trace a Case's Step 1. Over there the words fly in one at
+      // a time, 120 separate flights, because that repetition IS what "fully
+      // connected" means and it is the lesson. This is a recap: the input circles
+      // simply fill, top to bottom. The three fans that follow are the real content
+      // of the recap, so they still play — just faster.
+      function fillInputs(onDone) {
+        const nodes = Array.prototype.slice.call(
+          svgHost.querySelectorAll('.d1a-node[data-layer="0"]'));
+        markStep(1);
+        nodes.forEach(function (n, k) {
+          const t = setTimeout(function () { setNodeLevel(n, 1); }, k * FILL_GAP);
+          SIM._timeouts.push(t);
+        });
+        const done = setTimeout(function () {
+          stepDone = Math.max(stepDone, 1);
+          syncSteps();
+          onDone();
+        }, nodes.length * FILL_GAP + 160);
+        SIM._timeouts.push(done);
+      }
+      function runSteps(i) {
+        if (i >= STEP_RUNNERS.length) {
+          animSpeed = 1;
+          const t = setTimeout(function () {
+            dimAll(LIFT_DIM_MS);
+            const t2 = setTimeout(function () {
+              cubeColumn(0, LIFT_MS);
+              const t3 = setTimeout(function () { takeNext(1); }, flightMs());
+              SIM._timeouts.push(t3);
+            }, LIFT_DIM_MS + LIFT_HOLD);
+            SIM._timeouts.push(t2);
+          }, STEPS_REST);
+          SIM._timeouts.push(t);
+          return;
+        }
+        const next = function () {
+          const t = setTimeout(function () { runSteps(i + 1); }, STEP_GAP);
+          SIM._timeouts.push(t);
+        };
+        applyStepState(i);
+        if (i === 0) { fillInputs(next); return; }
+        STEP_RUNNERS[i]();
+        const watch = setInterval(function () {
+          if (running) return;
+          clearInterval(watch);
+          next();
+        }, 60);
+        SIM._intervals.push(watch);
+      }
+
+      // Everything past stage 1 is the sequence as it stood — the fade, the line-up,
+      // the deck, the panels, the pathway view — and all of it assumed the run STARTS
+      // by taking the network apart. It now starts by copying out of a network that
+      // stays whole, so the join has to be rebuilt rather than left to collide. One
+      // constant switches the rest back on.
+      if (EX_STAGE0_ONLY && !opts.investigate) {
+        widenForLift();
+        if (quick) { dimRest(0); liftOut(0); undim(0); showConvLabel(0); return; }
+        if (exFromCube) { cubeInstant(); return; }
+        dimRest(LIFT_DIM_MS);
+        let at = LIFT_DIM_MS + LIFT_HOLD;
+        const t0 = setTimeout(function () { liftOut(LIFT_MS); }, at);
+        SIM._timeouts.push(t0);
+        // The last circle lands one land-gap after the thirteenth.
+        at += Math.round(LIFT_MS * 1.17) + (units.length - 1) * LIFT_LAND_GAP;
+        at += 260;
+        const t1 = setTimeout(function () {
+          undim(UNDIM_MS);
+          showConvLabel(UNDIM_MS);
+        }, at);
+        SIM._timeouts.push(t1);
+        at += UNDIM_MS + 220;
+        const t2 = setTimeout(function () { animSpeed = STEP_SPEED; runSteps(0); }, at);
+        SIM._timeouts.push(t2);
+        return;
+      }
+
       X.fade.forEach(function (e) {
         e.style.transition = quick ? "none" : "opacity " + EX_FADE + "ms ease";
         e.style.opacity = "0";
@@ -11312,24 +13139,6 @@ function buildSimContent() {
       // The first two arrive at reading pace so the pattern is legible, then the beat
       // eases down to STACK_STEP_MIN by the twentieth — the stack should feel like it
       // is filling up, not like twenty separate events.
-      const STACK_N = 20;
-      const STACK_BAND = 34, STACK_STEP = 620, STACK_STEP_MIN = 200, STACK_HOLD = 2;
-      function stackGap(d) {                 // the beat before column d lands
-        if (d <= STACK_HOLD) return STACK_STEP;
-        const t = (d - STACK_HOLD) / (STACK_N - 1 - STACK_HOLD);
-        return Math.round(STACK_STEP_MIN +
-          (STACK_STEP - STACK_STEP_MIN) * Math.pow(1 - t, 1.5));
-      }
-      const STACK_R = Math.min(X.r,
-        Math.floor((X.H - STACK_BAND - 4) / (STACK_N + 27) * 10) / 10);
-      const STACK_DY = STACK_R;               // half a neuron's height
-      const STACK_DX = -STACK_R;              // half its width
-      const STACK_SCALE = STACK_R / X.r;
-      const colPad = STACK_R + 2;
-      const colTop = STACK_BAND + colPad;
-      const colBot = X.H - colPad - STACK_DY * (STACK_N - 1);
-      const colStep = (colBot - colTop) / (units.length - 1);
-      function colRowY(i) { return colTop + i * colStep; }
 
       // ---- a second twenty ----
       // Twenty columns lean STACK_R further left with each one, so a block is
@@ -12407,6 +14216,29 @@ function buildSimContent() {
           SIM._timeouts.push(t);
         }
 
+        // Pathway Loadings wants the RESULT, not the evidence: no deck, no count.
+        // The fourteen units still line up — settle() is what puts them somewhere
+        // sane — but they are then hidden, because the column on this screen is the
+        // copy, and two columns of the same thing would read as two conversations.
+        if (quick && opts.investigate) {
+          settle();
+          units.forEach(function (n) {
+            [n, n.__disc, n.__bar, n.__half].forEach(function (e) {
+              if (e) e.style.display = "none";
+            });
+          });
+          // The "x weight" captions belong to the wiring between layers, and the
+          // wiring is not on this screen. They survive X.fade because syncWeightLabels
+          // owns them and turns them back on for a fully-stepped network — which this
+          // screen is, since it opens on Trace a Case's finished state.
+          if (svgHost.__wlabels) {
+            svgHost.__wlabels.forEach(function (t) { t.style.display = "none"; });
+          }
+          openPanels(true);
+          pullOut(0);
+          showPathways(true);
+          return;
+        }
         if (quick) {
           settle();
           showName(stackName(0));
@@ -12846,6 +14678,7 @@ function buildSimContent() {
       if (id) delete stepState[id];
       clearStep1(); clearStep2(); clearStep3(); clearStep4();
       running = false; stepDone = 0;
+      markStep(0);
       syncSteps();
       // Also the path every redraw takes, so this is where the tooltips get their
       // initial "name only" state as well as their reset.
@@ -12864,6 +14697,23 @@ function buildSimContent() {
         // sweep would run almost invisibly behind the dim. Running a step is a
         // request to watch the whole layer, so the selection goes first.
         if (svgHost.__clearPin) svgHost.__clearPin();
+        // Whatever is on screen, the diagram is first put into the state this step
+        // starts FROM — everything before it already in place, nothing after it —
+        // and then this step, and only this step, plays. Pressing the one you are
+        // already on replays it; pressing Step 4 from nothing does not run the first
+        // three on the way past.
+        applyStepState(i);
+        // With Animate off there is nothing to play, so the step's end state is the
+        // whole of it. Reduced motion takes the same path.
+        if (motionOff()) {
+          applyStepState(i + 1);
+          // applyStepState sets stepDone but does not record it; stepFinished is
+          // what normally does that, and nothing finished here.
+          const id = hereId();
+          if (id) stepState[id] = stepDone;
+          if (svgHost.__paintPin) svgHost.__paintPin();
+          return;
+        }
         STEP_RUNNERS[i]();
       });
     });
@@ -12873,6 +14723,73 @@ function buildSimContent() {
     nextBtn.addEventListener("click", function () {
       if (idx < cases.length - 1) { idx++; render(); }
     });
+
+    // ---- leaving, and coming back ----
+    // Parked on SIM so invalidateSimCache can call it on the way out — the last
+    // moment this closure is reachable. Both screens that come through here save
+    // under their own key, so Trace a Case and Extract Pathways remember separately.
+    SIM.saveState = function () {
+      NNM_VIEWSTATE[myKey] = {
+        query: filter.input ? filter.input.value : "",
+        idx: idx,
+        // The progress of every conversation stepped so far, not just this one:
+        // stepState is already keyed by conversation id for exactly this reason.
+        stepState: JSON.parse(JSON.stringify(stepState)),
+        animateOn: animBox ? animBox.checked : true,
+        speed: speedIn ? speedIn.value : "1",
+        extracted: extracted,
+        about: aboutIsOpen()
+      };
+    };
+    const saved = NNM_VIEWSTATE[myKey];
+    if (saved) {
+      // The query first: it rewrites `cases`, and an index only means something
+      // against the list it came from. `live` is already on by now, so dispatching
+      // input runs the filter's own onChange, which is what sets cases and would
+      // otherwise reset idx to 0 — hence restoring idx after, not before.
+      if (saved.query && filter.input) {
+        filter.input.value = saved.query;
+        filter.input.dispatchEvent(new Event("input"));
+      }
+      if (typeof saved.idx === "number") {
+        idx = Math.max(0, Math.min(cases.length - 1, saved.idx));
+      }
+      if (saved.stepState) {
+        for (const k in saved.stepState) stepState[k] = saved.stepState[k];
+      }
+      if (animBox && saved.animateOn === false) {
+        animBox.checked = false;
+        animateOn = false;
+        if (speedIn) speedIn.disabled = true;
+        if (speedWrap) speedWrap.classList.add("off");
+      }
+      if (speedIn && saved.speed != null && saved.speed !== speedIn.value) {
+        speedIn.value = saved.speed;
+        speedIn.dispatchEvent(new Event("input"));
+      }
+      // Extract Pathways comes back already extracted; render() runs runExtract(true)
+      // once the diagram exists, which rebuilds the deck and the pathway view in one
+      // shot with nothing animating.
+      if (saved.extracted && opts.extract) {
+        extracted = true;
+        if (exBtn) exBtn.disabled = true;
+        if (exCube) exCube.disabled = true;
+        if (exReset) exReset.disabled = false;
+        pinEl.style.display = "none";
+        measureEl.style.display = "none";
+      }
+      if (saved.about) reopenAbout();
+    }
+    // Investigate Pathways IS Extract Pathways' last frame, the way Extract Pathways
+    // is Trace a Case's. Nothing is staged here: render() draws the network, sees
+    // that the screen is already extracted, and runExtract(true) rebuilds the deck,
+    // the panels and the pathway view in one shot with nothing animating — the same
+    // path a resize takes.
+    if (opts.investigate) {
+      extracted = true;
+      pinEl.style.display = "none";
+      measureEl.style.display = "none";
+    }
 
     render();
     SIM.onResize = function () { render(); };
@@ -12896,13 +14813,27 @@ function buildSimContent() {
                             title: "The Network" });
   }
 
-  // Extract Pathways, state 1: where Trace a Case leaves off. No steps to run —
-  // they are all already applied — and no hover, because nothing here is asking
-  // "what is this neuron wired to" yet.
+  // Extract Pathways, state 1: the network as Trace a Case FIRST shows it — empty
+  // circles and grey wires, nothing run. It used to open on Trace a Case's finished
+  // state; the extraction now starts from the blank diagram and colours arrive as
+  // part of the sequence. No steps to run and no hover: nothing here is asking what
+  // a single neuron is wired to.
   if (activeSim === "d1b") {
-    return buildNetScreen({ steps: false, hover: false, opened: true, extract: true,
-                            filter: false, conversation: false,
+    return buildNetScreen({ steps: false, hover: false, extract: true,
+                            filter: false, conversation: false, readout: false,
                             title: "The Network → Activated Pathways" });
+  }
+
+  // Investigate Pathways: where Extract Pathways finishes. The deck is built, the
+  // Filter and Conversation panels are back, conversation 1 is out of the deck at
+  // full size and the three pathway boxes are beside it — and from here the work is
+  // reading the loadings, which is what the clicking is for. No Extract button: the
+  // extraction has happened, and there is nothing on this screen to undo.
+  if (activeSim === "d1c") {
+    return buildNetScreen({ steps: false, hover: false, opened: true, extract: true,
+                            investigate: true, filter: false, conversation: false,
+                            marks: true,
+                            title: "Activated Pathways" });
   }
 
 
