@@ -120,6 +120,11 @@
     box-shadow: 0 0 0 2px #fff;
   }
 
+  /* A layout that is not being supported right now. Greyed rather than removed: the
+     three are a set, and a gap in the set reads as something missing rather than as
+     something switched off. The button element's own disabled state does the rest —
+     it takes no clicks and no focus. */
+  .toggle-btn:disabled { opacity: 0.35; cursor: default; }
   body.teal-bg .toggle-btn {
     border-color: #fff;
   }
@@ -1334,7 +1339,12 @@
   /* Over in the Prediction Chain, Animate is what gets pushed to the right. Here the
      KEY is — it comes first and carries the auto margin — so Animate has to give its
      own up, or the two autos share the slack and open an 88px hole at the divider. */
+  /* margin-left:auto moves to whichever is FIRST in the right-hand group. With the
+     key last, that is the Animate toggle; the key then takes its natural margin and
+     the whole group — controls, rule, key — packs against the right edge. */
   .d1a-panel .nnm-animtoggle { margin-left: 0; }
+  .nnm-panel-head.d1a-hascontrols .nnm-animtoggle { margin-left: auto; }
+  .nnm-panel-head.d1a-hascontrols .d1a-scale { margin-left: 0; }
   .nnm-leftcol {
     display: flex;
     flex-direction: column;
@@ -1588,6 +1598,12 @@
      the scale, so it was sitting at the 44px floor and its body began 10px higher. */
   /* Sized to hold a control plus the head's 9/8 padding and 1px rule, so it follows
      the control height rather than restating it. */
+  /* The head's own padding is left alone — 9/8, which is not arbitrary: the LEFT
+     panel's head carries the 44px conversation nav, and 9 + 44 + 8 + 1 is exactly the
+     62px floor. Any more padding and that head grows while this one sits on the floor,
+     and the two stop matching. So the spacing is set by the KEY's height instead:
+       content box 44, key 42, centred -> 10 above the label and 10 below the swatches,
+       and 42 = 14 label + 6 gap + 22 swatch. */
   .d1a-panel .nnm-panel-head { min-height: calc(var(--nnm-ctl-h) + 18px); }
 
   /* The column captions sit 10px under the header rule, so the body gives up
@@ -1670,8 +1686,13 @@
      squarer bar now, not the pill it was. Colour stays --nnm-ink-2: this sits in a panel head
      next to the title, not above a reading, so it is a shade darker than the
      Chain's --nnm-ink-3. */
+  /* Two rows: the name, and under it the sample. The head cannot carry a title and
+     two labelled keys on one line — at 565px both the title and "Neuron Activation"
+     wrapped — and a name over its own swatches costs a line the head is already
+     spending while giving back the 130px the name took out of the run. */
   .d1a-scale {
-    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    margin-left: auto; display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
     font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
     letter-spacing: 0.05em; text-transform: uppercase; color: var(--nnm-ink-2);
   }
@@ -1684,13 +1705,28 @@
   .d1a-scale .sw {
     /* 24px — the diameter the diagram actually draws a neuron at (r = 12), so the
        key is the same object at the same size rather than a shrunken echo of it. */
-    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
     box-shadow: inset 0 0 0 1px #6E7580;          /* the node's own outline */
   }
   .d1a-scale .sw.pos { background: linear-gradient(to bottom, #A84A2C 50%, #FFFFFF 50%); }
   .d1a-scale .sw.neg { background: linear-gradient(to bottom, #FFFFFF 50%, #1F4E8F 50%); }
   /* The sign sits right after its swatch, so the pairs do not drift apart. */
+  /* line-height 1, or the row is as tall as the LINE BOX of its minus and plus — 23px
+     against a 22px circle — and the swatch ends up half a pixel high inside a row
+     half a pixel too tall. With it, the row is exactly its tallest swatch.
+     min-height 22 is the neuron's own diameter, and it is what puts the two keys'
+     LABELS on one line: the loading pair is only 13 tall, so without it that key is
+     33 against the other's 42, and two keys of different heights centred in the same
+     head start their labels at different places. Given the taller row, the bars
+     simply centre in it. */
+  .d1a-scale .row {
+    display: flex; align-items: center; gap: 6px; line-height: 1; min-height: 22px;
+  }
   .d1a-scale .lo { margin-right: 4px; }
+  /* Above, not trailing. After the plus it read as a label on the PLUS — "+ neuron
+     activation" — when it names the whole key; and a sample you meet before you know
+     what it samples is a puzzle rather than a legend. */
+  .d1a-scale .cap { line-height: 1; white-space: nowrap; }
   /* The loading bars' key, beside the neurons'. Same construction and the same
      argument — a sample of the encoding rather than a swatch of two colours — and the
      SHAPE is what tells the two keys apart: a circle filled from its middle is an
@@ -1702,13 +1738,43 @@
      key sitting where it would sit alone; revealing it widens it and slides the other
      one over. */
   .d1a-loadscale { margin-left: 16px; overflow: hidden; }
-  .d1a-scale .bar {
-    /* 6px, the height a loading bar is actually drawn at, and long enough to read as
-       a bar rather than a chip. */
-    width: 26px; height: 6px; border-radius: 1px; flex-shrink: 0;
+  /* A sample of the encoding, the way the neurons' key is a neuron. STACKED, because
+     side by side each bar had a centre of its own and there was nothing to see: the
+     two have to share one zero before "left is negative, right is positive" is
+     legible at all. One rule down the pair is what says so, and it is the same
+     arrangement a neuron's three loadings make in the drawing. */
+  .d1a-scale .bars {
+    display: flex; flex-direction: column; gap: 1px;
+    position: relative; flex-shrink: 0;
   }
-  .d1a-scale .bar.pos { background: #A84A2C; }
-  .d1a-scale .bar.neg { background: #1F4E8F; }
+  /* Two proud of the pair at each end, so it reads as an axis the bars sit on rather
+     than a join between them. */
+  .d1a-scale .bars::after {
+    content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px;
+    width: 1px; margin-left: -0.5px; background: var(--nnm-rule);
+  }
+  .d1a-scale .bar {
+    position: relative;
+    /* 88 x 6 — the track the drawing actually uses: BAR_MAX either side of zero, at
+       the height a loading is drawn at. The neurons' key next to it is a neuron at
+       its own 24px for the same reason: a key that is the same object at the same
+       size can be held against the thing it explains, and a shrunken echo cannot. */
+    width: 88px; height: 6px; flex-shrink: 0;
+    background-color: #FFFFFF;
+    box-shadow: inset 0 0 0 1px var(--nnm-rule);
+  }
+  /* The loading is a CHILD, not a background: an inset box-shadow paints over its own
+     element's background, so drawn as a gradient the grey outline was laid across the
+     top and bottom of the colour and the bar came out two pixels short of its track.
+     A child paints above the shadow, so this sits in FRONT of the frame at the frame's
+     full height — which is what the bars do in the drawing. */
+  .d1a-scale .bar b { position: absolute; top: 0; bottom: 0; z-index: 1; }
+  /* Each fills its whole side. A partial length in a key encodes nothing and only
+     invites "why that far?" — and the neurons' key beside it already samples each sign
+     at FULL extent, a positive filling the entire top half of the circle. These show
+     the same: as far as a loading can go, either way from zero. */
+  .d1a-scale .bar.neg b { left: 0; right: 50%; background: #1F4E8F; }
+  .d1a-scale .bar.pos b { left: 50%; right: 0; background: #A84A2C; }
   /* #CCD3DD measured 1.51:1 on white — these lines ARE the wiring, so they are
      graphics required to understand the content and 3:1 applies. A plain grey
      rather than the blue-grey the rules use, since these are not rules. #909090 is
@@ -1752,6 +1818,16 @@
      without competing with the one that was asked for. */
   .d1a-loadbar.mute { fill: var(--nnm-rule); }
   .d1a-loadwire { stroke: #909090; stroke-width: 0.5; fill: none; }
+  /* Zero, and the scale a picked loading is read against. The frame is the largest
+     loading in the matrix, so what shows past the end of a bar is how much of the
+     scale it did NOT use — and it appears only on the bars you asked about. Drawn on
+     all forty-two it was forty-one mostly-empty boxes; drawn on the fourteen or the
+     three that are lit, it is the answer to "big compared to what". */
+  .d1a-loadzero { stroke: var(--nnm-rule); stroke-width: 1; }
+  /* White, not transparent. Unfilled, the connectors ran visibly through the empty
+     part of every track — a frame is a container and things should not be inside it
+     that are only passing by. */
+  .d1a-loadtrack { fill: #FFFFFF; stroke: var(--nnm-rule); stroke-width: 1; }
   .d1a-loadring { fill: none; stroke: var(--nnm-ink); stroke-width: 2; }
   /* One conversation's neuron, once the fourteen have become one. Same circle the
      network draws, minus the gauge — there is no activation to show at this point,
@@ -1759,9 +1835,6 @@
   .d1a-convnode { fill: #FFFFFF; stroke: var(--nnm-ink-2); stroke-width: 1.5; }
   /* A neuron in a stacked conversation. Outline only — the white disc and the gauge
      are drawn under it, so the ring is the last thing over both. */
-  /* TEMPORARY, and it should look it: a dashed outline so nobody mistakes it for
-     part of the interactive. Goes when the end state is settled. */
-  .nnm-step.d1a-temp { border-style: dashed; opacity: 0.85; }
   .d1a-stacknode { fill: none; stroke: var(--nnm-ink-2); stroke-width: 1; }
   /* One name per column, full size — only ever one on screen at a time, so it does
      not have to fit beside its neighbours. It hands over as the next column lands. */
@@ -1785,8 +1858,12 @@
     font-family: 'Lato', sans-serif; font-size: 14px; fill: var(--nnm-ink);
     transition: opacity 0.3s ease; pointer-events: none;
   }
+  /* Italic because it is not part of the picture — it is the piece talking to you
+     about the picture. Every other word on these screens names something on screen;
+     this one says what to do with it, and the slant is what separates the two. */
   .d1a-loadtip {
-    font-family: 'Lato', sans-serif; font-size: 13px; fill: var(--nnm-ink-2);
+    font-family: 'Lato', sans-serif; font-size: 13px; font-style: italic;
+    fill: var(--nnm-ink-2);
     pointer-events: none; transition: opacity 0.2s ease;
   }
   /* Both sides of the matrix are pickable, and both say so. */
@@ -2388,6 +2465,27 @@
     font-family: 'Lato', sans-serif; font-size: 11.5px;
     line-height: 1.4; color: var(--nnm-ink-3);
   }
+  /* The commission being carried out. Full width at the FOOT of the card, under the
+     description as well as the top line: what is working is the card — a coding being
+     made — and not the button that asked for it. */
+  /* Both colours are set inline from ATTR_COLOUR and ATTR_SOFT — the attribute's own
+     hue at full strength running along its own 13% tint. A coding becomes a column in
+     Correlations wearing that colour, and this is where it first appears, so the bar
+     that makes it should be the colour it is going to be. The values here are only
+     the fallback for an attribute with no hue of its own. */
+  .d3b-progress {
+    grid-row: 3; grid-column: 1 / span 3;
+    height: 6px; margin-top: 7px; border-radius: 3px;
+    background: var(--nnm-rule-soft); overflow: hidden;
+  }
+  .d3b-progress i {
+    display: block; height: 100%; width: 0; border-radius: 3px;
+    background: var(--nnm-ink-2);
+  }
+  /* In Progress is not "unavailable" — it is this row's own state, and at 45% it read
+     as the row having been ruled out. It keeps the button's full weight and says what
+     is happening in the word. */
+  .d3b-buy.running { opacity: 1; cursor: default; color: var(--nnm-ink); }
   .d3b-buy {
     grid-row: 1; grid-column: 3;
     font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
@@ -3745,8 +3843,8 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.15</div>
-      <div style="font-weight: 400;">Updated: 9/15/26</div>
+      <div style="font-weight: 600;">v0.16</div>
+      <div style="font-weight: 400;">Updated: 9/16/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
@@ -3784,7 +3882,7 @@
       <div class="btn-column-label" id="layout-label">Layout</div>
       <button class="toggle-btn" data-layout="standalone" aria-pressed="false">Standalone</button>
       <button class="toggle-btn active" data-layout="ap-full" aria-pressed="true">AP Full Width</button>
-      <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false">AP 2-Column</button>
+      <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false" disabled>AP 2-Column</button>
       <hr id="demo-site-divider" style="border: none; border-top: 1px solid #858585; margin: 16px 0 14px;">
       <button class="toggle-btn" id="demo-site-btn">
         Demo Site
@@ -5370,6 +5468,62 @@ function buildSimContent() {
     listEl.className = "d3b-list";
     pBody.appendChild(listEl);
 
+    // Commissioning is WORK. Researchers read all eight hundred sets of notes to code
+    // one more attribute, and a button that flips the instant it is pressed says the
+    // coding was already there and only needed unlocking. The bar is that reading
+    // being done; five seconds is long enough to register as an effort and short
+    // enough not to be a wait.
+    const COMMISSION_MS = 5000;
+    // key -> when it started, so a redraw mid-run picks the bar up where it is rather
+    // than restarting it. render() redraws this whole list on every commission.
+    const coding = {};
+    function reducedMotion() {
+      return !!(window.matchMedia
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    }
+    function inFlight() { return Object.keys(coding).length; }
+    // A finished coding lands SELECTED, in both panes. The commission is the question
+    // — does this attribute track Pathway 3? — and the answer is only visible once its
+    // sentences are lit, so arriving unticked puts a hunt for the new chip between
+    // paying for it and finding out. It is also the only unmistakable sign of what
+    // changed: after five seconds of watching a bar, one more grey chip in a row of
+    // nine is easy to miss.
+    //
+    // ADDED to the selection, never replacing it. Holding several attributes at once
+    // is how a student spots the same thing recurring, and that set survives paging on
+    // purpose — a commission must not quietly throw away the comparison being built.
+    function selectCoded(key) {
+      panes.forEach(function (pane) {
+        if (pane.sel.indexOf(key) < 0) pane.sel.push(key);
+      });
+    }
+    function startCoding(key) {
+      if (coding[key] || bought.indexOf(key) >= 0) return;
+      // A run in flight is already spent, even though it is not on the list yet —
+      // without counting it, two presses inside the same five seconds buy three.
+      if (bought.length + inFlight() >= BUDGET) return;
+      if (reducedMotion()) { bought.push(key); selectCoded(key); render(); return; }
+      coding[key] = Date.now();
+      const t = setTimeout(function () {
+        delete coding[key];
+        if (bought.indexOf(key) < 0) bought.push(key);
+        selectCoded(key);
+        render();
+      }, COMMISSION_MS);
+      SIM._timeouts.push(t);
+      renderList();
+      // The bar is born at the FOOT of its card, so on the last row in the list it
+      // arrives below the fold and the press reads as having done nothing at all.
+      // "nearest" scrolls the least that brings it in — and nothing whatever for a
+      // row that was already fully in view.
+      const at = listEl.children[HIDDEN.findIndex(function (h) {
+        return h.a.key === key;
+      })];
+      if (at && at.scrollIntoView) {
+        at.scrollIntoView({ block: "nearest",
+                            behavior: reducedMotion() ? "auto" : "smooth" });
+      }
+    }
     function renderList() {
       listEl.innerHTML = "";
       HIDDEN.forEach(function (h) {
@@ -5390,19 +5544,20 @@ function buildSimContent() {
         const desc = document.createElement("div");
         desc.className = "d3b-itemdesc";
         desc.textContent = h.a.description;
+        const started = coding[h.a.key];
         const btn = document.createElement("button");
         btn.className = "d3b-buy";
-        if (bought.indexOf(h.a.key) >= 0) {
+        if (isDone) {
           btn.textContent = "Coded";
+          btn.disabled = true;
+        } else if (started) {
+          btn.textContent = "In Progress";
+          btn.classList.add("running");
           btn.disabled = true;
         } else {
           btn.textContent = "Commission";
-          btn.disabled = bought.length >= BUDGET;
-          btn.addEventListener("click", function () {
-            if (bought.length >= BUDGET) return;
-            bought.push(h.a.key);
-            render();
-          });
+          btn.disabled = bought.length + inFlight() >= BUDGET;
+          btn.addEventListener("click", function () { startCoding(h.a.key); });
         }
         const lico = document.createElement("span");
         lico.className = "attr-ico";
@@ -5410,7 +5565,39 @@ function buildSimContent() {
         lico.innerHTML = alienMark(h.a.key, 24);
         row.appendChild(lico);
         row.appendChild(name); row.appendChild(desc); row.appendChild(btn);
+        let fill = null;
+        if (started) {
+          const track = document.createElement("div");
+          track.className = "d3b-progress";
+          track.setAttribute("role", "progressbar");
+          // No valuenow: the fill is a CSS transition, so a number set here would be
+          // read out once and then be wrong for the next five seconds. Indeterminate
+          // is the truth of it, and the button says the same thing in words.
+          track.setAttribute("aria-label", "Coding " + h.a.label);
+          if (ATTR_SOFT[h.a.key]) track.style.background = ATTR_SOFT[h.a.key];
+          fill = document.createElement("i");
+          if (ATTR_COLOUR[h.a.key]) fill.style.background = ATTR_COLOUR[h.a.key];
+          track.appendChild(fill);
+          row.appendChild(track);
+        }
         listEl.appendChild(row);
+        // Only now, with the row actually IN the document. A forced reflow on a
+        // detached subtree measures nothing, so the starting width was never committed
+        // as a style to transition away from — the fill went straight to full and the
+        // bar was simply drawn complete. It has to be attached first, then committed,
+        // then given the end value.
+        if (fill) {
+          // Resumed, not restarted: a redraw lands here with the run already part way
+          // through, so the fill starts where it has got to and is given only the time
+          // that is left.
+          const done = Math.min(1, (Date.now() - started) / COMMISSION_MS);
+          fill.style.transition = "none";
+          fill.style.width = (done * 100).toFixed(2) + "%";
+          void fill.getBoundingClientRect();
+          fill.style.transition =
+            "width " + Math.round(COMMISSION_MS * (1 - done)) + "ms linear";
+          fill.style.width = "100%";
+        }
       });
     }
 
@@ -9693,10 +9880,7 @@ function buildSimContent() {
     // gets its own control in the same place instead, so the row keeps the height
     // that starts the two panels level.
     let exSetup = null, exOne = null, exAll = null, exPath = null;
-    let exCube = null, exReset = null, exWrap = null;
-    // Which door was used. The temp one skips straight to the finished cube; both end
-    // up in runExtract, which has to know which of the two it is answering.
-    let exFromCube = false;
+    let exReset = null, exWrap = null;
     // The stage's entry points, parked by runExtract so the row can reach into its
     // closure. Null until Setup has run — nothing else in the row can be pressed
     // before it, because there is nothing for them to act on.
@@ -9708,6 +9892,12 @@ function buildSimContent() {
     // repeat, which is the whole pattern.
     const EX_BY_HAND = 10, EX_ALL_AT = 3;
     let exCollected = 0, exCubeDone = false, exBusy = false, exPathDone = false;
+    // Where a pressed step wants the screen to be before it plays. Resolved inside
+    // runExtract, which is where CUBE_TOTAL and the set count are in scope.
+    let exJumpTo = null;
+    // What to do when the collection in flight lands. Collect All uses it to play the
+    // first three by hand before it takes over; nothing else sets it.
+    let exAfterOne = null;
     // Which button is driving the run. It holds the pressed state for as long as its
     // animation lasts — the same thing a step button does in Trace a Case, and the
     // only thing on screen saying which of them you are watching.
@@ -9729,13 +9919,21 @@ function buildSimContent() {
         b.disabled = on ? false : off;
         setAriaDisabled(b, b.disabled);
       };
-      set(exSetup, live || exBusy);
-      set(exOne, !live || exBusy || exCubeDone || exCollected >= EX_BY_HAND);
-      set(exAll, !live || exBusy || exCubeDone || exCollected < EX_ALL_AT);
-      set(exPath, !exCubeDone || exBusy || exPathDone);
-      // Never gated on how far the run has got — only on whether one is mid-flight,
-      // which is the one moment pressing it could not mean anything.
-      if (exCube) set(exCube, exBusy);
+      // Every step, always, the way Trace a Case's four and the Prediction Chain's
+      // are — including while one is running. A greyed step says "not yet", which is
+      // a rule about the ORDER you may look at things in, and the order is the one
+      // thing this screen is already showing you. Nor is a step mid-flight a reason
+      // to refuse: changing your mind about what to watch is not an error, and being
+      // made to sit out an animation you have stopped caring about is the worst of
+      // the possible answers. The running one still shows as running.
+      set(exSetup, false);
+      // The one exception, and it is not about order: ten is the most that can be
+      // collected by hand, so past ten the button has nothing left to do. Any other
+      // step moves the screen off that state — Collect All builds the deck, Setup
+      // clears it — and it comes back by itself.
+      set(exOne, exCollected >= EX_BY_HAND && !exCubeDone);
+      set(exAll, false);
+      set(exPath, false);
       if (exReset) exReset.disabled = !extracted;
     }
     if (opts.steps) {
@@ -9743,10 +9941,24 @@ function buildSimContent() {
     } else if (opts.extract && !opts.investigate) {
       const exRow = document.createElement("div");
       exRow.className = "d1a-steps d1a-exrow";
-      function startExtract(fromCube) {
+      // Put the screen into the state a step starts FROM, with nothing animated, and
+      // leave it ready to play that step. Going forward could be done in place; going
+      // back cannot, so both go the same way — tear the run down and rebuild it at the
+      // state wanted. One route that always works beats two that each work half the
+      // time.
+      function exJump(stage) {
+        clearExtract();
+        extracted = true;
+        pinEl.style.display = "none";
+        measureEl.style.display = "none";
+        nBody.classList.add("d1a-noreadout");
+        growNet();
+        exJumpTo = stage;
+        runExtract(true);
+      }
+      function startExtract() {
         if (exBusy) return;
-        exFromCube = !!fromCube;
-        exActive = fromCube ? exCube : exSetup;
+        exActive = exSetup;
         exBusy = true;
         // The readout goes with everything else — it has nothing to say once the
         // neurons are no longer hoverable, and its 60-odd pixels are the difference
@@ -9759,7 +9971,12 @@ function buildSimContent() {
         measureEl.style.display = "none";
         nBody.classList.add("d1a-noreadout");
         growNet();
-        runExtract();
+        // With Animate off, Setup takes the SAME road a returned-to screen takes:
+        // everything already in place. Running the staged version at zero durations
+        // is not the same thing — the column is committed where it starts from and
+        // moved home a tick later, so what should have been one state was two, and
+        // the circles visibly slid across on arrival.
+        runExtract(motionOff());
         syncExRow();
       }
       function exButton(label, cls, fn) {
@@ -9775,31 +9992,45 @@ function buildSimContent() {
       // Setup first: the fourteen hidden units are copied out into a column of their
       // own and the diagram comes back up behind them. What is on screen after it is
       // an empty cube waiting for its first conversation.
-      exSetup = exButton("Setup", "", function () { startExtract(false); });
+      exSetup = exButton("Setup", "", function () {
+        if (exBusy) cancelRun();
+        // Begins at nothing, so anything already on screen goes first.
+        if (extracted) clearExtract();
+        startExtract();
+      });
       exSetup.disabled = false;
       // Then one conversation at a time, by hand. The button is the claim: a column
       // of the cube is one conversation, and it got there by being run.
+      // An interrupted run ALWAYS rebuilds. Stopping mid-flight leaves half a column
+      // drawn and counters that have not caught up, and the only honest thing to do
+      // with that is put it back to a state the next step can start from.
       exOne = exButton("Collect a Conversation", "", function () {
-        if (exSteps) { exActive = exOne; exSteps.collect(); }
+        const stopped = exBusy;
+        if (stopped) cancelRun();
+        // Begins at Setup done with room left to collect. Past that — the deck built,
+        // or all ten already in — back to the start of the collecting.
+        const at = (exCubeDone || exCollected >= EX_BY_HAND) ? 0 : exCollected;
+        if (stopped || !exSteps || exCubeDone || at !== exCollected) exJump(at);
+        exActive = exOne; exSteps.collect();
       });
       exAll = exButton("Collect All Conversations", "", function () {
-        if (exSteps) { exActive = exAll; exSteps.all(); }
+        const stopped = exBusy;
+        if (stopped) cancelRun();
+        // Begins wherever the hand collecting stopped — one column, two, or none at
+        // all. It builds ON from that rather than starting the count over, so the
+        // conversation you watched arrive is still the one at the front of the deck.
+        const at = exCubeDone ? 0 : Math.min(exCollected, EX_BY_HAND);
+        if (stopped || !exSteps || exCubeDone || at !== exCollected) exJump(at);
+        exActive = exAll; exSteps.all();
       });
-      // TEMPORARY. Straight to the finished cube, for working on what comes after it
-      // without collecting eight hundred conversations first. It runs the same rebuild
-      // a returned-to screen gets, so what it lands on cannot drift from what the
-      // sequence actually arrives at. Delete it once the end state is settled.
-      exCube = exButton("TEMP: Cube", "d1a-temp", function () {
-        // Always live, so it can be used to start over at the cube without having to
-        // press Reset first. Anything already on screen goes the way Reset takes it.
-        if (extracted) clearExtract();
-        startExtract(true);
-      });
-      exCube.disabled = false;
-      // And only once all eight hundred are standing — the pathways are extracted
-      // FROM the cube, so there has to be a cube.
+      // Begins at the finished deck — the pathways are extracted FROM eight hundred
+      // conversations, so the eight hundred have to be standing. Pressed before there
+      // are any, they are simply there.
       exPath = exButton("Extract Pathways", "", function () {
-        if (exSteps) { exActive = exPath; exSteps.pathways(); }
+        const stopped = exBusy;
+        if (stopped) cancelRun();
+        if (stopped || !exSteps || !exCubeDone || exPathDone) exJump("cube");
+        exActive = exPath; exSteps.pathways();
       });
       // Reset undoes the extraction, so it sits at the end of the run it undoes —
       // the same pairing the four steps have. Disabled until there is something to
@@ -9908,9 +10139,13 @@ function buildSimContent() {
     // so that has to be said. The one non-obvious thing about the widths — that they
     // CHANGE partway along a line, and why — is labelled on the diagram itself,
     // over the gap where it happens.
+    // Named, in the project's own key idiom — the sign, then what the sign is OF.
+    // Two keys side by side that differ only in the shape of their swatch leave the
+    // reader to work out which is which from the drawing.
     scaleEl.innerHTML =
-      '<span class="sw neg"></span><span class="lo">\u2212</span>'
-      + '<span class="sw pos"></span><span class="hi">+</span>';
+      '<span class="cap">Neuron Activation</span>'
+      + '<span class="row"><span class="sw neg"></span><span class="lo">\u2212</span>'
+      + '<span class="sw pos"></span><span class="hi">+</span></span>';
     nHead.appendChild(scaleEl);
     // Only where there are bars to explain. Trace a Case draws no loadings, and a key
     // for something that is not on the screen is worse than none. Extract Pathways
@@ -9920,9 +10155,14 @@ function buildSimContent() {
     if (opts.investigate || opts.extract) {
       loadScaleEl = document.createElement("div");
       loadScaleEl.className = "d1a-scale d1a-loadscale";
+      // The signs flank the pair rather than following each bar: the block's left half
+      // IS negative and its right half positive, so one of each is all it takes.
       loadScaleEl.innerHTML =
-        '<span class="bar neg"></span><span class="lo">\u2212</span>'
-        + '<span class="bar pos"></span><span class="hi">+</span>';
+        '<span class="cap">Loading</span>'
+        + '<span class="row"><span class="lo">\u2212</span>'
+        + '<span class="bars"><i class="bar neg"><b></b></i>'
+        + '<i class="bar pos"><b></b></i></span>'
+        + '<span class="hi">+</span></span>';
       if (!opts.investigate) collapseLoadKey();
       nHead.appendChild(loadScaleEl);
     }
@@ -9935,6 +10175,10 @@ function buildSimContent() {
       loadScaleEl.style.opacity = "0";
       loadScaleEl.style.maxWidth = "0px";
       loadScaleEl.style.marginLeft = "0px";
+      // display:none as well, or it is still a flex ITEM: zero wide, but the head's
+      // 10px gap sits between it and the key all the same, and the key ends up ten
+      // pixels left of where it sits on a screen that has no loading key at all.
+      loadScaleEl.style.display = "none";
     }
     // Measured and then animated to that measurement. The width is two swatches and
     // two signs in a particular font — not a number anyone should be writing down —
@@ -9942,6 +10186,7 @@ function buildSimContent() {
     function showLoadKey(ms) {
       if (!loadScaleEl || loadScaleEl.__shown) return;
       loadScaleEl.__shown = true;
+      loadScaleEl.style.display = "";      // back in the layout before it is measured
       loadScaleEl.style.transition = "none";
       loadScaleEl.style.maxWidth = "none";
       loadScaleEl.style.marginLeft = "";
@@ -9951,7 +10196,13 @@ function buildSimContent() {
       void loadScaleEl.getBoundingClientRect();
       if (!ms) {
         loadScaleEl.style.maxWidth = "none";
-        loadScaleEl.style.marginLeft = "";
+        // The SAME 16px the animated branch ends on, set inline rather than left to
+        // the stylesheet. .d1a-loadscale asks for it at one class, and the head's
+        // .nnm-panel-head.d1a-hascontrols .d1a-scale zeroes it at three — so once this
+        // screen grew controls, clearing the inline value dropped the gap and the
+        // whole right-aligned group slid 16px over. Instant and animated have to land
+        // in the same place: one is the other with the time taken out.
+        loadScaleEl.style.marginLeft = "16px";
         loadScaleEl.style.opacity = "1";
         return;
       }
@@ -9959,9 +10210,9 @@ function buildSimContent() {
       // third of the way in — so the room is made first and filled second, rather
       // than something appearing and shoving its neighbour aside.
       loadScaleEl.style.transition =
-        "max-width " + ms + "ms " + MOVE_EASE
-        + ", margin-left " + ms + "ms " + MOVE_EASE
-        + ", opacity " + Math.round(ms * 0.7) + "ms ease " + Math.round(ms * 0.35) + "ms";
+        "max-width " + tms(ms) + "ms " + MOVE_EASE
+        + ", margin-left " + tms(ms) + "ms " + MOVE_EASE
+        + ", opacity " + tms(Math.round(ms * 0.7)) + "ms ease " + tms(Math.round(ms * 0.35)) + "ms";
       loadScaleEl.style.maxWidth = w + "px";
       loadScaleEl.style.marginLeft = "16px";
       loadScaleEl.style.opacity = "1";
@@ -9973,6 +10224,27 @@ function buildSimContent() {
     // The key keeps its margin-left:auto, so it is still what pushes the group over —
     // there are now four things travelling together rather than one.
     let animateOn = true, animSpeed = 1;
+    // Extract Pathways runs on its own clock. Its sequence is minutes long and built
+    // from explicit durations rather than the step runners', so animSpeed — which the
+    // runners multiply in at four places — reaches almost none of it. exSpeed is the
+    // same idea applied at the leaves: every delay and every transition on this screen
+    // goes through D() on its way to the DOM, so one number governs the lot.
+    //
+    // tms is the IDENTITY on the other two screens. Trace a Case's slider means what it
+    // has always meant and Investigate P1-P3 has no slider at all; widening either of
+    // them is not what was asked for, and Animate-off in particular would go from
+    // "stop the step animation" to "make the whole screen instant".
+    let exSpeed = 1;
+    const EX_TIMED = !!(opts.extract && !opts.investigate);
+    function tms(ms) {
+      if (!EX_TIMED) return ms;
+      // Animate off is the same lever at zero: every beat lands immediately and every
+      // transition resolves to "none" (the `ms ? ... : "none"` the builders already
+      // use), so the sequence plays through its real states as fast as the event loop
+      // will carry it rather than needing a second, parallel instant path.
+      if (motionOff()) return 0;
+      return Math.round(ms * exSpeed);
+    }
     const SPEEDS_D1A = [1.7, 1, 0.6];
     const SPEED_NAMES_D1A = ["Slow", "Med", "Fast"];
     let animBox = null, speedIn = null, speedWrap = null;
@@ -9982,7 +10254,7 @@ function buildSimContent() {
       return !animateOn || (window.matchMedia
         && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     }
-    if (opts.steps) {
+    if (opts.steps || opts.anim) {
       // Between the key and the checkbox, taking the head's own 10px gap on each
       // side — the divider the Prediction Chain puts between Reset and About.
       const headRule = document.createElement("span");
@@ -10004,7 +10276,10 @@ function buildSimContent() {
         speedWrap.classList.toggle("off", !animateOn);
         // Whatever was mid-flight is abandoned and the diagram is left in the state
         // the run had reached, which is what the un-animated version would show.
-        applyStepState(stepDone);
+        // Extract Pathways has no step state to fall back to — its runs are driven by
+        // the buttons and carry their own progress — so there D() going to zero is the
+        // whole of it, and the sequence in flight simply finishes at once.
+        if (!EX_TIMED) applyStepState(stepDone);
       });
       // The browser focuses a form control on MOUSEDOWN, before any click handler
       // can run, so blurring afterwards is always a frame late and the ring has
@@ -10035,6 +10310,8 @@ function buildSimContent() {
       });
       const setSpeed = function (i) {
         animSpeed = SPEEDS_D1A[i];
+        // Slow is 1.7x the duration, so the number IS the multiplier either way.
+        exSpeed = SPEEDS_D1A[i];
         speedLabs.forEach(function (t, k) { t.classList.toggle("on", k === i); });
         speedIn.setAttribute("aria-valuetext", SPEED_NAMES_D1A[i]);
       };
@@ -10059,6 +10336,22 @@ function buildSimContent() {
       speedWrap.appendChild(speedTrack);
       speedWrap.appendChild(speedTicks);
       nHead.appendChild(speedWrap);
+      // Controls first, key last. appendChild on a node already in the head MOVES it,
+      // so this reorders rather than rebuilding: title, Animate, speed, rule, key.
+      //
+      // The key is hard right on Extract Pathways and Investigate P1-P3, and a legend
+      // that sits somewhere else on a sibling screen has to be re-found every time you
+      // switch. Put last it is in the same place on all three. The divider then falls
+      // between the things you OPERATE and the thing you READ, which is a truer split
+      // than the one it was making.
+      nHead.appendChild(headRule);
+      nHead.appendChild(scaleEl);
+      // Extract Pathways carries a SECOND key — Loading, which fades up when the bars
+      // appear — and it was built before the reorder ran. Moving only the first one
+      // put it after the second and swapped the pair, so the legend that arrives last
+      // would have sat left of the one that is there from the start.
+      if (loadScaleEl) nHead.appendChild(loadScaleEl);
+      nHead.classList.add("d1a-hascontrols");
     }
 
     netPanel.appendChild(nHead);
@@ -11856,14 +12149,14 @@ function buildSimContent() {
         return;
       }
       void leftCol.getBoundingClientRect();
-      leftCol.style.transition = "flex-basis " + PANEL_MS + "ms ease";
+      leftCol.style.transition = "flex-basis " + tms(PANEL_MS) + "ms ease";
       leftCol.style.flexBasis = "";
       if (X && X.scene) {
-        X.scene.style.transition = "transform " + PANEL_MS + "ms ease";
+        X.scene.style.transition = "transform " + tms(PANEL_MS) + "ms ease";
         X.scene.style.transform = "translate(" + (-d) + "px,0)";
       }
       if (X && X.headEl) {
-        X.headEl.style.transition = "transform " + PANEL_MS + "ms ease";
+        X.headEl.style.transition = "transform " + tms(PANEL_MS) + "ms ease";
         X.headEl.style.transform = headTx;
       }
       const tt = setTimeout(function () { leftCol.style.overflow = ""; }, PANEL_MS + 40);
@@ -11879,15 +12172,13 @@ function buildSimContent() {
       if (X && X.scene) { X.scene.style.transition = ""; X.scene.style.transform = ""; }
     }
 
-    function clearExtract() {
-      if (!extracted) return;
-      // Everything the run had in flight dies with it. A Reset lands mid-animation
-      // far more often than not — that is WHY it is pressed — and the aborted run's
-      // timers were still firing into the next one: they released the busy flag early,
-      // so Setup "finished" in 800ms and a second sequence could start on top of the
-      // first, and they advanced the collected count past columns that were never
-      // drawn. Cancelling here rather than leaving it to render(), which only replaces
-      // the drawing and knows nothing about the run that was driving it.
+    // Everything a run has in flight, stopped. An abandoned run's timers were still
+    // firing into the next one: they released the busy flag early, so Setup
+    // "finished" in 800ms and a second sequence could start on top of the first, and
+    // they advanced the collected count past columns that were never drawn. Doing it
+    // here rather than leaving it to render(), which only replaces the drawing and
+    // knows nothing about the run that was driving it.
+    function killRun() {
       if (Array.isArray(SIM._timeouts)) {
         SIM._timeouts.forEach(clearTimeout);
         SIM._timeouts.length = 0;
@@ -11900,8 +12191,24 @@ function buildSimContent() {
         SIM._rafs.forEach(cancelAnimationFrame);
         SIM._rafs.length = 0;
       }
+      // A queued continuation is as much "in flight" as a timer is.
+      exAfterOne = null;
+    }
+    // A press is never refused, so a run in flight is abandoned where it stands and
+    // the pressed step takes over. That is the point of leaving the row live: what
+    // you want to watch is one click away, not one click plus however long the thing
+    // you have stopped caring about still has to run.
+    function cancelRun() {
+      killRun();
+      exBusy = false;
+      exActive = null;
+      running = false;
+      animSpeed = 1;
+    }
+    function clearExtract() {
+      if (!extracted) return;
+      killRun();
       extracted = false;
-      exFromCube = false;
       netHidden = false;
       if (loadScaleEl && !opts.investigate) {
         loadScaleEl.__shown = false;
@@ -12111,7 +12418,7 @@ function buildSimContent() {
         if (!ms) { t.style.opacity = "1"; return; }
         t.style.opacity = "0";
         void t.getBoundingClientRect();
-        t.style.transition = "opacity " + ms + "ms ease";
+        t.style.transition = "opacity " + tms(ms) + "ms ease";
         t.style.opacity = "1";
       }
       // Half strength, not gone, and pointer events left alone — nothing here is
@@ -12124,7 +12431,7 @@ function buildSimContent() {
           // heavy dark ring that appeared around the input and output circles. The
           // later full fade never showed this because 0 over 0 is still 0.
           if (parseFloat(getComputedStyle(e).opacity) === 0) return;
-          e.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          e.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
           e.style.opacity = String(LIFT_DIM);
         });
       }
@@ -12194,8 +12501,8 @@ function buildSimContent() {
           const len = Math.hypot(dx, dy) || 1;
           const ox = (-dx / len) * SETTLE_PX, oy = (-dy / len) * SETTLE_PX;
           void outer.getBoundingClientRect();
-          outer.style.transition = "transform " + dur + "ms " + EASE_X + " " + delay + "ms";
-          inner.style.transition = "transform " + dur + "ms " + EASE_Y + " " + delay + "ms";
+          outer.style.transition = "transform " + tms(dur) + "ms " + EASE_X + " " + tms(delay) + "ms";
+          inner.style.transition = "transform " + tms(dur) + "ms " + EASE_Y + " " + tms(delay) + "ms";
           outer.style.transform = "translate(" + ox.toFixed(2) + "px,0)";
           // scale(1) spelled out, not left off: both ends of the flight then carry the
           // same two functions and interpolate one at a time, instead of the browser
@@ -12204,8 +12511,8 @@ function buildSimContent() {
           // ...and then the settle itself, eased so it slows into the mark rather
           // than snapping back to it.
           after0(delay + dur, function () {
-            outer.style.transition = "transform " + SETTLE_MS + "ms " + SETTLE_EASE;
-            inner.style.transition = "transform " + SETTLE_MS + "ms " + SETTLE_EASE;
+            outer.style.transition = "transform " + tms(SETTLE_MS) + "ms " + SETTLE_EASE;
+            inner.style.transition = "transform " + tms(SETTLE_MS) + "ms " + SETTLE_EASE;
             outer.style.transform = "";
             inner.style.transform = "";
           });
@@ -12393,15 +12700,30 @@ function buildSimContent() {
       const HIDE_MS = 420;           // the diagram fading out
       const CUBE_MOVE_MS = 700;      // and the cube taking the room it leaves
       const COL_SLIDE = 16, COL_IN_MS = 420;
-      // The beat before column d lands. Conversations 7 to 10 arrive at reading
-      // pace — each is being named, and a name needs time to be read — and from
-      // there it eases down, so twenty conversations read as a deck filling up
-      // rather than as twenty separate events.
-      const COL_SLOW = 900, COL_FAST = 240, COL_EASE_FROM = 9;
-      function colGap(d) {
-        if (d <= COL_EASE_FROM) return COL_SLOW;
-        const t = (d - COL_EASE_FROM) / (CUBE_TOTAL - 1 - COL_EASE_FROM);
-        return Math.round(COL_FAST + (COL_SLOW - COL_FAST) * Math.pow(1 - t, 1.6));
+      // The beat before a column lands. The first arrives at reading pace — it is
+      // being NAMED, and a name needs time to be read — and every one after it is
+      // shorter than the one before, so twenty conversations read as a deck filling
+      // up rather than as twenty separate events.
+      //
+      // Keyed to how far through THIS RUN the column is, not to its number in the
+      // deck. Collect All can be pressed with anywhere from three to ten
+      // conversations already in, and against absolute numbering that changed what
+      // the run did rather than just how long it took: from three it played seven
+      // beats of flat reading pace and then eased, from ten it started already a
+      // third of the way down the ramp and never had a slow stretch at all. Against
+      // the run, the shape is the same whenever it is pressed — first one slow, last
+      // one fast — and only the number of steps it is spread over differs.
+      const COL_SLOW = 900, COL_FAST = 240;
+      function colGap(d, from) {
+        // At least one step of span, so the last possible start cannot divide by zero.
+        const a = Math.min(from || 0, CUBE_TOTAL - 2);
+        const t = Math.max(0, Math.min(1, (d - a) / (CUBE_TOTAL - 1 - a)));
+        // Smoothstep, not a flat hold and then a decay. It still leaves the opening
+        // beats near reading pace and the closing ones near the floor, but every beat
+        // in between is shorter than the one before it — a hold would be a stretch of
+        // the run that is not speeding up, which is the thing being fixed.
+        const e = t * t * (3 - 2 * t);
+        return Math.round(COL_FAST + (COL_SLOW - COL_FAST) * (1 - e));
       }
 
       // The cube grows down and to the LEFT, so every column added moves its centre
@@ -12433,7 +12755,7 @@ function buildSimContent() {
         // to stay centred — an overshoot on a four-pixel move is not weight, it is a
         // twitch. Weight belongs to the things that actually travel.
         host.__sx = dx;
-        host.style.transition = ms ? "transform " + ms + "ms " + MOVE_EASE : "none";
+        host.style.transition = ms ? "transform " + tms(ms) + "ms " + MOVE_EASE : "none";
         host.style.transform = "translate(" + dx + "px,0)";
       }
 
@@ -12458,7 +12780,7 @@ function buildSimContent() {
         node.__sx = toX;
         node.__seq = (node.__seq || 0) + 1;    // any settle still pending stands down
         node.style.transition =
-          ms ? "transform " + ms + "ms " + (ease || MOVE_EASE) : "none";
+          ms ? "transform " + tms(ms) + "ms " + (ease || MOVE_EASE) : "none";
         node.style.transform = "translate(" + toX.toFixed(2) + "px,0)";
         return ms;
       }
@@ -12480,13 +12802,13 @@ function buildSimContent() {
         // and a settle firing after the NEXT move has started would drag the element
         // back to the previous mark. Only the newest move gets to finish itself.
         const mine = node.__seq = (node.__seq || 0) + 1;
-        node.style.transition = "transform " + ms + "ms " + ease + (extra || "");
+        node.style.transition = "transform " + tms(ms) + "ms " + ease + (extra || "");
         node.style.transform = "translate("
           + (toX + dx / len * over).toFixed(2) + "px,"
           + (toY + dy / len * over).toFixed(2) + "px)";
         after0(ms, function () {
           if (node.__seq !== mine) return;
-          node.style.transition = "transform " + back + "ms " + SETTLE_EASE;
+          node.style.transition = "transform " + tms(back) + "ms " + SETTLE_EASE;
           node.style.transform = home;
         });
         return ms + back;
@@ -12577,7 +12899,7 @@ function buildSimContent() {
         wrap.style.opacity = "0";
         void wrap.getBoundingClientRect();
         settleXY(wrap, hx - COL_SLIDE, hy, hx, hy, ms, EASE_X,
-                 ", opacity " + Math.round(ms * 0.6) + "ms ease");
+                 ", opacity " + tms(Math.round(ms * 0.6)) + "ms ease");
         wrap.style.opacity = "";
         return wrap;
       }
@@ -12691,11 +13013,11 @@ function buildSimContent() {
         if (convLabelEl) els.push(convLabelEl);
         els.forEach(function (e) {
           if (!e) return;
-          e.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          e.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
           e.style.opacity = "0";
         });
         (liftCols || []).forEach(function (g) {
-          g.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          g.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
           g.style.opacity = "";
         });
       }
@@ -12720,14 +13042,14 @@ function buildSimContent() {
           void cubeHeadEl.getBoundingClientRect();
         }
         cubeHeadEl.textContent = n + " Conversations";
-        cubeHeadEl.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+        cubeHeadEl.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
         cubeHeadEl.style.opacity = "1";
       }
       function dropName(ms) {
         if (!nameEl) return;
         const old = nameEl;
         nameEl = null;
-        old.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+        old.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
         old.style.opacity = "0";
         after0(ms + 80, function () {
           if (old.parentNode) old.parentNode.removeChild(old);
@@ -12735,7 +13057,9 @@ function buildSimContent() {
       }
 
       const COUNT_REST = 520, COUNT_FADE = 320;
-      function buildRest(c) {
+      // `from` is the column the run STARTED at, carried down the recursion so the
+      // pacing knows how much ground it has to cover. It is not the same as c.
+      function buildRest(c, from) {
         if (c >= CUBE_TOTAL) {
           // Together, not one after the other: the name is not being replaced by a
           // different name, it is being replaced by a count, and the two crossing
@@ -12747,12 +13071,13 @@ function buildSimContent() {
           });
           return;
         }
-        const gap = colGap(c);
+        const a = from == null ? c : from;
+        const gap = colGap(c, a);
         // The whole beat again, now that there is no settle to leave room for.
         centreCube(c + 1, gap);
         addColumn(c, c, COL_IN_MS, null, 0);
         nameColumn(c, c);
-        after0(gap, function () { buildRest(c + 1); });
+        after0(gap, function () { buildRest(c + 1, a); });
       }
       // ---- the particles ----
       // What flies is what is on the screen. Every particle is one conversation's
@@ -12788,7 +13113,7 @@ function buildSimContent() {
       const PT_SHOW = 0.5, PT_COLGAP = 100;
       // Column centre to box, the spacing Investigate P1-P3 uses (PV_BX - PV_COLX),
       // so the two screens' end states are the same object in the same proportions.
-      const PT_BOXGAP = 166;
+      const PT_BOXGAP = 186;
       // One pathway at a time: its fourteen loadings stay lit while the other
       // twenty-eight step back, lines run from those fourteen to a point on the right,
       // and the box appears where they land. Sequential because the claim is
@@ -12839,6 +13164,22 @@ function buildSimContent() {
       }
 
       let ptLayer = null, ptList = null, ptEnd = 0, ptBars = null, ptWired = false;
+      let ptTrackG = null, ptAxisG = null;
+      // The track the loadings are read against, right of the column: zero at its
+      // centre, BAR_MAX either side. Same geometry as Investigate P1-P3, so the two
+      // screens' end states are one picture rather than two that resemble each other.
+      function barTrack() {
+        const g = liftGeom();
+        const L = g.cx + g.r + 8;
+        return { L: L, W: BAR_MAX * 2, mid: L + BAR_MAX };
+      }
+      // Grown from zero: a positive bar keeps its left edge and widens right, a
+      // negative one keeps its RIGHT edge and widens left. Both start on the axis,
+      // which is what makes the sign a direction as well as a colour.
+      function setBarWidth(b, w) {
+        b.el.setAttribute("width", w.toFixed(2));
+        b.el.setAttribute("x", (b.v >= 0 ? b.mid : b.mid - w).toFixed(2));
+      }
       // The column, its name and the boxes travel as one thing, and by a different
       // amount from the deck: the deck goes far enough to be half off the panel, and
       // the column follows only far enough to sit PT_COLGAP clear of what is left.
@@ -12882,10 +13223,45 @@ function buildSimContent() {
         if (liftCols && liftCols[0]) ptApp.appendChild(liftCols[0]);
         if (liftLabelEl) ptApp.appendChild(liftLabelEl);
       }
+      // The finished picture with nothing having flown: every bar at full length, the
+      // three boxes standing, the connectors in and both halves pickable. Two things
+      // need it — a screen returned to after the run, and Animate off — and it is the
+      // same picture either way, so it is built in one place.
+      function pathInstant() {
+        buildBars();
+        ptBars.forEach(function (b) { setBarWidth(b, b.len); });
+        buildPathways();
+        pwMade.boxes.forEach(function (b, i) {
+          [b.box, b.sq, pwMade.labs[i]].forEach(function (e) {
+            if (e) e.style.opacity = "1";
+          });
+        });
+        buildLines(0);
+        makeInteractive();
+        showLoadKey(0);
+        ptWired = true;
+      }
+
       function particleStage() {
         const L = pathLayout();
         ptAppDx = L.dx;
         makeApp();
+        // Animate off is not this sequence played at zero — it is this sequence not
+        // played. Collapsing the durations still ran the whole choreography: the bars
+        // were built by the particles, muted a pathway at a time as their copies flew
+        // off, and un-muted again at the end. With no time between those states the
+        // only thing on screen is the bars going colour, grey, colour — which reads as
+        // them being drawn twice. What Animate off owes is the picture the run arrives
+        // at, so that is what it draws.
+        if (motionOff()) {
+          slideTo(X.scene, liftShift + L.slide, 0);
+          slideTo(ptApp, L.app, 0);
+          if (cubeHeadEl) slideTo(cubeHeadEl, L.head, 0);
+          pathInstant();
+          exBusy = false;
+          syncExRow();
+          return;
+        }
         const deck = slideTo(X.scene, liftShift + L.slide, PT_SLIDE_MS);
         if (cubeHeadEl) slideTo(cubeHeadEl, L.head, PT_SLIDE_MS);
         // A second behind: the column is answering the deck's move, not sharing it.
@@ -12899,13 +13275,13 @@ function buildSimContent() {
       // picture, arrived at rather than drawn.
       function loadBars() {
         const g = liftGeom();
-        const base = g.cx + g.r + 6;
+        const t = barTrack();
         const out = [];
         for (let k = 0; k < units.length; k++) {
           for (let pi = 0; pi < 3; pi++) {
             const v = PATH_LOAD[k][pi];
-            out.push({ v: v, x: base, y: g.y(k) + (pi - 1) * BAR_ROW,
-                       len: Math.max(2, Math.abs(v) / LOAD_MAX * BAR_MAX) });
+            out.push({ v: v, mid: t.mid, y: g.y(k) + (pi - 1) * BAR_ROW,
+                       len: Math.max(1.5, Math.abs(v) / LOAD_MAX * BAR_MAX) });
           }
         }
         return out;
@@ -12915,14 +13291,31 @@ function buildSimContent() {
       // readings arrive is the claim.
       function buildBars() {
         const geo = loadBars();
+        const g = liftGeom();
         const host = el("g", { class: "d1a-loadbuilt" });
         (ptApp || X.scene).appendChild(host);
+        // Three layers: the frames a selection adds, the zero rules, then the bars.
+        // The frames have to be UNDER the bars and the axis above them, which is the
+        // order Investigate P1-P3 uses for the same reason — a white frame would
+        // otherwise wipe out the rule across its own width.
+        ptTrackG = el("g", {});
+        ptAxisG = el("g", {});
+        const barsG = el("g", {});
+        [ptTrackG, ptAxisG, barsG].forEach(function (l) { host.appendChild(l); });
+        // One axis per triplet, proud of it at each end, so it reads as a line the
+        // three bars sit on rather than one rule down the whole column.
+        for (let k = 0; k < units.length; k++) {
+          ptAxisG.appendChild(el("line", {
+            x1: geo[0].mid, y1: g.y(k) - BAR_ROW - BAR_H3,
+            x2: geo[0].mid, y2: g.y(k) + BAR_ROW + BAR_H3,
+            class: "d1a-loadzero" }));
+        }
         ptBars = geo.map(function (b) {
-          const r = el("rect", { x: b.x, y: b.y - BAR_H3 / 2,
+          const r = el("rect", { x: b.mid, y: b.y - BAR_H3 / 2,
                                  width: 0, height: BAR_H3,
                                  class: "d1a-loadbar " + (b.v >= 0 ? "pos" : "neg") });
-          host.appendChild(r);
-          return { el: r, x: b.x, y: b.y, len: b.len, need: 0, got: 0 };
+          barsG.appendChild(r);
+          return { el: r, mid: b.mid, y: b.y, len: b.len, v: b.v, need: 0, got: 0 };
         });
         return geo;
       }
@@ -12949,8 +13342,10 @@ function buildSimContent() {
             // by a single slice of the deck.
             const sp = src[(n * 7919) % src.length];
             // Each one lands a little further along than the last, so the bar draws
-            // itself from its base outwards instead of filling in at random.
-            const tx = bar.x + bar.len * (i + 1) / bar.need;
+            // itself outward from zero instead of filling in at random — and outward
+            // means leftward where the loading is negative.
+            const dir = bar.v >= 0 ? 1 : -1;
+            const tx = bar.mid + dir * bar.len * (i + 1) / bar.need;
             const c = el("circle", { cx: 0, cy: 0, r: PT_R, fill: sp.c });
             c.style.opacity = "0";
             c.style.transform =
@@ -12980,13 +13375,28 @@ function buildSimContent() {
         // a background tab, so a stage that only ever completed inside the frame loop
         // would never complete there.
         after0(ptEnd + 80, ptWire);
+        // The particles are the one animation on this screen driven by the frame
+        // clock rather than by transitions, so tms() never reached them: every
+        // particle's delay and duration, and ptEnd itself, are in nominal ms. Left
+        // alone they flew at a fixed speed inside a sequence that scales — the deck
+        // slide before them and the pathway steps after them stretching while they
+        // did not — and the safety timer, which DOES scale, then either sat waiting
+        // for them or cut them off mid-flight.
+        //
+        // The fix is to scale the clock rather than the constants: accumulate nominal
+        // time from real time divided by the speed. Done that way a change made
+        // mid-flight takes effect from that frame on instead of retiming the whole
+        // journey and jumping the particles, and Animate off — speed zero — runs the
+        // stage out on its next frame.
         const slot = SIM._rafs.push(0) - 1;
-        let t0 = 0;
+        let last = 0, tv = 0;
         (function tick(now) {
-          if (!t0) t0 = now;
-          const t = now - t0;
-          ptFrame(t);
-          if (t < ptEnd) SIM._rafs[slot] = requestAnimationFrame(tick);
+          if (!last) last = now;
+          const sp = motionOff() ? 0 : exSpeed;
+          tv += sp > 0 ? (now - last) / sp : ptEnd;
+          last = now;
+          ptFrame(tv);
+          if (tv < ptEnd) SIM._rafs[slot] = requestAnimationFrame(tick);
           else ptWire();
         })(performance.now());
       }
@@ -13011,8 +13421,7 @@ function buildSimContent() {
               // what arrived.
               const b = p.bar;
               b.got++;
-              b.el.setAttribute("width",
-                (b.len * Math.min(1, b.got / b.need)).toFixed(2));
+              setBarWidth(b, b.len * Math.min(1, b.got / b.need));
             }
             continue;
           }
@@ -13042,11 +13451,9 @@ function buildSimContent() {
         // Whatever has not landed is not going to add anything the bar does not
         // already have; the bars are set to their full length so none is left a
         // rounding short.
-        if (ptBars) ptBars.forEach(function (b) {
-          b.el.setAttribute("width", b.len.toFixed(2));
-        });
+        if (ptBars) ptBars.forEach(function (b) { setBarWidth(b, b.len); });
         if (ptLayer) {
-          ptLayer.style.transition = "opacity 300ms ease";
+          ptLayer.style.transition = "opacity " + tms(300) + "ms ease";
           ptLayer.style.opacity = "0";
         }
         // The bars are made. What they add up to is the next thing to show.
@@ -13108,7 +13515,7 @@ function buildSimContent() {
         // Short enough that fourteen steps 27ms apart read as one darkening, long
         // enough that no single step is a jump.
         [box.box, box.sq, pwMade.labs[p]].forEach(function (e) {
-          if (e) e.style.transition = "opacity 140ms ease";
+          if (e) e.style.transition = "opacity " + tms(140) + "ms ease";
         });
         // The bar that travels is a COPY, and the original stays where it is, greyed.
         // The loading has not left the matrix — it has been counted into a pathway —
@@ -13129,14 +13536,14 @@ function buildSimContent() {
             // translate then says the whole of where it goes.
             r.style.transformBox = "fill-box";
             r.style.transformOrigin = "center";
-            const dx = bx - (b.x + b.len / 2), dy = by - b.y;
+            const dx = bx - (b.mid + (b.v >= 0 ? b.len / 2 : -b.len / 2));
+            const dy = by - b.y;
             const wait = Math.round(k * PW_LEAD / units.length);
             // It goes out at the very END of its flight, not on the way. Fading from
             // 60% of the journey had them gone before they reached the box, so what
             // arrived was nothing and the box looked like it appeared on its own.
-            r.style.transition = "transform " + PW_FLY + "ms " + EASE_X + " " + wait
-                               + "ms, opacity " + Math.round(PW_FLY * 0.22) + "ms ease "
-                               + (wait + Math.round(PW_FLY * 0.82)) + "ms";
+            r.style.transition = "transform " + tms(PW_FLY) + "ms " + EASE_X + " " + tms(wait) + "ms, opacity " + tms(Math.round(PW_FLY * 0.22)) + "ms ease "
+                               + tms(wait + Math.round(PW_FLY * 0.82)) + "ms";
             void r.getBoundingClientRect();
             r.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1)
                               + "px) scale(0.18)";
@@ -13182,7 +13589,10 @@ function buildSimContent() {
         for (let k = 0; k < units.length; k++) {
           for (let p = 0; p < 3; p++) {
             const b = ptBars[k * 3 + p], box = pwMade.boxes[p];
-            const ln = el("line", { x1: b.x + b.len, y1: b.y,
+            // From ZERO, not from the end of the bar: the line is the link, and the
+            // size is the bar's job. One anchor a row makes the fourteen a fan off a
+            // single axis rather than fourteen lengths restated.
+            const ln = el("line", { x1: b.mid, y1: b.y,
                                     x2: box.x, y2: box.cy, class: "d1a-loadwire" });
             ln.__k = k; ln.__p = p;
             pwLines.appendChild(ln);
@@ -13191,7 +13601,7 @@ function buildSimContent() {
         if (!ms) return;
         pwLines.style.opacity = "0";
         void pwLines.getBoundingClientRect();
-        pwLines.style.transition = "opacity " + ms + "ms ease";
+        pwLines.style.transition = "opacity " + tms(ms) + "ms ease";
         pwLines.style.opacity = "1";
       }
       // One rule for both readings: a thing is lit if nothing is picked, or if it
@@ -13208,6 +13618,18 @@ function buildSimContent() {
         ptBars.forEach(function (b, i) {
           b.el.classList.toggle("mute", !pwLit(Math.floor(i / 3), i % 3));
         });
+        // The frames go on only while something is picked, and only on the bars that
+        // pick lit. All forty-two at rest was forty-one mostly-empty boxes.
+        while (ptTrackG.firstChild) ptTrackG.removeChild(ptTrackG.firstChild);
+        if (pwSel) {
+          const t = barTrack();
+          ptBars.forEach(function (b, i) {
+            if (!pwLit(Math.floor(i / 3), i % 3)) return;
+            ptTrackG.appendChild(el("rect", {
+              x: t.L + 0.5, y: b.y - BAR_H3 / 2 + 0.5,
+              width: t.W - 1, height: BAR_H3 - 1, class: "d1a-loadtrack" }));
+          });
+        }
         pwMade.boxes.forEach(function (b, p) {
           b.box.classList.toggle("on",
             !!pwSel && pwSel.kind === "path" && pwSel.i === p);
@@ -13303,20 +13725,7 @@ function buildSimContent() {
             // The bars at their full length and the three boxes standing, with nothing
             // having flown. Coming back to a screen is not a re-run of what happened
             // on it.
-            buildBars();
-            ptBars.forEach(function (b) {
-              b.el.setAttribute("width", b.len.toFixed(2));
-            });
-            buildPathways();
-            pwMade.boxes.forEach(function (b, i) {
-              [b.box, b.sq, pwMade.labs[i]].forEach(function (e) {
-                if (e) e.style.opacity = "1";
-              });
-            });
-            buildLines(0);
-            makeInteractive();
-            showLoadKey(0);
-            ptWired = true;
+            pathInstant();
           }
           return;
         }
@@ -13329,14 +13738,6 @@ function buildSimContent() {
       // The finished cube with no beats in between — the same rebuild a returned-to
       // screen gets, driven off the same two counters, so there is one implementation
       // of "what the end of the deck looks like" and not two to keep in step.
-      function cubeInstant() {
-        exCollected = CB_NSETS * CUBE_TOTAL;
-        exCubeDone = true;
-        restoreRun();
-        exBusy = false;
-        syncExRow();
-      }
-
       function handOver() {
         const from = Math.max(1, exCollected);
         after0(NEXT_REST, function () {
@@ -13425,7 +13826,7 @@ function buildSimContent() {
           g.__sx = to;
           // The newest set is fading in as it closes, so the transition carries both —
           // setting it on the group separately would wipe the fade.
-          g.style.transition = ms ? "transform " + ms + "ms ease, opacity 160ms ease"
+          g.style.transition = ms ? "transform " + tms(ms) + "ms ease, opacity " + tms(160) + "ms ease"
                                   : "none";
           g.style.transform = "translate(" + to.toFixed(1) + "px,0)";
         }
@@ -13454,7 +13855,7 @@ function buildSimContent() {
         const w = addColumn(j, CUBE_TOTAL + j, 0, cbSetG[1], 1);
         w.style.opacity = "0";
         void w.getBoundingClientRect();
-        w.style.transition = "opacity 140ms ease";
+        w.style.transition = "opacity " + tms(140) + "ms ease";
         w.style.opacity = "1";
         if (j + 1 < CUBE_TOTAL) {
           after0(CB_SET2_STEP, function () { cbSetTwo(j + 1); });
@@ -13471,7 +13872,7 @@ function buildSimContent() {
       // being swapped: a figure that rewrites itself in place reads as a glitch.
       function cbHeadPair() {
         if (!cubeHeadEl) return;
-        cubeHeadEl.style.transition = "opacity 300ms ease";
+        cubeHeadEl.style.transition = "opacity " + tms(300) + "ms ease";
         cubeHeadEl.style.opacity = "0";
         after0(320, function () {
           cubeHeadEl.textContent = (2 * CUBE_TOTAL) + " Conversations";
@@ -13507,7 +13908,7 @@ function buildSimContent() {
           g.style.opacity = "1";
         } else {
           // Fade in and let it stand there, then close.
-          g.style.transition = "opacity 220ms ease";
+          g.style.transition = "opacity " + tms(220) + "ms ease";
           g.style.opacity = "1";
           after0(hold, function () { cbLayout(k + 1, ms); });
         }
@@ -13563,7 +13964,11 @@ function buildSimContent() {
             hideWire(line);
             return;
           }
-          const half = Math.round(ms / 2);
+          // Scaled here like every transition is. A Web Animation takes its duration
+          // as a number rather than a CSS string, so the rewrite that caught the
+          // transitions could not see it — and a sweep running at fixed speed inside
+          // beats that scale is the sequence coming apart.
+          const half = Math.round(tms(ms) / 2);
           line.animate([{ strokeDashoffset: line.__len }, { strokeDashoffset: 0 }],
             { duration: half, easing: SWEEP_EASE, fill: "forwards" })
             .onfinish = function () { line.style.strokeDashoffset = 0; };
@@ -13624,7 +14029,7 @@ function buildSimContent() {
           if (svgHost.__vals) svgHost.__vals[li] = vals[li];
         }
         function after(ms, fn) {
-          const t = setTimeout(fn, Math.max(0, ms));
+          const t = setTimeout(fn, Math.max(0, tms(ms)));
           SIM._timeouts.push(t);
         }
         function label() {
@@ -13713,12 +14118,35 @@ function buildSimContent() {
       // their values.
       function collectOne() {
         if (exBusy || exCubeDone || exCollected >= EX_BY_HAND) return;
+        const c = exCollected;
+        // What a collection LEAVES is three things: the conversation showing on the
+        // diagram, its column in the deck, and the count moved on. Played at zero the
+        // sequence still ran the recap, the dim, the lift and the flight — no one of
+        // them visible for long enough to read, but all of them visible. Animate off
+        // asks for the result, so the result is what it draws. The column is built the
+        // way a returned-to screen builds it, which is the same column standing still.
+        if (motionOff()) {
+          undim(0);
+          showConvLabel(0);
+          setConversation(c, false, true);
+          addColumn(c, c, 0, null, 0);
+          exCollected = c + 1;
+          syncExRow();
+          return;
+        }
         exBusy = true;
         syncExRow();
-        const c = exCollected;
         if (c === 0) {
           showConvLabel(UNDIM_MS);
-          after0(UNDIM_MS + 220, function () { animSpeed = STEP_SPEED; runSteps(0); });
+          after0(UNDIM_MS + 220, function () {
+            // The recap is deliberately quicker than Trace a Case plays it — it is a
+            // reminder, not the lesson — but that is a RATIO, not a fixed speed, so
+            // the slider still has to move it. Pinned at STEP_SPEED it was the one
+            // stretch of the screen the control could not reach, and Animate off left
+            // it animating on its own.
+            animSpeed = motionOff() ? 0 : STEP_SPEED * exSpeed;
+            runSteps(0);
+          });
           return;
         }
         undim(UNDIM_MS);
@@ -13735,6 +14163,11 @@ function buildSimContent() {
             exCollected = c + 1;
             exBusy = false;
             syncExRow();
+            // Taken before it is called, so a continuation that starts another
+            // collection is not immediately cleared by the one it started.
+            const then = exAfterOne;
+            exAfterOne = null;
+            if (then) then();
           });
         });
       }
@@ -13743,10 +14176,51 @@ function buildSimContent() {
       // feeding them through the diagram: past the third conversation the diagram has
       // made its point, and the deck filling up is what there is left to watch.
       function collectAll() {
-        if (exBusy || exCubeDone || exCollected < EX_ALL_AT) return;
+        if (exBusy || exCubeDone) return;
+        // From exactly where the collecting stopped, INCLUDING nothing. The floor of
+        // one was safe only while this step needed three columns before it could be
+        // pressed; now that it can run from an empty deck, it skipped conversation one
+        // and built seven hundred and ninety-nine.
+        if (motionOff()) { cubeFill(exCollected); return; }
+        // The first three always arrive one at a time, however many are already in.
+        // A column of the deck is one conversation and it got there by being RUN;
+        // that claim is made by watching it happen, and three is enough to believe it
+        // of the other seven hundred and ninety-seven. Pressed from nothing this
+        // plays all three; pressed with one already collected it plays the two that
+        // are missing and keeps the one. Past three the deck filling up is the
+        // subject and the individual conversation is not, so the fast build takes
+        // over from wherever the counting has got to.
+        if (exCollected < EX_ALL_AT) {
+          exActive = exAll;
+          exAfterOne = function () { exActive = exAll; collectAll(); };
+          collectOne();
+          return;
+        }
         exBusy = true;
         syncExRow();
         handOver();
+      }
+      // The finished deck with the build not played. It fills in FROM where the hand
+      // collecting stopped rather than starting at zero: those columns are already on
+      // screen, and the one thing worse than eight hundred conversations is eight
+      // hundred and three. Everything else is what a returned-to screen rebuilds —
+      // the rest of set one, the count, then all thirty-nine layers behind it.
+      function cubeFill(from) {
+        hideDiagram(0);
+        for (let c = from; c < CUBE_TOTAL; c++) addColumn(c, c, 0, null, 0);
+        centreCube(CUBE_TOTAL, 0);
+        dropName(0);
+        for (let k = 1; k < CB_NSETS; k++) {
+          const g = cbNewSet(k);
+          for (let j = 0; j < CUBE_TOTAL; j++) addColumn(j, k * CUBE_TOTAL + j, 0, g, k);
+        }
+        cbShade(CB_NSETS);
+        showCount(CB_NSETS * CUBE_TOTAL, 0);
+        cbLayout(CB_NSETS, 0);
+        exCollected = CB_NSETS * CUBE_TOTAL;
+        exCubeDone = true;
+        exBusy = false;
+        syncExRow();
       }
       function runPathways() {
         if (exBusy || !exCubeDone || exPathDone) return;
@@ -13756,7 +14230,7 @@ function buildSimContent() {
         particleStage();
       }
       function after0(ms, fn) {
-        const t = setTimeout(fn, Math.max(0, ms));
+        const t = setTimeout(fn, Math.max(0, tms(ms)));
         SIM._timeouts.push(t);
       }
       // Everything goes half — the diagram AND the empty column from stage 0, which
@@ -13765,7 +14239,7 @@ function buildSimContent() {
         dimRest(ms);
         if (!liftCols) return;
         liftCols.forEach(function (g) {
-          g.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          g.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
           g.style.opacity = String(LIFT_DIM);
         });
       }
@@ -13778,7 +14252,7 @@ function buildSimContent() {
       function undim(ms) {
         X.fade.forEach(function (e) {
           if (e.style.opacity === "" || parseFloat(e.style.opacity) === 0) return;
-          e.style.transition = ms ? "opacity " + ms + "ms ease" : "none";
+          e.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
           e.style.opacity = "";
         });
         // ...except the "x weight" captions, whose resting state is NOT visible:
@@ -13808,8 +14282,8 @@ function buildSimContent() {
         t.style.transform = "translate(0,-9px) scale(0.55)";
         t.style.opacity = "0";
         void t.getBoundingClientRect();
-        t.style.transition = "transform " + ms + "ms " + BOUNCE_EASE
-                           + ", opacity " + Math.round(ms * 0.45) + "ms ease";
+        t.style.transition = "transform " + tms(ms) + "ms " + BOUNCE_EASE
+                           + ", opacity " + tms(Math.round(ms * 0.45)) + "ms ease";
         t.style.transform = "";
         t.style.opacity = "1";
       }
@@ -13836,14 +14310,14 @@ function buildSimContent() {
           svgHost.querySelectorAll('.d1a-node[data-layer="0"]'));
         markStep(1);
         nodes.forEach(function (n, k) {
-          const t = setTimeout(function () { setNodeLevel(n, 1); }, k * FILL_GAP);
+          const t = setTimeout(function () { setNodeLevel(n, 1); }, tms(k * FILL_GAP));
           SIM._timeouts.push(t);
         });
         const done = setTimeout(function () {
           stepDone = Math.max(stepDone, 1);
           syncSteps();
           onDone();
-        }, nodes.length * FILL_GAP + 160);
+        }, tms(nodes.length * FILL_GAP + 160));
         SIM._timeouts.push(done);
       }
       function runSteps(i) {
@@ -13853,7 +14327,7 @@ function buildSimContent() {
           return;
         }
         const next = function () {
-          const t = setTimeout(function () { runSteps(i + 1); }, STEP_GAP);
+          const t = setTimeout(function () { runSteps(i + 1); }, tms(STEP_GAP));
           SIM._timeouts.push(t);
         };
         applyStepState(i);
@@ -13878,9 +14352,31 @@ function buildSimContent() {
         // and a resize rebuilds it — so they are re-pointed at the new one on every
         // redraw and not only on the first.
         exSteps = { collect: collectOne, all: collectAll, pathways: runPathways };
-        if (exFromCube) { cubeInstant(); return; }
         if (quick) {
+          // A step was pressed out of turn and wants the screen somewhere specific.
+          // The counters are what restoreRun reads, so setting them IS the jump.
+          //
+          // Only when one was actually asked for. This branch is also the road a
+          // RETURNED-TO screen comes down, and clearing the counters there threw away
+          // what the screen was showing when it was left — the deck came back but the
+          // bars, the boxes and their key did not, because no step had been pressed to
+          // rebuild them.
+          if (exJumpTo != null) {
+            if (exJumpTo === "cube") {
+              exCollected = CB_NSETS * CUBE_TOTAL;
+              exCubeDone = true;
+            } else if (typeof exJumpTo === "number") {
+              exCollected = exJumpTo;
+              exCubeDone = false;
+            }
+            // No step begins at the pathways already extracted.
+            exPathDone = false;
+            exJumpTo = null;
+          }
           restoreRun();
+          // Nothing is in flight after an instant build. Setup comes through here now
+          // as well as a returned-to screen, and it arrives with the flag already set.
+          exBusy = false;
           syncExRow();          // ...and the row, which was synced before this existed
           return;
         }
@@ -13899,7 +14395,7 @@ function buildSimContent() {
       }
 
       X.fade.forEach(function (e) {
-        e.style.transition = quick ? "none" : "opacity " + EX_FADE + "ms ease";
+        e.style.transition = quick ? "none" : "opacity " + tms(EX_FADE) + "ms ease";
         e.style.opacity = "0";
         // Opacity 0 is still hit-testable. The "Hidden Layer 1" caption sits at very
         // nearly the x these units are travelling through, so an invisible run of
@@ -14077,7 +14573,7 @@ function buildSimContent() {
           n.__stkdx = Math.round(dx); n.__stkdy = Math.round(dy);
           [n, n.__disc, n.__bar, n.__half].forEach(function (e) {
             if (e) e.style.transition = quick ? "none"
-              : "transform " + EX_MOVE + "ms cubic-bezier(.34,1.02,.5,1)";
+              : "transform " + tms(EX_MOVE) + "ms cubic-bezier(.34,1.02,.5,1)";
           });
           moveNode(n, Math.round(dx), Math.round(dy), STACK_SCALE);
         });
@@ -14109,7 +14605,7 @@ function buildSimContent() {
         });
         if (quick) { t.style.opacity = "1"; return; }
         t.style.opacity = "0";
-        t.style.transition = "opacity " + EX_SHOW + "ms ease";
+        t.style.transition = "opacity " + tms(EX_SHOW) + "ms ease";
         const tt = setTimeout(function () { t.style.opacity = "1"; }, 20);
         SIM._timeouts.push(tt);
       };
@@ -14180,7 +14676,7 @@ function buildSimContent() {
       const dropNames = function (ms) {
         rowLabels.forEach(function (l) {
           l.style.transition = ms
-            ? (l.style.transition ? l.style.transition + ", " : "") + "opacity " + ms + "ms ease"
+            ? (l.style.transition ? l.style.transition + ", " : "") + "opacity " + tms(ms) + "ms ease"
             : "none";
           l.style.opacity = "0";
         });
@@ -14200,7 +14696,7 @@ function buildSimContent() {
         if (!ms) { t.style.opacity = "1"; return; }
         t.style.opacity = "0";
         void t.getBoundingClientRect();
-        t.style.transition = "opacity " + ms + "ms ease";
+        t.style.transition = "opacity " + tms(ms) + "ms ease";
         t.style.opacity = "1";
       };
 
@@ -14234,7 +14730,7 @@ function buildSimContent() {
           const g = colGroups[k];
           if (!g) continue;
           g.style.transition = ms
-            ? "transform " + ms + "ms cubic-bezier(.34,1.02,.5,1)" : "none";
+            ? "transform " + tms(ms) + "ms cubic-bezier(.34,1.02,.5,1)" : "none";
           // Not rounded: whole-pixel column positions made the horizontal gaps
           // alternate 18 and 19 against a row gap of 18.75, so the grid was square
           // in intent and not in fact.
@@ -14248,7 +14744,7 @@ function buildSimContent() {
         const pitch = pitchFor(n), r = radiusFor(n);
         const top = rowY(0, n);
         Array.prototype.forEach.call(g.querySelectorAll("circle"), function (c, i) {
-          c.style.transition = ms ? "cy " + ms + "ms ease, r " + ms + "ms ease" : "none";
+          c.style.transition = ms ? "cy " + tms(ms) + "ms ease, r " + tms(ms) + "ms ease" : "none";
           // Two decimals, not one. At 0.1 the rounding alternated the row gaps
           // between 18.7 and 18.8 — the column was not quite evenly spaced.
           c.setAttribute("cy", (top + i * pitch).toFixed(2));
@@ -14292,7 +14788,7 @@ function buildSimContent() {
         if (!ms) { boxEl.style.opacity = "1"; return; }
         boxEl.style.opacity = "0";
         void boxEl.getBoundingClientRect();
-        boxEl.style.transition = "opacity " + ms + "ms ease";
+        boxEl.style.transition = "opacity " + tms(ms) + "ms ease";
         boxEl.style.opacity = "1";
       }
 
@@ -14308,7 +14804,7 @@ function buildSimContent() {
         const edge = bx + bw - SET_SHIFT;
         [gridG, boxEl, headEl].forEach(function (e) {
           if (!e) return;
-          e.style.transition = ms ? "transform " + ms + "ms cubic-bezier(.34,1.02,.5,1)" : "none";
+          e.style.transition = ms ? "transform " + tms(ms) + "ms cubic-bezier(.34,1.02,.5,1)" : "none";
           e.style.transform = "translate(" + (-SET_SHIFT) + "px,0px)";
         });
         pathG = el("g", { class: "d1a-pathgroup" });
@@ -14356,7 +14852,7 @@ function buildSimContent() {
         if (!ms) { pathG.style.opacity = "1"; return; }
         pathG.style.opacity = "0";
         void pathG.getBoundingClientRect();
-        pathG.style.transition = "opacity " + ms + "ms ease " + Math.round(ms * 0.5) + "ms";
+        pathG.style.transition = "opacity " + tms(ms) + "ms ease " + tms(Math.round(ms * 0.5)) + "ms";
         pathG.style.opacity = "1";
       }
 
@@ -14528,11 +15024,11 @@ function buildSimContent() {
         for (let i = 0; i < n; i++) {
           const g = rows[i];
           if (!g) continue;
-          g.style.transition = ms ? "transform " + ms + "ms " + ease : "none";
+          g.style.transition = ms ? "transform " + tms(ms) + "ms " + ease : "none";
           g.style.transform = "translate(0px," + Math.round(rowY(i, n) - my) + "px)";
           const c = g.querySelector("circle");
           if (c) {
-            c.style.transition = ms ? "r " + ms + "ms ease" : "none";
+            c.style.transition = ms ? "r " + tms(ms) + "ms ease" : "none";
             c.setAttribute("r", r.toFixed(2));
           }
           const t = g.querySelector("text");
@@ -14549,7 +15045,7 @@ function buildSimContent() {
         // group existed — so it is carried along by hand.
         if (mergeLabel) {
           mergeLabel.style.transition = ms
-            ? "transform " + ms + "ms " + ease + ", opacity 0.3s ease" : "none";
+            ? "transform " + tms(ms) + "ms " + ease + ", opacity 0.3s ease" : "none";
           mergeLabel.style.transform = "translate(0px," + Math.round(rowY(0, n) - my) + "px)";
           mergeLabel.setAttribute("x", (mx + r + 12).toFixed(1));
           mergeLabel.style.fontSize = fs.toFixed(2) + "px";
@@ -14642,7 +15138,7 @@ function buildSimContent() {
           if (!quick) {
             g.style.opacity = "0";
             void g.getBoundingClientRect();
-            g.style.transition = "opacity " + EX_SHOW + "ms ease";
+            g.style.transition = "opacity " + tms(EX_SHOW) + "ms ease";
             g.style.opacity = "1";
           } else {
             g.style.opacity = "1";
@@ -14805,7 +15301,11 @@ function buildSimContent() {
         // stand clear of the column. PV_BX is as far right as the tip above them can
         // go: it is 174 wide and starts at the boxes, so past about 353 it would run
         // out of the panel.
-        const PV_COLX = 212, PV_BX = 378, PV_RIGHT = 228, PV_MOVE = 620;
+        // The column and its loadings ten left, the pathways ten right: twenty more
+        // corridor for the connectors to fan across without either end moving on the
+        // panel, since the group is centred by measuring its own extent and the two
+        // moves are symmetric.
+        const PV_COLX = 202, PV_BX = 388, PV_RIGHT = 228, PV_MOVE = 620;
         let viewG = null, sceneSlide = 0, pvMade = null, pvRings = null;
         let pvCentre = 0;
         function pvHost() {
@@ -14846,17 +15346,17 @@ function buildSimContent() {
         // where the pathway view begins.
         function cropDeck(ms) {
           sceneSlide = Math.max(0, Math.round((X.deckRight || X.W) - PV_RIGHT));
-          X.scene.style.transition = ms ? "transform " + ms + "ms ease" : "none";
+          X.scene.style.transition = ms ? "transform " + tms(ms) + "ms ease" : "none";
           X.scene.style.transform = "translate(" + (-sceneSlide) + "px,0)";
           if (viewG) {
-            viewG.style.transition = ms ? "transform " + ms + "ms ease" : "none";
+            viewG.style.transition = ms ? "transform " + tms(ms) + "ms ease" : "none";
             viewG.style.transform = "translate(" + sceneSlide.toFixed(1) + "px,0)";
           }
           // The count goes with what is left of the deck rather than off the edge
           // with the rest of it — centred on the strip the crop leaves standing,
           // not on the canvas it was centred on when the deck filled it.
           if (headEl2) {
-            headEl2.style.transition = ms ? "transform " + ms + "ms ease" : "none";
+            headEl2.style.transition = ms ? "transform " + tms(ms) + "ms ease" : "none";
             headEl2.style.transform = "translate("
               + (PV_RIGHT / 2 - X.W / 2 + sceneSlide).toFixed(1) + "px,0)";
           }
@@ -14949,6 +15449,16 @@ function buildSimContent() {
             // the path count even where there is no paint.
             ring.setAttribute("pointer-events", "all");
             ng.appendChild(ring);
+            // A SQUARE the height of the row, so the fourteen targets touch and there
+            // is no dead ground between them — a click just above or below a circle
+            // used to land on nothing. Square rather than the full width of the
+            // corridor: a target that reached the bars would swallow clicks meant for
+            // one, and at pvGap it stops well short of where they start.
+            const hit = el("rect", { x: q.x - pvGap / 2, y: q.y - pvGap / 2,
+                                     width: pvGap, height: pvGap, fill: "transparent" });
+            hit.setAttribute("pointer-events", "all");
+            ng.appendChild(hit);
+            ring.__hit = hit;
             g.appendChild(ng);
             pvRings.push(ring);
             setNodeLevel(ring, 1);
@@ -14964,7 +15474,7 @@ function buildSimContent() {
                                + (sy - q.y).toFixed(2) + "px) scale(" + STACK_SCALE + ")";
             if (!ms) { ng.style.transform = ""; continue; }
             void ng.getBoundingClientRect();
-            ng.style.transition = "transform " + ms + "ms cubic-bezier(.34,1.02,.5,1)";
+            ng.style.transition = "transform " + tms(ms) + "ms cubic-bezier(.34,1.02,.5,1)";
             ng.style.transform = "";
           }
         }
@@ -15001,7 +15511,7 @@ function buildSimContent() {
           if (quick) { g.style.opacity = "1"; return; }
           g.style.opacity = "0";
           void g.getBoundingClientRect();
-          g.style.transition = "opacity 140ms ease";
+          g.style.transition = "opacity " + tms(140) + "ms ease";
           g.style.opacity = "1";
         };
         // The second set closing up is the first time the deck re-centres, so it is
@@ -15030,7 +15540,7 @@ function buildSimContent() {
         function layoutSets(S, ms) {
           // The newest set is fading in as it closes, so the transition carries both
           // — setting it here rather than on the group would wipe the fade.
-          const tr = ms ? "transform " + ms + "ms ease, opacity 160ms ease" : "none";
+          const tr = ms ? "transform " + tms(ms) + "ms ease, opacity " + tms(160) + "ms ease" : "none";
           for (let k = 1; k < S; k++) {
             const g = setG[k];
             if (!g) continue;
@@ -15082,7 +15592,7 @@ function buildSimContent() {
             return;
           }
           // Fade first and let it stand there, then close.
-          g.style.transition = "opacity 220ms ease";
+          g.style.transition = "opacity " + tms(220) + "ms ease";
           g.style.opacity = "1";
           const th = setTimeout(function () { layoutSets(k + 1, ms); }, hold);
           SIM._timeouts.push(th);
@@ -15237,7 +15747,7 @@ function buildSimContent() {
             g.style.transform = "translate(0px," + Math.round(rowY(i, i) + P - my) + "px)";
             g.style.opacity = "0";
             void g.getBoundingClientRect();
-            g.style.transition = "opacity " + Math.round(step * 0.5) + "ms ease";
+            g.style.transition = "opacity " + tms(Math.round(step * 0.5)) + "ms ease";
             g.style.opacity = "1";
           }, at);
           const tb = setTimeout(function () { centreAll(n, Math.round(step * 0.7)); },
@@ -15277,7 +15787,7 @@ function buildSimContent() {
             const cs = g.querySelectorAll("circle");
             cs.forEach(function (c2) {
               c2.style.opacity = "0";
-              c2.style.transition = "opacity " + (single ? 180 : 140) + "ms ease";
+              c2.style.transition = "opacity " + tms(single ? 180 : 140) + "ms ease";
             });
             void g.getBoundingClientRect();
             if (single) {
@@ -15339,7 +15849,14 @@ function buildSimContent() {
     // unit loads on every pathway, and a picture that showed one at a time made that
     // look like a choice. Six high on an eight pitch fills the 24px circle beside it
     // and still leaves seven clear to the next row.
-    const BAR_H3 = 6, BAR_ROW = 8;
+    // Six on a seven pitch: 1px inside a neuron's triplet, 9.4px between triplets, so
+    // the three read as ONE object belonging to one circle. The ratio is what matters
+    // rather than either number — at six on a NINE pitch it was 3px inside and 5.4px
+    // between, near enough identical that nothing grouped and fourteen triplets looked
+    // like a column of forty-two. Seven would make the triplet exactly as tall as the
+    // circle beside it, which is a nice alignment, but it spends a third of the
+    // between-triplet air to get there.
+    const BAR_H3 = 6, BAR_ROW = 7;
     const LOAD_MAX = 0.585;          // the largest |loading| in the matrix
     // Which side of the matrix is being read, and which row or column of it. Lives
     // out here with `extracted` and survives a redraw for the same reason: a loading
@@ -15373,14 +15890,44 @@ function buildSimContent() {
       // way or the other). Growing positives one way and negatives the other made
       // the gap between bar and item depend on the sign, which reads as a second
       // variable that is not there.
-      const UNIT_BASE = made.colX + rr + 6;    // bars grow right, toward the boxes
+      // Right of the unit, each in a frame the full width of the scale, with zero at
+      // the frame's centre — so a loading is read against the largest one in the
+      // matrix, and its sign is a direction as well as a colour.
+      const TRACK_W = BAR_MAX * 2;
+      const TRACK_L = made.colX + rr + 8;        // just clear of the circle
+      const TRACK_R = TRACK_L + TRACK_W;
+      const TRACK_MID = TRACK_L + BAR_MAX;       // zero
 
       // The unit's own ring is not reused: syncRings owns it and recomputes it
       // from hover and focus, so it would be wiped by the next mouse move. This
       // one belongs to the load group and is cleared with everything else.
+      // Two layers inside the group, connectors under bars. A line anchored at the far
+      // tip of a NEGATIVE loading runs back across its own bar to reach the box; drawn
+      // underneath, that stretch is hidden and the line reads as leaving the bar's
+      // right-hand edge, which is where it appears to come from either way.
+      // Four layers, bottom to top: the white tracks, the zero rules, the bars, and
+      // the connectors over all of it. The axis has to sit ABOVE the tracks or a white
+      // frame would wipe it out across its own width and zero would only be visible on
+      // the muted rows, which have no frame.
+      //
+      // The connectors go on TOP now that the tracks are opaque. Underneath they were
+      // being cut by every frame they passed behind as well as by the bars, and a
+      // connector that is only visible between obstacles has stopped saying "this runs
+      // to that". It costs some scratch across the bars — measured at 68 hairline
+      // pixels in the band against 2 the other way — and continuity is worth it.
+      let wireG = null, trackG = null, axisG = null, barG = null;
       function clear() {
         while (g.firstChild) g.removeChild(g.firstChild);
+        wireG = el("g", {});
+        trackG = el("g", {});
+        axisG = el("g", {});
+        barG = el("g", {});
+        [trackG, axisG, barG, wireG].forEach(function (layer) { g.appendChild(layer); });
         made.boxes.forEach(function (b) { b.box.classList.remove("on"); });
+      }
+      function zeroAxis(y1, y2) {
+        axisG.appendChild(el("line", { x1: TRACK_MID, y1: y1, x2: TRACK_MID, y2: y2,
+                                       class: "d1a-loadzero" }));
       }
 
       // Every bar sits beside its UNIT and grows toward the boxes — the three on a
@@ -15388,58 +15935,89 @@ function buildSimContent() {
       // that reading. The old layout moved them to whichever end had not been picked;
       // with three of them there is only one end they can belong to.
       function barY(k, pi) { return at(k).y + (pi - 1) * BAR_ROW; }
+      // The frame is on the PICKED bars only. Drawn round all forty-two it said the
+      // same thing forty-two times — here is full scale — and only one loading in the
+      // matrix ever reaches it, so forty-one of them were mostly empty boxes. What is
+      // worth having everywhere is the CENTRED ZERO, and that costs nothing: bars
+      // growing left and right of a shared axis carry
+      // their sign in direction as well as in colour, which is the accessibility of
+      // it, and the axis reads off the bars themselves once two of opposite sign are
+      // on screen.
       function bar(k, pi, mute) {
         const v = PATH_LOAD[k][pi];
-        const len = Math.max(2, Math.abs(v) / LOAD_MAX * BAR_MAX);
+        const len = Math.max(1.5, Math.abs(v) / LOAD_MAX * BAR_MAX);
         const y = barY(k, pi);
-        g.appendChild(el("rect", {
-          x: UNIT_BASE, y: y - BAR_H3 / 2, width: len, height: BAR_H3,
+        // The frame goes on the SELECTED bars only, and under them: the same height as
+        // the bar, so a loading fills its frame edge to edge and what is left showing
+        // is the rest of the scale.
+        // Inset by half the stroke. A stroke is centred on the path, so a rect of
+        // height 5 drawn with a 1px outline puts ink from -0.5 to 5.5 and stands a
+        // pixel taller than the 5px bar it is meant to match. Insetting all four sides
+        // by 0.5 makes the frame's OUTER edge the geometry, which is what the eye is
+        // comparing.
+        if (!mute) {
+          trackG.appendChild(el("rect", {
+            x: TRACK_L + 0.5, y: y - BAR_H3 / 2 + 0.5,
+            width: TRACK_W - 1, height: BAR_H3 - 1,
+            class: "d1a-loadtrack" }));
+        }
+        barG.appendChild(el("rect", {
+          x: v >= 0 ? TRACK_MID : TRACK_MID - len, y: y - BAR_H3 / 2,
+          width: len, height: BAR_H3,
           class: "d1a-loadbar " + (mute ? "mute" : (v >= 0 ? "pos" : "neg"))
         }));
-        return { x: UNIT_BASE + len, y: y };
+        // Every connector starts at ZERO, whatever the loading is. The line is the
+        // link, not a second telling of the size — that is the bar's job — and one
+        // anchor per row makes fourteen of them a fan off a single axis rather than
+        // fourteen lengths restated in a second medium.
+        return { x: TRACK_MID, y: y };
       }
       // From where the bar ENDS to the box it belongs to, so the hairline and the
       // colour read as one continuous run rather than a line crossing a bar.
       function wireTo(end, b) {
-        g.appendChild(el("line", { x1: end.x, y1: end.y, x2: b.x, y2: b.cy,
-                                   class: "d1a-loadwire" }));
+        wireG.appendChild(el("line", { x1: end.x, y1: end.y, x2: b.x, y2: b.cy,
+                                       class: "d1a-loadwire" }));
       }
 
-      // A pathway: every unit's three, with this pathway's in colour and the other
-      // two greyed, and a line from each coloured bar to the box. Fourteen lines, not
-      // forty-two — the greyed pair is there to say the unit also loads elsewhere,
-      // not to be traced.
-      function showPath(pi) {
+      // The whole matrix, always: fourteen neurons, three readings each, greyed until
+      // something is picked. Drawing the bars only on a pick meant an empty column at
+      // rest and bars appearing from nowhere, and it left the grey pair saying nothing
+      // until you had already clicked. Standing there from the start, the grey IS the
+      // statement — this neuron loads on all three pathways — and a pick colours in the
+      // part of it being asked about rather than conjuring it.
+      //
+      // One function for both readings. A pathway lights column pi down all fourteen
+      // rows and runs a line from each to its box; a neuron lights row k and runs three,
+      // one to each box. Same bars, same places, read from either end — which is the
+      // claim the screen is making, so the two must not be built by separate code that
+      // could drift apart.
+      function paint(sel) {
         clear();
-        const b = made.boxes[pi];
-        b.box.classList.add("on");
+        const kind = sel && sel.kind, si = sel ? sel.i : -1;
+        if (kind === "path") made.boxes[si].box.classList.add("on");
         units.forEach(function (n, k) {
+          // One axis per triplet, not one down the whole column: the zero belongs to
+          // a neuron's three readings, and a single rule through all forty-two made a
+          // grid out of what is fourteen separate little charts.
+          zeroAxis(barY(k, 0) - BAR_H3, barY(k, 2) + BAR_H3);
           [0, 1, 2].forEach(function (p) {
-            const end = bar(k, p, p !== pi);
-            if (p === pi) wireTo(end, b);
+            const lit = kind === "path" ? p === si : (kind === "unit" && k === si);
+            const end = bar(k, p, !lit);
+            if (lit) wireTo(end, made.boxes[kind === "path" ? si : p]);
           });
         });
-      }
-      // The same run read from the other end: out from the unit, one line per
-      // pathway, each ending in the bar that sits against its box.
-      // A unit: its own three, in colour, each with a line to the pathway it is a
-      // loading on. The same three bars in the same three places as the pathway
-      // reading gives them — one table, read from either end.
-      function showUnit(k) {
-        clear();
-        const q = at(k);
-        g.appendChild(el("circle", { cx: q.x, cy: q.y, r: rr + 3.5,
-                                     class: "d1a-loadring" }));
-        made.boxes.forEach(function (b, pi) {
-          wireTo(bar(k, pi, false), b);
-        });
+        if (kind === "unit") {
+          const q = at(si);
+          barG.appendChild(el("circle", { cx: q.x, cy: q.y, r: rr + 3.5,
+                                          class: "d1a-loadring" }));
+        }
       }
       function pick(kind, i) {
         if (loadSel && loadSel.kind === kind && loadSel.i === i) {
-          loadSel = null; clear(); return;
+          loadSel = null; paint(null); return;
         }
         loadSel = { kind: kind, i: i };
-        if (kind === "path") showPath(i); else showUnit(i);
+        paint(loadSel);
       }
 
       made.boxes.forEach(function (b, pi) {
@@ -15471,7 +16049,11 @@ function buildSimContent() {
       });
       units.forEach(function (n, k) {
         n.classList.add("pick");
-        n.addEventListener("click", function () { pick("unit", k); });
+        // The handler goes on the hit square where there is one — the ring only
+        // answers along its own 1px stroke.
+        const t = n.__hit || n;
+        t.style.cursor = "pointer";
+        t.addEventListener("click", function () { pick("unit", k); });
       });
 
       // Nothing on this screen says it can be clicked, and both halves of the
@@ -15497,11 +16079,10 @@ function buildSimContent() {
       made.g.appendChild(tip);
       function showTip(on) { tip.style.opacity = on ? "1" : "0"; }
 
-      // A selection made before this redraw is put back on the new elements. Not
-      // through pick(), which toggles — this is a restore, not a press.
-      if (loadSel) {
-        if (loadSel.kind === "path") showPath(loadSel.i); else showUnit(loadSel.i);
-      }
+      // Lay the matrix down. Unconditional: with no selection this is the resting
+      // grey, and with one it restores it onto the new elements after a redraw — not
+      // through pick(), which toggles, because this is a restore and not a press.
+      paint(loadSel);
 
       // The squares still land one pathway at a time — the reveal is the only
       // thing that was carried by the lines, and it survives without them.
@@ -15510,7 +16091,7 @@ function buildSimContent() {
       };
       if (quick) { if (!noFill) [0, 1, 2].forEach(fill); showTip(true); return; }
       tip.style.opacity = "0";
-      tip.style.transition = "opacity " + EX_FILL + "ms ease";
+      tip.style.transition = "opacity " + tms(EX_FILL) + "ms ease";
       if (!noFill) {
         [0, 1, 2].forEach(function (p) {
           const t = setTimeout(function () { fill(p); }, p * EX_FILL + 20);
@@ -15530,8 +16111,7 @@ function buildSimContent() {
       const t = Math.sqrt(Math.min(1, Math.abs(v)));
       const side = SQ_MIN + (SQ_MAX - SQ_MIN) * t;
       b.sq.style.transition = quick ? "none"
-        : "x " + EX_FILL + "ms ease, y " + EX_FILL + "ms ease, width " + EX_FILL
-          + "ms ease, height " + EX_FILL + "ms ease";
+        : "x " + tms(EX_FILL) + "ms ease, y " + tms(EX_FILL) + "ms ease, width " + tms(EX_FILL) + "ms ease, height " + tms(EX_FILL) + "ms ease";
       b.sq.setAttribute("x", b.x + b.side / 2 - side / 2);
       b.sq.setAttribute("y", b.cy - side / 2);
       b.sq.setAttribute("width", side);
@@ -15576,7 +16156,7 @@ function buildSimContent() {
       const made = { g: g, boxes: boxes, bx: bx, colX: colX };
       g.style.opacity = "0";
       if (quick) { g.style.opacity = "1"; return made; }
-      g.style.transition = "opacity " + EX_SHOW + "ms ease";
+      g.style.transition = "opacity " + tms(EX_SHOW) + "ms ease";
       const t = setTimeout(function () { g.style.opacity = "1"; }, 20);
       SIM._timeouts.push(t);
       return made;
@@ -15761,7 +16341,7 @@ function buildSimContent() {
   // part of the sequence. No steps to run and no hover: nothing here is asking what
   // a single neuron is wired to.
   if (activeSim === "d1b") {
-    return buildNetScreen({ steps: false, hover: false, extract: true,
+    return buildNetScreen({ steps: false, hover: false, extract: true, anim: true,
                             filter: false, conversation: false, readout: false,
                             title: "The Network → Activated Pathways" });
   }
