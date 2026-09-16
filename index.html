@@ -899,14 +899,21 @@
   .nnm-about-btn:active,
   .nnm-about-btn.on { background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff; }
   .nnm-about-btn:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  /* A GREY well with a white tag on the front. Every button in this piece is white
+     with a 2px rule round it, and this box wore exactly that — same ground, same
+     border, same corners — so the one thing you type into looked like the things you
+     press. Inverting it is the cheapest honest signal: white sits ON the surface,
+     grey is cut INTO it, and nothing else here is grey.
+     The label goes white so the pair reads as two parts of one control — what it is,
+     then where it goes — rather than a word floating in a tinted box. */
   .nnm-filterbar {
     display: flex;
     align-items: center;
-    gap: 9px;
-    background: #fff;
+    gap: 0;
+    background: var(--nnm-surface);
     border: 2px solid var(--nnm-rule);
     border-radius: 7px;
-    padding: 0 8px 0 12px;
+    padding: 0;                        /* both ends are white blocks now */
     height: var(--nnm-ctl-h);
     box-sizing: border-box;
   }
@@ -921,6 +928,19 @@
        the box beside it does. Shared by every interactive's filter bar. */
     color: var(--nnm-ink-2);
     flex-shrink: 0;
+    /* Stretched and padded so it is a SEGMENT of the control, not a word sitting near
+       it. 5px = the bar's 7px radius less its 2px border, so the white nests exactly
+       inside the corner instead of cutting across it. */
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 0 9px;
+    margin-right: 9px;
+    /* No rule between the two. The white-to-grey edge IS the separation — a drawn
+       line on top of it is a second statement of the same thing, and at 2px it read
+       as the control being cut in half rather than having a front and a well. */
+    border-radius: 5px 0 0 5px;
   }
   .nnm-filter-help::after {
     content: "";
@@ -946,9 +966,23 @@
   }
   .nnm-filter-input::placeholder { color: #A6AEBA; }
   .nnm-filter-input:focus-visible { outline: none; }
-  .nnm-filterbar:focus-within { border-color: var(--nnm-neg); box-shadow: 0 0 0 2px var(--nnm-neg-soft); }
+  .nnm-filterbar:focus-within { border-color: var(--nnm-neg); }
+  /* The far end, white like the near end. 5px = the bar's 7px radius less its 2px
+     border, so it nests inside the corner rather than cutting across it. */
+  /* The CAP lives here, not on the count. At 45% of its parent the count was being
+     measured against the tail, which is itself sized by the count — so it truncated
+     itself to an ellipsis at every length. Capping the tail against the bar is the
+     non-circular way to say the same thing. */
+  .nnm-filter-tail {
+    align-self: stretch; flex-shrink: 1; min-width: 0; max-width: 58%;
+    display: flex; align-items: center; gap: 9px;
+    background: #fff;
+    padding: 0 9px;
+    margin-left: 9px;
+    border-radius: 0 5px 5px 0;
+  }
   .nnm-filter-count {
-    max-width: 45%;
+    min-width: 0;                       /* so the ellipsis can happen inside the tail */
     overflow: hidden;
     text-overflow: ellipsis;
     font-family: var(--nnm-mono);
@@ -962,24 +996,25 @@
   }
   .nnm-filter-count.err { color: #C0503E; }
   .nnm-filter-help {
-    width: 22px; height: 22px;
+    width: 30px; height: 30px;
     flex-shrink: 0;
-    /* The circle stays 22 — a 44px button will not fit inside a 44px bar with 2px
-       borders, and blowing the bar out to hold one would leave it taller than every
-       button beside it. The TARGET is what 2.5.5 measures, so the target is what is
-       enlarged: a transparent 44x44 pseudo-element centred on the circle. Nothing
-       moves, and the nearest other target is 31px away, so the bigger area steals
-       no clicks. */
+    /* A 44px circle will not fit inside a 44px bar with 2px borders, and blowing the
+       bar out to hold one would leave it taller than every button beside it — so the
+       drawn circle is smaller than the target, and the TARGET is what 2.5.5 measures:
+       a transparent 44x44 pseudo-element centred on it. But that argument only ever
+       justified "under 44", and 22 took it much further than it had to. The bar's
+       interior is 40px; 30 sits in it comfortably and is a far easier thing to hit
+       and to read. */
     position: relative;
-    /* Same 2px rule the buttons carry. border-box keeps it 22px across — without
-       it the thicker border would push it to 24 and unbalance the filter bar. */
+    /* Same 2px rule the buttons carry. border-box keeps it 30px across — without
+       it the thicker border would push it to 34 and unbalance the filter bar. */
     box-sizing: border-box;
     border: 2px solid var(--nnm-rule);
     border-radius: 50%;
     background: #fff;
     color: var(--nnm-ink-2);
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 600;
     line-height: 1;
     cursor: pointer;
@@ -990,22 +1025,290 @@
     background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff;
   }
   .nnm-filter-help:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  /* ---- the advanced filter panel (Trace a Case) ---- */
+  /* The Advanced toggle sits between the count and the ? — the order of the row is
+     what you typed, what it found, how to build one, what the words mean. */
+  .nnm-filter-adv {
+    height: 30px; padding: 0 12px; box-sizing: border-box;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    border: 2px solid var(--nnm-rule); border-radius: 5px;
+    background: #fff; color: var(--nnm-ink-2); cursor: pointer;
+  }
+  .nnm-filter-adv:hover { background: var(--nnm-surface); }
+  .nnm-filter-adv.on {
+    background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff;
+  }
+  .nnm-filter-adv:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+
+  /* The panel lives INSIDE the ? popover and swaps places with the help, so it brings
+     no frame of its own — the popover is already a bordered, shadowed box. What it
+     does need is room: the popover is 430px for a list of field names, and five bands
+     on a row do not fit in that, so the shell widens when the panel is showing. */
+  /* Anchored LEFT once it is wide. The help hangs off the right edge of the filter,
+     which is right for 430px; at 760 the same anchor walked it off the left of the
+     panel entirely. The filter starts at the content's left edge, so from there the
+     wide panel has the room to open rightwards. */
+  /* A column that fills the popover, so the body is what scrolls and the header and
+     the note stay put. [hidden] guarded in the same breath: this rule sets `display`,
+     and a class beats the UA's [hidden] { display: none } — the mistake that left the
+     help box on screen at load and the footer holding 47px behind the panel. */
+  .nnm-adv[hidden] { display: none; }
+  .nnm-adv {
+    display: flex; flex-direction: column;
+    flex: 1 1 auto; min-height: 0;
+  }
+  .nnm-filter-helpbox.adv {
+    width: min(760px, calc(100vw - 48px));
+    max-height: 560px;                 /* ceiling; fitPopover() sets the real one */
+    left: 0; right: auto;
+  }
+  /* Its own width, like every other button here. Full-bleed it read as a banner
+     across the foot of the box — a thing announcing itself rather than a control
+     offered. */
+  .nnm-filter-adv { display: inline-flex; align-items: center; width: auto; }
+  /* A real button in the house clothes — 2px rule, white ground, 5px corners. It was
+     a borderless text link, which on a row beside Clear All read as a caption. */
+  .nnm-adv-back {
+    flex-shrink: 0;
+    height: 26px; padding: 0 10px; box-sizing: border-box;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    border: 2px solid var(--nnm-rule); border-radius: 5px;
+    background: #fff; color: var(--nnm-ink-2); cursor: pointer;
+  }
+  .nnm-adv-back:hover { color: var(--nnm-ink); border-color: var(--nnm-ink-2); }
+  .nnm-adv-back:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+  .nnm-adv-head {
+    position: relative;                 /* the title centres against this */
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 44px 7px 11px;
+    border-bottom: 1px solid var(--nnm-rule-soft);
+    background: var(--nnm-surface);
+    min-height: 32px; box-sizing: border-box;
+  }
+  /* Its own strip under the header, and only there when it has something to say. */
+  .nnm-adv-note {
+    padding: 6px 44px 6px 11px;
+    border-bottom: 1px solid var(--nnm-rule-soft);
+    background: #FFF8E8;
+    font-family: 'Lato', sans-serif; font-size: 12px; font-style: italic;
+    color: var(--nnm-ink-2);
+  }
+  /* The panel's name. Barlow Condensed and uppercase like every other heading here,
+     and NO border or ground — it is the one item on this row that is not pressable,
+     and giving it none of a button's clothing is the only way to say so. */
+  /* Centred on the PANEL, not placed in the flow after the back button — so it reads
+     as the thing's name rather than a caption belonging to the control on its left,
+     and it stays put when either button changes width. Taken out of the flex flow to
+     do it: centring by flex would have it splitting the leftover space between two
+     buttons of different widths, which is not the middle of anything.
+     Not bold: it is a name, and nothing in this row is competing with it. */
+  .nnm-adv-title {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    margin: 0;
+    /* The same type as the FILTER label on the bar — 14px Barlow Condensed, 600,
+       0.07em, ink-2. It names its surface exactly as that one names its field, so it
+       should not be a second, slightly different heading style. */
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
+    letter-spacing: 0.07em; text-transform: uppercase; color: var(--nnm-ink-2);
+  }
+  .nnm-adv-clear {
+    margin-left: auto; flex-shrink: 0;
+    height: 26px; padding: 0 10px; box-sizing: border-box;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    border: 2px solid var(--nnm-rule); border-radius: 5px;
+    background: #fff; color: var(--nnm-ink-2); cursor: pointer;
+  }
+  .nnm-adv-clear:hover { background: #fff; border-color: var(--nnm-ink-2); }
+  .nnm-adv-clear:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+  /* No cap of its own. The popover's max-height is what bounds the panel, and a
+     second 340px limit in here meant raising the popover changed nothing — the body
+     kept showing a third of itself inside a taller box. */
+  .nnm-adv-body { padding: 4px 11px 11px; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  .nnm-adv-sec { border: 0; margin: 0; padding: 9px 0 3px; }
+  /* The rows sit in from their heading, so a section reads as a heading with things
+     under it rather than a run of equal-weight lines. On the heading itself, not the
+     rows — a foldable section's caret and name stay flush left, which keeps the five
+     headings on one vertical line whether they fold or not. */
+  .nnm-adv-seccontent { padding-left: 10px; }
+  .nnm-adv-sec + .nnm-adv-sec { border-top: 1px solid var(--nnm-rule-soft); }
+  .nnm-adv-legend {
+    padding: 0;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--nnm-ink-3);
+  }
+  /* The whole heading is the hit area, not just a caret — a 13px triangle is not a
+     target, and the name is what people aim at anyway. */
+  .nnm-adv-sectoggle {
+    display: flex; align-items: center; gap: 7px;
+    width: 100%; min-height: 28px; padding: 0; margin: 0;
+    border: 0; background: none; cursor: pointer;
+    font: inherit; letter-spacing: inherit; text-transform: inherit;
+    color: inherit; text-align: left;
+  }
+  .nnm-adv-sectoggle:hover { color: var(--nnm-ink); }
+  .nnm-adv-sectoggle:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+  .nnm-adv-caret {
+    width: 0; height: 0; flex-shrink: 0;
+    border-left: 5px solid currentColor;
+    border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+    transition: transform 0.15s ease;
+  }
+  .nnm-adv-sec.open .nnm-adv-caret { transform: rotate(90deg); }
+  /* What the section is filtering while it is shut. Sentence case and not uppercase,
+     so it reads as a VALUE rather than a second heading. */
+  .nnm-adv-secsum {
+    font-family: 'Lato', sans-serif; font-size: 11.5px; font-weight: 400;
+    letter-spacing: 0; text-transform: none; color: var(--nnm-ink-2);
+  }
+  .nnm-adv-sec.open .nnm-adv-secsum { display: none; }
+  /* A folded section that is doing something says so twice — the words, and a mark
+     that survives even if the words are clipped. */
+  .nnm-adv-sec.filtering .nnm-adv-sectoggle { color: var(--nnm-ink); }
+  .nnm-adv-sec.filtering .nnm-adv-secsum::before {
+    content: ""; display: inline-block; vertical-align: middle;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--nnm-neg); margin-right: 6px;
+  }
+  .nnm-adv-row {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 4px 0;
+  }
+  /* A fixed column so every row's chips start on the same line — the eye reads down
+     the options, and a ragged left edge makes that a hunt. */
+  .nnm-adv-name {
+    flex: 0 0 116px; min-width: 0;
+    font-family: 'Lato', sans-serif; font-size: 13px; color: var(--nnm-ink);
+  }
+  .nnm-adv-opts { display: flex; flex-wrap: wrap; gap: 5px; }
+  /* CENTRE, not baseline. Baseline aligns the label, its range and its count to one
+     another — which is what was wanted — but it says nothing about where that group
+     sits in the chip, and with line-height:1 on the parts it collapsed them against
+     the top: 1px of air above, 16px below. The three are close enough in size that
+     centring them individually reads as one line anyway. */
+  .nnm-adv-opt {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 30px; padding: 0 9px; box-sizing: border-box;
+    font-family: 'Lato', sans-serif; font-size: 12.5px;
+    border: 1px solid var(--nnm-rule); border-radius: 5px;
+    background: #fff; color: var(--nnm-ink); cursor: pointer;
+  }
+  .nnm-adv-opt:hover { background: var(--nnm-surface); }
+  .nnm-adv-opt.on {
+    background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff;
+  }
+  .nnm-adv-opt:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+  .nnm-adv-lab { line-height: 1; }
+  /* The band's own numbers, so "strongly positive" can be checked against the scale
+     rather than taken on trust. */
+  .nnm-adv-range {
+    font-family: var(--nnm-mono); font-size: 10.5px; line-height: 1;
+    color: var(--nnm-ink-3);
+  }
+  .nnm-adv-opt.on .nnm-adv-range { color: rgba(255,255,255,0.72); }
+  /* The count is the point of the chip: how many this would leave, with every other
+     filter still on. Tabular so the numbers line up down a column. */
+  .nnm-adv-count {
+    font-family: var(--nnm-mono); font-size: 11px; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--nnm-ink-3);
+  }
+  .nnm-adv-opt.on .nnm-adv-count { color: rgba(255,255,255,0.85); }
+  /* Zero is an ANSWER — "nothing has both of these" — so the chip stays live and
+     merely goes quiet. Disabling it would hide the finding behind a dead control. */
+  .nnm-adv-opt.none { color: var(--nnm-ink-3); border-color: var(--nnm-rule-soft); }
+  .nnm-adv-opt.none .nnm-adv-count { color: var(--nnm-ink-3); }
+  /* Grey, like the search box above it — the piece now says "grey is where you type"
+     and white is a control you press. Without it this field was the chips exactly:
+     same height, same border, same corners, same white. */
+  .nnm-adv-num {
+    width: 96px; height: 30px; box-sizing: border-box;
+    padding: 0 8px;
+    font-family: var(--nnm-mono); font-size: 12.5px;
+    border: 1px solid var(--nnm-rule); border-radius: 5px;
+    background: var(--nnm-surface);
+    color: var(--nnm-ink);
+  }
+  /* The panel takes focus when it opens, so it must not draw a ring for that. */
+  .nnm-adv:focus { outline: none; }
+  .nnm-adv-num:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  .nnm-adv-hint {
+    font-family: 'Lato', sans-serif; font-size: 11.5px; font-style: italic;
+    color: var(--nnm-ink-3);
+  }
+  .nnm-adv-block { margin: 2px 0 7px; max-width: 62ch; }
+  /* The thirty words wrap as a block rather than sitting in a labelled row: there is
+     no name to put beside them that is not the section heading again. */
+  .nnm-adv-words { display: flex; flex-wrap: wrap; gap: 5px; }
+  .nnm-adv-word .nnm-adv-lab { font-family: var(--nnm-mono); font-size: 12px; }
+
   .nnm-filter-helpbox {
     position: absolute;
     z-index: 20;
     top: calc(100% + 5px);
     right: 0;
-    width: min(430px, 100%);
+    /* The filter's own width. 430 was a reading measure picked for the examples, but
+       it left the box narrower than the field it belongs to and hanging off its right
+       end, which read as a thing beside the filter rather than the filter explaining
+       itself. The panel still takes its own width — see .adv below. */
+    width: 100%;
     background: #fff;
-    border: 1px solid var(--nnm-rule);
+    /* Dark, and two pixels, like every other framed control here. At one pixel of
+       --nnm-rule it was the same line as a table edge, and a box that floats over the
+       page has to say it is a separate surface, not part of what is behind it. */
+    border: 2px solid var(--nnm-ink);
     border-radius: 7px;
-    box-shadow: 0 6px 20px -8px rgba(30,36,44,0.35);
-    padding: 11px 13px;
+    box-shadow: 0 10px 28px -10px rgba(30,36,44,0.45);
     font-size: 12.5px;
     line-height: 1.5;
     color: var(--nnm-ink-2);
-    max-height: 300px;
-    overflow: auto;
+    /* A ceiling only. The real limit is measured by fitPopover() and set inline,
+       because THIS APP IS NOT THE WINDOW: it runs inside a device frame and its
+       content is clipped by .content-area, so 100vh is a bigger number than the
+       space that actually exists and a panel sized by it hangs out of the app. */
+    max-height: 560px;
+    /* The SHELL no longer scrolls — its pane does. Scrolling the shell took the
+       pinned footer with it, which is the whole reason the button was invisible. */
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  /* A class setting `display` outranks the UA's [hidden] { display: none }, so giving
+     this box a flex layout un-hid it — it was on screen from load. The state needs
+     saying at the same weight or higher, not left to the browser's default sheet. */
+  .nnm-filter-helpbox[hidden] { display: none; }
+  .nnm-helppane { padding: 11px 13px; overflow-y: auto; min-height: 0; }
+  /* Room for the X in the corner, so a field chip never runs underneath it. */
+  .nnm-helppane > b:first-child, .nnm-helppane .nnm-fieldlist { padding-right: 34px; }
+  .nnm-filter-close {
+    position: absolute; top: 5px; right: 5px; z-index: 3;
+    width: 30px; height: 30px; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; border: 0; border-radius: 5px;
+    background: none; color: var(--nnm-ink-2); cursor: pointer;
+  }
+  .nnm-filter-close svg { width: 17px; height: 17px; }
+  .nnm-filter-close:hover { background: var(--nnm-surface); color: var(--nnm-ink); }
+  .nnm-filter-close:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
+  /* The same target trick the ? uses: the drawn control stays small enough not to
+     shout in a 447px box, and 2.5.5's 44 is met by a transparent area around it.
+     Nothing else is within 44px of this corner, so the bigger target steals nothing. */
+  .nnm-filter-close::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 44px; height: 44px; transform: translate(-50%, -50%);
+  }
+  /* [hidden] again: the moment this rule gained `display` it stopped honouring the
+     attribute, and the footer went on holding 47px in the advanced face — pushing the
+     panel down past the X. Same trap as .nnm-filter-helpbox, same fix. */
+  .nnm-advfoot[hidden] { display: none; }
+  .nnm-advfoot {
+    flex-shrink: 0;
+    display: flex; justify-content: center;
+    padding: 8px 13px;
+    border-top: 1px solid var(--nnm-rule-soft);
+    background: var(--nnm-surface);
   }
   .nnm-filter-helpbox b {
     display: block;
@@ -3843,7 +4146,7 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.17</div>
+      <div style="font-weight: 600;">v0.18</div>
       <div style="font-weight: 400;">Updated: 9/16/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
@@ -3851,8 +4154,8 @@
 
       <div role="group" aria-labelledby="day1-label">
         <div class="day-sublabel" id="day1-label">Day 1</div>
-        <button class="toggle-btn" data-sim="d1a" aria-pressed="false">Trace a Case</button>
-        <button class="toggle-btn active" data-sim="d1b" aria-pressed="true">Extract Pathways</button>
+        <button class="toggle-btn active" data-sim="d1a" aria-pressed="true">Trace a Case</button>
+        <button class="toggle-btn" data-sim="d1b" aria-pressed="false">Extract Pathways</button>
         <button class="toggle-btn" data-sim="d1c" aria-pressed="false">Investigate P1-P3</button>
       </div>
 
@@ -4138,7 +4441,7 @@ function reopenAbout() {
   }, 0);
 }
 
-let activeSim = "d1b";
+let activeSim = "d1a";
 let activeDevice = "chromebook";
 let activeLayout = "ap-full";
 let sidebarExpanded = true;
@@ -4810,7 +5113,422 @@ function makeFilter(D) {
   }
 
   // ---- the bar ----
-  function buildBar(onChange) {
+  // ---- the advanced panel ----
+  // Every control here COMPOSES A QUERY and writes it into the box; nothing filters on
+  // its own. The query language stays the one thing that decides what a filter means,
+  // a typed query keeps working, and the syntax assembles itself in front of you —
+  // which is the only way the box's own vocabulary was ever going to get learned.
+  //
+  // Bands, not a slider, for the activations. They are z-scores (mean 0, sd 1), so
+  // three quarters of the eight hundred sit within ±1 and a −5..5 track would spend
+  // most of its travel on the tails. A band is also the question a student actually
+  // asks — "strongly positive on Pathway 3" — where a slider asks them to invent a
+  // threshold first. The five partition the set exactly; the counts below prove it.
+  const ADV_BANDS = [
+    { key: "sn", label: "strongly negative", note: "≤ −2",
+      q: function (f) { return f + ":<=-2"; }, test: function (v) { return v <= -2; } },
+    { key: "n", label: "negative", note: "−2 … −1",
+      q: function (f) { return "(" + f + ":>-2 AND " + f + ":<=-1)"; },
+      test: function (v) { return v > -2 && v <= -1; } },
+    { key: "m", label: "middle", note: "−1 … 1",
+      q: function (f) { return "(" + f + ":>-1 AND " + f + ":<1)"; },
+      test: function (v) { return v > -1 && v < 1; } },
+    { key: "p", label: "positive", note: "1 … 2",
+      q: function (f) { return "(" + f + ":>=1 AND " + f + ":<2)"; },
+      test: function (v) { return v >= 1 && v < 2; } },
+    { key: "sp", label: "strongly positive", note: "≥ 2",
+      q: function (f) { return f + ":>=2"; }, test: function (v) { return v >= 2; } }
+  ];
+  const PATH_FIELDS = D.items.length
+    ? Array.from({ length: D.nPathways }, function (_, i) { return "pathway_" + (i + PATH_OFFSET); })
+    : [];
+  const VOCAB = Object.keys(D.vocabulary || {}).sort();
+  // group_size is the one observed attribute that is not a yes/no — it runs 1 to 6 —
+  // so it gets a value list where the others get a pair.
+  const BINARY_ATTRS = attrKeys.filter(function (k) { return k !== "group_size"; });
+  const HAS_GROUP_SIZE = attrKeys.indexOf("group_size") >= 0;
+
+  function buildAdvanced(input, apply) {
+    // Each group owns one clause. Held apart rather than as one string so a group can
+    // be left OUT when counting — a facet count has to answer "how many would this
+    // give me", which is a question about every other filter but not about itself.
+    const st = { n: "", target: "", prediction: "", model_correct: "",
+                 band: {}, words: [], attr: {}, group_size: "" };
+
+    function clauseFor(g) {
+      if (g === "n") return st.n ? "n:" + st.n : "";
+      if (g === "target" || g === "prediction" || g === "model_correct") {
+        return st[g] === "" ? "" : g + ":" + st[g];
+      }
+      if (g === "words") {
+        if (!st.words.length) return "";
+        return st.words.length === 1 ? st.words[0] : "(" + st.words.join(" OR ") + ")";
+      }
+      if (g === "group_size") return st.group_size === "" ? "" : "group_size:" + st.group_size;
+      if (PATH_FIELDS.indexOf(g) >= 0) {
+        const b = st.band[g];
+        if (!b) return "";
+        const spec = ADV_BANDS.filter(function (x) { return x.key === b; })[0];
+        return spec ? spec.q(g) : "";
+      }
+      return st.attr[g] === undefined || st.attr[g] === "" ? "" : g + ":" + st.attr[g];
+    }
+    const GROUPS = ["n", "target", "prediction", "model_correct", "words", "group_size"]
+      .concat(PATH_FIELDS).concat(BINARY_ATTRS);
+    function queryExcept(skip) {
+      return GROUPS.filter(function (g) { return g !== skip; })
+                   .map(clauseFor).filter(Boolean).join(" AND ");
+    }
+    function compose() { return queryExcept(null); }
+
+    const el = document.createElement("div");
+    el.className = "nnm-adv";
+    el.hidden = true;
+    // Focusable only programmatically. Opening the panel hides the button that opened
+    // it, so focus has to land somewhere or the keyboard is stranded on the body — but
+    // it should land on the REGION, not in a field. Putting it in the Number box rang
+    // that box the instant the panel opened, which told a mouse user to start typing
+    // there and nowhere else.
+    el.tabIndex = -1;
+
+    const head = document.createElement("div");
+    head.className = "nnm-adv-head";
+    // The way back to what the ? was showing. Without it the panel is a one-way door
+    // out of the help, and the field list is the thing you want NEXT to the builder,
+    // not instead of it.
+    const backBtn = document.createElement("button");
+    backBtn.type = "button";
+    backBtn.className = "nnm-adv-back";
+    backBtn.innerHTML = '<span aria-hidden="true">\u2190</span> Fields and Examples';
+    let backFn = null;
+    backBtn.addEventListener("click", function () { if (backFn) backFn(); });
+    // The panel's NAME, not a control. It is the one thing in this row that does
+    // nothing when pressed, so it must not wear any of a button's clothing.
+    const title = document.createElement("h2");
+    title.className = "nnm-adv-title";
+    title.textContent = "Advanced Filter";
+    title.id = "nnm-advt-" + Math.floor(performance.now() * 1000 % 1e9);
+    el.setAttribute("aria-labelledby", title.id);
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "nnm-adv-clear";
+    clearBtn.textContent = "Clear All";
+    head.appendChild(backBtn);
+    head.appendChild(title);
+    head.appendChild(clearBtn);
+    el.appendChild(head);
+
+    // Out of the header. Four things already share that line and the warning is the
+    // only one whose length is not known in advance — left there it either wrapped
+    // the row or truncated itself.
+    const note = document.createElement("div");
+    note.className = "nnm-adv-note";
+    note.hidden = true;
+    el.appendChild(note);
+
+    const body = document.createElement("div");
+    body.className = "nnm-adv-body";
+    el.appendChild(body);
+
+    // Every control registers how to redraw its own count, so one pass after a change
+    // updates the lot.
+    const counters = [];
+
+    // Two of the five fold. Words and Observed are 581px of the panel's 1061 — more
+    // than half — and they are the two a student is least likely to open first, so
+    // collapsing just those puts everything else on screen at once. The other three
+    // stay open: Conversation is one row, Label is the most-used, and Pathway
+    // activation is the whole point of the thing.
+    const folders = [];
+    function section(title, foldable, summarise) {
+      const sec = document.createElement("fieldset");
+      sec.className = "nnm-adv-sec";
+      const lg = document.createElement("legend");
+      lg.className = "nnm-adv-legend";
+      const inner = document.createElement("div");
+      inner.className = "nnm-adv-seccontent";
+      if (!foldable) {
+        lg.textContent = title;
+        sec.appendChild(lg);
+        sec.appendChild(inner);
+        body.appendChild(sec);
+        return inner;
+      }
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "nnm-adv-sectoggle";
+      const caret = document.createElement("span");
+      caret.className = "nnm-adv-caret";
+      caret.setAttribute("aria-hidden", "true");
+      const nm = document.createElement("span");
+      nm.textContent = title;
+      // What this section is doing while shut. Without it a folded section can be
+      // filtering the set with nothing on screen to say so — the panel would be
+      // misreporting itself, which is worse than making you scroll.
+      const sum = document.createElement("span");
+      sum.className = "nnm-adv-secsum";
+      btn.appendChild(caret);
+      btn.appendChild(nm);
+      btn.appendChild(sum);
+      btn.setAttribute("aria-expanded", "false");
+      lg.appendChild(btn);
+      sec.appendChild(lg);
+      sec.appendChild(inner);
+      inner.hidden = true;
+      btn.addEventListener("click", function () {
+        const open = inner.hidden;
+        inner.hidden = !open;
+        sec.classList.toggle("open", open);
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+      body.appendChild(sec);
+      folders.push({ sec: sec, sum: sum, fn: summarise });
+      return inner;
+    }
+    // One row: a name, then a set of chips that behave as one radio group with an
+    // implicit "any" — pressing the chip that is already on turns it back off, so
+    // there is no separate Any button taking a slot in every row.
+    function choiceRow(sec, name, group, opts) {
+      const row = document.createElement("div");
+      row.className = "nnm-adv-row";
+      const nm = document.createElement("span");
+      nm.className = "nnm-adv-name";
+      nm.textContent = name;
+      row.appendChild(nm);
+      const wrap = document.createElement("div");
+      wrap.className = "nnm-adv-opts";
+      wrap.setAttribute("role", "group");
+      wrap.setAttribute("aria-label", name);
+      opts.forEach(function (o) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "nnm-adv-opt";
+        b.setAttribute("aria-pressed", "false");
+        const t = document.createElement("span");
+        t.className = "nnm-adv-lab";
+        t.textContent = o.label;
+        const c = document.createElement("span");
+        c.className = "nnm-adv-count";
+        b.appendChild(t);
+        if (o.note) {
+          const n2 = document.createElement("span");
+          n2.className = "nnm-adv-range";
+          n2.textContent = o.note;
+          b.appendChild(n2);
+        }
+        b.appendChild(c);
+        b.addEventListener("click", function () {
+          const cur = o.get();
+          o.set(cur === o.value ? "" : o.value);
+          push();
+        });
+        wrap.appendChild(b);
+        counters.push({ btn: b, cell: c, on: function () { return o.get() === o.value; },
+                        group: group, hit: o.hit });
+      });
+      row.appendChild(wrap);
+      sec.appendChild(row);
+    }
+
+    // ---- conversation number ----
+    const secN = section("Conversation");
+    const rowN = document.createElement("div");
+    rowN.className = "nnm-adv-row";
+    const nLab = document.createElement("label");
+    nLab.className = "nnm-adv-name";
+    nLab.textContent = "Number";
+    const nIn = document.createElement("input");
+    nIn.type = "number";
+    nIn.min = "1";
+    nIn.max = String(D.items.length);
+    nIn.className = "nnm-adv-num";
+    nIn.placeholder = "1–" + D.items.length;
+    const nId = "nnm-advn-" + Math.floor(performance.now() * 1000 % 1e9);
+    nIn.id = nId; nLab.setAttribute("for", nId);
+    nIn.addEventListener("input", function () {
+      const v = parseInt(nIn.value, 10);
+      st.n = (nIn.value !== "" && v >= 1 && v <= D.items.length) ? String(v) : "";
+      push();
+    });
+    rowN.appendChild(nLab); rowN.appendChild(nIn);
+    const nHint = document.createElement("span");
+    nHint.className = "nnm-adv-hint";
+    nHint.textContent = "goes straight to one of the " + D.items.length;
+    rowN.appendChild(nHint);
+    secN.appendChild(rowN);
+
+    // ---- labels ----
+    const secL = section("Label");
+    const LBL = [
+      { g: "target", name: "Humans said", a: ["1", "approach"], b: ["0", "wait"] },
+      { g: "prediction", name: "Model said", a: ["1", "approach"], b: ["0", "wait"] },
+      { g: "model_correct", name: "Model was", a: ["1", "right"], b: ["0", "wrong"] }
+    ];
+    LBL.forEach(function (r) {
+      choiceRow(secL, r.name, r.g, [r.a, r.b].map(function (pair) {
+        return { label: pair[1], value: pair[0],
+                 get: function () { return st[r.g]; },
+                 set: function (v) { st[r.g] = v; },
+                 hit: function (it, i) {
+                   const v = r.g === "target" ? it.target
+                           : r.g === "prediction" ? it.pred
+                           : (it.pred === it.target ? 1 : 0);
+                   return String(v) === pair[0];
+                 } };
+      }));
+    });
+
+    // ---- pathways ----
+    if (PATH_FIELDS.length) {
+      const secP = section("Pathway activation");
+      PATH_FIELDS.forEach(function (f, pi) {
+        choiceRow(secP, "Pathway " + (pi + PATH_OFFSET), f, ADV_BANDS.map(function (b) {
+          return { label: b.label, note: b.note, value: b.key,
+                   get: function () { return st.band[f] || ""; },
+                   set: function (v) { st.band[f] = v; },
+                   hit: function (it) { return b.test(it.act[pi]); } };
+        }));
+      });
+    }
+
+    // ---- words ----
+    const secW = section("Words", true, function () {
+      if (!st.words.length) return "";
+      return st.words.length === 1 ? st.words[0] : st.words.length + " words";
+    });
+    const wHint = document.createElement("p");
+    wHint.className = "nnm-adv-hint nnm-adv-block";
+    wHint.textContent = "Any of the chosen words. The vocabulary is " + VOCAB.length +
+      " words, and none is a fragment of another, so a match is always a whole word.";
+    secW.appendChild(wHint);
+    const wWrap = document.createElement("div");
+    wWrap.className = "nnm-adv-words";
+    wWrap.setAttribute("role", "group");
+    wWrap.setAttribute("aria-label", "Words");
+    VOCAB.forEach(function (w) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "nnm-adv-opt nnm-adv-word";
+      b.setAttribute("aria-pressed", "false");
+      const t = document.createElement("span");
+      t.className = "nnm-adv-lab";
+      t.textContent = w;
+      const c = document.createElement("span");
+      c.className = "nnm-adv-count";
+      b.appendChild(t); b.appendChild(c);
+      b.addEventListener("click", function () {
+        const at = st.words.indexOf(w);
+        if (at >= 0) st.words.splice(at, 1); else st.words.push(w);
+        push();
+      });
+      wWrap.appendChild(b);
+      counters.push({ btn: b, cell: c, on: function () { return st.words.indexOf(w) >= 0; },
+                      group: "words",
+                      hit: function (it) { return it.text.toLowerCase().indexOf(w) >= 0; } });
+    });
+    secW.appendChild(wWrap);
+
+    // ---- observed attributes ----
+    const secA = section("Observed", true, function () {
+      const on = [];
+      BINARY_ATTRS.forEach(function (k) {
+        if (st.attr[k]) on.push((attrLabel[k] || k) + ": " + (st.attr[k] === "1" ? "yes" : "no"));
+      });
+      if (st.group_size) on.push((attrLabel.group_size || "Group size") + ": " + st.group_size);
+      if (!on.length) return "";
+      return on.length === 1 ? on[0] : on[0] + "  +" + (on.length - 1);
+    });
+    BINARY_ATTRS.forEach(function (k) {
+      choiceRow(secA, attrLabel[k] || k, k, [["1", "yes"], ["0", "no"]].map(function (pair) {
+        return { label: pair[1], value: pair[0],
+                 get: function () { return st.attr[k] || ""; },
+                 set: function (v) { st.attr[k] = v; },
+                 hit: function (it) {
+                   const ai = D.attributeKeys.indexOf(k);
+                   return String(it.attrs[ai]) === pair[0];
+                 } };
+      }));
+    });
+    if (HAS_GROUP_SIZE) {
+      const gi = D.attributeKeys.indexOf("group_size");
+      const sizes = [];
+      D.items.forEach(function (it) {
+        if (sizes.indexOf(it.attrs[gi]) < 0) sizes.push(it.attrs[gi]);
+      });
+      sizes.sort(function (a, b) { return a - b; });
+      choiceRow(secA, attrLabel.group_size || "Group size", "group_size",
+        sizes.map(function (v) {
+          return { label: String(v), value: String(v),
+                   get: function () { return st.group_size; },
+                   set: function (x) { st.group_size = x; },
+                   hit: function (it) { return it.attrs[gi] === v; } };
+        }));
+    }
+
+    // Counts are FACET counts: each option says how many the set would hold if this
+    // group were set to it, with every OTHER group left as it is. A count against the
+    // whole eight hundred would be a different, less useful number the moment a second
+    // filter is on.
+    function refresh() {
+      const cache = {};
+      counters.forEach(function (c) {
+        if (!(c.group in cache)) {
+          const r = run(queryExcept(c.group));
+          cache[c.group] = r.error ? [] : r.items;
+        }
+        const pool = cache[c.group];
+        let n = 0;
+        for (let i = 0; i < pool.length; i++) if (c.hit(pool[i], i)) n++;
+        c.cell.textContent = String(n);
+        const on = c.on();
+        c.btn.classList.toggle("on", on);
+        c.btn.setAttribute("aria-pressed", on ? "true" : "false");
+        // Nothing is disabled at zero — a count of none is an ANSWER ("no conversation
+        // has both of these"), and greying it out hides the finding behind a dead
+        // control. It is styled quiet instead.
+        c.btn.classList.toggle("none", n === 0);
+      });
+      folders.forEach(function (f) {
+        const t = f.fn ? f.fn() : "";
+        f.sum.textContent = t;
+        f.sec.classList.toggle("filtering", !!t);
+      });
+    }
+
+    let mine = "";          // the last query this panel wrote, to spot a hand edit
+    function push() {
+      mine = compose();
+      input.value = mine;
+      apply();
+      refresh();
+      syncNote();
+    }
+    function syncNote() {
+      const edited = input.value.trim() !== mine.trim();
+      note.textContent = edited
+        ? "The box has been edited by hand — the next change here will replace it."
+        : "";
+      note.hidden = !edited;
+      el.classList.toggle("edited", edited);
+    }
+    clearBtn.addEventListener("click", function () {
+      st.n = ""; st.target = ""; st.prediction = ""; st.model_correct = "";
+      st.band = {}; st.words = []; st.attr = {}; st.group_size = "";
+      nIn.value = "";
+      push();
+    });
+
+    refresh();
+    return { el: el, refresh: refresh, syncNote: syncNote,
+             onBack: function (fn) { backFn = fn; },
+             // Opened from a button that is about to be hidden, so focus has to be
+             // handed somewhere or it falls to the body and the panel is unreachable
+             // by keyboard. The panel itself, so nothing inside it lights up.
+             focusFirst: function () { el.focus(); } };
+  }
+
+  function buildBar(onChange, barOpts) {
+    barOpts = barOpts || {};
     const bar = document.createElement("div");
     bar.className = "nnm-filterbar";
 
@@ -4841,15 +5559,34 @@ function makeFilter(D) {
     helpBtn.setAttribute("aria-label", "Show what you can search for");
     helpBtn.setAttribute("aria-expanded", "false");
 
+    // Set once the two faces exist; the ? handler is written before them.
+    let backToHelp = null;
     const help = document.createElement("div");
     help.className = "nnm-filter-helpbox";
+    help.setAttribute("role", "dialog");
+    help.setAttribute("aria-label", "What you can search for");
     help.hidden = true;
-    help.innerHTML =
+    // The popover has two faces now — what you can search for, and the panel that
+    // builds it for you — so its content goes in a pane rather than straight on the
+    // box, and the box becomes the shell the two swap inside.
+    // Over both faces rather than inside either — the help has no header of its own
+    // to hang it in, and one control that is always in the same corner is easier to
+    // find than two that move with the content.
+    const closeHelp = document.createElement("button");
+    closeHelp.type = "button";
+    closeHelp.className = "nnm-filter-close";
+    closeHelp.setAttribute("aria-label", "Close");
+    closeHelp.appendChild(createSVGIcon(closeIconSVG));
+    help.appendChild(closeHelp);
+
+    const helpPane = document.createElement("div");
+    helpPane.className = "nnm-helppane";
+    help.appendChild(helpPane);
+    helpPane.innerHTML =
       '<b>Fields</b><div class="nnm-fieldlist">' +
       FIELDS.map(function (f) { return '<code>' + f + '</code>'; }).join(" ") +
       '</div><b>Examples</b><ul>' +
       '<li><code>n:127</code> — jump to conversation 127 of 800</li>' +
-      '<li><code>id:8e8b7e9f</code> — jump to one by id (a fragment is enough)</li>' +
       '<li><code>model_correct:0</code> — the ones the model got wrong</li>' +
       '<li><code>pathway_3:&gt;2</code> — a high score on Pathway 3</li>' +
       '<li><code>voices_raised:1 AND pathway_1:&lt;0</code></li>' +
@@ -4857,10 +5594,36 @@ function makeFilter(D) {
       '<li><code>NOT near_water:1</code></li>' +
       '</ul>';
 
+    // Only where a caller asked for it. Five screens share this bar, and a panel
+    // about pathway activations and model correctness is not the question the
+    // Correlations or Prediction Chain screens are asking.
+    //
+    // The button does NOT sit in the bar. The bar already carries a field, a count
+    // and a ?, and a fourth control competing with them buys a panel most students
+    // will never open. It lives one level in, at the foot of the help the ? gives —
+    // which is where somebody who has just read what the fields are is standing.
+    let advBtn = null;
+    if (barOpts.advanced) {
+      advBtn = document.createElement("button");
+      advBtn.type = "button";
+      advBtn.className = "nnm-filter-adv";
+      advBtn.textContent = "Advanced Filter";
+      advBtn.setAttribute("aria-expanded", "false");
+    }
+
+    // The count and the ? ride together on a white tail, mirroring the label's white
+    // head. The grey between them is the field; both ends are things that are not
+    // typed into. It is a container rather than a background on each, so the white
+    // grows and shrinks with whatever the count says — "800", "64 of 800", or a whole
+    // error message — instead of being a fixed block the text sits inside.
+    const tail = document.createElement("div");
+    tail.className = "nnm-filter-tail";
+    tail.appendChild(count);
+    tail.appendChild(helpBtn);
+
     bar.appendChild(label);
     bar.appendChild(input);
-    bar.appendChild(count);
-    bar.appendChild(helpBtn);
+    bar.appendChild(tail);
 
     const wrapEl = document.createElement("div");
     wrapEl.className = "nnm-filterwrap";
@@ -4874,9 +5637,43 @@ function makeFilter(D) {
     const aboutBtn = makeAboutButton();
     rowEl.appendChild(aboutBtn);
 
-    helpBtn.addEventListener("click", function () {
-      help.hidden = !help.hidden;
-      helpBtn.setAttribute("aria-expanded", help.hidden ? "false" : "true");
+    // Three ways out, because the way IN does not advertise itself as the way out:
+    // pressing ? a second time closes it, but nothing says so, and a student who has
+    // opened a box looks for the box's own control. The X is that control; Escape is
+    // what anyone who has met a dialog before will try first.
+    // The popover hangs off the filter bar, and the filter bar is inside a device
+    // frame — .content-area clips it, and the window is taller than that. So the
+    // available height is the distance to whatever actually CLIPS, found by walking
+    // up, rather than anything derived from 100vh.
+    function fitPopover() {
+      help.style.maxHeight = "";
+      const top = help.getBoundingClientRect().top;
+      let node = help.parentElement, bottom = window.innerHeight;
+      while (node) {
+        const oy = getComputedStyle(node).overflowY;
+        if (oy === "hidden" || oy === "auto" || oy === "scroll") {
+          bottom = node.getBoundingClientRect().bottom;
+          break;
+        }
+        node = node.parentElement;
+      }
+      // 12 of air, so it stops short of the edge rather than butting against it.
+      help.style.maxHeight = Math.max(220, Math.floor(bottom - top - 12)) + "px";
+    }
+    function setOpen(open) {
+      help.hidden = !open;
+      helpBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      helpBtn.classList.toggle("on", open);
+      // Reopened, it comes back to the help. The panel keeps what it was set to — the
+      // query it built is still in the box — but ? means "tell me what I can search
+      // for", and it should always answer that first.
+      if (open && backToHelp) backToHelp();
+      if (open) fitPopover();
+    }
+    helpBtn.addEventListener("click", function () { setOpen(help.hidden); });
+    closeHelp.addEventListener("click", function () { setOpen(false); helpBtn.focus(); });
+    help.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { e.stopPropagation(); setOpen(false); helpBtn.focus(); }
     });
 
     let last = D.items.slice();
@@ -4904,7 +5701,44 @@ function makeFilter(D) {
     rowEl.addEventListener("mousedown", function (e) {
       if (e.target === rowEl || e.target === label) { e.preventDefault(); input.focus(); }
     });
-    input.addEventListener("input", apply);
+    let adv = null;
+    if (barOpts.advanced) {
+      // A footer of the POPOVER, not the tail of the help. Appended to the pane it
+      // sat under seven lines of examples inside a 300px scroller — present, and
+      // never seen. Pinned, the reading order still runs fields, examples, offer,
+      // but the offer is on screen the whole time.
+      const advFoot = document.createElement("div");
+      advFoot.className = "nnm-advfoot";
+      advFoot.appendChild(advBtn);
+      help.appendChild(advFoot);
+      adv = buildAdvanced(input, apply);
+      adv.el.id = id + "-adv";
+      advBtn.setAttribute("aria-controls", adv.el.id);
+      help.appendChild(adv.el);
+      // One popover, two faces. Showing the panel REPLACES the help rather than
+      // opening a second thing beside it: they answer the same question — how do I
+      // narrow these eight hundred — and two surfaces open at once would have the
+      // student reading the syntax and using the builder in different places.
+      function face(advanced) {
+        helpPane.hidden = advanced;
+        advFoot.hidden = advanced;
+        adv.el.hidden = !advanced;
+        help.classList.toggle("adv", advanced);
+        advBtn.setAttribute("aria-expanded", advanced ? "true" : "false");
+        if (advanced) adv.refresh();
+        if (!help.hidden) fitPopover();
+      }
+      advBtn.addEventListener("click", function () { face(true); adv.focusFirst(); });
+      adv.onBack(function () { face(false); helpBtn.focus(); });
+      backToHelp = function () { face(false); };
+      face(false);
+    }
+    input.addEventListener("input", function () {
+      apply();
+      // Typed straight into the box: the counts still have to answer for what is
+      // actually filtering, and the panel has to admit it no longer matches.
+      if (adv) { adv.refresh(); adv.syncNote(); }
+    });
     apply();
     live = true;   // the caller renders the initial state itself
 
@@ -4926,7 +5760,7 @@ function filterFor(D) {
 // Same surface the call sites already used; each call resolves to the instance
 // for whichever dataset the current interactive reads.
 const NNM_FILTER = {
-  buildBar: function (onFilter) { return filterFor(simData()).buildBar(onFilter); },
+  buildBar: function (onFilter, opts) { return filterFor(simData()).buildBar(onFilter, opts); },
   run: function (q) { return filterFor(simData()).run(q); },
   get FIELDS() { return filterFor(simData()).FIELDS; }
 };
@@ -9845,7 +10679,8 @@ function buildSimContent() {
     const toolbar = document.createElement("div");
     toolbar.className = "d3-toolbar d1a-toolbar";
     stack.appendChild(toolbar);
-    const filter = NNM_FILTER.buildBar(function (its) { cases = its; idx = 0; render(); });
+    const filter = NNM_FILTER.buildBar(function (its) { cases = its; idx = 0; render(); },
+                                       { advanced: !!opts.advancedFilter });
     filter.el.classList.add("d3-filter");
     // Built either way — it is what seeds `cases`, and it carries the About button —
     // but only shown where there is something to filter. Extract Pathways is about
@@ -16332,6 +17167,9 @@ function buildSimContent() {
 
   if (activeSim === "d1a") {
     return buildNetScreen({ steps: true, hover: true, marks: true,
+                            // Trying the advanced filter here first — one screen, so
+                            // the other five keep the bar they have.
+                            advancedFilter: true,
                             title: "The Network" });
   }
 
