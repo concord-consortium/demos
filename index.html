@@ -998,6 +998,7 @@
   .nnm-filter-help {
     width: 30px; height: 30px;
     flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
     /* A 44px circle will not fit inside a 44px bar with 2px borders, and blowing the
        bar out to hold one would leave it taller than every button beside it — so the
        drawn circle is smaller than the target, and the TARGET is what 2.5.5 measures:
@@ -1020,26 +1021,13 @@
     cursor: pointer;
     padding: 0;
   }
+  .nnm-filter-help svg { width: 16px; height: 16px; display: block; }
   .nnm-filter-help:hover { background: var(--nnm-surface); }
   .nnm-filter-help:active {
     background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff;
   }
   .nnm-filter-help:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
   /* ---- the advanced filter panel (Trace a Case) ---- */
-  /* The Advanced toggle sits between the count and the ? — the order of the row is
-     what you typed, what it found, how to build one, what the words mean. */
-  .nnm-filter-adv {
-    height: 30px; padding: 0 12px; box-sizing: border-box;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
-    letter-spacing: 0.05em; text-transform: uppercase;
-    border: 2px solid var(--nnm-rule); border-radius: 5px;
-    background: #fff; color: var(--nnm-ink-2); cursor: pointer;
-  }
-  .nnm-filter-adv:hover { background: var(--nnm-surface); }
-  .nnm-filter-adv.on {
-    background: var(--nnm-ink); border-color: var(--nnm-ink); color: #fff;
-  }
-  .nnm-filter-adv:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
 
   /* The panel lives INSIDE the ? popover and swaps places with the help, so it brings
      no frame of its own — the popover is already a bordered, shadowed box. What it
@@ -1063,10 +1051,6 @@
     max-height: 560px;                 /* ceiling; fitPopover() sets the real one */
     left: 0; right: auto;
   }
-  /* Its own width, like every other button here. Full-bleed it read as a banner
-     across the foot of the box — a thing announcing itself rather than a control
-     offered. */
-  .nnm-filter-adv { display: inline-flex; align-items: center; width: auto; }
   /* A real button in the house clothes — 2px rule, white ground, 5px corners. It was
      a borderless text link, which on a row beside Clear All read as a caption. */
   .nnm-adv-back {
@@ -1080,13 +1064,20 @@
   }
   .nnm-adv-back:hover { color: var(--nnm-ink); border-color: var(--nnm-ink-2); }
   .nnm-adv-back:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+  /* The About modal's header, measured off it: 52px tall, a light ground, a mid-grey
+     hairline under it, and the title Lato 18/700 hard left with the close on the
+     right. Tokens rather than About's literals where the piece has one within a
+     shade — --nnm-surface for #F7F8FA, --nnm-ink-3 for #6B7280, --nnm-ink for #333 —
+     so this header stays inside the palette while reading as the same object. */
   .nnm-adv-head {
-    position: relative;                 /* the title centres against this */
+    position: relative;
     display: flex; align-items: center; gap: 10px;
-    padding: 7px 44px 7px 11px;
-    border-bottom: 1px solid var(--nnm-rule-soft);
+    /* flex-shrink:0 or the column squeezes it — the panel is height-capped, so a
+       header with a height and no shrink guard gets compressed to 43. */
+    height: 52px; flex-shrink: 0; box-sizing: border-box;
+    padding: 3px 52px 3px 12px;
+    border-bottom: 1px solid var(--nnm-ink-3);
     background: var(--nnm-surface);
-    min-height: 32px; box-sizing: border-box;
   }
   /* Its own strip under the header, and only there when it has something to say. */
   .nnm-adv-note {
@@ -1106,24 +1097,20 @@
      buttons of different widths, which is not the middle of anything.
      Not bold: it is a name, and nothing in this row is competing with it. */
   .nnm-adv-title {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    margin: 0;
-    /* The same type as the FILTER label on the bar — 14px Barlow Condensed, 600,
-       0.07em, ink-2. It names its surface exactly as that one names its field, so it
-       should not be a second, slightly different heading style. */
-    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
-    letter-spacing: 0.07em; text-transform: uppercase; color: var(--nnm-ink-2);
+    flex: 1; margin: 0;
+    font-family: 'Lato', sans-serif; font-size: 18px; font-weight: 700;
+    letter-spacing: 0; text-transform: none; color: var(--nnm-ink);
   }
-  .nnm-adv-clear {
-    margin-left: auto; flex-shrink: 0;
-    height: 26px; padding: 0 10px; box-sizing: border-box;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 600;
-    letter-spacing: 0.05em; text-transform: uppercase;
-    border: 2px solid var(--nnm-rule); border-radius: 5px;
-    background: #fff; color: var(--nnm-ink-2); cursor: pointer;
-  }
-  .nnm-adv-clear:hover { background: #fff; border-color: var(--nnm-ink-2); }
-  .nnm-adv-clear:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 2px; }
+  /* Height ONLY. Everything else — the type, the hover, the press, the disabled
+     fade, the focus ring — is .nnm-step's, because the button now wears that
+     class. Step 1's own 44px is a toolbar height and would fill this header, and
+     34 read as a chip that had wandered up from the body; 38 sits between. */
+  /* Scoped to the header so it OUTRANKS .nnm-step, which sets height from
+     --nnm-ctl-h three thousand lines further down — equal specificity, later wins, so
+     an unscoped rule here was simply ignored and the button came out 44. */
+  /* The X's height, so the two controls at this end of the header sit on one line
+     rather than one hanging inside the other. Everything else is .nnm-step's. */
+  .nnm-adv-head .nnm-adv-clear { margin-left: auto; flex-shrink: 0; height: 44px; }
   /* No cap of its own. The popover's max-height is what bounds the panel, and a
      second 340px limit in here meant raising the popover changed nothing — the body
      kept showing a third of itself inside a taller box. */
@@ -1290,7 +1277,16 @@
     background: none; color: var(--nnm-ink-2); cursor: pointer;
   }
   .nnm-filter-close svg { width: 17px; height: 17px; }
-  .nnm-filter-close:hover { background: var(--nnm-surface); color: var(--nnm-ink); }
+  /* Longhand, not the `background` shorthand: written as a shorthand with a var()
+     these are invisible to anything reading the rule back, which is how the Clear All
+     hover sat wrong without showing up. */
+  .nnm-filter-close:hover {
+    background-color: var(--nnm-surface); color: var(--nnm-ink);
+  }
+  /* One step darker again on the press, the way About's close steps to #d0d0d0. */
+  .nnm-filter-close:active {
+    background-color: var(--nnm-rule); color: var(--nnm-ink);
+  }
   .nnm-filter-close:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
   /* The same target trick the ? uses: the drawn control stays small enough not to
      shout in a 447px box, and 2.5.5's 44 is met by a transparent area around it.
@@ -1299,17 +1295,43 @@
     content: ""; position: absolute; left: 50%; top: 50%;
     width: 44px; height: 44px; transform: translate(-50%, -50%);
   }
+  /* About's close, state for state — and by the SAME variables, not by copying what
+     they happen to resolve to. --sim-surface / --sim-btn-hover / --sim-btn-active are
+     set per sim by applySimTheme, so hard-coding About's fallbacks froze one theme's
+     colours into a control that is supposed to follow whichever sim is showing. (They
+     are also not the fallbacks: this theme resolves them to #F7F8FA, #EDEFF2, #DCE0E6.)
+     Scoped to .adv so the other five screens keep the small round one; their popover
+     has no header band for a 44px square to sit in. (52 − 44) / 2 = 4, so it centres. */
+  .nnm-filter-helpbox.adv .nnm-filter-close {
+    width: 44px; height: 44px; top: 4px; right: 4px; border-radius: 4px;
+    background: var(--sim-surface, #fff);
+    color: var(--nnm-ink);
+    transition: background-color 0.15s ease;
+  }
+  .nnm-filter-helpbox.adv .nnm-filter-close:hover,
+  .nnm-filter-helpbox.adv .nnm-filter-close:focus-visible {
+    background: var(--sim-btn-hover, #f0f0f0); color: var(--nnm-ink);
+  }
+  .nnm-filter-helpbox.adv .nnm-filter-close:active {
+    background: var(--sim-btn-active, #d0d0d0); color: var(--nnm-ink);
+  }
+  .nnm-filter-helpbox.adv .nnm-filter-close:focus {
+    outline: 2px solid #005FCC; outline-offset: -2px;
+  }
+  .nnm-filter-helpbox.adv .nnm-filter-close:focus:not(:focus-visible) { outline: none; }
+  .nnm-filter-helpbox.adv .nnm-filter-close:focus-visible {
+    outline: 2px solid #005FCC; outline-offset: -2px;
+  }
+  .nnm-filter-helpbox.adv .nnm-filter-close svg { width: 24px; height: 24px; }
+  /* 24 at x12, which puts the title at 46 — About's measurements exactly, the gap
+     coming from the header's own 10px. */
+  .nnm-adv-headicon {
+    width: 24px; height: 24px; flex-shrink: 0; display: block;
+    color: var(--nnm-ink);
+  }
   /* [hidden] again: the moment this rule gained `display` it stopped honouring the
      attribute, and the footer went on holding 47px in the advanced face — pushing the
      panel down past the X. Same trap as .nnm-filter-helpbox, same fix. */
-  .nnm-advfoot[hidden] { display: none; }
-  .nnm-advfoot {
-    flex-shrink: 0;
-    display: flex; justify-content: center;
-    padding: 8px 13px;
-    border-top: 1px solid var(--nnm-rule-soft);
-    background: var(--nnm-surface);
-  }
   .nnm-filter-helpbox b {
     display: block;
     font-family: 'Barlow Condensed', sans-serif;
@@ -1451,7 +1473,9 @@
      and they are the last thing on each line. */
   .nnm-labels {
     position: absolute;
-    top: calc(100% + 16px);
+    /* 16px when this block was two rows deep. With only Actual left it reads as
+       hanging low under the answer, so it comes up 5. */
+    top: calc(100% + 11px);
     right: 6px;
     display: flex;
     flex-direction: column;
@@ -1646,8 +1670,13 @@
      key last, that is the Animate toggle; the key then takes its natural margin and
      the whole group — controls, rule, key — packs against the right edge. */
   .d1a-panel .nnm-animtoggle { margin-left: 0; }
-  .nnm-panel-head.d1a-hascontrols .nnm-animtoggle { margin-left: auto; }
-  .nnm-panel-head.d1a-hascontrols .d1a-scale { margin-left: 0; }
+  /* Whichever item comes FIRST in the right-hand group carries the auto margin that
+     pushes the group over — that is the key now, not the checkbox. The Loading key is
+     second, so it keeps its own 16px gap instead (and its inline margin from
+     showLoadKey wins over both while it animates open). */
+  .nnm-panel-head.d1a-hascontrols .d1a-scale:not(.d1a-loadscale) { margin-left: auto; }
+  .nnm-panel-head.d1a-hascontrols .d1a-loadscale { margin-left: 16px; }
+  .nnm-panel-head.d1a-hascontrols .nnm-animtoggle { margin-left: 0; }
   .nnm-leftcol {
     display: flex;
     flex-direction: column;
@@ -2053,7 +2082,10 @@
   /* Two proud of the pair at each end, so it reads as an axis the bars sit on rather
      than a join between them. */
   .d1a-scale .bars::after {
-    content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px;
+    /* Exactly the height of the two bars, matching the rule in the drawing, which
+       now stops at the top and bottom edges of its triplet rather than standing
+       proud of it. */
+    content: ""; position: absolute; left: 50%; top: 0; bottom: 0;
     width: 1px; margin-left: -0.5px; background: var(--nnm-rule);
   }
   .d1a-scale .bar {
@@ -2063,8 +2095,11 @@
        its own 24px for the same reason: a key that is the same object at the same
        size can be held against the thing it explains, and a shrunken echo cannot. */
     width: 88px; height: 6px; flex-shrink: 0;
-    background-color: #FFFFFF;
-    box-shadow: inset 0 0 0 1px var(--nnm-rule);
+    /* No ground and no outline (content designer, 2026-09-17). The drawing's bars lost
+       their frames, so the key's must go too or it is explaining something that is no
+       longer on screen. What is left is the coloured half of each — a blue running
+       left from zero and a red running right — which is exactly what a loading looks
+       like now. */
   }
   /* The loading is a CHILD, not a background: an inset box-shadow paints over its own
      element's background, so drawn as a gradient the grey outline was laid across the
@@ -2130,7 +2165,6 @@
   /* White, not transparent. Unfilled, the connectors ran visibly through the empty
      part of every track — a frame is a container and things should not be inside it
      that are only passing by. */
-  .d1a-loadtrack { fill: #FFFFFF; stroke: var(--nnm-rule); stroke-width: 1; }
   .d1a-loadring { fill: none; stroke: var(--nnm-ink); stroke-width: 2; }
   /* One conversation's neuron, once the fourteen have become one. Same circle the
      network draws, minus the gauge — there is no activation to show at this point,
@@ -2292,7 +2326,10 @@
     font-family: 'Lato', sans-serif; font-size: 12.5px; line-height: 1.45;
     color: var(--nnm-ink-2);
   }
-  .d1a-pin.idle { color: var(--nnm-ink-3); }
+  /* The box holds two different kinds of sentence in turn: a prompt telling you what
+     to do next, and a reading of the neuron you clicked. Italic separates them, so a
+     glance tells you which one is showing without reading it. */
+  .d1a-pin.idle { color: var(--nnm-ink-3); font-style: italic; }
   .d1a-pin b { color: var(--nnm-ink); font-weight: 700; }
   .d1a-pin .v { font-family: var(--nnm-mono); color: var(--nnm-ink); }
   /* .nnm-navbtn's box and behaviour — 36x36 is the button size everywhere in this
@@ -2328,6 +2365,13 @@
   /* Same type as the Prediction Chain's column captions (.nnm-flowhead .c). */
   .d1a-collabel {
     font-family: 'Lato', sans-serif; font-size: 12px; fill: var(--nnm-ink-2);
+  }
+  /* The same family and size as the column captions above the diagram — these name a
+     thing in the drawing the same way those do — but ink-3, because a pill's own word
+     is the reading and this is only saying which of the two the question is about. */
+  .d1a-outcap {
+    font-family: 'Lato', sans-serif; font-size: 12px; fill: var(--nnm-ink-3);
+    pointer-events: none;
   }
   /* Names the lifted column, in .d1a-mergelabel's type — it is the same kind of
      caption as "Conversation n" and reads as its pair. A marker class only, so the
@@ -2970,10 +3014,12 @@
   /* flex-start, because the transform below does the positioning. */
   .d3-colhead { justify-content: flex-start; padding: 7px 6px; overflow: hidden; }
   /* Only as tall as the column NAME — the counts hang off it absolutely, so they
-     never add to its height and the name can be centred in the band when they are
-     not showing. Graph view lifts this to the top and the counts appear beneath,
-     captioning the plots; correlation view drops it to the middle and takes the
-     counts away, since the split they describe is not what a correlation measures. */
+     never add to its height. Both views now show them: the split a column's
+     conversations fall into is worth having in front of you whichever half of the
+     toggle you are on, and having it appear and disappear made the two views look
+     like two different tables. Measures view used to drop the name to the middle of
+     the band and fade the counts out (the old .nocounts state); it no longer does,
+     so there is one resting position and the heading does not move on a switch. */
   .d3-headinner {
     position: relative; width: 100%;
     transition: transform 0.34s cubic-bezier(.34, 1.08, .5, 1);
@@ -2988,8 +3034,6 @@
      already in the right place the moment it is built: nothing to measure, and no
      correction to watch happen after the panel mounts. */
   .d3-headinner { transform: translateY(0); }
-  .d3-headinner.nocounts { transform: translateY(16px); }
-  .d3-headinner.nocounts .d3-marg { opacity: 0; }
   .d3-rowhead { justify-content: flex-start; padding: 6px 10px 6px 8px; overflow: hidden; }
   /* Name and range bar are the block that moves; the plot hangs out of flow between
      them so it can leave without the block changing height. 70px row less 12
@@ -3190,7 +3234,17 @@
     position: absolute; top: 0; height: 4px; border-radius: 2px;
     background: #838C99;
   }
-  .d3-range .cap { display: block; line-height: 1; margin-top: 4px; text-align: center; }
+  /* The caption is not bound by the track's insets. Held to them it had 68px, and
+     "67% of the range" measures 70 — so every two-digit row wrapped, and the stub
+     clips, which took the words off the number. The negative margins hand it back
+     the 14px the track gives up for alignment; equal on both sides, so the caption
+     stays centred on the bar. 82px now, against 75 for the longest reading there
+     is ("100% of the range"), and nowrap makes the guarantee explicit rather than
+     leaving it to measure out by luck. */
+  .d3-range .cap {
+    display: block; line-height: 1; margin: 4px -7px 0; text-align: center;
+    white-space: nowrap;
+  }
   .d3-blabel { font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; fill: var(--nnm-ink-2); }
   /* The close-up has room the matrix cells do not: 10.5px is sized for a 42px stub
      inside a 99px cell, and at 530px wide it read as fine print. The ticks are
@@ -3950,12 +4004,35 @@
   }
   .nnm-fan { width: 40px; flex-shrink: 0; transition: opacity 0.3s ease; overflow: visible; }
   .nnm-outs {
+    /* The caption's own two metrics, named once so the compensation below cannot
+       drift away from them. */
+    --out-cap: 12px;
+    --out-cap-gap: 6px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 14px;
     flex-shrink: 0;
+    /* Every caption sits ABOVE its pill, so the stack overhangs the pills by one
+       caption at the top and by nothing at the bottom — centring the stack would
+       drop the pills below the sum square and bend the fan lines downwards.
+       Reserving that same height under the last pill centres the PAIR OF PILLS,
+       which is what the fan actually aims at. */
+    padding-bottom: calc(var(--out-cap) + var(--out-cap-gap));
     transition: opacity 0.3s ease;
+  }
+  /* An outcome and the caption naming it, stacked. Lato 12 in ink-3 — the same type
+     the network diagram gives its own two pills, so both screens name the two classes
+     in the same voice. */
+  .nnm-outcell {
+    display: flex; flex-direction: column; align-items: flex-start;
+    gap: var(--out-cap-gap);
+    flex-shrink: 0;
+  }
+  .nnm-outname {
+    font-family: 'Lato', sans-serif; font-size: 12px;
+    line-height: var(--out-cap);
+    color: var(--nnm-ink-3); white-space: nowrap;
   }
   .nnm-out {
     width: 74px;
@@ -4001,7 +4078,7 @@
   .nnm-flowbody.narrow .nnm-decidewrap { width: 100%; padding-top: 12px; }
   .nnm-flowbody.narrow .nnm-deciderow { align-items: center; gap: 10px; }
   .nnm-flowbody.narrow .nnm-tail { flex-direction: row; gap: 8px; }
-  .nnm-flowbody.narrow .nnm-outs { flex-direction: row; gap: 8px; }
+  .nnm-flowbody.narrow .nnm-outs { flex-direction: row; gap: 8px; padding-bottom: 0; }
   .nnm-flowbody.narrow .nnm-labels { flex-direction: row; gap: 6px 20px; align-items: center; }
 
 
@@ -4037,7 +4114,12 @@
     margin-top: 11px;
   }
   .nnm-note:empty { display: none; }
-  .nnm-outs { display: flex; gap: 6px; }
+  /* The pair's own separation: the bottom of the top pill to the caption naming the
+     lower one. Bigger than the 6px inside a cell, so a caption always reads as
+     belonging to the pill BELOW it rather than sitting between two of them.
+     NB this is the rule that applies — an earlier .nnm-outs sets 14px and loses to
+     it on source order. */
+  .nnm-outs { display: flex; gap: 14px; }
   .nnm-out {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 14px;
@@ -4072,7 +4154,7 @@
     height: var(--nnm-ctl-h);
     box-sizing: border-box;
     /* A button label breaking over two lines is how the row reported that it had run
-       out of width — "Add Up" wrapped rather than the row overflowing, which hid the
+       out of width — "Sum Up" wrapped rather than the row overflowing, which hid the
        problem from a scrollWidth check. Held to one line so a future overrun shows
        itself instead. */
     white-space: nowrap;
@@ -4146,8 +4228,8 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v0.18</div>
-      <div style="font-weight: 400;">Updated: 9/16/26</div>
+      <div style="font-weight: 600;">v1.0</div>
+      <div style="font-weight: 400;">Updated: 9/17/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
@@ -4284,7 +4366,11 @@ const PLACEHOLDER_THEME = {
 const SIMS = {
   d1a: {
     day: 1, id: "1A",
-    name: "Trace a Case",
+    // The name shown to STUDENTS — the Activity Player header at the top of the
+    // interactive, and the About panel's heading. The left-hand nav button is separate
+    // markup and still says "Trace a Case", which is how this screen is referred to in
+    // the plan and in the code (id "1A", activeSim "d1a").
+    name: "Looking Inside a Neural Network",
     description: "Follow one conversation through the network",
     theme: PLACEHOLDER_THEME,
     about:
@@ -4331,7 +4417,7 @@ const SIMS = {
   },
   d2b: {
     day: 2, id: "2B",
-    name: "The Prediction Chain",
+    name: "Neural Pathway View of Model Reasoning",
     description: "How the pathways combine into one decision",
     theme: PLACEHOLDER_THEME,
     about:
@@ -4380,7 +4466,7 @@ const SIMS = {
   },
   d3b: {
     day: 3, id: "3B",
-    name: "Investigate Pathway 3",
+    name: "Identify Contextual Factors",
     description: "The pathway that matches nothing",
     theme: PLACEHOLDER_THEME,
     about:
@@ -4717,6 +4803,21 @@ const resetIconSVG =
   '<svg aria-hidden="true" viewBox="0 0 20 20">' +
   '<path d="M 10 17.5 C 8.0694 17.5 6.3958 16.8646 4.9792 15.5938 C 3.5625 14.3229 2.75 12.7361 2.5417 10.8333 L 4.25 10.8333 C 4.4444 12.2778 5.0868 13.4722 6.1771 14.4167 C 7.2674 15.3611 8.5417 15.8333 10 15.8333 C 11.625 15.8333 13.0035 15.2674 14.1354 14.1354 C 15.2674 13.0035 15.8333 11.625 15.8333 10 C 15.8333 8.375 15.2674 6.9965 14.1354 5.8646 C 13.0035 4.7326 11.625 4.1667 10 4.1667 C 9.0417 4.1667 8.1458 4.3889 7.3125 4.8333 C 6.4792 5.2778 5.7778 5.8889 5.2083 6.6667 L 7.5 6.6667 L 7.5 8.3333 L 2.5 8.3333 L 2.5 3.3333 L 4.1667 3.3333 L 4.1667 5.2917 C 4.875 4.4028 5.7396 3.7153 6.7604 3.2292 C 7.7813 2.7431 8.8611 2.5 10 2.5 C 11.0417 2.5 12.0174 2.6979 12.9271 3.0938 C 13.8368 3.4896 14.6285 4.0243 15.3021 4.6979 C 15.9757 5.3715 16.5104 6.1632 16.9063 7.0729 C 17.3021 7.9826 17.5 8.9583 17.5 10 C 17.5 11.0417 17.3021 12.0174 16.9063 12.9271 C 16.5104 13.8368 15.9757 14.6285 15.3021 15.3021 C 14.6285 15.9757 13.8368 16.5104 12.9271 16.9063 C 12.0174 17.3021 11.0417 17.5 10 17.5 Z" fill="currentColor" fill-rule="evenodd">' +
   '</path></svg>';
+// Sliders, not a funnel. A funnel is the mark for "this list IS filtered"; the
+// control here OPENS the thing you set filters with, which is what sliders say — and
+// the word FILTER is already printed two inches to its left, so a funnel would be the
+// same word twice. Built from rects and circles rather than one traced path so the
+// bar weight matches the piece's other strokes exactly.
+const tuneIconSVG =
+  '<svg viewBox="0 0 20 20" aria-hidden="true" fill="currentColor">' +
+  '<rect x="2.6" y="4.2" width="14.8" height="1.7" rx="0.85"/>' +
+  '<rect x="2.6" y="9.15" width="14.8" height="1.7" rx="0.85"/>' +
+  '<rect x="2.6" y="14.1" width="14.8" height="1.7" rx="0.85"/>' +
+  '<circle cx="13.2" cy="5.05" r="2.7"/>' +
+  '<circle cx="6.9" cy="10" r="2.7"/>' +
+  '<circle cx="14.4" cy="14.95" r="2.7"/>' +
+  '</svg>';
+
 const closeIconSVG = 
   '<svg aria-hidden="true" viewBox="0 0 20 20">' +
   '<polygon fill="currentColor" points="15.8333 5.3417 14.6583 4.1667 10 8.825 5.3417 4.1667 4.1667 5.3417 8.825 10 4.1667 14.6583 5.3417 15.8333 10 11.175 14.6583 15.8333 15.8333 14.6583 11.175 10"/></svg>';
@@ -5123,21 +5224,32 @@ function makeFilter(D) {
   // three quarters of the eight hundred sit within ±1 and a −5..5 track would spend
   // most of its travel on the tails. A band is also the question a student actually
   // asks — "strongly positive on Pathway 3" — where a slider asks them to invent a
-  // threshold first. The five partition the set exactly; the counts below prove it.
+  // threshold first. The seven partition the set exactly; the counts below prove it.
+  //
+  // Seven, not five: the tails are split again at ±3 (content designer, 2026-09-17).
+  // They are thin — 3 to 7 conversations a side per pathway — but they are the most
+  // extreme readings in the set, which is exactly what somebody hunting for a clear
+  // case wants, and the count sits on the chip so nobody is surprised by how few.
   const ADV_BANDS = [
-    { key: "sn", label: "strongly negative", note: "≤ −2",
-      q: function (f) { return f + ":<=-2"; }, test: function (v) { return v <= -2; } },
-    { key: "n", label: "negative", note: "−2 … −1",
+    { key: "vsn", label: "very strongly negative", note: "≤ −3",
+      q: function (f) { return f + ":<=-3"; }, test: function (v) { return v <= -3; } },
+    { key: "sn", label: "strongly negative", note: "−3 to −2",
+      q: function (f) { return "(" + f + ":>-3 AND " + f + ":<=-2)"; },
+      test: function (v) { return v > -3 && v <= -2; } },
+    { key: "n", label: "negative", note: "−2 to −1",
       q: function (f) { return "(" + f + ":>-2 AND " + f + ":<=-1)"; },
       test: function (v) { return v > -2 && v <= -1; } },
-    { key: "m", label: "middle", note: "−1 … 1",
+    { key: "m", label: "middle", note: "−1 to 1",
       q: function (f) { return "(" + f + ":>-1 AND " + f + ":<1)"; },
       test: function (v) { return v > -1 && v < 1; } },
-    { key: "p", label: "positive", note: "1 … 2",
+    { key: "p", label: "positive", note: "1 to 2",
       q: function (f) { return "(" + f + ":>=1 AND " + f + ":<2)"; },
       test: function (v) { return v >= 1 && v < 2; } },
-    { key: "sp", label: "strongly positive", note: "≥ 2",
-      q: function (f) { return f + ":>=2"; }, test: function (v) { return v >= 2; } }
+    { key: "sp", label: "strongly positive", note: "2 to 3",
+      q: function (f) { return "(" + f + ":>=2 AND " + f + ":<3)"; },
+      test: function (v) { return v >= 2 && v < 3; } },
+    { key: "vsp", label: "very strongly positive", note: "≥ 3",
+      q: function (f) { return f + ":>=3"; }, test: function (v) { return v >= 3; } }
   ];
   const PATH_FIELDS = D.items.length
     ? Array.from({ length: D.nPathways }, function (_, i) { return "pathway_" + (i + PATH_OFFSET); })
@@ -5204,16 +5316,27 @@ function makeFilter(D) {
     backBtn.addEventListener("click", function () { if (backFn) backFn(); });
     // The panel's NAME, not a control. It is the one thing in this row that does
     // nothing when pressed, so it must not wear any of a button's clothing.
+    // Not "Advanced Filter": the bar beside it already says FILTER, and "advanced"
+    // implied a basic version — which this screen no longer has, since the ? opens
+    // straight into here.
+    // The same mark as the button that opened this, the way About's header repeats
+    // its own ⓘ — so the panel and the control that summons it read as one thing.
+    const headIcon = createSVGIcon(tuneIconSVG);
+    headIcon.classList.add("nnm-adv-headicon");
     const title = document.createElement("h2");
     title.className = "nnm-adv-title";
-    title.textContent = "Advanced Filter";
+    title.textContent = "Filter Options";
     title.id = "nnm-advt-" + Math.floor(performance.now() * 1000 % 1e9);
     el.setAttribute("aria-labelledby", title.id);
     const clearBtn = document.createElement("button");
     clearBtn.type = "button";
-    clearBtn.className = "nnm-adv-clear";
+    // A .nnm-step, so the type and every state — hover, press, disabled, focus — come
+    // from the same place Step 1 gets them rather than a second set beside them that
+    // can drift out of step.
+    clearBtn.className = "nnm-step nnm-adv-clear";
     clearBtn.textContent = "Clear All";
     head.appendChild(backBtn);
+    head.appendChild(headIcon);
     head.appendChild(title);
     head.appendChild(clearBtn);
     el.appendChild(head);
@@ -5240,7 +5363,7 @@ function makeFilter(D) {
     // stay open: Conversation is one row, Label is the most-used, and Pathway
     // activation is the whole point of the thing.
     const folders = [];
-    function section(title, foldable, summarise) {
+    function section(title, foldable, summarise, startOpen) {
       const sec = document.createElement("fieldset");
       sec.className = "nnm-adv-sec";
       const lg = document.createElement("legend");
@@ -5270,11 +5393,12 @@ function makeFilter(D) {
       btn.appendChild(caret);
       btn.appendChild(nm);
       btn.appendChild(sum);
-      btn.setAttribute("aria-expanded", "false");
       lg.appendChild(btn);
       sec.appendChild(lg);
       sec.appendChild(inner);
-      inner.hidden = true;
+      inner.hidden = !startOpen;
+      sec.classList.toggle("open", !!startOpen);
+      btn.setAttribute("aria-expanded", startOpen ? "true" : "false");
       btn.addEventListener("click", function () {
         const open = inner.hidden;
         inner.hidden = !open;
@@ -5331,7 +5455,9 @@ function makeFilter(D) {
     }
 
     // ---- conversation number ----
-    const secN = section("Conversation");
+    const secN = section("Conversation", true, function () {
+      return st.n ? "#" + st.n : "";
+    }, true);
     const rowN = document.createElement("div");
     rowN.className = "nnm-adv-row";
     const nLab = document.createElement("label");
@@ -5358,7 +5484,21 @@ function makeFilter(D) {
     secN.appendChild(rowN);
 
     // ---- labels ----
-    const secL = section("Label");
+    const LBL_NAME = { target: "Humans said", prediction: "Model said",
+                       model_correct: "Model was" };
+    const LBL_VAL = {
+      target: { "1": "approach", "0": "wait" },
+      prediction: { "1": "approach", "0": "wait" },
+      model_correct: { "1": "right", "0": "wrong" }
+    };
+    const secL = section("Label", true, function () {
+      const on = [];
+      ["target", "prediction", "model_correct"].forEach(function (k) {
+        if (st[k] !== "") on.push(LBL_NAME[k] + ": " + LBL_VAL[k][st[k]]);
+      });
+      if (!on.length) return "";
+      return on.length === 1 ? on[0] : on[0] + "  +" + (on.length - 1);
+    }, true);
     const LBL = [
       { g: "target", name: "Humans said", a: ["1", "approach"], b: ["0", "wait"] },
       { g: "prediction", name: "Model said", a: ["1", "approach"], b: ["0", "wait"] },
@@ -5380,7 +5520,19 @@ function makeFilter(D) {
 
     // ---- pathways ----
     if (PATH_FIELDS.length) {
-      const secP = section("Pathway activation");
+      const secP = section("Pathway activation", true, function () {
+        const on = [];
+        PATH_FIELDS.forEach(function (f, pi) {
+          const b = st.band[f];
+          if (!b) return;
+          const spec = ADV_BANDS.filter(function (x) { return x.key === b; })[0];
+          if (spec) on.push("Pathway " + (pi + PATH_OFFSET) + ": " + spec.label);
+        });
+        if (!on.length) return "";
+        return on.length === 1 ? on[0] : on[0] + "  +" + (on.length - 1);
+      // Shut on arrival: seven bands across three pathways is the tallest block in
+      // the panel, and its summary says which one is set without opening it.
+      }, false);
       PATH_FIELDS.forEach(function (f, pi) {
         choiceRow(secP, "Pathway " + (pi + PATH_OFFSET), f, ADV_BANDS.map(function (b) {
           return { label: b.label, note: b.note, value: b.key,
@@ -5479,7 +5631,7 @@ function makeFilter(D) {
         const pool = cache[c.group];
         let n = 0;
         for (let i = 0; i < pool.length; i++) if (c.hit(pool[i], i)) n++;
-        c.cell.textContent = String(n);
+        c.cell.textContent = "(" + n + ")";
         const on = c.on();
         c.btn.classList.toggle("on", on);
         c.btn.setAttribute("aria-pressed", on ? "true" : "false");
@@ -5488,6 +5640,7 @@ function makeFilter(D) {
         // control. It is styled quiet instead.
         c.btn.classList.toggle("none", n === 0);
       });
+      clearBtn.disabled = !compose();
       folders.forEach(function (f) {
         const t = f.fn ? f.fn() : "";
         f.sum.textContent = t;
@@ -5521,6 +5674,7 @@ function makeFilter(D) {
     refresh();
     return { el: el, refresh: refresh, syncNote: syncNote,
              onBack: function (fn) { backFn = fn; },
+             noBack: function () { backBtn.remove(); },
              // Opened from a button that is about to be hidden, so focus has to be
              // handed somewhere or it falls to the body and the panel is unreachable
              // by keyboard. The panel itself, so nothing inside it lights up.
@@ -5546,7 +5700,12 @@ function makeFilter(D) {
     // grounds that it has no model and so cannot suggest a query about one — but Day
     // 1 IS the model now, and where the network agrees with the human is the question
     // Trace a Case is asking. (Content designer, 2026-09-15.)
-    input.placeholder = "model_correct:0";
+    //
+    // Labelled "Example:" (2026-09-17). On its own the query read as one that was
+    // already running — grey text in a box that DOES hold a live query the rest of
+    // the time — so a reader had to try clearing it to find out whether 800 or 64
+    // conversations were in play. Naming it settles that before it is asked.
+    input.placeholder = "Example: model_correct:0";
     input.setAttribute("autocomplete", "off");
     input.setAttribute("spellcheck", "false");
 
@@ -5555,8 +5714,12 @@ function makeFilter(D) {
 
     const helpBtn = document.createElement("button");
     helpBtn.className = "nnm-filter-help";
-    helpBtn.textContent = "?";
-    helpBtn.setAttribute("aria-label", "Show what you can search for");
+    // The ? meant help, and this no longer opens help — on Trace a Case it opens the
+    // filter controls themselves, so the mark has to say that instead.
+    helpBtn.appendChild(createSVGIcon(barOpts.advanced ? tuneIconSVG : infoIconSVG));
+    helpBtn.setAttribute("aria-label", barOpts.advanced
+      ? "Open the filter controls"
+      : "Show what you can search for");
     helpBtn.setAttribute("aria-expanded", "false");
 
     // Set once the two faces exist; the ? handler is written before them.
@@ -5566,9 +5729,10 @@ function makeFilter(D) {
     help.setAttribute("role", "dialog");
     help.setAttribute("aria-label", "What you can search for");
     help.hidden = true;
-    // The popover has two faces now — what you can search for, and the panel that
-    // builds it for you — so its content goes in a pane rather than straight on the
-    // box, and the box becomes the shell the two swap inside.
+    // On a screen with the panel, the ? IS the panel — one surface, opened once. The
+    // fields-and-examples pane is what the other five screens get, since they have no
+    // builder to send anyone to and a ? that opened nothing would be worse than the
+    // list it used to show.
     // Over both faces rather than inside either — the help has no header of its own
     // to hang it in, and one control that is always in the same corner is easier to
     // find than two that move with the content.
@@ -5581,7 +5745,7 @@ function makeFilter(D) {
 
     const helpPane = document.createElement("div");
     helpPane.className = "nnm-helppane";
-    help.appendChild(helpPane);
+    if (!barOpts.advanced) help.appendChild(helpPane);
     helpPane.innerHTML =
       '<b>Fields</b><div class="nnm-fieldlist">' +
       FIELDS.map(function (f) { return '<code>' + f + '</code>'; }).join(" ") +
@@ -5593,23 +5757,6 @@ function makeFilter(D) {
       '<li><code>yandor</code> — conversations containing that word</li>' +
       '<li><code>NOT near_water:1</code></li>' +
       '</ul>';
-
-    // Only where a caller asked for it. Five screens share this bar, and a panel
-    // about pathway activations and model correctness is not the question the
-    // Correlations or Prediction Chain screens are asking.
-    //
-    // The button does NOT sit in the bar. The bar already carries a field, a count
-    // and a ?, and a fourth control competing with them buys a panel most students
-    // will never open. It lives one level in, at the foot of the help the ? gives —
-    // which is where somebody who has just read what the fields are is standing.
-    let advBtn = null;
-    if (barOpts.advanced) {
-      advBtn = document.createElement("button");
-      advBtn.type = "button";
-      advBtn.className = "nnm-filter-adv";
-      advBtn.textContent = "Advanced Filter";
-      advBtn.setAttribute("aria-expanded", "false");
-    }
 
     // The count and the ? ride together on a white tail, mirroring the label's white
     // head. The grey between them is the field; both ends are things that are not
@@ -5703,35 +5850,17 @@ function makeFilter(D) {
     });
     let adv = null;
     if (barOpts.advanced) {
-      // A footer of the POPOVER, not the tail of the help. Appended to the pane it
-      // sat under seven lines of examples inside a 300px scroller — present, and
-      // never seen. Pinned, the reading order still runs fields, examples, offer,
-      // but the offer is on screen the whole time.
-      const advFoot = document.createElement("div");
-      advFoot.className = "nnm-advfoot";
-      advFoot.appendChild(advBtn);
-      help.appendChild(advFoot);
       adv = buildAdvanced(input, apply);
       adv.el.id = id + "-adv";
-      advBtn.setAttribute("aria-controls", adv.el.id);
+      adv.el.hidden = false;
+      help.classList.add("adv");
+      help.setAttribute("aria-label", "Filter options");
       help.appendChild(adv.el);
-      // One popover, two faces. Showing the panel REPLACES the help rather than
-      // opening a second thing beside it: they answer the same question — how do I
-      // narrow these eight hundred — and two surfaces open at once would have the
-      // student reading the syntax and using the builder in different places.
-      function face(advanced) {
-        helpPane.hidden = advanced;
-        advFoot.hidden = advanced;
-        adv.el.hidden = !advanced;
-        help.classList.toggle("adv", advanced);
-        advBtn.setAttribute("aria-expanded", advanced ? "true" : "false");
-        if (advanced) adv.refresh();
-        if (!help.hidden) fitPopover();
-      }
-      advBtn.addEventListener("click", function () { face(true); adv.focusFirst(); });
-      adv.onBack(function () { face(false); helpBtn.focus(); });
-      backToHelp = function () { face(false); };
-      face(false);
+      helpBtn.setAttribute("aria-controls", adv.el.id);
+      // Nothing to go back TO any more, so the back button does not render. Opening
+      // refreshes the counts, because the set may have moved since it was last shut.
+      adv.noBack();
+      backToHelp = function () { adv.refresh(); };
     }
     input.addEventListener("input", function () {
       apply();
@@ -5947,7 +6076,7 @@ function buildCasePanel(opts) {
   const leftCol = document.createElement("div");
   leftCol.className = "nnm-leftcol";
 
-  const filter = NNM_FILTER.buildBar(opts.onFilter);
+  const filter = NNM_FILTER.buildBar(opts.onFilter, { advanced: true });
   leftCol.appendChild(filter.el);
 
   const emptyMsg = document.createElement("div");
@@ -6113,7 +6242,7 @@ function buildSimContent() {
       cases = its;
       panes.forEach(function (p, i) { p.idx = Math.min(i, Math.max(0, cases.length - 1)); });
       render();
-    });
+    }, { advanced: true });
     filter.el.classList.add("d3-filter");
     toolbar.appendChild(filter.el);
     // Reset, then About. Everything this screen accumulates is undoable in one
@@ -6715,7 +6844,7 @@ function buildSimContent() {
       // not a reading order anyone chose.
       { key: "target", label: "Actual label", vals: items.map(function (it) { return it.target; }),
         groups: [[1, "Approach"], [0, "Wait"]] },
-      { key: "pred", label: "Model prediction", vals: items.map(function (it) { return it.pred; }),
+      { key: "pred", label: "Predicted label", vals: items.map(function (it) { return it.pred; }),
         groups: [[1, "Approach"], [0, "Wait"]] }
       // "Model was correct" sat here — pred === target, as correct/wrong. Removed
       // at the content designer's request (2026-09-02). It is still reachable in
@@ -6831,7 +6960,7 @@ function buildSimContent() {
     const filter = NNM_FILTER.buildBar(function (its) {
       items = its.length ? its : [];
       render();
-    });
+    }, { advanced: true });
     filter.el.classList.add("d3-filter");
     toolbar.appendChild(filter.el);
 
@@ -6848,7 +6977,7 @@ function buildSimContent() {
     // rather than the midpoint of whatever the title leaves over.
     const viewHint = document.createElement("span");
     viewHint.className = "d3-viewhint";
-    viewHint.textContent = "Click a histogram to see it larger";
+    viewHint.textContent = "Click a graph to see it larger";
     viewHint.hidden = true;
     head.appendChild(viewHint);
     // Sits over the commissioned columns, its bottom edge on the table's top edge.
@@ -6873,24 +7002,19 @@ function buildSimContent() {
       b.addEventListener("click", function () { view = key; render(); });
       return { key: key, el: b };
     }
-    // Left to right: correlation, switch, graph.
-    // "Correlations" and "Histograms", not "Correlation view" and "Graph view".
-    // Two nouns naming what fills a cell, rather than a topic word beside a medium
-    // word — and one of them was the name of the whole screen, which made switching
-    // away read as leaving the subject rather than going to the evidence for it.
-    // "view" is dropped from both: redundant beside a toggle whose only job is
-    // switching views. The internal keys stay corr/graph.
+    // Left to right: measure, switch, graph. Two nouns naming what fills a cell,
+    // not "Correlation view" and "Graph view" — "view" is redundant beside a toggle
+    // whose only job is switching views. The internal keys stay corr/hist.
     //
-    // "Histograms" over "Distributions" for an 8th-grade audience: histograms are
-    // 6th-grade content they have drawn (CCSS 6.SP.B.4), while "distribution" is
-    // introduced as an abstract property a data set HAS, not as the name of a
-    // picture. It is also the word the hint line under the toolbar already uses,
-    // and one word for one thing matters more here than the more sophisticated
-    // term. "Graphs" was the third candidate and was rejected: at this grade the
-    // graph students associate with two variables is the scatter plot (8.SP.A.1),
-    // so it would point them at a picture this screen does not contain.
-    const corrView = viewLabel("corr", "Correlations");
-    const graphView = viewLabel("hist", "Histograms");
+    // "Measures" and "Graphs" (2026-09-17), replacing "Correlations" and
+    // "Histograms". "Correlations" was also the name of the whole screen, so
+    // switching away from it read as leaving the subject rather than going to the
+    // evidence for it. One caution worth keeping on the record about "Graphs": at
+    // this grade the graph students associate with two variables is the scatter
+    // plot (CCSS 8.SP.A.1), so watch that it does not set them looking for a
+    // picture this screen does not contain.
+    const corrView = viewLabel("corr", "Measures");
+    const graphView = viewLabel("hist", "Graphs");
     const viewTrack = document.createElement("span");
     viewTrack.className = "d3-switchtrack";
     // Hidden from assistive tech on purpose: the two names beside it are real
@@ -6962,7 +7086,10 @@ function buildSimContent() {
     legendLabel.appendChild(document.createTextNode("Correlation "));
     const legendSym = document.createElement("span");
     legendSym.className = "sym";
-    legendSym.textContent = "(r)";
+    // The whole parenthetical rides in .sym, which is exempt from the uppercasing:
+    // r is the symbol and is lower case — R is a different quantity — and "Pearson"
+    // is a name, so neither wants to be shouted.
+    legendSym.textContent = "(Pearson\u2019s r)";
     legendLabel.appendChild(legendSym);
     legend.appendChild(legendLabel);
     // Where the cell under the pointer sits ON the scale. A tooltip can only state
@@ -7130,13 +7257,8 @@ function buildSimContent() {
     // start, then released into the incoming one.
     function placeHeads() {
       if (prevView === view) return;
-      scroll.querySelectorAll(".d3-headinner").forEach(function (inner) {
-        inner.style.transition = "none";
-        inner.classList.toggle("nocounts", prevView === "corr");
-        void inner.offsetWidth;
-        inner.style.transition = "";
-        inner.classList.toggle("nocounts", view === "corr");
-      });
+      // The column headings hold still through a switch now — same position, same
+      // counts — so only the row stubs have anything to move.
       scroll.querySelectorAll(".d3-stubinner").forEach(function (inner) {
         // The gap-opening padding lives on a descendant with its own transition,
         // so it has to be pinned for the flush as well — otherwise it animates to
@@ -7513,12 +7635,16 @@ function buildSimContent() {
       head.className = "d3-detail-head";
       const title = document.createElement("div");
       title.className = "d3-detail-title";
-      title.textContent = pa.label;
+      title.textContent = pa.label + " activations";
       head.appendChild(title);
       const imp = document.createElement("div");
       imp.className = "d3-detail-r";
       const iv = D.importance[pi];
-      imp.textContent = "importance " + (iv >= 0 ? "+" : "\u2212") + Math.abs(iv).toFixed(4);
+      // Two decimals. Four was the precision the number is STORED at, not a
+      // precision anyone reads a ranking at — and three trailing digits of noise
+      // beside a heading invited them to be compared.
+      imp.textContent = "Pathway importance " + (iv >= 0 ? "+" : "\u2212")
+        + Math.abs(iv).toFixed(2);
       head.appendChild(imp);
       const x = document.createElement("button");
       x.className = "d3-detail-close";
@@ -7561,7 +7687,7 @@ function buildSimContent() {
       // the labels say so. What this panel is for is where the two sit on the axis,
       // and that is horizontal. The top band is now the stub enlarged by exactly
       // the zoom, and the backdrop fills its own lane.
-      const pGeom = detailGeom(detailAvailW(), detailAvailH(), DETAIL_LABW, 2,
+      const pGeom = detailGeom(detailAvailW(), detailAvailH(), PATH_LABW, 2,
         fitCellPlotW, fitCellPlotH / 2 - LANE_GUTTER);
       // The top band keeps the stub's fill exactly: its unit is the stub's, grown
       // by however much taller this lane is. That is what makes it the same
@@ -7574,9 +7700,9 @@ function buildSimContent() {
       // bands ARE the same 800 conversations, and asking for one unit is what makes
       // them draw identically instead of one filling its lane and the other not.
       body.appendChild(histPlot([
-        { label: "these " + pa.vals.length, vals: pa.vals },
-        { label: "all " + ALL.length, vals: full }
-      ], pa.lo, pa.hi, pGeom.W, pGeom.H, { labW: DETAIL_LABW, padR: DETAIL_PADR, bandUnits: [pTop, pTop] }));
+        { label: "for these " + pa.vals.length + " conversations", vals: pa.vals },
+        { label: "for all " + ALL.length + " conversations", vals: full }
+      ], pa.lo, pa.hi, pGeom.W, pGeom.H, { labW: PATH_LABW, padR: DETAIL_PADR, bandUnits: [pTop, pTop] }));
       card.style.width = (pGeom.W + 30) + "px";
       card.appendChild(body);
 
@@ -8015,6 +8141,14 @@ function buildSimContent() {
     // the half of a 12px end tick that hangs past the axis, which an svg would
     // otherwise clip. One pair of values, used by both kinds of close-up.
     const DETAIL_LABW = 84;
+    // The pathway close-up names its two bands in full — "for these 64
+    // conversations" — which needs more gutter than the cell close-up's short
+    // labels. The widest reading there can be is "for these 800 conversations",
+    // the unfiltered case where both bands say 800; rendered it measures 143, and
+    // the label is inset 6 from the gutter's right edge, so 149 is the floor. 156
+    // leaves a little air. (Canvas measureText under-reports this by ~6% against
+    // getComputedTextLength on the real SVG text — the figure above is the latter.)
+    const PATH_LABW = 156;
     const DETAIL_PADR = 14;
     // srcW/srcLane are the plot this close-up is enlarging — a matrix cell for a
     // cell close-up, the row's stub for a pathway one. The two sources are very
@@ -8260,7 +8394,7 @@ function buildSimContent() {
           + (row.commissioned ? " commissioned" : "");
         // Name and counts travel together, so one transform moves both.
         const inner = document.createElement("div");
-        inner.className = "d3-headinner" + (view === "corr" ? " nocounts" : "");
+        inner.className = "d3-headinner";
         h.appendChild(inner);
         // Attributes only. The outcome columns are the first two — the same `ri < 2`
         // the .outcome class above keys off — and they are not attributes: there is
@@ -8714,7 +8848,7 @@ function buildSimContent() {
       '<path d="M 11.7699 5.8264 L 11.7187 5.8317 L 11.6667 5.8333 C 10.6594 5.8333 9.9787 6.3256 8.6975 7.7944 C 8.6499 7.8489 8.4852 8.0383 8.4774 8.0473 C 7.6641 8.9812 7.2006 9.4514 6.5797 9.8962 L 6.4283 9.9988 C 6.479 10.0328 6.5295 10.0678 6.5797 10.1038 C 7.2006 10.5486 7.6641 11.0188 8.4774 11.9527 C 8.4852 11.9617 8.6499 12.1511 8.6975 12.2056 C 9.9787 13.6744 10.6594 14.1667 11.6667 14.1667 C 11.7016 14.1667 11.736 14.1688 11.7698 14.173 C 12.138 12.732 13.4446 11.6667 15 11.6667 C 16.8409 11.6667 18.3333 13.1591 18.3333 15 C 18.3333 16.8409 16.8409 18.3333 15 18.3333 C 13.4443 18.3333 12.1375 17.2676 11.7699 15.8264 C 11.736 15.8312 11.7016 15.8333 11.6667 15.8333 C 10.7464 15.8333 9.9329 15.5393 9.1692 14.987 C 8.6119 14.5839 8.1718 14.1384 7.4415 13.3012 C 7.3931 13.2456 7.2277 13.0555 7.2205 13.0473 C 6.4897 12.2081 6.092 11.8047 5.6091 11.4587 C 5.0842 11.0826 4.5557 10.8769 3.9536 10.8396 L 3.75 10.8333 L 1.6667 10.8333 L 1.6667 9.1667 L 3.75 9.1667 C 4.4382 9.1667 5.0259 8.9591 5.6091 8.5413 C 6.092 8.1953 6.4897 7.7919 7.2205 6.9527 C 7.2277 6.9445 7.3931 6.7544 7.4415 6.6988 C 8.1718 5.8616 8.6119 5.4161 9.1692 5.013 C 9.9329 4.4607 10.7464 4.1667 11.6667 4.1667 C 11.7016 4.1667 11.736 4.1688 11.7698 4.173 C 12.138 2.732 13.4446 1.6667 15 1.6667 C 16.8409 1.6667 18.3333 3.1591 18.3333 5 C 18.3333 6.8409 16.8409 8.3333 15 8.3333 C 13.4443 8.3333 12.1375 7.2676 11.7699 5.8264 Z M 15 13.3333 C 14.0795 13.3333 13.3333 14.0795 13.3333 15 C 13.3333 15.9205 14.0795 16.6667 15 16.6667 C 15.9205 16.6667 16.6667 15.9205 16.6667 15 C 16.6667 14.0795 15.9205 13.3333 15 13.3333 Z" fill="currentColor" fill-rule="nonzero">' +
       '</path></svg>';
 
-    const STEP_LABELS = ["Activate", "Weigh", "Add Up", "Predict"];
+    const STEP_LABELS = ["Activate", "Weigh", "Sum Up", "Predict"];
     const STEP_ICONS = [ICON_ACTIVATE, ICON_WEIGH, ICON_ADDUP, ICON_PREDICT];
     let prevStep = 0;
     let wordAnim = false;          // true while the Words sequence is in flight
@@ -9501,7 +9635,7 @@ function buildSimContent() {
     // The draw eases out — with this curve a line is all but touching its target
     // well before the 620ms formally ends. Reacting on that deadline reads as a
     // beat too late, so whatever the line delivers moves slightly ahead of it and
-    // lands with the line rather than after it. Used by Add up and by Predict.
+    // lands with the line rather than after it. Used by Sum Up and by Predict.
     const DRAW_LEAD = 90;
 
     // Fills the sum with a partial total. The first arrival reveals the cell;
@@ -9639,7 +9773,7 @@ function buildSimContent() {
       // A button plays its own step and nothing else. Everything before it is
       // simply already there, drawn by render(). Keyed on the step pressed rather
       // than on where you came from, so pressing one you are already on replays
-      // it, and jumping straight to Predict does not make Add Up animate on the
+      // it, and jumping straight to Predict does not make Sum Up animate on the
       // way past — it is just in place, like Activate and Weigh already were.
       const doAddUp = (n === 3);
       const doDecide = (n === 4);
@@ -9917,10 +10051,20 @@ function buildSimContent() {
     const outs = document.createElement("div");
     outs.className = "nnm-outs";
     const outEls = [1, 0].map(function (v) {
+      // Each outcome in its own cell with a caption over it, the way the network
+      // diagram names the same two. The BOX is still what is returned, so the fan that
+      // converges on it is unaffected — it lands on the box, not on the cell.
+      const cell = document.createElement("div");
+      cell.className = "nnm-outcell";
+      const cap = document.createElement("span");
+      cap.className = "nnm-outname";
+      cap.textContent = v === 1 ? "Target Class:" : "Other Class:";
       const o = document.createElement("span");
       o.className = "nnm-out " + (v === 1 ? "approach" : "wait");
       o.textContent = v === 1 ? "Approach" : "Wait";
-      outs.appendChild(o);
+      cell.appendChild(cap);
+      cell.appendChild(o);
+      outs.appendChild(cell);
       return { v: v, el: o };
     });
     decideRow.appendChild(outs);
@@ -10165,7 +10309,7 @@ function buildSimContent() {
           sol.setAttribute("y2", ty);
           const len = Math.hypot(tx - x, ty - y);
           sol.setAttribute("stroke-dasharray", len);
-          // Resting state: fully drawn once Add up has run, fully hidden before.
+          // Resting state: fully drawn once Sum Up has run, fully hidden before.
           // A running animation still overrides this, so redraws during the draw
           // reposition the line without cutting the animation short.
           sol.setAttribute("stroke-dashoffset", (step >= 3 && !solidPending[i]) ? 0 : len);
@@ -10251,11 +10395,12 @@ function buildSimContent() {
       });
 
       labelsEl.innerHTML = "";
-      // Three different things are on screen and they must not share a word:
-      // the column above is the PATHWAYS' prediction, Model is the model's own,
-      // and Actual is the truth. They disagree on 7% of conversations, which is
-      // the whole point of Day 3 — so "Prediction" alone was ambiguous here.
-      [["Actual", it.target], ["Model", it.pred]].forEach(function (pair) {
+      // Only the truth is named here now. The model's own answer is the pair of
+      // pills the Predict animation has just lit, so a "Model" row underneath
+      // restated in words what the reader had been watching arrive — and the two
+      // sat close enough to read as a comparison of two different things. Where the
+      // model got it wrong, the flag below still says so.
+      [["Actual", it.target]].forEach(function (pair) {
         const row = document.createElement("div");
         row.className = "nnm-label-row";
         const b = document.createElement("b"); b.textContent = pair[0];
@@ -11171,21 +11316,17 @@ function buildSimContent() {
       speedWrap.appendChild(speedTrack);
       speedWrap.appendChild(speedTicks);
       nHead.appendChild(speedWrap);
-      // Controls first, key last. appendChild on a node already in the head MOVES it,
-      // so this reorders rather than rebuilding: title, Animate, speed, rule, key.
-      //
-      // The key is hard right on Extract Pathways and Investigate P1-P3, and a legend
-      // that sits somewhere else on a sibling screen has to be re-found every time you
-      // switch. Put last it is in the same place on all three. The divider then falls
-      // between the things you OPERATE and the thing you READ, which is a truer split
-      // than the one it was making.
-      nHead.appendChild(headRule);
+      // Key first, controls last. appendChild on a node already in the head MOVES it,
+      // so this reorders rather than rebuilding: title, key(s), rule, Animate, speed.
+      // The divider still falls between the thing you READ and the things you OPERATE.
       nHead.appendChild(scaleEl);
       // Extract Pathways carries a SECOND key — Loading, which fades up when the bars
-      // appear — and it was built before the reorder ran. Moving only the first one
-      // put it after the second and swapped the pair, so the legend that arrives last
-      // would have sat left of the one that is there from the start.
+      // appear — and it was built before the reorder ran, so it has to be moved too or
+      // the pair comes out in the wrong order.
       if (loadScaleEl) nHead.appendChild(loadScaleEl);
+      nHead.appendChild(headRule);
+      nHead.appendChild(animWrap);
+      nHead.appendChild(speedWrap);
       nHead.classList.add("d1a-hascontrols");
     }
 
@@ -11336,6 +11477,10 @@ function buildSimContent() {
       // with slack under it, which is what the readout box used to occupy. On the
       // screens that still carry a readout there is no slack and none of this moves.
       const STEP_MAX = 30;
+      // The gap between the two outcome pills. Wide enough for a caption over the
+      // lower one with air on both sides: the 12px Lato caption occupies about 15px of
+      // line box, and 30 leaves roughly 7 above it and 8 below.
+      const OUT_CAP_GAP = 30;
       const COL_H = (EMB - 1) * STEP_MAX + 24;     // the tallest the column can draw
       const slack = Math.max(0, (H - 14) - 44 - COL_H);
       const yShift = Math.round(slack / 2);
@@ -11358,9 +11503,12 @@ function buildSimContent() {
         { n: H1, x: 0, r: R, label: "Hidden Layer 1", short: "Hidden 1" },
         { n: H2, x: 0, r: R, label: "Hidden Layer 2", short: "Hidden 2" },
         // The two outcomes are one choice, not two separate readings, so they read
-        // better as a close pair than as another evenly spaced column. The step is
-        // the pill's own height plus 10, so that 10px gap survives any radius.
-        { n: 2,  x: 0, r: R, label: "Output Layer", short: "Output", step: R * 2 + 8 + 10 }
+        // better as a close pair than as another evenly spaced column. The step is the
+        // pill's own height plus the gap, so that gap survives any radius. It was 10;
+        // each pill now carries a caption above it and 10 leaves nowhere to put the
+        // lower one's.
+        { n: 2,  x: 0, r: R, label: "Output Layer", short: "Output",
+          step: R * 2 + 8 + OUT_CAP_GAP }
       ];
       // Equal margins by construction, and identical from case to case: both label
       // gutters are reserved at their maximum, then the four columns spread evenly
@@ -11620,20 +11768,19 @@ function buildSimContent() {
       // What the readout says instead is what the unit is WIRED to and how it leans,
       // which is the thing a student cannot get by looking.
       function pinText(li, i) {
-        if (li === 0) {
-          // The input row carries no word: an embedding unit is not a word, and
-          // naming one would invite a student to read it as one. It IS a neuron
-          // though, and is called one (2026-09-04): this column is a trained tanh
-          // layer, not raw features sitting there, so it is a neuron in exactly the
-          // sense Hidden 1 is, and the hint promises "click any neuron". The two
-          // OUTPUT circles keep their outcome names — to a student they are the
-          // answer, not machinery.
-          const ef = NEURON_FACTS.emb[i];
-          return "<b>Input neuron " + (i + 1) + "</b> \u2014 one of the " + EMB + " numbers the "
-            + "network turns this conversation into before it starts reasoning about it. "
-            + "It feeds all " + H1 + " Hidden 1 neurons. Of the " + LEAN_N
-            + " conversations it responds to most strongly, " + ef.app
-            + " are <b>Approach</b> and " + (LEAN_N - ef.app) + " are <b>Wait</b>.";
+        // The three computed rows all answer the same way, each as its own step
+        // lands: Step 1 the input layer, Step 2 Hidden Layer 1, Step 3 Hidden Layer 2.
+        // The neuron is named in full — the column's own caption, the same words the
+        // tooltip uses — then the one number clicking it exists to reveal, and the
+        // conversation it belongs to, so a reading copied out of here says what it is
+        // a reading OF. The input row is included on the same terms: an embedding
+        // unit is a trained tanh unit like any other, not a raw feature sitting there
+        // (2026-09-04), and the prompt promises "click any neuron". The two OUTPUT
+        // circles are the exception below — to a student they are the answer, not
+        // machinery, so they still explain themselves.
+        if (li !== 3) {
+          return "<b>" + cols[li].label + " Neuron " + (i + 1) + "</b>: Activation = "
+            + actNum(vals[li][i]) + " for Conversation " + convNo(it) + ".";
         }
         if (li === 3) {
           // Before Step 4 the two numbers are not both in yet, so there is nothing to
@@ -11658,6 +11805,14 @@ function buildSimContent() {
                : "The human who coded this conversation said <b>" + LABELS[it.target]
                  + "</b> — the network and the human disagree here.");
         }
+        // ---------------------------------------------------------------------
+        // Unreachable while the two hidden rows answer with their activation, which
+        // is what they were asked to do. Kept, not deleted: this is the wiring copy
+        // the content designer specified on 2026-09-04 — fan-in and fan-out, the
+        // three strongest inputs, and how the neuron leans across the conversations
+        // it fires hardest on — and restoring it is a matter of narrowing the branch
+        // above rather than writing it again.
+        // ---------------------------------------------------------------------
         const fanIn = li === 1 ? EMB : H1;
         const fanOut = li === 1 ? H2 : 2;
         const nf = (li === 1 ? NEURON_FACTS.h1 : NEURON_FACTS.h2)[i];
@@ -11684,11 +11839,13 @@ function buildSimContent() {
         });
         // Both idle strings, since which one shows depends on how far the steps
         // have got and the box is a fixed height for all of them.
+        measureEl.classList.add("idle");
         ["Run Step 1 to send the conversation into the network.",
-         "Click any neuron the signal has reached to see what it does."].forEach(function (h) {
+         "Click any neuron the data has reached to see how it works."].forEach(function (h) {
           measureEl.innerHTML = "<span>" + h + "</span>";
           tallest = Math.max(tallest, measureEl.getBoundingClientRect().height);
         });
+        measureEl.classList.remove("idle");
         measureEl.innerHTML = "";
         if (tallest > 0) pinEl.style.height = Math.ceil(tallest) + "px";
       }
@@ -11744,6 +11901,11 @@ function buildSimContent() {
             Array.prototype.slice.call(svg.querySelectorAll(".d1a-collabel")),
             Array.prototype.slice.call(svg.querySelectorAll(".d1a-wlabel")),
             Array.prototype.slice.call(svg.querySelectorAll(".d1a-outlabel")),
+            // The captions over the pills go with the pills. Left out, they stayed on
+            // screen after the diagram had gone — two stranded phrases floating beside
+            // the pathway boxes on Investigate P1-P3, naming outcomes that were no
+            // longer drawn.
+            Array.prototype.slice.call(svg.querySelectorAll(".d1a-outcap")),
             this.layer(0), this.layer(3));
         }
       };
@@ -11760,7 +11922,7 @@ function buildSimContent() {
           // neuron that will not reply. It keeps its height either way.
           pinEl.innerHTML = opts.hover
             ? "<span>" + (stepDone > 0
-                ? "Click any neuron the signal has reached to see what it does."
+                ? "Click any neuron the data has reached to see how it works."
                 : "Run Step 1 to send the conversation into the network.") + "</span>"
             : "";
           return;
@@ -11842,8 +12004,13 @@ function buildSimContent() {
           node.dataset.layer = li; node.dataset.i = i;
           node.setAttribute("tabindex", "0");
           node.setAttribute("role", "button");
-          const name = li === 0 ? "Input neuron " + (i + 1)
-            : li === 3 ? LABELS[OUT_ORDER[i]] : c.short + " neuron " + (i + 1);
+          // The column's OWN caption, so a tooltip reads back the heading the reader
+          // can see above the circle — "Input Layer", "Hidden Layer 2" — rather than
+          // the abbreviation the code carries. The output row keeps its class name:
+          // "Output Layer Neuron 1" would name the right circle and say nothing, and
+          // which of the two it is IS the answer on this screen.
+          const name = li === 3 ? c.label + ": " + LABELS[OUT_ORDER[i]]
+            : c.label + " Neuron " + (i + 1);
           // The value lives on the node — tooltip and screen-reader label alike —
           // but only once the step that computes this layer has run. Before that the
           // number does not exist yet as far as the screen is concerned, and on the
@@ -11888,6 +12055,13 @@ function buildSimContent() {
             width: c.r * 2 + 10, height: pitch, fill: "transparent"
           });
           hit.setAttribute("pointer-events", "all");
+          // The hit target sits in its own layer ABOVE every circle, so it — not the
+          // node — is what the pointer actually lands on, and a tooltip is resolved
+          // from the topmost element up. The title on the circle was therefore never
+          // reachable by hover; it needs a copy here. A <title> element can only live
+          // in one place in the document, so this is a second one, kept in step with
+          // the node's by syncNodeInfo.
+          hit.appendChild(node.__hitTitle = el("title", {}));
           hit.addEventListener("mouseenter", on);
           hit.addEventListener("mouseleave", off);
           hit.addEventListener("click", toggle);
@@ -11957,6 +12131,15 @@ function buildSimContent() {
               class: "d1a-outlabel " + (app ? "app" : "wait") });
             lbl.textContent = word;
             scene.appendChild(lbl);
+            // What the pill IS, over what it says. The network gives two numbers and
+            // the larger wins; naming one of them the target is the only thing on the
+            // diagram that says which outcome the question is about. Left edges
+            // aligned with the pill so the pair reads as a column.
+            const cap2 = el("text", {
+              x: c.x - c.r - PILL_PADL, y: pos[li][i] - ph / 2 - 9,
+              class: "d1a-outcap" });
+            cap2.textContent = app ? "Target Class:" : "Other Class:";
+            scene.appendChild(cap2);
           }
         }
       });
@@ -12093,7 +12276,7 @@ function buildSimContent() {
       labelRow.innerHTML = "";
       const cap = document.createElement("span");
       cap.className = "d1a-labelcap";
-      cap.textContent = "A human labelled this";
+      cap.textContent = "Actual Label";
       const chip = document.createElement("span");
       chip.className = "d1a-label " + (it.target === 1 ? "app" : "wait");
       chip.textContent = LABELS[it.target];
@@ -12286,6 +12469,25 @@ function buildSimContent() {
       });
     }
 
+    // One phrasing of an activation, shared by the tooltip and the readout so the two
+    // can never quote the same number differently. The typographic minus the rest of
+    // the UI uses, and two decimals — the precision the screen-reader label has always
+    // quoted. Declared out here, not beside pinText: the tooltips are written by
+    // syncNodeInfo, which sits a scope further out and could not see it there.
+    function actNum(v) {
+      return (v < 0 ? "\u2212" : "") + Math.abs(v).toFixed(2);
+    }
+    function actLine(v) { return "Activation: " + actNum(v); }
+
+    // Which conversation this is, numbered the way the filter numbers them: its
+    // position in the full 800, which does not move when a filter narrows the set —
+    // unlike the "3 / 57" counter beside the arrows, which is a position within the
+    // results. The stored id is the upstream explorer's hex, no use to a reader.
+    function convNo(it) {
+      const at = items.indexOf(it);
+      return at >= 0 ? at + 1 : it.id;
+    }
+
     // A layer's numbers become readable only once the step that produces them has
     // finished: layer L is computed by step L+1.
     function syncNodeInfo() {
@@ -12293,11 +12495,15 @@ function buildSimContent() {
         if (!n.__title) return;
         const known = stepDone >= (+n.dataset.layer) + 1;
         const v = n.__val;
-        // The tooltip names the neuron and stops there. No activation is quoted
-        // anywhere a reader can see it now — not the readout, not on hover — so the
-        // colour is the only reading of a value on this screen, which is the point of
-        // having a ramp and a key at the top of the card.
-        n.__title.textContent = n.__name;
+        // Until its own step has run a neuron has no value, so hovering it can only
+        // say which one it is. Once the step lands, the number IS what hovering is
+        // for — the fill says roughly, the tooltip says exactly. Keyed off the same
+        // `known` as everything else here: step 1 gives the input layer its numbers
+        // and nothing else, so only that column changes when Step 1 finishes.
+        const tip = known ? actLine(v) : n.__name;
+        n.__title.textContent = tip;
+        // ...and on the rect that covers it, which is the one a pointer reaches.
+        if (n.__hitTitle) n.__hitTitle.textContent = tip;
         // The screen-reader label DOES carry the number, once the step that computes
         // the layer has run. That is not a leak of something the screen withholds:
         // the fill is a visual encoding of exactly this value, and the label is its
@@ -13360,6 +13566,13 @@ function buildSimContent() {
       }
       // An empty circle: the first column is the population, not any conversation.
       function makeEmpty(inner, k, cx, cy, r) {
+        // The lifted column is the same fourteen units the diagram just collapsed, so
+        // it answers to the same names on hover. On the row's group, not on either
+        // circle: the ring sits over the disc, and a browser looking for a tooltip
+        // walks up to the nearest ancestor carrying one.
+        const cap = el("title", {});
+        cap.textContent = (units[k] && units[k].__name) || ("Neuron " + (k + 1));
+        inner.appendChild(cap);
         inner.appendChild(el("circle", { cx: cx, cy: cy, r: r, fill: "#FFFFFF" }));
         const ring = el("circle", { cx: cx, cy: cy, r: r, class: "d1a-node" });
         ring.style.fill = "none";
@@ -13468,6 +13681,13 @@ function buildSimContent() {
       let flyingCol = null;
 
       function makeFilled(inner, k, cx, cy, r) {
+        // A deck column is one conversation's reading of the same fourteen units, so
+        // its rows answer to the same names. The ROW is what the name identifies —
+        // which conversation a column stands for is not something a column of the
+        // deck claims, and the tooltip does not pretend otherwise.
+        const cap = el("title", {});
+        cap.textContent = (units[k] && units[k].__name) || ("Neuron " + (k + 1));
+        inner.appendChild(cap);
         makeGauge(inner, units[k].__v || 0, cx, cy, r, k === 0 ? cbHalfPath : null);
       }
       function makeGauge(inner, v, cx, cy, r, shape) {
@@ -13999,7 +14219,7 @@ function buildSimContent() {
       }
 
       let ptLayer = null, ptList = null, ptEnd = 0, ptBars = null, ptWired = false;
-      let ptTrackG = null, ptAxisG = null;
+      let ptAxisG = null;
       // The track the loadings are read against, right of the column: zero at its
       // centre, BAR_MAX either side. Same geometry as Investigate P1-P3, so the two
       // screens' end states are one picture rather than two that resemble each other.
@@ -14129,20 +14349,19 @@ function buildSimContent() {
         const g = liftGeom();
         const host = el("g", { class: "d1a-loadbuilt" });
         (ptApp || X.scene).appendChild(host);
-        // Three layers: the frames a selection adds, the zero rules, then the bars.
-        // The frames have to be UNDER the bars and the axis above them, which is the
-        // order Investigate P1-P3 uses for the same reason — a white frame would
-        // otherwise wipe out the rule across its own width.
-        ptTrackG = el("g", {});
+        // Two layers now: the zero rules, then the bars over them. The third held the
+        // outlined frames, which are gone (content designer, 2026-09-17) on both this
+        // screen and Investigate P1-P3.
         ptAxisG = el("g", {});
         const barsG = el("g", {});
-        [ptTrackG, ptAxisG, barsG].forEach(function (l) { host.appendChild(l); });
-        // One axis per triplet, proud of it at each end, so it reads as a line the
-        // three bars sit on rather than one rule down the whole column.
+        [ptAxisG, barsG].forEach(function (l) { host.appendChild(l); });
+        // One axis per triplet rather than one rule down the whole column, and exactly
+        // the height of the three: the top bar's upper edge to the bottom bar's lower
+        // edge. It used to overshoot by a full bar height at each end.
         for (let k = 0; k < units.length; k++) {
           ptAxisG.appendChild(el("line", {
-            x1: geo[0].mid, y1: g.y(k) - BAR_ROW - BAR_H3,
-            x2: geo[0].mid, y2: g.y(k) + BAR_ROW + BAR_H3,
+            x1: geo[0].mid, y1: g.y(k) - BAR_ROW - BAR_H3 / 2,
+            x2: geo[0].mid, y2: g.y(k) + BAR_ROW + BAR_H3 / 2,
             class: "d1a-loadzero" }));
         }
         ptBars = geo.map(function (b) {
@@ -14453,18 +14672,6 @@ function buildSimContent() {
         ptBars.forEach(function (b, i) {
           b.el.classList.toggle("mute", !pwLit(Math.floor(i / 3), i % 3));
         });
-        // The frames go on only while something is picked, and only on the bars that
-        // pick lit. All forty-two at rest was forty-one mostly-empty boxes.
-        while (ptTrackG.firstChild) ptTrackG.removeChild(ptTrackG.firstChild);
-        if (pwSel) {
-          const t = barTrack();
-          ptBars.forEach(function (b, i) {
-            if (!pwLit(Math.floor(i / 3), i % 3)) return;
-            ptTrackG.appendChild(el("rect", {
-              x: t.L + 0.5, y: b.y - BAR_H3 / 2 + 0.5,
-              width: t.W - 1, height: BAR_H3 - 1, class: "d1a-loadtrack" }));
-          });
-        }
         pwMade.boxes.forEach(function (b, p) {
           b.box.classList.toggle("on",
             !!pwSel && pwSel.kind === "path" && pwSel.i === p);
@@ -16269,6 +16476,16 @@ function buildSimContent() {
             // what makes the pair worth putting side by side.
             const q = pvAt(k);
             const ng = el("g", {});
+            // Named on hover the way the diagram's own circles are. It goes on the
+            // GROUP rather than the ring: the square hit target is painted over the
+            // ring, so a title on the ring would only answer on its 1px stroke, and
+            // a browser looking for a tooltip walks up to the nearest ancestor that
+            // carries one. First child, per the SVG structural-element convention.
+            // The NAME and nothing else — the same reading the diagram gives, where
+            // the fill is deliberately the only statement of a neuron's value.
+            const cap = el("title", {});
+            cap.textContent = (units[k] && units[k].__name) || ("Neuron " + (k + 1));
+            ng.appendChild(cap);
             ng.appendChild(el("circle", { cx: q.x, cy: q.y, r: X.r, fill: "#FFFFFF" }));
             const bar = el("rect", { x: q.x - X.r, y: q.y, width: X.r * 2, height: 0,
                                      "clip-path": "url(#" + clip[k] + ")" });
@@ -16782,20 +16999,11 @@ function buildSimContent() {
         const v = PATH_LOAD[k][pi];
         const len = Math.max(1.5, Math.abs(v) / LOAD_MAX * BAR_MAX);
         const y = barY(k, pi);
-        // The frame goes on the SELECTED bars only, and under them: the same height as
-        // the bar, so a loading fills its frame edge to edge and what is left showing
-        // is the rest of the scale.
-        // Inset by half the stroke. A stroke is centred on the path, so a rect of
-        // height 5 drawn with a 1px outline puts ink from -0.5 to 5.5 and stands a
-        // pixel taller than the 5px bar it is meant to match. Insetting all four sides
-        // by 0.5 makes the frame's OUTER edge the geometry, which is what the eye is
-        // comparing.
-        if (!mute) {
-          trackG.appendChild(el("rect", {
-            x: TRACK_L + 0.5, y: y - BAR_H3 / 2 + 0.5,
-            width: TRACK_W - 1, height: BAR_H3 - 1,
-            class: "d1a-loadtrack" }));
-        }
+        // No frame round the picked bars (content designer, 2026-09-17). It was there
+        // to show the rest of the scale behind a short bar, but the centred zero rule
+        // already says where the middle is and the bars either side of it give the
+        // span — so the outline was a third statement of the same thing, and fourteen
+        // of them at once turned the column into a grid.
         barG.appendChild(el("rect", {
           x: v >= 0 ? TRACK_MID : TRACK_MID - len, y: y - BAR_H3 / 2,
           width: len, height: BAR_H3,
@@ -16834,7 +17042,11 @@ function buildSimContent() {
           // One axis per triplet, not one down the whole column: the zero belongs to
           // a neuron's three readings, and a single rule through all forty-two made a
           // grid out of what is fourteen separate little charts.
-          zeroAxis(barY(k, 0) - BAR_H3, barY(k, 2) + BAR_H3);
+          //
+          // Exactly the height of the three, top edge to bottom edge. A bar is drawn
+          // from barY − BAR_H3/2 to barY + BAR_H3/2, so a full BAR_H3 of overshoot at
+          // each end left the rule standing proud of the readings it belongs to.
+          zeroAxis(barY(k, 0) - BAR_H3 / 2, barY(k, 2) + BAR_H3 / 2);
           [0, 1, 2].forEach(function (p) {
             const lit = kind === "path" ? p === si : (kind === "unit" && k === si);
             const end = bar(k, p, !lit);
@@ -17167,8 +17379,6 @@ function buildSimContent() {
 
   if (activeSim === "d1a") {
     return buildNetScreen({ steps: true, hover: true, marks: true,
-                            // Trying the advanced filter here first — one screen, so
-                            // the other five keep the bar they have.
                             advancedFilter: true,
                             title: "The Network" });
   }
@@ -17192,7 +17402,7 @@ function buildSimContent() {
   if (activeSim === "d1c") {
     return buildNetScreen({ steps: false, hover: false, opened: true, extract: true,
                             investigate: true, filter: false, conversation: false,
-                            marks: true,
+                            marks: true, advancedFilter: true,
                             title: "Activated Pathways" });
   }
 
@@ -17368,7 +17578,7 @@ function buildSimContent() {
     stack.appendChild(toolbar);
     const filter = NNM_FILTER.buildBar(function (its) {
       cases = its; idx = 0; render();
-    });
+    }, { advanced: true });
     filter.el.classList.add("d3-filter");
     toolbar.appendChild(filter.el);
     if (filter.about) toolbar.appendChild(filter.about);
