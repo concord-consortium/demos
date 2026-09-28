@@ -1,0 +1,1631 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SeismicML Timeline Tile</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   SeismicML Timeline Tile — tokens
+   ═══════════════════════════════════════════════════════════════════════ */
+:root{
+  --text:#222;
+  --muted:#5f6368;
+  --border:#c7cbd1;
+  --panel:#fff;
+  --card:#fafafa;
+  --focus:#0957D0;
+  --plot-bg:#000;
+  --plot-ink:#fff;
+  --hover:#eef8fb;
+
+  /* Event-type dropdown, per the states sheet */
+  --dd-border:#9aa3ab;
+  --dd-rest:#f7f9fa;        /* closed, nothing chosen */
+  --dd-hover:#dbe7ee;       /* pointer over the closed trigger */
+  --dd-open:#2e6e8e;        /* open: dark field, white text */
+  --dd-set:#cfe6f0;         /* closed, a type has been chosen */
+  --dd-opt-sel:#b3d9e8;     /* the current option in the list */
+  --dd-opt-hover:#dff0f8;   /* the option under the pointer */
+  --dd-check:#2e6e8e;
+  --dd-check-ghost:#a8cfe0; /* the faint "this would be chosen" tick */
+  --dd-placeholder:#9aa3ab;
+
+  /* One identity colour for the marker. On the black plot it rides a white
+     halo so it stays legible; on the white overview it stands alone. */
+  --marker:#016082;
+  --active:#D3F4FF;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  padding:32px;
+  font-family:Arial,sans-serif;
+  color:var(--text);
+  background:#f5f6f7;
+}
+
+main{
+  max-width:900px;
+  margin-inline:auto;
+  background:#fff;
+  padding:24px;
+  border:1px solid #ddd;
+  border-radius:10px;
+}
+
+/* ── Title ── */
+.muted{color:var(--muted);font-size:14px}
+.app-title{color:var(--muted);font-size:16px;line-height:1.35;margin-bottom:12px}
+.app-name{font-weight:700}
+.app-updated{font-weight:400}
+
+/* Instruction sits below the tile, so it can wrap freely without shoving the
+   title around — which is what the old side-by-side header did. */
+.howto{margin-top:14px}
+
+/* ── Chart ── */
+.chart{
+  position:relative;
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+  background:var(--card);
+}
+
+#svg{
+  display:block;
+  width:100%;
+  user-select:none;
+  touch-action:pan-y;
+  cursor:default;
+}
+
+/* Cursor reflects what a click in the plot will do. Set from JS as the
+   pointer enters and leaves the plot rectangle; `default` everywhere else
+   so the chrome around the plot never claims a zoom affordance. */
+#plotBg{fill:var(--plot-bg)}
+
+#svg.cursor-zoom-in{cursor:zoom-in}
+#svg.cursor-zoom-out{cursor:zoom-out}
+#svg.cursor-crosshair{cursor:crosshair}
+#svg.cursor-grabbing{cursor:grabbing}
+
+/* The label is a drag handle and the x is a button, so both take the same
+   hover/press treatment as the other white in-SVG controls. */
+.marker-label{cursor:grab;transition:fill .12s}
+.marker-label:hover{fill:var(--hover)}
+body.is-dragging-label .marker-label{cursor:grabbing;fill:var(--active)}
+
+#markerDelete circle{transition:fill .12s}
+#markerDelete:hover circle{fill:var(--hover)}
+#markerDelete:active circle{fill:var(--active)}
+
+.event-region.is-grabbable{cursor:grab}
+.event-region.is-moving{cursor:grabbing}
+.event-handle{cursor:ew-resize}
+.handle-box{
+  stroke:var(--handle,#fff);
+  fill:var(--handle,#fff);
+  fill-opacity:0;
+  transition:fill-opacity .12s;
+}
+.event-handle:hover .handle-box{fill-opacity:.35}
+.event-handle:active .handle-box,
+.event-handle.is-dragging .handle-box{fill-opacity:.65}
+
+/* Controls attached to the event being edited. They live OUTSIDE the plot clip
+   so they can never be clipped away — losing Done would strand the student. */
+.ev-ctrl{cursor:pointer}
+.ev-ctrl-box{fill:#fff;stroke:var(--border);stroke-width:1.5;transition:fill .12s}
+.ev-ctrl:hover .ev-ctrl-box{fill:var(--hover)}
+.ev-ctrl:active .ev-ctrl-box{fill:var(--active)}
+.ev-ctrl:focus{outline:none}
+.ev-ctrl:focus-visible .ev-ctrl-box{stroke:var(--focus);stroke-width:3}
+.event-badge{cursor:pointer}
+
+/* Focus rings on the in-SVG widgets */
+.event-badge:focus{outline:none}
+.event-badge:focus-visible .event-badge-box{stroke:var(--focus);stroke-width:3}
+.event-badge-box{fill:var(--badge-rest);fill-opacity:1;transition:fill .12s}
+.event-badge:hover .event-badge-box{fill:var(--badge-hover)}
+.event-badge:active .event-badge-box{fill:var(--badge-press)}
+.type-select{cursor:pointer}
+.type-select-box{fill:var(--dd-rest);stroke:var(--dd-border);stroke-width:1.5;transition:fill .12s}
+.type-select.has-type .type-select-box{fill:var(--dd-set)}
+.type-select:hover .type-select-box{fill:var(--dd-hover)}
+.type-select.is-open .type-select-box,
+.type-select.is-open:hover .type-select-box{fill:var(--dd-open);stroke:var(--dd-open)}
+.type-select:focus{outline:none}
+.type-select:focus-visible .type-select-box{fill:var(--hover);stroke:var(--focus);stroke-width:3}
+.type-select.is-open:focus-visible .type-select-box{fill:var(--dd-open)}
+
+/* Every row reserves a tick column, so nothing shifts when one is chosen. */
+.type-option{cursor:pointer}
+.type-option-bg{fill:#fff;transition:fill .12s}
+.type-option.is-selected .type-option-bg{fill:var(--dd-opt-sel)}
+.type-option:hover .type-option-bg{fill:var(--dd-opt-hover)}
+.type-option.is-selected:hover .type-option-bg{fill:var(--dd-opt-sel)}
+.type-check{fill:var(--dd-check);opacity:0;transition:opacity .12s}
+.type-option.is-selected .type-check{opacity:1}
+.type-option:not(.is-selected):hover .type-check{opacity:1;fill:var(--dd-check-ghost)}
+.type-option.is-selected .type-option-label{font-weight:700}
+.type-option:focus{outline:none}
+.type-option:focus-visible .type-option-bg{fill:var(--hover)}
+.type-option:focus-visible .type-option-frame{stroke:var(--focus);stroke-width:3}
+.type-option-frame{fill:none;stroke:none}
+#dragMarker:focus{outline:none}
+#dragMarker:focus-visible .marker-label{stroke:var(--focus);stroke-width:3}
+
+/* ── Full Timeline: an overview that never zooms ── */
+/* No border here — the frame is drawn inside the svg at the plot's LEFT/RIGHT,
+   so the overview lines up with the graph rather than with the card. */
+.overview{
+  position:relative;
+  margin-top:26px;
+}
+.overview-legend{
+  position:absolute;
+  /* the frame's top edge, now that the viewBox opens 22 units above it:
+     (1 - -22) / 94 */
+  top:24.5%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#fff;
+  border:1px solid var(--text);
+  border-radius:999px;
+  padding:2px 16px;
+  font-size:16px;
+  font-weight:700;
+  white-space:nowrap;
+  /* It sits over a scrub surface, so dragging past it must not select it. */
+  user-select:none;
+  -webkit-user-select:none;
+}
+#overview{display:block;width:100%;cursor:pointer;touch-action:pan-y;
+  user-select:none;-webkit-user-select:none}
+#ovViewport{cursor:grab}
+#overview.is-scrubbing,
+#overview.is-scrubbing #ovViewport{cursor:grabbing}
+
+.scrolltrack{
+  position:relative;
+  height:20px;
+  user-select:none;
+  -webkit-user-select:none;
+  /* 46 of 746 viewBox units, matching the plot inset on each side.
+     No top margin: it sits flush under the timeline frame. */
+  margin:0 6.1662%;
+  background:#f0f0f0;
+}
+.scrollthumb{
+  position:absolute;
+  top:3px;
+  height:14px;
+  min-width:10px;
+  background:#8a9099;
+  border-radius:7px;
+  cursor:grab;
+}
+.scrollthumb:hover{background:#6f757d}
+.scrolltrack.is-scrubbing .scrollthumb{cursor:grabbing;background:#5f6368}
+
+/* ── Event Key ── */
+.event-key{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:8px 20px;
+  margin-top:16px;
+  /* A .key-item is 44 tall, so the row keeps its height while empty and the
+     layout below never jumps when the first event arrives. */
+  min-height:44px;
+}
+.event-key.is-empty{visibility:hidden}
+.event-key-label{font-size:16px;font-weight:700;margin-right:4px}
+
+.key-item{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  min-height:44px;
+  padding-left:10px;
+  cursor:pointer;
+  font-size:16px;
+}
+.key-item input{position:absolute;opacity:0;width:1px;height:1px}
+.key-box{
+  position:relative;
+  width:30px;height:30px;
+  flex:none;
+  border:3px solid var(--key,#8e8e8e);
+  border-radius:3px;
+  background:#fff;
+  display:grid;
+  place-items:center;
+}
+.key-item input:checked + .key-box{background:var(--key,#8e8e8e)}
+.key-check{width:20px;height:20px;stroke:#fff;stroke-width:3.4;fill:none;
+  stroke-linecap:round;stroke-linejoin:round;visibility:hidden}
+.key-item input:checked + .key-box .key-check{visibility:visible}
+.key-item input:focus-visible + .key-box{outline:3px solid var(--focus);outline-offset:2px}
+/* the type glyph straddles the checkbox's top-left corner, as on the sheet */
+.key-glyph{position:absolute;left:0;top:3px;width:22px;height:22px;pointer-events:none}
+.key-item.is-off .key-name{color:var(--muted)}
+
+/* ── Controls ── */
+.controls{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+
+button{
+  min-height:44px;
+  padding:0 10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  flex:none;
+  white-space:nowrap;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--panel);
+  color:var(--text);
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+}
+button:hover:not(:disabled){background:var(--hover)}
+button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+button[aria-pressed="true"]{background:var(--active)}
+/* A pressed button is showing state, not unavailability: it is locked but must
+   not read as greyed out. The x on the thing it created is the way to clear it. */
+button[aria-pressed="true"]:disabled{opacity:1;cursor:default;color:var(--text)}
+button[hidden]{display:none}
+
+.btn-icon{width:24px;height:24px;flex:none}
+
+.sep{width:1px;height:32px;background:var(--border);margin:0 2px}
+
+.status{
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+  margin-top:12px;
+  min-height:1.3em;
+}
+
+/* ── Prototype scaffolding ──────────────────────────────────────────────
+   Sits OUTSIDE the tile card: that boundary is what marks it as not part of
+   the thing being specified. */
+.scaffold{
+  max-width:900px;
+  margin:10px auto 0;
+  display:flex;
+  justify-content:flex-start;
+  align-items:center;
+}
+button.scaffold-btn{
+  min-height:44px;
+  padding:0 16px;
+  font-size:16px;
+  font-weight:400;
+  color:#5f6368;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:6px;
+}
+button.scaffold-btn:hover:not(:disabled){background:#fff;border-color:#8a9099;color:var(--text)}
+button.scaffold-btn:active:not(:disabled){background:#eceef0}
+
+@media(max-width:600px){
+  body{padding:12px}
+  main{padding:14px}
+  .word{display:none}
+}
+</style>
+</head>
+<body>
+
+<main>
+  <div class="app-title">
+    <div class="app-name">SeismicML Timeline Tile &bull; v0.1</div>
+    <div class="app-updated">Updated: 9/27/26</div>
+  </div>
+
+  <div class="chart">
+    <svg id="svg" viewBox="0 0 746 322" role="img"
+         aria-label="Interactive seismic timeline. Click to zoom and centre. Drag horizontally to pan.">
+      <defs>
+        <clipPath id="plotClip"><rect x="46" y="76" width="654" height="201"/></clipPath>
+        <clipPath id="badgeClip"><rect x="46" y="0" width="654" height="76"/></clipPath>
+      </defs>
+      <rect id="plotBg" x="46" y="76" width="654" height="201"/>
+      <g id="grid"></g>
+      <line x1="46" y1="277" x2="700" y2="277" stroke="#fff"/>
+      <line x1="46" y1="76"  x2="46"  y2="277" stroke="#fff"/>
+      <g id="wave"></g>
+      <g id="eventRegions" clip-path="url(#plotClip)"></g>
+      <g id="eventControls"></g>
+      <g id="eventBadges" clip-path="url(#badgeClip)"></g>
+      <g id="ticks"></g>
+      <text x="373" y="312" text-anchor="middle" font-size="13" fill="#5f6368">Time</text>
+      <!-- Marker last but one: its label sits in the axis band and must cover
+           the ticks, not be covered by them. The dropdown stays on top. -->
+      <g id="marker"></g>
+      <g id="typeSelect"></g>
+    </svg>
+  </div>
+
+  <div class="overview">
+    <span class="overview-legend">Full Timeline</span>
+    <svg id="overview" viewBox="0 -22 746 94" role="img"
+         aria-label="Full timeline overview. Shows the whole record; the highlighted band is the part currently in the graph above.">
+      <defs>
+        <clipPath id="ovClip"><rect x="46" y="1" width="654" height="70"/></clipPath>
+        <clipPath id="ovGlyphClip"><rect x="46" y="-22" width="654" height="22"/></clipPath>
+      </defs>
+      <rect id="ovFrame" x="46.5" y="1.5" width="653" height="69"
+            fill="#fff" stroke="#222" stroke-width="1"/>
+      <g id="ovWave"></g>
+      <g id="ovEvents" clip-path="url(#ovClip)"></g>
+      <g id="ovGlyphs" clip-path="url(#ovGlyphClip)"></g>
+      <rect id="ovViewport" clip-path="url(#ovClip)" y="4" height="64" fill="#5b9bd5" fill-opacity=".3" stroke="#2e6e8e" stroke-width="2"/>
+      <!-- The marker again: teal alone, no halo needed on white. -->
+      <!-- 2, not 1: the trace, the frame and the event boxes are all 1, so a
+           1-wide marker would carry no more weight than its surroundings. -->
+      <line id="ovMarker" clip-path="url(#ovClip)" y1="1" y2="71"
+            stroke="var(--marker)" stroke-width="2" pointer-events="none" visibility="hidden"/>
+    </svg>
+  </div>
+  <div class="scrolltrack" id="scrollTrack">
+    <div class="scrollthumb" id="scrollThumb" role="scrollbar" tabindex="0"
+         aria-label="Scroll the graph along the timeline" aria-controls="svg"
+         aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>
+  </div>
+
+  <div class="event-key is-empty" id="eventKey">
+    <span class="event-key-label">Event Key</span>
+  </div>
+
+  <div class="controls" aria-label="Graph navigation controls">
+    <button id="markerBtn" aria-pressed="false">
+      <svg class="btn-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           aria-hidden="true" focusable="false">
+        <path d="M12 3v13"/><rect x="6" y="16" width="12" height="5.5" rx="1.5"/>
+      </svg>Add marker</button>
+    <button id="eventBtn" aria-pressed="false">＋ <span class="word">Add event</span></button>
+    <span class="sep"></span>
+    <button id="inBtn"  aria-label="Zoom in">＋ <span class="word">Zoom in</span></button>
+    <button id="outBtn" aria-label="Zoom out">− <span class="word">Zoom out</span></button>
+    <button id="fitBtn">Fit view</button>
+    <span class="sep"></span>
+    <button id="leftBtn"  aria-label="Move left">← <span class="word">Move left</span></button>
+    <button id="rightBtn" aria-label="Move right"><span class="word">Move right</span> →</button>
+  </div>
+
+  <div class="status" id="status" aria-live="polite">At full view. Click anywhere in the graph to zoom in.</div>
+
+  <div class="muted howto" id="howto">Click the graph to zoom and centre. Drag left or right to pan.</div>
+</main>
+
+<div class="scaffold">
+  <button id="resetBtn" class="scaffold-btn" type="button">↺ Reset</button>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Geometry
+//  The plot rectangle. Everything that draws inside the plot derives its
+//  vertical centre from MID — the v3 prototype hardcoded 125, which was the
+//  centre of the OLD box (24…225) and left the trace riding 51px high once
+//  the box moved down to 76…277.
+// ═══════════════════════════════════════════════════════════════════════
+const VB_W = 746, VB_H = 322;
+const LEFT = 46, RIGHT = 700, TOP = 76, BOTTOM = 277;
+const PLOT_W = RIGHT - LEFT;
+const MID = (TOP + BOTTOM) / 2;          // 176.5 — the trace baseline
+const AMP = 34;                          // peak trace excursion, in viewBox units
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Domain
+// ═══════════════════════════════════════════════════════════════════════
+// The overview never zooms: it always shows 0..TOTAL, whatever the graph shows.
+// It shares the graph's viewBox width and its LEFT/RIGHT, so the two line up
+// exactly however the card is sized.
+const OV_W = 746, OV_H = 72;
+const OV_MID = OV_H / 2, OV_AMP = 26;
+const OV_BAND_INSET = 1;   // the band is drawn this far inside its true time span
+
+const TOTAL = 100;                       // seconds of record
+const SPANS = [100, 55, 28, 14];         // visible seconds per zoom level
+const PAN_FRACTION = 0.25;               // arrow buttons move a quarter view
+const MARKER_STEP = 0.1;                 // arrow-key nudge, seconds
+const MARKER_STEP_COARSE = 1;            // shift + arrow-key nudge, seconds
+const MIN_EVENT_SECONDS = 0.2;           // below this a dragged event snaps open
+const NEW_EVENT_FRACTION = 2 / 3;        // a new event covers this much of the visible range
+const NEW_EVENT_OFFSET = 10;             // viewBox units a new event steps right when the spot is taken
+
+// Synthetic trace: damped oscillation around each seeded arrival.
+const TRACE_EVENTS = [
+  { x: 13, a: 0.35 }, { x: 28, a: 0.58 }, { x: 43, a: 0.30 },
+  { x: 57, a: 0.78 }, { x: 72, a: 0.44 }, { x: 88, a: 0.66 }
+];
+
+// The labels students can apply. Adding a type here is the only edit needed —
+// the dropdown, the glyphs and the badge tinting all read from this list.
+const EVENT_TYPES = [
+  { name: 'Earthquake',  color: '#3d8fdb', glyph: 'square'   },
+  { name: 'Plane',       color: '#e8921f', glyph: 'circle'   },
+  { name: 'Avalanche',   color: '#e62b1f', glyph: 'triangle' },
+  { name: 'Other Label', color: '#c9d424', glyph: 'down'     }
+  // Two more are drawn on the badge sheet but not yet named:
+  // { name: '?', color: '#d43ad4', glyph: 'bars'    },
+  // { name: '?', color: '#7a3fdb', glyph: 'diamond' }
+];
+
+// Badge fill when no type has been chosen: grey, per the sheet, not white.
+const UNTYPED_COLOR = '#8e8e8e';
+// The untyped event's outline and handles on the black plot. Lighter than the
+// badge grey because it has to read against black rather than against the card.
+const UNTYPED_STROKE = '#B9B9B9';
+
+// The badge runs pale / mid / full. Those used to be one colour at three
+// opacities, but a translucent badge picks up whatever sits behind it — and
+// badges overlap whenever events cascade. These are the same three appearances
+// blended against the chart background once, so the fill is always solid.
+const BADGE_BG = [250, 250, 250];              // --card, what the badge sits on
+const BADGE_REST = 0.45, BADGE_HOVER = 0.70;
+
+function shade(hex, amount) {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+  const rgb = [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16));
+  const mix = rgb.map((v, i) => Math.round(v * amount + BADGE_BG[i] * (1 - amount)));
+  return '#' + mix.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  State
+//  One object, so every render reads from a single source and nothing has
+//  to be kept in sync by hand.
+// ═══════════════════════════════════════════════════════════════════════
+const state = {
+  level: 0,
+  centre: 50,
+  mode: 'navigate',        // 'navigate' | 'marker' | 'event'
+  marker: null,            // seconds, or null
+  events: [],              // { id, start, end, type }
+  selectedId: null,        // id of the event being edited
+  typeMenuOpen: false,
+  hiddenTypes: new Set(),  // type names (and '' for untyped) switched off in the key
+  nextEventId: 1
+};
+
+// Transient pointer interaction. Exactly one of these is ever active, and
+// every one of them is cleared in endPointer() — the v3 prototype left its
+// pan state set when a click landed in event mode, so the graph would pan
+// on a bare mouse move afterwards.
+let drag = null;   // { kind:'pan'|'handle'|'marker', ... }
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Elements
+// ═══════════════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const svg          = $('svg');
+const gGrid        = $('grid');
+const gWave        = $('wave');
+const gRegions     = $('eventRegions');
+const gEventCtrl   = $('eventControls');
+const gBadges      = $('eventBadges');
+const gMarker      = $('marker');
+const gTypeSelect  = $('typeSelect');
+const ovSvg        = $('overview');
+const gOvWave      = $('ovWave');
+const ovViewport   = $('ovViewport');
+const ovMarker     = $('ovMarker');
+const gOvEvents    = $('ovEvents');
+const gOvGlyphs    = $('ovGlyphs');
+const scrollTrack  = $('scrollTrack');
+const scrollThumb  = $('scrollThumb');
+const eventKeyEl   = $('eventKey');
+const gTicks       = $('ticks');
+const statusEl     = $('status');
+const howto        = $('howto');
+const markerBtn = $('markerBtn'), eventBtn = $('eventBtn');
+const leftBtn = $('leftBtn'), rightBtn = $('rightBtn');
+const inBtn = $('inBtn'), outBtn = $('outBtn'), fitBtn = $('fitBtn');
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Scales
+// ═══════════════════════════════════════════════════════════════════════
+const clampCentre = (c, span) => Math.max(span / 2, Math.min(TOTAL - span / 2, c));
+
+function range() {
+  const span = SPANS[state.level];
+  state.centre = clampCentre(state.centre, span);
+  return [state.centre - span / 2, state.centre + span / 2];
+}
+
+/** seconds → viewBox x */
+function sx(seconds) {
+  const [a, b] = range();
+  return LEFT + (seconds - a) / (b - a) * PLOT_W;
+}
+
+/** viewBox x → seconds */
+function secondsAt(x) {
+  const [a, b] = range();
+  return a + (x - LEFT) / PLOT_W * (b - a);
+}
+
+/** DOM pointer event → viewBox coordinates */
+function toViewBox(e) {
+  const r = svg.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * VB_W / r.width,
+    y: (e.clientY - r.top)  * VB_H / r.height
+  };
+}
+
+const inPlot = p => p.x >= LEFT && p.x <= RIGHT && p.y >= TOP && p.y <= BOTTOM;
+const clampSeconds = s => Math.max(0, Math.min(TOTAL, s));
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+const typeByName = name => EVENT_TYPES.find(t => t.name === name) || null;
+const isHidden = ev => state.hiddenTypes.has(ev.type || '');
+const selectedEvent = () => state.events.find(ev => ev.id === state.selectedId) || null;
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Trace
+// ═══════════════════════════════════════════════════════════════════════
+function amplitudeAt(seconds) {
+  let y = 0;
+  for (const ev of TRACE_EVENTS) {
+    const dist = seconds - ev.x;
+    y += Math.sin(dist * 7) * Math.exp(-Math.abs(dist) * 0.7) * AMP * ev.a;
+  }
+  return y;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Render
+// ═══════════════════════════════════════════════════════════════════════
+function renderAxes() {
+  const [a, b] = range();
+  const decimals = state.level > 1 ? 1 : 0;
+  let gridHtml = '', tickHtml = '';
+
+  for (let i = 0; i <= 5; i++) {
+    const x = LEFT + i * PLOT_W / 5;
+    const v = a + i * (b - a) / 5;
+    gridHtml += `<line x1="${x}" y1="${TOP}" x2="${x}" y2="${BOTTOM}" stroke="#2a2a2a"/>`;
+    tickHtml += `<text x="${x}" y="296" text-anchor="middle" font-size="11" fill="#5f6368">${v.toFixed(decimals)} s</text>`;
+  }
+  gGrid.innerHTML  = gridHtml;
+  gTicks.innerHTML = tickHtml;
+}
+
+function renderWave() {
+  let d = '';
+  for (let px = LEFT; px <= RIGHT; px += 2) {
+    const y = MID + amplitudeAt(secondsAt(px));
+    d += (px === LEFT ? 'M' : 'L') + px.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+  }
+  gWave.innerHTML = `<path d="${d}" fill="none" stroke="var(--plot-ink)" stroke-width="1.7"/>`;
+}
+
+function typeGlyph(type, cx, cy, override) {
+  if (!type) return '';
+  const c = override || type.color;
+  const edge = override ? override : '#222';
+  switch (type.glyph) {
+    case 'circle':   return `<circle cx="${cx}" cy="${cy}" r="8" fill="${c}" stroke="${edge}"/>`;
+    case 'triangle': return `<path d="M${cx} ${cy - 9} l9 18 h-18 z" fill="${c}" stroke="${edge}"/>`;
+    case 'down':     return `<path d="M${cx - 9} ${cy - 8} h18 l-9 17 z" fill="${c}" stroke="${edge}"/>`;
+    case 'bars':     return `<rect x="${cx - 9}" y="${cy - 9}" width="18" height="7" fill="${c}" stroke="${edge}"/>` +
+                            `<rect x="${cx - 9}" y="${cy + 2}" width="18" height="7" fill="${c}" stroke="${edge}"/>`;
+    case 'diamond':  return `<path d="M${cx} ${cy - 10} l10 10 l-10 10 l-10 -10 z" fill="${c}" stroke="${edge}"/>`;
+    default:         return `<rect x="${cx - 8}" y="${cy - 8}" width="16" height="16" fill="${c}" stroke="${edge}"/>`;
+  }
+}
+
+function renderEvents() {
+  const [a, b] = range();
+  let regions = '', badges = '';
+
+  // Paint the event being edited LAST so it sits on top of the others. With
+  // overlapping events the selected one would otherwise be buried, and its
+  // handles unreachable — the handles are the only way to set its boundaries.
+  const ordered = [...state.events].sort(
+    (p, q) => (p.id === state.selectedId ? 1 : 0) - (q.id === state.selectedId ? 1 : 0)
+  );
+
+  for (const ev of ordered) {
+    // Skip events entirely outside the window, but keep partly-visible ones
+    // so their handles stay grabbable at the edge.
+    if (ev.end < a || ev.start > b) continue;
+    if (isHidden(ev)) continue;                      // switched off in the Event Key
+
+    const selected = ev.id === state.selectedId;
+    const lx  = sx(ev.start);
+    const rx  = sx(ev.end);
+    const mid = (lx + rx) / 2;
+    const type = typeByName(ev.type);
+    const stroke = type ? type.color : UNTYPED_STROKE;
+
+    const moving = drag && drag.kind === 'move' && drag.id === ev.id;
+    regions += `<rect class="event-region${selected && state.mode === 'event' ? ' is-grabbable' : ''}${moving ? ' is-moving' : ''}"
+        data-id="${ev.id}"
+        x="${lx}" y="${TOP + 2}" width="${Math.max(1, rx - lx)}" height="${BOTTOM - TOP - 4}"
+        fill="${stroke}" fill-opacity="${selected ? 0.28 : 0.16}"
+        stroke="${stroke}" stroke-width="2" stroke-dasharray="${selected ? '7 6' : 'none'}"/>`;
+
+    // Handles only on the event being edited.
+    if (selected && state.mode === 'event') {
+      for (const [side, x] of [['left', lx], ['right', rx]]) {
+        const isDragging = drag && drag.kind === 'handle' && drag.id === ev.id && drag.side === side;
+        regions += `
+        <g class="event-handle${isDragging ? ' is-dragging' : ''}" data-side="${side}" data-id="${ev.id}"
+           style="--handle:${stroke}">
+          <rect x="${x - 22}" y="${MID - 22}" width="44" height="44" fill="transparent"/>
+          <rect class="handle-box" x="${x - 12}" y="${MID - 12}" width="24" height="24"
+                stroke-width="3" pointer-events="none"/>
+        </g>`;
+      }
+    }
+
+    // Numbered badge in the header band, above the region's midpoint.
+    const label = type ? `Event ${ev.index}, ${type.name}` : `Event ${ev.index}, no type chosen`;
+    const base = type ? type.color : UNTYPED_COLOR;
+    badges += `<g class="event-badge" data-id="${ev.id}" tabindex="0" role="button"
+                  aria-label="${esc(label)}" style="--badge-rest:${shade(base, BADGE_REST)};--badge-hover:${shade(base, BADGE_HOVER)};--badge-press:${base}">
+        <rect class="event-badge-box" x="${mid - 24}" y="8" width="48" height="34" rx="17"
+              stroke="${selected ? '#222' : '#777'}" stroke-width="${selected ? 3 : 2}"/>
+        <text x="${mid}" y="31" text-anchor="middle" font-size="18" font-weight="700"
+              fill="#111" pointer-events="none">${ev.index}</text>
+        ${type
+          ? typeGlyph(type, mid, 62)
+          : `<text x="${mid}" y="68" text-anchor="middle" font-size="22" font-weight="700"
+                   fill="#111" pointer-events="none">?</text>`}
+      </g>`;
+  }
+
+  gRegions.innerHTML = regions;
+  gBadges.innerHTML  = badges;
+}
+
+// On-event control geometry. 38 units clears a 44 CSS px target at this scale
+// (1 unit = 1.206 px), which two of them cannot fit inside an event narrower
+// than ~11% of the window — hence the fallback to just outside its edge.
+const CTRL_PAD = 6, DEL_SIZE = 38, DONE_W = 78, DONE_H = 38;
+
+/**
+ * Where to put a control of the given width, against the VISIBLE span of the
+ * event: inside its right edge when there is room, otherwise just outside it,
+ * otherwise outside its left edge, and failing all that clamped into the plot.
+ * Never returns a position outside the plot, so a control cannot go unreachable.
+ */
+function controlX(width, vl, vr) {
+  if (vr - vl >= width + CTRL_PAD * 2)        return vr - CTRL_PAD - width;
+  if (vr + CTRL_PAD + width <= RIGHT)         return vr + CTRL_PAD;
+  if (vl - CTRL_PAD - width >= LEFT)          return vl - CTRL_PAD - width;
+  return Math.max(LEFT + CTRL_PAD, Math.min(RIGHT - CTRL_PAD - width, vr - width / 2));
+}
+
+function renderEventControls() {
+  const ev = selectedEvent();
+  if (!ev || state.mode !== 'event') { gEventCtrl.innerHTML = ''; return; }
+
+  // Clamp to the plot: an event panned fully off screen still gets reachable
+  // controls, parked at the nearest edge.
+  const vl = Math.max(LEFT, Math.min(RIGHT, sx(ev.start)));
+  const vr = Math.max(LEFT, Math.min(RIGHT, sx(ev.end)));
+
+  const dx = controlX(DEL_SIZE, vl, vr), dy = TOP + CTRL_PAD;
+  const qx = controlX(DONE_W, vl, vr),   qy = BOTTOM - CTRL_PAD - DONE_H;
+  const i = 12;
+
+  gEventCtrl.innerHTML = `
+    <g class="ev-ctrl" id="eventDelete" tabindex="0" role="button" aria-label="Delete event ${ev.index}">
+      <rect class="ev-ctrl-box" x="${dx}" y="${dy}" width="${DEL_SIZE}" height="${DEL_SIZE}" rx="${DEL_SIZE / 2}"/>
+      <path d="M${dx + i} ${dy + i} L${dx + DEL_SIZE - i} ${dy + DEL_SIZE - i}
+               M${dx + DEL_SIZE - i} ${dy + i} L${dx + i} ${dy + DEL_SIZE - i}"
+            stroke="#b3261e" stroke-width="3" stroke-linecap="round" fill="none" pointer-events="none"/>
+    </g>
+    <g class="ev-ctrl" id="eventDone" tabindex="0" role="button" aria-label="Done editing event ${ev.index}">
+      <rect class="ev-ctrl-box" x="${qx}" y="${qy}" width="${DONE_W}" height="${DONE_H}" rx="6"/>
+      <text x="${qx + DONE_W / 2}" y="${qy + 25}" text-anchor="middle" font-size="16"
+            font-weight="700" fill="#222" pointer-events="none">Done</text>
+    </g>`;
+}
+
+function renderTypeSelect() {
+  const ev = selectedEvent();
+  if (!ev || state.mode !== 'event') { gTypeSelect.innerHTML = ''; return; }
+
+  const type = typeByName(ev.type);
+  const open = state.typeMenuOpen;
+
+  // Trigger. One row: tick-free, [icon(s)] [label] [chevron].
+  const BX = 10, BY = 23, BW = 238, BH = 34;   // 10 in from the container edge
+  const ink = open ? '#fff' : '#222';
+  const cls = `type-select${open ? ' is-open' : ''}${type ? ' has-type' : ''}`;
+
+  // With nothing chosen, two greyed glyphs stand in for "a type goes here".
+  const stub = type
+    ? typeGlyph(type, BX + 16, BY + BH / 2)
+    : typeGlyph({ glyph: 'square', color: '' }, BX + 16, BY + BH / 2, open ? '#cfe0e8' : 'var(--dd-placeholder)') +
+      typeGlyph({ glyph: 'circle', color: '' }, BX + 38, BY + BH / 2, open ? '#cfe0e8' : 'var(--dd-placeholder)');
+  const labelX = type ? BX + 34 : BX + 56;
+
+  // Chevron points down when closed, up when open.
+  const cx0 = BX + 214, cy0 = BY + BH / 2;
+  const chev = open
+    ? `M${cx0 - 7} ${cy0 + 3.5} l7 -7 l7 7`
+    : `M${cx0 - 7} ${cy0 - 3.5} l7 7 l7 -7`;
+
+  let html = `
+    <g class="${cls}" tabindex="0" role="button" aria-haspopup="listbox"
+       aria-expanded="${open}" aria-label="Event ${ev.index} type${type ? ', ' + type.name : ', none chosen'}">
+      <rect class="type-select-box" x="${BX}" y="${BY}" width="${BW}" height="${BH}" rx="6"/>
+      ${stub}
+      <text x="${labelX}" y="${BY + 23}" font-size="16" fill="${ink}"
+            font-style="${type ? 'normal' : 'italic'}" pointer-events="none">${esc(type ? type.name : 'Choose event type')}</text>
+      <path d="${chev}" fill="none" stroke="${open ? '#fff' : '#087f9d'}" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+    </g>`;
+
+  if (open) {
+    const rowH = 36, top = BY + BH + 2;
+    html += `<g class="type-menu" role="listbox" aria-label="Event types">
+      <rect x="${BX}" y="${top}" width="${BW}" height="${EVENT_TYPES.length * rowH}" rx="6"
+            fill="#fff" stroke="#bbb" stroke-width="1"/>`;
+    EVENT_TYPES.forEach((t, i) => {
+      const y = top + i * rowH;
+      const chosen = ev.type === t.name;
+      html += `<g class="type-option${chosen ? ' is-selected' : ''}" data-type="${esc(t.name)}"
+                  tabindex="0" role="option" aria-selected="${chosen}">
+          <rect class="type-option-bg" x="${BX + 1}" y="${y + 1}" width="${BW - 2}" height="${rowH - 2}"/>
+          <text class="type-check" x="${BX + 12}" y="${y + rowH / 2 + 6}" font-size="17"
+                font-weight="700" pointer-events="none">✓</text>
+          <g pointer-events="none">${typeGlyph(t, BX + 48, y + rowH / 2)}</g>
+          <text class="type-option-label" x="${BX + 64}" y="${y + rowH / 2 + 6}" font-size="16"
+                fill="#222" pointer-events="none">${esc(t.name)}</text>
+          <rect class="type-option-frame" x="${BX + 2}" y="${y + 2}" width="${BW - 4}" height="${rowH - 4}"
+                rx="3" pointer-events="none"/>
+        </g>`;
+    });
+    html += `</g>`;
+  }
+
+  gTypeSelect.innerHTML = html;
+}
+
+/** The whole record, at a fixed scale, with the current view highlighted. */
+function renderOverview() {
+  if (!gOvWave.childNodes.length) {          // the trace never changes; draw once
+    let d = '';
+    const scale = OV_AMP / AMP;
+    for (let px = LEFT; px <= RIGHT; px += 1) {
+      const t = (px - LEFT) / PLOT_W * TOTAL;
+      const y = OV_MID + amplitudeAt(t) * scale;
+      d += (px === LEFT ? 'M' : 'L') + px + ' ' + y.toFixed(1) + ' ';
+    }
+    gOvWave.innerHTML = `<path d="${d}" fill="none" stroke="#333" stroke-width="1"/>`;
+  }
+
+  const [a, b] = range();
+  const x = LEFT + (a / TOTAL) * PLOT_W;
+  const w = Math.max(6, ((b - a) / TOTAL) * PLOT_W);
+  // Drawn a unit inside the true span on each side, purely for looks — the
+  // numbers above stay the honest mapping, and scrubbing reads from them.
+  ovViewport.setAttribute('x', (x + OV_BAND_INSET).toFixed(2));
+  ovViewport.setAttribute('width', Math.max(4, w - OV_BAND_INSET * 2).toFixed(2));
+
+  // The thumb mirrors the viewport band, in percentages of the track.
+  scrollThumb.style.left = ((a / TOTAL) * 100).toFixed(3) + '%';
+  scrollThumb.style.width = (((b - a) / TOTAL) * 100).toFixed(3) + '%';
+  scrollThumb.setAttribute('aria-valuenow', state.centre.toFixed(0));
+
+  // Where the events sit on the whole record. Boxes only — no numbers or
+  // glyphs; at this scale they would be unreadable and the graph carries them.
+  // Types switched off in the Event Key are omitted here too.
+  let evHtml = '', glyphHtml = '';
+  for (const ev of state.events) {
+    if (isHidden(ev)) continue;
+    const t = typeByName(ev.type);
+    const c = t ? t.color : UNTYPED_COLOR;
+
+    // The type's glyph above the strip, at half the size used above the graph.
+    // typeGlyph draws centred on the origin, so scaling about the translate
+    // point halves it cleanly.
+    const gx = LEFT + ((ev.start + ev.end) / 2 / TOTAL) * PLOT_W;
+    glyphHtml += `<g transform="translate(${gx.toFixed(2)},-11) scale(0.5)">` +
+      (t ? typeGlyph(t, 0, 0)
+         : `<text x="0" y="8" text-anchor="middle" font-size="22" font-weight="700" fill="#222">?</text>`) +
+      `</g>`;
+    const x1 = LEFT + (ev.start / TOTAL) * PLOT_W;
+    const x2 = LEFT + (ev.end / TOTAL) * PLOT_W;
+    // Same border weight and dash as the graph: 2, dashed while it is the one
+    // being edited, so the two views describe the event identically.
+    const selected = ev.id === state.selectedId;
+    evHtml += `<rect x="${x1.toFixed(2)}" y="2" width="${Math.max(1, x2 - x1).toFixed(2)}" height="68"
+                     fill="${c}" fill-opacity=".35" stroke="${c}" stroke-width="2"
+                     stroke-dasharray="${selected ? '7 6' : 'none'}"
+                     pointer-events="none"/>`;
+  }
+  gOvEvents.innerHTML = evHtml;
+  gOvGlyphs.innerHTML = glyphHtml;
+
+  // Where the marker sits on the whole record. It vanishes from the graph once
+  // you zoom away from it, and Add marker is disabled while one exists, so
+  // without this there is nothing on screen saying where it went.
+  if (state.marker === null) {
+    ovMarker.setAttribute('visibility', 'hidden');
+  } else {
+    const mx = LEFT + (state.marker / TOTAL) * PLOT_W;
+    ovMarker.setAttribute('x1', mx.toFixed(2));
+    ovMarker.setAttribute('x2', mx.toFixed(2));
+    ovMarker.setAttribute('visibility', 'visible');
+    // Same provisional state as the marker in the graph.
+    if (state.mode === 'marker') ovMarker.setAttribute('stroke-dasharray', '5 4');
+    else ovMarker.removeAttribute('stroke-dasharray');
+  }
+}
+
+/** The time under the pointer, on the overview or on the scrollbar track. */
+function overviewTime(clientX, el, usePad) {
+  const r = el.getBoundingClientRect();
+  const frac = usePad
+    ? ((clientX - r.left) * OV_W / r.width - LEFT) / PLOT_W
+    : (clientX - r.left) / r.width;
+  return Math.max(0, Math.min(1, frac)) * TOTAL;
+}
+
+/**
+ * Move the view. scrubOffset is the distance from the view's centre to where
+ * the band was first grabbed, so a drag keeps its grip instead of snapping the
+ * centre under the cursor. It is 0 when the press landed on empty track, which
+ * is the case that should jump.
+ */
+function scrubTo(clientX, el, usePad) {
+  state.centre = clampCentre(overviewTime(clientX, el, usePad) - scrubOffset, SPANS[state.level]);
+  render();
+}
+
+function renderMarker() {
+  const [a, b] = range();
+  gMarker.innerHTML = '';
+
+  if (state.marker === null || state.marker < a || state.marker > b) return;
+
+  const mx = sx(state.marker);
+
+  // Dashed while it is still following the pointer, solid once dropped — the
+  // marker's own appearance says whether it has been committed.
+  const placing = state.mode === 'marker';
+  const dash = placing ? ' stroke-dasharray="5 4"' : '';
+
+  gMarker.innerHTML = `
+    <g id="dragMarker" tabindex="0" role="slider" aria-label="Time marker${placing ? ', being placed' : ''}"
+       aria-valuemin="0" aria-valuemax="${TOTAL}" aria-valuenow="${state.marker.toFixed(2)}"
+       aria-valuetext="${state.marker.toFixed(2)} seconds${placing ? ', not yet dropped' : ''}"
+       style="cursor:ew-resize">
+      <line x1="${mx}" y1="${TOP}" x2="${mx}" y2="${BOTTOM + 2}" stroke="transparent" stroke-width="24"/>
+      <line x1="${mx}" y1="${TOP}" x2="${mx}" y2="${BOTTOM + 2}" stroke="#fff" stroke-width="4"/>
+      <line x1="${mx}" y1="${TOP}" x2="${mx}" y2="${BOTTOM + 2}" stroke="var(--marker)" stroke-width="2"${dash}/>
+      <rect class="marker-label" x="${mx - 39}" y="${BOTTOM + 2}" width="78" height="24" rx="4"
+            fill="#fff" stroke="var(--marker)"${dash}/>
+      <text x="${mx - 4}" y="${BOTTOM + 18}" text-anchor="middle" font-size="11"
+            font-weight="700" fill="#000" pointer-events="none">${state.marker.toFixed(2)} s</text>
+      <g id="markerDelete" role="button" aria-label="Delete marker" style="cursor:pointer">
+        <circle cx="${mx + 29}" cy="${BOTTOM + 14}" r="10" fill="#fff"/>
+        <text x="${mx + 29}" y="${BOTTOM + 18}" text-anchor="middle" font-size="14"
+              font-weight="700" fill="#000" pointer-events="none">×</text>
+      </g>
+    </g>`;
+}
+
+const CHECK_SVG = '<svg class="key-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L19 7"/></svg>';
+
+/**
+ * Lists the types actually in use, in the dropdown's order, with Undefined
+ * last. Each is a checkbox; unchecking hides that type's events.
+ */
+function renderEventKey() {
+  if (!state.events.length) {
+    eventKeyEl.classList.add('is-empty');      // still occupies its row
+    eventKeyEl.querySelectorAll('.key-item').forEach(n => n.remove());
+    eventKeyEl.dataset.sig = '';
+    return;
+  }
+  eventKeyEl.classList.remove('is-empty');
+
+  const used = new Set(state.events.map(ev => ev.type || ''));
+  const order = EVENT_TYPES.filter(t => used.has(t.name))
+                           .map(t => ({ key: t.name, name: t.name, color: t.color, glyph: t.glyph }));
+  if (used.has('')) order.push({ key: '', name: 'Undefined', color: UNTYPED_COLOR, glyph: null });
+
+  const signature = order.map(o => o.key).join('|') + '::' +
+                    order.map(o => state.hiddenTypes.has(o.key) ? 0 : 1).join('');
+  if (eventKeyEl.dataset.sig === signature) return;      // nothing to redraw
+  eventKeyEl.dataset.sig = signature;
+
+  eventKeyEl.querySelectorAll('.key-item').forEach(n => n.remove());
+  for (const o of order) {
+    const on = !state.hiddenTypes.has(o.key);
+    const label = document.createElement('label');
+    label.className = 'key-item' + (on ? '' : ' is-off');
+    label.style.setProperty('--key', o.color);
+    label.innerHTML =
+      `<input type="checkbox" ${on ? 'checked' : ''} data-key="${esc(o.key)}"
+              aria-label="Show ${esc(o.name)} events">` +
+      `<span class="key-box">${CHECK_SVG}</span>` +
+      `<span class="key-glyph">` +
+        (o.glyph
+          ? `<svg viewBox="0 0 24 24" aria-hidden="true">${typeGlyph({ glyph: o.glyph, color: o.color }, 12, 12)}</svg>`
+          : `<svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="19" text-anchor="middle"
+                 font-size="20" font-weight="700" fill="#222">?</text></svg>`) +
+      `</span>` +
+      `<span class="key-name">${esc(o.name)}</span>`;
+    eventKeyEl.appendChild(label);
+  }
+}
+
+function syncControls() {
+  const [a, b] = range();
+  const editing = state.mode === 'event';
+
+  // All navigation is live while editing. Boundary precision IS zoom — one
+  // viewBox unit is ~0.15 s at full view and ~0.02 s at the closest zoom — so
+  // withholding it withholds the tool that makes the task accurate. Events are
+  // stored in seconds, so moving or rescaling the view never disturbs one.
+  inBtn.disabled    = state.level === SPANS.length - 1;
+  outBtn.disabled   = state.level === 0;
+  fitBtn.disabled   = state.level === 0;
+  leftBtn.disabled  = a <= 0.0001;
+  rightBtn.disabled = b >= TOTAL - 0.0001;
+
+  // Add marker has three states: live, then selected-and-locked while the
+  // marker is being placed (undimmed, because it is showing a mode), then
+  // ordinary disabled once the marker is down — there is simply nothing more
+  // to add until its x clears it.
+  markerBtn.setAttribute('aria-pressed', String(state.mode === 'marker'));
+  markerBtn.disabled = editing || state.marker !== null;
+  eventBtn.setAttribute('aria-pressed', String(editing));
+  eventBtn.disabled  = editing;
+
+  howto.textContent = editing
+    ? 'Drag the left and right edges to set where the event starts and ends, then choose its type. Zoom in for a more precise edge.'
+    : 'Click the graph to zoom and centre. Drag left or right to pan.';
+}
+
+function render() {
+  renderAxes();
+  renderWave();
+  renderEvents();
+  renderEventControls();
+  renderMarker();
+  renderTypeSelect();
+  renderOverview();
+  renderEventKey();
+  syncControls();
+}
+
+function say(msg) { statusEl.textContent = msg; }
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Cursor
+// ═══════════════════════════════════════════════════════════════════════
+function setCursor(p, shiftKey) {
+  svg.classList.remove('cursor-zoom-in', 'cursor-zoom-out', 'cursor-crosshair', 'cursor-grabbing');
+  if (drag && drag.kind === 'pan' && drag.moved) { svg.classList.add('cursor-grabbing'); return; }
+  if (!p || !inPlot(p)) return;
+  if (state.mode === 'marker') { svg.classList.add('cursor-crosshair'); return; }
+  svg.classList.add(shiftKey ? 'cursor-zoom-out' : 'cursor-zoom-in');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Navigation
+// ═══════════════════════════════════════════════════════════════════════
+function pan(dir) {
+  const span = SPANS[state.level];
+  state.centre = clampCentre(state.centre + dir * span * PAN_FRACTION, span);
+  render();
+  say(dir < 0 ? 'Moved left. Zoom level stayed the same.' : 'Moved right. Zoom level stayed the same.');
+}
+
+/**
+ * What a zoom should centre on. While editing, the selected event — zooming
+ * around the view centre can push an off-centre event out of frame, and
+ * renderEvents skips out-of-view events, so you would be left in edit mode
+ * with no handles to grab. Returns undefined otherwise, which keeps the
+ * current centre.
+ */
+function zoomAnchor() {
+  const ev = selectedEvent();
+  return (state.mode === 'event' && ev) ? (ev.start + ev.end) / 2 : undefined;
+}
+
+function zoomTo(level, centreSeconds) {
+  state.level = Math.max(0, Math.min(SPANS.length - 1, level));
+  if (centreSeconds !== undefined) state.centre = clampCentre(centreSeconds, SPANS[state.level]);
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Events (the labelled regions)
+// ═══════════════════════════════════════════════════════════════════════
+function reindexEvents() {
+  state.events.sort((p, q) => p.start - q.start);
+  state.events.forEach((ev, i) => { ev.index = i + 1; });
+}
+
+/**
+ * Every new event appears at the same place and size: NEW_EVENT_FRACTION of the
+ * visible range, centred. If an event already sits exactly there, the new one
+ * steps right by NEW_EVENT_OFFSET units and tries again, so repeated presses
+ * fan out instead of stacking invisibly.
+ *
+ * The comparison is against every event, not just the most recent one — check
+ * only the latest and a third press drops back onto the first.
+ */
+function newEventSlot() {
+  const [a, b] = range();
+  const visible = b - a;
+  const width = visible * NEW_EVENT_FRACTION;
+
+  // NEW_EVENT_OFFSET is in viewBox units, so convert it through the current
+  // scale: the same nudge on screen whatever the zoom level.
+  const step = (NEW_EVENT_OFFSET / PLOT_W) * visible;
+
+  let start = a + (visible - width) / 2;
+  const taken = s => state.events.some(ev => Math.abs(ev.start - s) < step / 2);
+
+  // Bounded: at the far edge the cascade stops and a new event may land on an
+  // existing one, which the handles can sort out.
+  for (let i = 0; i < 200 && taken(start) && start + width + step <= b; i++) start += step;
+
+  start = Math.max(0, Math.min(start, TOTAL - width));
+  return { start, end: Math.min(TOTAL, start + width) };
+}
+
+function addEvent() {
+  const slot = newEventSlot();
+  const ev = { id: state.nextEventId++, start: slot.start, end: slot.end, type: '', index: 0 };
+  state.events.push(ev);
+  reindexEvents();
+  state.selectedId = ev.id;
+  state.mode = 'event';
+  state.typeMenuOpen = false;
+  render();
+  say(`Event ${ev.index} added. Drag the left and right edges to set where it starts and ends, then choose its type.`);
+}
+
+function selectEvent(id) {
+  state.selectedId = id;
+  state.mode = 'event';
+  state.typeMenuOpen = false;
+
+  // Bring the event into view. The zoom level is left alone — only the centre
+  // moves — and clampCentre keeps the window on the record, so an event near
+  // either end sits off-centre rather than dragging the view past the edge.
+  const ev = selectedEvent();
+  if (ev) state.centre = clampCentre((ev.start + ev.end) / 2, SPANS[state.level]);
+
+  render();
+  if (ev) say(`Editing event ${ev.index}${ev.type ? `, type ${ev.type}` : ', no type chosen yet'}. The graph is centred on it.`);
+}
+
+function deleteEvent(id) {
+  const ev = state.events.find(e => e.id === id);
+  if (!ev) return;
+  const idx = ev.index;
+  state.events = state.events.filter(e => e.id !== id);
+  reindexEvents();
+  if (state.selectedId === id) { state.selectedId = null; state.mode = 'navigate'; }
+  render();
+  say(`Event ${idx} deleted.`);
+}
+
+function finishEditing() {
+  const ev = selectedEvent();
+  state.mode = 'navigate';
+  state.selectedId = null;
+  state.typeMenuOpen = false;
+  render();
+  say(ev
+    ? (ev.type
+        ? `Finished editing event ${ev.index}.`
+        : `Event ${ev.index} has no type yet. Click its number to choose one.`)
+    : 'Finished editing.');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Marker
+// ═══════════════════════════════════════════════════════════════════════
+function setMarker(seconds, announce) {
+  state.marker = clampSeconds(seconds);
+  render();
+  if (announce) say(`Marker set to ${state.marker.toFixed(2)} seconds.`);
+}
+
+function deleteMarker() {
+  state.marker = null;
+  render();
+  say('Marker deleted.');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Pointer — one state machine, one teardown
+// ═══════════════════════════════════════════════════════════════════════
+/** Pointer capture is best-effort: it throws if the pointer is already gone. */
+function capture(e) {
+  try { svg.setPointerCapture(e.pointerId); } catch (_) { /* fine without it */ }
+}
+
+function endPointer() {
+  const wasHandle = drag && (drag.kind === 'handle' || drag.kind === 'move');
+  drag = null;
+  document.body.classList.remove('is-dragging-label');
+  svg.classList.remove('cursor-grabbing');
+  if (wasHandle) render();       // clear the dragging state
+}
+
+svg.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  const p = toViewBox(e);
+  const t = e.target;
+
+  // 1. Marker delete is a click, never a drag.
+  if (t.closest('#markerDelete')) return;
+
+  // 2. While the marker is following the pointer, a click in the plot drops it.
+  //    This has to come before the marker-drag branch, because the marker is
+  //    sitting under the pointer and would otherwise start a drag instead.
+  if (state.mode === 'marker') {
+    // The label hangs below the plot, so inPlot is false over it — grabbing it
+    // has to count as starting the placement, or the marker is stuck dashed.
+    if (!inPlot(p) && !t.closest('#dragMarker')) return;
+    drag = { kind: 'place' };
+    capture(e);
+    return;
+  }
+
+  // 2. Marker body — draggable in every mode.
+  if (t.closest('#dragMarker')) {
+    drag = { kind: 'marker' };
+    if (t.closest('.marker-label')) document.body.classList.add('is-dragging-label');
+    capture(e);
+    say('Move the marker left or right.');
+    return;
+  }
+
+  // 3. Event handles, while editing.
+  const handle = t.closest('.event-handle');
+  if (handle && state.mode === 'event') {
+    drag = { kind: 'handle', side: handle.dataset.side, id: Number(handle.dataset.id) };
+    capture(e);
+    render();                    // paint the dragging state immediately
+    return;
+  }
+
+  // 4. In-SVG widgets handle themselves on click.
+  if (t.closest('.event-badge') || t.closest('.type-select') || t.closest('.type-option')) return;
+  if (t.closest('.ev-ctrl')) return;
+
+  // 5. The body of the event being edited slides the whole event. This comes
+  //    after the handle branch, so grabbing an edge still resizes.
+  const region = t.closest('.event-region');
+  if (region && state.mode === 'event' && Number(region.dataset.id) === state.selectedId) {
+    const ev = selectedEvent();
+    drag = { kind: 'move', id: ev.id, grabAt: secondsAt(p.x), start0: ev.start, end0: ev.end };
+    capture(e);
+    render();
+    return;
+  }
+
+  // 6. Plot background. While editing, this is everything outside the event's
+  //    own box: click zooms in, shift-click zooms out, drag pans — the same as
+  //    in navigate mode. Inside the box, step 5 has already claimed the drag
+  //    for moving the event.
+  if (!inPlot(p)) return;
+
+  drag = { kind: 'pan', x: p.x, startCentre: state.centre, moved: false };
+  capture(e);
+});
+
+svg.addEventListener('pointermove', e => {
+  const p = toViewBox(e);
+
+  if (!drag) {
+    if (state.mode === 'marker' && inPlot(p)) setMarker(secondsAt(p.x), false);
+    setCursor(p, e.shiftKey);
+    return;
+  }
+
+  if (drag.kind === 'marker') {
+    setMarker(secondsAt(Math.max(LEFT, Math.min(RIGHT, p.x))), false);
+    return;
+  }
+
+  if (drag.kind === 'move') {
+    const ev = state.events.find(x => x.id === drag.id);
+    if (!ev) return;
+    const span = drag.end0 - drag.start0;
+    // Clamp the START against the record, so the duration never shrinks at an edge.
+    const start = Math.max(0, Math.min(TOTAL - span, drag.start0 + (secondsAt(p.x) - drag.grabAt)));
+    ev.start = start;
+    ev.end = start + span;
+    render();
+    return;
+  }
+
+  if (drag.kind === 'handle') {
+    const ev = state.events.find(x => x.id === drag.id);
+    if (!ev) return;
+    const v = clampSeconds(secondsAt(Math.max(LEFT, Math.min(RIGHT, p.x))));
+    if (drag.side === 'left') ev.start = v; else ev.end = v;
+    render();
+    return;
+  }
+
+  if (drag.kind === 'place') {
+    setMarker(secondsAt(Math.max(LEFT, Math.min(RIGHT, p.x))), false);
+    return;
+  }
+
+  if (drag.kind === 'pan') {
+    const dx = p.x - drag.x;
+    if (!drag.moved && Math.abs(dx) <= 7) return;
+    drag.moved = true;
+    svg.classList.add('cursor-grabbing');
+    const span = SPANS[state.level];
+    state.centre = clampCentre(drag.startCentre - dx / PLOT_W * span, span);
+    render();
+  }
+});
+
+svg.addEventListener('pointerup', e => {
+  const p = toViewBox(e);
+
+  if (!drag) { endPointer(); return; }
+
+  if (drag.kind === 'marker') {
+    endPointer();
+    say(`Marker set to ${state.marker.toFixed(2)} seconds.`);
+    return;
+  }
+
+  if (drag.kind === 'move') {
+    const ev = state.events.find(x => x.id === drag.id);
+    endPointer();
+    if (ev) {
+      reindexEvents();
+      render();
+      say(`Event ${ev.index} moved to ${ev.start.toFixed(2)}–${ev.end.toFixed(2)} seconds.`);
+    }
+    return;
+  }
+
+  if (drag.kind === 'handle') {
+    const ev = state.events.find(x => x.id === drag.id);
+    if (ev) {
+      if (ev.start > ev.end) [ev.start, ev.end] = [ev.end, ev.start];
+      if (ev.end - ev.start < MIN_EVENT_SECONDS) {
+        ev.end = clampSeconds(ev.start + Math.max(0.5, SPANS[state.level] * 0.08));
+      }
+      reindexEvents();
+      render();
+      say(`Event ${ev.index} now runs from ${ev.start.toFixed(2)} to ${ev.end.toFixed(2)} seconds.`);
+    }
+    endPointer();
+    return;
+  }
+
+  if (drag.kind === 'place') {
+    endPointer();
+    setMarker(secondsAt(Math.max(LEFT, Math.min(RIGHT, p.x))), false);
+    state.mode = 'navigate';
+    render();
+    say(`Marker dropped at ${state.marker.toFixed(2)} seconds.`);
+    setCursor(p, e.shiftKey);
+    return;
+  }
+
+  // Pan that never moved is a click: zoom and centre on it.
+  if (drag.kind === 'pan') {
+    const moved = drag.moved;
+    endPointer();
+    if (moved) { say('Panned horizontally. Zoom level stayed the same.'); setCursor(p, e.shiftKey); return; }
+
+    const target = secondsAt(p.x);
+    if (e.shiftKey) {
+      if (state.level > 0) { zoomTo(state.level - 1, target); say(`Zoomed out to level ${state.level + 1} and centred on the point you clicked.`); }
+      else say('Already at the full view.');
+    } else {
+      if (state.level < SPANS.length - 1) { zoomTo(state.level + 1, target); say(`Zoomed to level ${state.level + 1} and centred on the point you clicked.`); }
+      else { zoomTo(state.level, target); say('Already at the closest zoom. The view was centred on the point you clicked.'); }
+    }
+    setCursor(p, e.shiftKey);
+  }
+});
+
+svg.addEventListener('pointercancel', endPointer);
+svg.addEventListener('pointerleave', () => {
+  if (!drag) svg.classList.remove('cursor-zoom-in', 'cursor-zoom-out', 'cursor-crosshair');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Clicks on the in-SVG widgets
+// ═══════════════════════════════════════════════════════════════════════
+svg.addEventListener('click', e => {
+  if (e.target.closest('#markerDelete')) { deleteMarker(); return; }
+  if (e.target.closest('#eventDelete')) { const ev = selectedEvent(); if (ev) deleteEvent(ev.id); return; }
+  if (e.target.closest('#eventDone'))   { finishEditing(); return; }
+
+  const badge = e.target.closest('.event-badge');
+  if (badge) { selectEvent(Number(badge.dataset.id)); return; }
+
+  if (state.mode !== 'event') return;
+
+  if (e.target.closest('.type-select')) {
+    state.typeMenuOpen = !state.typeMenuOpen;
+    renderTypeSelect();
+    return;
+  }
+
+  const option = e.target.closest('.type-option');
+  if (option) {
+    const ev = selectedEvent();
+    if (ev) {
+      ev.type = option.dataset.type;
+      state.typeMenuOpen = false;
+      render();
+      say(`Event ${ev.index} type set to ${ev.type}.`);
+    }
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Keyboard
+// ═══════════════════════════════════════════════════════════════════════
+svg.addEventListener('keydown', e => {
+  // Marker nudge / delete
+  if (e.target.closest('#dragMarker')) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const step = e.shiftKey ? MARKER_STEP_COARSE : MARKER_STEP;
+      setMarker(state.marker + (e.key === 'ArrowRight' ? step : -step), true);
+      const again = $('dragMarker');
+      if (again) again.focus();
+      return;
+    }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteMarker(); return; }
+  }
+
+  const activate = e.key === 'Enter' || e.key === ' ';
+
+  if (activate && e.target.closest('#eventDelete')) {
+    e.preventDefault(); const ev = selectedEvent(); if (ev) deleteEvent(ev.id); return;
+  }
+  if (activate && e.target.closest('#eventDone')) { e.preventDefault(); finishEditing(); return; }
+
+  const badge = e.target.closest('.event-badge');
+  if (badge) {
+    if (activate) { e.preventDefault(); selectEvent(Number(badge.dataset.id)); return; }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteEvent(Number(badge.dataset.id)); return; }
+  }
+
+  if (e.target.closest('.type-select') && activate) {
+    e.preventDefault();
+    state.typeMenuOpen = !state.typeMenuOpen;
+    renderTypeSelect();
+    const again = svg.querySelector('.type-select');
+    if (again) again.focus();
+    return;
+  }
+
+  const option = e.target.closest('.type-option');
+  if (option && activate) {
+    e.preventDefault();
+    const ev = selectedEvent();
+    if (ev) {
+      ev.type = option.dataset.type;
+      state.typeMenuOpen = false;
+      render();
+      say(`Event ${ev.index} type set to ${ev.type}.`);
+      const back = svg.querySelector('.type-select');
+      if (back) back.focus();
+    }
+  }
+});
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Shift' && !drag) svg.classList.replace('cursor-zoom-in', 'cursor-zoom-out');
+  if (e.key !== 'Escape') return;
+  if (state.typeMenuOpen) { state.typeMenuOpen = false; renderTypeSelect(); say('Type list closed.'); return; }
+  if (state.mode === 'event')  { finishEditing(); return; }
+  if (state.mode === 'marker') { state.mode = 'navigate'; render(); say(`Marker left at ${state.marker.toFixed(2)} seconds.`); }
+});
+
+window.addEventListener('keyup', e => {
+  if (e.key === 'Shift' && !drag) svg.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
+});
+
+window.addEventListener('blur', () => {
+  endPointer();
+  svg.classList.remove('cursor-zoom-in', 'cursor-zoom-out', 'cursor-crosshair');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Full Timeline — scrubbing
+//  The overview never rescales, so dragging it only ever moves the centre.
+// ═══════════════════════════════════════════════════════════════════════
+let scrubbing = null;    // 'overview' | 'thumb'
+let scrubOffset = 0;     // seconds between the view centre and the grab point
+
+function startScrub(kind, el, e) {
+  scrubbing = kind;
+  el.classList.add('is-scrubbing');
+  try { el.setPointerCapture(e.pointerId); } catch (_) {}
+
+  const usePad = kind === 'overview';
+  const t = overviewTime(e.clientX, el, usePad);
+  const [a, b] = range();
+  // Pressed on the band: hold it where it was grabbed. Pressed on empty track:
+  // jump, which is what a scrollbar does.
+  scrubOffset = (t >= a && t <= b) ? t - state.centre : 0;
+  scrubTo(e.clientX, el, usePad);
+}
+
+ovSvg.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  startScrub('overview', ovSvg, e);
+});
+ovSvg.addEventListener('pointermove', e => {
+  if (scrubbing === 'overview') scrubTo(e.clientX, ovSvg, true);
+});
+
+scrollTrack.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  startScrub('thumb', scrollTrack, e);
+});
+scrollTrack.addEventListener('pointermove', e => {
+  if (scrubbing === 'thumb') scrubTo(e.clientX, scrollTrack, false);
+});
+
+function endScrub() {
+  if (!scrubbing) return;
+  ovSvg.classList.remove('is-scrubbing');
+  scrollTrack.classList.remove('is-scrubbing');
+  scrubbing = null;
+  scrubOffset = 0;
+  say(`Showing ${(state.centre - SPANS[state.level] / 2).toFixed(1)} to ${(state.centre + SPANS[state.level] / 2).toFixed(1)} seconds.`);
+}
+window.addEventListener('pointerup', endScrub);
+window.addEventListener('pointercancel', endScrub);
+
+scrollThumb.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  e.preventDefault();
+  pan(e.key === 'ArrowRight' ? 1 : -1);
+  scrollThumb.focus();
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Event Key — one checkbox per type in use
+// ═══════════════════════════════════════════════════════════════════════
+eventKeyEl.addEventListener('change', e => {
+  const box = e.target.closest('input[type="checkbox"]');
+  if (!box) return;
+  const key = box.dataset.key;
+  if (box.checked) state.hiddenTypes.delete(key);
+  else state.hiddenTypes.add(key);
+
+  // You cannot edit an event you have just hidden — step out of it cleanly.
+  const ev = selectedEvent();
+  if (ev && isHidden(ev)) { state.mode = 'navigate'; state.selectedId = null; state.typeMenuOpen = false; }
+
+  render();
+  const name = key === '' ? 'Undefined' : key;
+  const n = state.events.filter(x => (x.type || '') === key).length;
+  say(box.checked ? `Showing ${n} ${name} event${n === 1 ? '' : 's'}.`
+                  : `Hiding ${n} ${name} event${n === 1 ? '' : 's'}.`);
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Toolbar
+// ═══════════════════════════════════════════════════════════════════════
+markerBtn.addEventListener('click', () => {
+  // The marker exists immediately, at the centre of the current view, and
+  // follows the pointer while it is over the graph. A click drops it.
+  state.marker = clampSeconds(state.centre);
+  state.mode = 'marker';
+  render();
+  say(`Marker added at ${state.marker.toFixed(2)} seconds. Move over the graph to position it, then click to drop it.`);
+});
+
+eventBtn.addEventListener('click', addEvent);
+
+leftBtn.addEventListener('click',  () => pan(-1));
+rightBtn.addEventListener('click', () => pan(1));
+
+inBtn.addEventListener('click', () => {
+  if (state.level >= SPANS.length - 1) return;
+  const anchored = zoomAnchor() !== undefined;
+  zoomTo(state.level + 1, zoomAnchor());
+  say(anchored
+    ? `Zoomed in to level ${state.level + 1}, staying on the event you are editing.`
+    : `Zoomed in to level ${state.level + 1} around the centre of the graph.`);
+});
+
+outBtn.addEventListener('click', () => {
+  if (state.level === 0) return;
+  const anchored = zoomAnchor() !== undefined;
+  zoomTo(state.level - 1, zoomAnchor());
+  say(anchored
+    ? `Zoomed out to level ${state.level + 1}, staying on the event you are editing.`
+    : `Zoomed out to level ${state.level + 1}.`);
+});
+
+fitBtn.addEventListener('click', () => {
+  zoomTo(0, 50);
+  say('Returned to the full view.');
+});
+
+// Prototype scaffolding, not part of the tile. Returns every piece of state to
+// what it is on load, including the ids, so a fresh run is genuinely fresh.
+$('resetBtn').addEventListener('click', () => {
+  endPointer();
+  state.level = 0;
+  state.centre = 50;
+  state.mode = 'navigate';
+  state.marker = null;
+  state.events = [];
+  state.selectedId = null;
+  state.typeMenuOpen = false;
+  state.nextEventId = 1;
+  state.hiddenTypes.clear();
+  render();
+  say('Prototype reset. All events and markers cleared.');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+//  Boot
+//  SEIS_TIMELINE is the seam the ML half will plug into: swap amplitudeAt for
+//  a real sample array, and read SEIS_TIMELINE.labels for the labels students
+//  produced on this tile.
+// ═══════════════════════════════════════════════════════════════════════
+window.SEIS_TIMELINE = {
+  state,
+  render,
+  get labels() {
+    return state.events.map(ev => ({
+      index: ev.index, start: ev.start, end: ev.end, type: ev.type || null
+    }));
+  }
+};
+
+render();
+})();
+</script>
+</body>
+</html>
