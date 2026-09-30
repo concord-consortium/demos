@@ -92,6 +92,7 @@ main{
 #svg.cursor-zoom-out{cursor:zoom-out}
 #svg.cursor-crosshair{cursor:crosshair}
 #svg.cursor-grabbing{cursor:grabbing}
+#svg.cursor-ew{cursor:ew-resize}
 
 /* The label is a drag handle and the x is a button, so both take the same
    hover/press treatment as the other white in-SVG controls. */
@@ -103,8 +104,14 @@ body.is-dragging-label .marker-label{cursor:grabbing;fill:var(--active)}
 #markerDelete:hover circle{fill:var(--hover)}
 #markerDelete:active circle{fill:var(--active)}
 
+/* Only the event being edited is grabbable, so these states scope to it.
+   .40 at rest, .50 on hover, .60 while dragging. */
+.event-region{transition:fill-opacity .12s}
 .event-region.is-grabbable{cursor:grab}
-.event-region.is-moving{cursor:grabbing}
+/* Finished events had no hover at all, so there was nothing to propagate. */
+.event-region.is-hover{fill-opacity:.26}
+.event-region.is-grabbable.is-hover{fill-opacity:.50}
+.event-region.is-moving{cursor:grabbing;fill-opacity:.60}
 .event-handle{cursor:ew-resize}
 .handle-box{
   stroke:var(--handle,#fff);
@@ -114,7 +121,7 @@ body.is-dragging-label .marker-label{cursor:grabbing;fill:var(--active)}
 }
 .event-handle:hover .handle-box{fill-opacity:.35}
 .event-handle:active .handle-box,
-.event-handle.is-dragging .handle-box{fill-opacity:.65}
+.event-handle.is-dragging .handle-box{fill-opacity:.70}
 
 /* Controls attached to the event being edited. They live OUTSIDE the plot clip
    so they can never be clipped away — losing Done would strand the student. */
@@ -186,9 +193,26 @@ body.is-dragging-label .marker-label{cursor:grabbing;fill:var(--active)}
 }
 #overview{display:block;width:100%;cursor:pointer;touch-action:pan-y;
   user-select:none;-webkit-user-select:none}
-#ovViewport{cursor:grab}
+/* .30 at rest, .40 on hover, .50 while being dragged. The press state keys off
+   is-scrubbing rather than :active, which does not survive pointer capture. */
+/* Timeline event boxes are a READOUT, never a target: .40 default, .50 when the
+   graph says that event is hovered, .60 while it is being edited. They take no
+   pointer events, so they cannot be hovered or selected here and scrubbing
+   passes straight through them. */
+/* The fill mirrors the event box in the graph, state for state:
+   finished .16, hovered .26; being edited .40, hovered .50, dragged .60.
+   Nothing but the fill changes — the border stays put. */
+.ov-event{fill-opacity:.16;pointer-events:none;transition:fill-opacity .12s}
+.ov-event.is-hover{fill-opacity:.26}
+.ov-event.is-selected{fill-opacity:.40}
+.ov-event.is-selected.is-hover{fill-opacity:.50}
+.ov-event.is-moving{fill-opacity:.60}
+
+#ovViewport{cursor:grab;transition:fill-opacity .12s}
+#ovViewport:hover{fill-opacity:.4}
 #overview.is-scrubbing,
 #overview.is-scrubbing #ovViewport{cursor:grabbing}
+#overview.is-scrubbing #ovViewport{fill-opacity:.5}
 
 .scrolltrack{
   position:relative;
@@ -210,7 +234,11 @@ body.is-dragging-label .marker-label{cursor:grabbing;fill:var(--active)}
   cursor:grab;
 }
 .scrollthumb:hover{background:#6f757d}
-.scrolltrack.is-scrubbing .scrollthumb{cursor:grabbing;background:#5f6368}
+/* The track is the capture target, so ITS cursor is what shows during a drag —
+   declaring grabbing only on the thumb had no effect once the drag began. */
+.scrolltrack.is-scrubbing,
+.scrolltrack.is-scrubbing .scrollthumb{cursor:grabbing}
+.scrolltrack.is-scrubbing .scrollthumb{background:#5f6368}
 
 /* ── Event Key ── */
 .event-key{
@@ -339,8 +367,8 @@ button.scaffold-btn:active:not(:disabled){background:#eceef0}
 
 <main>
   <div class="app-title">
-    <div class="app-name">SeismicML Timeline Tile &bull; v0.1</div>
-    <div class="app-updated">Updated: 9/27/26</div>
+    <div class="app-name">SeismicML Timeline Tile &bull; v0.2</div>
+    <div class="app-updated">Updated: 9/29/26</div>
   </div>
 
   <div class="chart">
@@ -380,7 +408,7 @@ button.scaffold-btn:active:not(:disabled){background:#eceef0}
       <g id="ovWave"></g>
       <g id="ovEvents" clip-path="url(#ovClip)"></g>
       <g id="ovGlyphs" clip-path="url(#ovGlyphClip)"></g>
-      <rect id="ovViewport" clip-path="url(#ovClip)" y="4" height="64" fill="#5b9bd5" fill-opacity=".3" stroke="#2e6e8e" stroke-width="2"/>
+      <rect id="ovViewport" clip-path="url(#ovClip)" y="4" height="64" fill="#0592AF" fill-opacity=".3" stroke="#0592AF" stroke-width="2"/>
       <!-- The marker again: teal alone, no halo needed on white. -->
       <!-- 2, not 1: the trace, the frame and the event boxes are all 1, so a
            1-wide marker would carry no more weight than its surroundings. -->
@@ -672,7 +700,7 @@ function renderEvents() {
     regions += `<rect class="event-region${selected && state.mode === 'event' ? ' is-grabbable' : ''}${moving ? ' is-moving' : ''}"
         data-id="${ev.id}"
         x="${lx}" y="${TOP + 2}" width="${Math.max(1, rx - lx)}" height="${BOTTOM - TOP - 4}"
-        fill="${stroke}" fill-opacity="${selected ? 0.28 : 0.16}"
+        fill="${stroke}" fill-opacity="${selected ? 0.40 : 0.16}"
         stroke="${stroke}" stroke-width="2" stroke-dasharray="${selected ? '7 6' : 'none'}"/>`;
 
     // Handles only on the event being edited.
@@ -854,6 +882,7 @@ function renderOverview() {
     // The type's glyph above the strip, at half the size used above the graph.
     // typeGlyph draws centred on the origin, so scaling about the translate
     // point halves it cleanly.
+    const selected = ev.id === state.selectedId;
     const gx = LEFT + ((ev.start + ev.end) / 2 / TOTAL) * PLOT_W;
     glyphHtml += `<g transform="translate(${gx.toFixed(2)},-11) scale(0.5)">` +
       (t ? typeGlyph(t, 0, 0)
@@ -861,13 +890,14 @@ function renderOverview() {
       `</g>`;
     const x1 = LEFT + (ev.start / TOTAL) * PLOT_W;
     const x2 = LEFT + (ev.end / TOTAL) * PLOT_W;
-    // Same border weight and dash as the graph: 2, dashed while it is the one
-    // being edited, so the two views describe the event identically.
-    const selected = ev.id === state.selectedId;
-    evHtml += `<rect x="${x1.toFixed(2)}" y="2" width="${Math.max(1, x2 - x1).toFixed(2)}" height="68"
-                     fill="${c}" fill-opacity=".35" stroke="${c}" stroke-width="2"
-                     stroke-dasharray="${selected ? '7 6' : 'none'}"
-                     pointer-events="none"/>`;
+    // Same border weight and dash as the graph, and the same editable-vs-
+    // finished distinction — but scaled for a white background, where the
+    // graph's .16 would be all but invisible.
+    const ovMoving = drag && drag.kind === 'move' && drag.id === ev.id;
+    evHtml += `<rect class="ov-event${selected ? ' is-selected' : ''}${ovMoving ? ' is-moving' : ''}" data-id="${ev.id}"
+                     x="${x1.toFixed(2)}" y="2" width="${Math.max(1, x2 - x1).toFixed(2)}" height="68"
+                     fill="${c}" stroke="${c}" stroke-width="2"
+                     stroke-dasharray="${selected ? '7 6' : 'none'}"/>`;
   }
   gOvEvents.innerHTML = evHtml;
   gOvGlyphs.innerHTML = glyphHtml;
@@ -1025,16 +1055,44 @@ function render() {
   renderOverview();
   renderEventKey();
   syncControls();
+  applyHoverLink();          // render replaced the nodes; restore the pairing
 }
 
 function say(msg) { statusEl.textContent = msg; }
 
 // ═══════════════════════════════════════════════════════════════════════
+//  Hover linking — one way: graph -> Full Timeline
+//  Hovering an event in the graph shows where it sits on the whole record.
+//  It does not run the other way: the timeline is for orientation, and having
+//  it reach back into the graph made a glance across the strip flicker the
+//  plot. Timeline boxes still light up under the pointer, locally.
+// ═══════════════════════════════════════════════════════════════════════
+let hoverId = null;
+
+function applyHoverLink() {
+  for (const n of document.querySelectorAll('.event-region, .ov-event')) {
+    n.classList.toggle('is-hover', hoverId !== null && Number(n.dataset.id) === hoverId);
+  }
+}
+
+function setHoverLink(id) {
+  if (hoverId === id) return;
+  hoverId = id;
+  applyHoverLink();
+}
+
+svg.addEventListener('pointerover', e => {
+  const n = e.target.closest && e.target.closest('.event-region');
+  setHoverLink(n ? Number(n.dataset.id) : null);
+});
+svg.addEventListener('pointerleave', () => setHoverLink(null));
+
+// ═══════════════════════════════════════════════════════════════════════
 //  Cursor
 // ═══════════════════════════════════════════════════════════════════════
 function setCursor(p, shiftKey) {
-  svg.classList.remove('cursor-zoom-in', 'cursor-zoom-out', 'cursor-crosshair', 'cursor-grabbing');
-  if (drag && drag.kind === 'pan' && drag.moved) { svg.classList.add('cursor-grabbing'); return; }
+  svg.classList.remove('cursor-zoom-in', 'cursor-zoom-out', 'cursor-crosshair', 'cursor-grabbing', 'cursor-ew');
+  if (drag && (drag.kind === 'move' || (drag.kind === 'pan' && drag.moved))) { svg.classList.add('cursor-grabbing'); return; }
   if (!p || !inPlot(p)) return;
   if (state.mode === 'marker') { svg.classList.add('cursor-crosshair'); return; }
   svg.classList.add(shiftKey ? 'cursor-zoom-out' : 'cursor-zoom-in');
@@ -1183,7 +1241,7 @@ function endPointer() {
   const wasHandle = drag && (drag.kind === 'handle' || drag.kind === 'move');
   drag = null;
   document.body.classList.remove('is-dragging-label');
-  svg.classList.remove('cursor-grabbing');
+  svg.classList.remove('cursor-grabbing', 'cursor-ew');
   if (wasHandle) render();       // clear the dragging state
 }
 
@@ -1204,14 +1262,28 @@ svg.addEventListener('pointerdown', e => {
     if (!inPlot(p) && !t.closest('#dragMarker')) return;
     drag = { kind: 'place' };
     capture(e);
+    // Grabbing the not-yet-dropped marker by its own parts should say so; a
+    // press on the open plot stays a crosshair, which is the placement cue.
+    const onMarker = t.closest('#dragMarker');
+    if (onMarker) {
+      const byLabel = !!t.closest('.marker-label');
+      if (byLabel) document.body.classList.add('is-dragging-label');
+      svg.classList.remove('cursor-crosshair', 'cursor-zoom-in', 'cursor-zoom-out');
+      svg.classList.add(byLabel ? 'cursor-grabbing' : 'cursor-ew');
+    }
     return;
   }
 
   // 2. Marker body — draggable in every mode.
   if (t.closest('#dragMarker')) {
     drag = { kind: 'marker' };
-    if (t.closest('.marker-label')) document.body.classList.add('is-dragging-label');
+    const byLabel = !!t.closest('.marker-label');
+    if (byLabel) document.body.classList.add('is-dragging-label');
     capture(e);
+    // The svg captures the pointer, so ITS cursor is what shows: grabbing when
+    // the label is the handle, the resize cursor when the stem is.
+    svg.classList.remove('cursor-zoom-in', 'cursor-zoom-out', 'cursor-crosshair');
+    svg.classList.add(byLabel ? 'cursor-grabbing' : 'cursor-ew');
     say('Move the marker left or right.');
     return;
   }
@@ -1236,6 +1308,10 @@ svg.addEventListener('pointerdown', e => {
     const ev = selectedEvent();
     drag = { kind: 'move', id: ev.id, grabAt: secondsAt(p.x), start0: ev.start, end0: ev.end };
     capture(e);
+    // The capture target carries the cursor. Clear the zoom classes rather
+    // than relying on which rule happens to come later in the stylesheet.
+    svg.classList.remove('cursor-zoom-in', 'cursor-zoom-out', 'cursor-crosshair');
+    svg.classList.add('cursor-grabbing');
     render();
     return;
   }
