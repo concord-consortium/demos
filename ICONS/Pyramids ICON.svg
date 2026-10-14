@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96px" height="36px" viewBox="0 0 96 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Pyramids ICON</title>
+    <defs>
+        <path d="M96,36 L0,36 L0,0 L96,0 Z" id="path-1"></path>
+    </defs>
+    <g id="Pyramids-ICON" stroke="none" fill="none" xlink:href="#path-1">
+        <polygon id="Path" points="0 36 96 36 96 0 0 0"></polygon>
+        <polygon id="Outline" fill="#FFFFFF" fill-rule="evenodd" points="47.1672 1.6272 37.7062 11.6472 31.9022 5.5992 30.4462 4.0812 29.0032 5.6122 3.5442 32.6282 0.3672 36.0002 5.0002 36.0002 90.9512 36.0002 95.6942 36.0002 92.3832 32.6032 74.0132 13.7632 72.5702 12.2822 71.1382 13.7742 66.5922 18.5122 50.0512 1.6012 48.5962 0.1132"></polygon>
+        <polygon id="Fill-3" fill="#4E2D13" fill-rule="evenodd" points="72.5816 15.1593 54.4996 34.0003 90.9506 34.0003"></polygon>
+        <polygon id="Fill-4" fill="#9A7754" fill-rule="evenodd" points="72.593 18.0359 86.208 31.9999 59.191 31.9999"></polygon>
+        <polygon id="Fill-5" fill="#FED9AF" fill-rule="evenodd" points="72.593 18.0359 86.208 31.9999 65.432 31.9999"></polygon>
+        <polygon id="Fill-6" fill="#4E2D13" fill-rule="evenodd" points="48.6217 3 19.3487 34 78.9447 34"></polygon>
+        <polygon id="Fill-7" fill="#9A7754" fill-rule="evenodd" points="48.6471 5.8862 74.1901 32.0002 23.9881 32.0002"></polygon>
+        <polygon id="Fill-8" fill="#FED9AF" fill-rule="evenodd" points="48.6471 5.8862 74.1901 32.0002 36.6351 32.0002"></polygon>
+        <polygon id="Fill-9" fill="#4E2D13" fill-rule="evenodd" points="30.4589 6.9837 4.9999 33.9997 56.3869 33.9997"></polygon>
+        <polygon id="Fill-10" fill="#9A7754" fill-rule="evenodd" points="30.4722 9.8859 51.6952 31.9999 9.6332 31.9999"></polygon>
+        <polygon id="Fill-11" fill="#FED9AF" fill-rule="evenodd" points="30.4722 9.8859 51.6952 31.9999 20.4082 31.9999"></polygon>
+    </g>
+</svg>
