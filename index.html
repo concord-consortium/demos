@@ -912,9 +912,14 @@
   .collapse-trials .trial-card-stats {
     align-items: stretch;
     text-align: left;
-    gap: 5px;
-    padding-left: 5px;
-    bottom: 5px;
+    /* 1px tighter than the 5 it started at */
+    gap: 4px;
+    /* 2 card border + 4 box inset + 4 = 10px from the card's left edge to the icons */
+    padding-left: 4px;
+    /* whole block shifted down 2px; bottom drops by the same 2 so the box keeps its
+       height and the content does not start cropping */
+    top: 40px;
+    bottom: 3px;
   }
   /* --- Collapse timeline ---
      A row of named stops. Spacing is space-between with auto-width columns, so the gaps
@@ -924,7 +929,8 @@
     flex-shrink: 0;
     /* pulls the flag up to 8px below the Simulation tab pill */
     margin-top: -4px;
-    padding: 0 8px;
+    /* 10px, matching the controls row and the table container below it */
+    padding: 0 10px;
   }
   .collapse-tl {
     position: relative;
@@ -1153,7 +1159,7 @@
     font-size: 16px;
     line-height: 18px;
     font-weight: 400;
-    color: #4D4D4D;
+    color: #333;
   }
 
   /* --- Collapse controls row ---
@@ -1168,12 +1174,13 @@
        Centring the group instead left the stepper 13.8px right of centre, because
        the summary outweighs Sample. The summary's width is still locked in JS to the
        widest trial, so switching Wet/Dry cannot shift anything. */
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: start;
-    /* no column-gap: the two sides carry their own margins, so they can differ
-       (15 left, 10 right) while the equal 1fr tracks still centre the stepper */
-    column-gap: 0;
+    /* Stepper, Sample and Reset Trial are centred as one group, 10px apart. The
+       three-column grid is gone with the summary that needed it — with equal-ish
+       blocks there is nothing left to pull the stepper off centre. */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10px;
     /* top padding is the entire gap to the timeline above - the two blocks touch */
     padding: 10px 10px 10px 10px;
   }
@@ -1217,7 +1224,8 @@
     font-family: 'Roboto Condensed', sans-serif;
     font-size: 16px;
     line-height: 18px;
-    font-weight: 400;
+    /* Medium on the rock type and the Wet:/Dry: word; the note stays regular */
+    font-weight: 500;
     letter-spacing: 0.32px;
     color: var(--sim-btn-text, #333);
     white-space: nowrap;
@@ -1231,11 +1239,12 @@
     top: -2px;
   }
   .collapse-now-note {
+    font-weight: 400;
     /* its own block so the second line aligns under the first rather than falling
        back to the label's left edge, under "Wet:" */
     display: inline-block;
     vertical-align: top;
-    color: #4D4D4D;
+    color: #333;
     margin-left: 4px;
   }
   .collapse-stepper-wrap {
@@ -1331,7 +1340,6 @@
   /* Collapse's own action buttons follow the row's condensed labelling; .sim-btn stays
      Lato 700 everywhere else. Weight 500 matches what Nor'easter drops its buttons to
      when the bottom bar narrows. */
-  .collapse-controls > .sim-btn { justify-self: start; margin-left: 10px; }
   .collapse-controls .sim-btn,
   .collapse-table-actions .sim-btn {
     font-family: 'Roboto Condensed', sans-serif;
@@ -1351,7 +1359,244 @@
     line-height: 18px;
     font-weight: 400;
     letter-spacing: 0.32px;
-    color: #4D4D4D;
+    color: #333;
+  }
+
+  /* The Simulation panel's left edge is shared with the trial cards' right border,
+     so it is square too — a radius there would pull away from that line. */
+  .collapse-sim-panel {
+    /* Square only where the selected card actually meets this edge: A is the top
+       card, D the bottom one. Any other selection leaves that corner free to round.
+       The radius is NOT transitioned: the card's notch-filling ::after is bound to
+       :not(.selected) and so disappears instantly on selection, and animating the
+       corner over 0.18s leaves it curved with nothing filling it — the chink. Both
+       changes have to land on the same frame. The card's right edge stays put
+       throughout the slide, so nothing else needs easing here. */
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .collapse-sim-panel:not([data-selected-trial="A"]):not([data-focused-trial="A"]) { border-top-left-radius: 8px; }
+  .collapse-sim-panel:not([data-selected-trial="D"]):not([data-focused-trial="D"]) { border-bottom-left-radius: 8px; }
+
+  /* The Trials tab sits at the same place relative to the OUTER container as it does
+     in Bananas and Nor'easter — left edge 48.7, centre 87.5. Those sims have a 155px
+     Trials column and centre the tab in it; Collapse's column is 142.23, so centring
+     it there would land 6.39px left. (155 - 142.23) / 2 puts it back. */
+  .collapse-trials-panel ~ .sim-panel-tab {
+    transform: translateX(calc(-50% + 6.385px));
+  }
+
+  /* TEMPORARY — "in progress" marker over icons still using standin artwork.
+     Delete this block, TEMP_IP_LABELS, and the two classList/ip additions in the
+     Collapse branch when the real art lands. */
+  .temp-ip { position: relative; }
+  .temp-ip::after {
+    content: "IP";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    color: #fff;
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  /* --- Collapse trials: no container -------------------------------------------
+     Collapse! only. The panel's border and fill are dropped so the cards sit on the
+     page, but the "Trials" tab stays. Losing the 2px border and the wrap's 15px
+     left padding moves the cards from x=332 to the panel's old left edge, x=315.
+     Card height is forced so all four fit without scrolling: the 481px wrap, less
+     31px top and 12px bottom padding, less three 10px gaps, leaves 408 / 4 = 102.
+     Content is deliberately allowed to crop at that height for now. */
+  .collapse-trials-panel {
+    background: none;
+    border: none;
+    border-radius: 0;
+  }
+  /* Must match .sim-panel.has-scroll's specificity (0,2,0) to beat its
+     overflow: hidden — a single class loses and the card gets clipped at the
+     panel's edge instead of reaching the Simulation panel. */
+  .sim-panel.has-scroll.collapse-trials-panel {
+    overflow: visible;
+  }
+  .collapse-trials {
+    /* Card A starts at the wrap's own top (17), the same line the Simulation panel
+       starts on, so the Trials tab straddles it exactly as it straddles that panel.
+       Bottom padding 0 keeps Card D flush with the panel bottom at 502.
+       No left padding: the 4px that used to hold the keyboard focus ring is not
+       needed now that nothing in the chain clips, and it was pushing the cards to
+       14px from the container edge where the Data panel sits at 10. */
+    padding: 0;
+    /* the tab has to sit over the card, not under it */
+    overflow: visible;
+  }
+  .collapse-trials .trial-card {
+    /* Sized to the content, not chosen: 10px to the icons, the widest run (Card A's
+       "Wet: >50 rainy", 120.23px from the icon's left edge), then 10px to the right
+       edge. Fractional because the text metric is. Wet is the binding case — ">50
+       rainy" is 3.6px wider than "<10 rainy". */
+    width: 142.23px;
+    /* 502 - 17 = 485 of runway, less three 10px gaps, over four cards. Left
+       fractional on purpose — rounding would leave a gap at the bottom. */
+    height: 113.75px;
+    min-height: 0;
+    /* no overflow clipping: the content fits now, and the corner-filling ::after
+       below has to paint outside the card */
+    /* square on the right: that edge sits on the Simulation panel's border, so a
+       radius there would break the single line they share */
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    /* Unselected cards sit 12px right, which puts their 2px right border exactly on
+       top of the Simulation panel's 2px left border — the two render as one line
+       rather than as two parallel edges. Selecting slides a card back to 0 and
+       widens it so its fill reaches the panel's inner edge, erasing the line for
+       that card; deselecting reverses both. Width grows by exactly what the offset
+       loses, so the right edge never moves and the join stays sealed mid-slide.
+       margin-left, NOT transform: a transform would make each card its own stacking
+       context and trap the focus ring below the panel. Reduced-motion is global. */
+    margin-left: 12px;
+    transition: margin-left 0.18s ease, width 0.18s ease,
+                background-color 0.15s ease, border-color 0.15s ease;
+  }
+  /* Keeps the shared outline — no hand-built substitute — and lifts the card so the
+     ring's right side is never clipped by the panel. Lifting brings the card's whole
+     box, so two things come with it: the right border is restored, so the 2px lying
+     over the panel's border redraws that same line rather than showing the card's
+     paler fill; and the 12px notch-filler is hidden, since above the panel it would
+     paint a pale band. Hiding it is only safe because the panel squares the adjacent
+     corner while a card is focused — see data-focused-trial below. */
+  .collapse-trials .trial-card:focus-visible {
+    z-index: 3;
+  }
+  /* same :not(.selected) guard as the rule that made this transparent, or it ties
+     at (0,3,0) and loses on source order */
+  .collapse-trials .trial-card:not(.selected):focus-visible {
+    border-right-color: var(--sim-panel-border, #555);
+  }
+  /* :not(.selected) matters — on a selected card ::after is the bottom flare, not
+     the extension, and hiding it would drop one flare and keep the other. */
+  .collapse-trials .trial-card:not(.selected):focus-visible::after {
+    display: none;
+  }
+
+  /* Where the panel's corner is rounded, its border curves away from the cards and
+     each card's square corner is left standing in the open, with a notch of
+     background beside it. Fix: the card drops its own right border (the panel draws
+     that line anyway) and carries its fill and top/bottom borders 12px further
+     right, into the area the panel paints over. The stub disappears under the
+     panel; the notch is filled by the extension. */
+  .collapse-trials .trial-card:not(.selected) {
+    border-right-color: transparent;
+  }
+  /* FLARE (experiment): where the selected card meets the panel, its top and bottom
+     borders sweep through a 10px arc instead of turning a right angle, so the tab
+     looks like it widens into the panel. Each corner is a 10px box tucked just
+     outside the card's end, filled with the selected fill and cut by a 10px radius
+     — the radius IS the arc, and the two borders trace it. ::before is free on the
+     selected card and ::after is too, since the 12px extension is :not(.selected). */
+  .collapse-trials .trial-card.selected::before,
+  .collapse-trials .trial-card.selected::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    box-sizing: border-box;
+    background: var(--sim-trial-selected-bg, #f0f0f0);
+    pointer-events: none;
+    /* Behind the card's own layer so the focus ring is never covered. Safe because
+       the flares sit entirely outside the card's border box, so nothing of the card
+       paints over them — and they stay inside the card's stacking context, so they
+       still sit above the panel. */
+    z-index: -1;
+  }
+  .collapse-trials .trial-card.selected::before {
+    top: -10px;
+    /* mirror of the bottom flare: arc centred on the box's TOP-left corner */
+    border: none;
+    background:
+      radial-gradient(circle 10px at 0 0,
+        transparent 0 8px,
+        var(--sim-panel-border, #555) 8px 10px,
+        var(--sim-trial-selected-bg, #f0f0f0) 10px);
+  }
+  .collapse-trials .trial-card.selected::after {
+    bottom: -10px;
+    /* Painted as a ring from a radial gradient rather than a border-radius, which
+       would clip the fill and leave an unpainted corner. Inside the arc is
+       transparent — that is open gap between the cards; only beyond the arc is
+       filled, which is the card widening into the panel. */
+    border: none;
+    background:
+      radial-gradient(circle 10px at 0 100%,
+        transparent 0 8px,
+        var(--sim-panel-border, #555) 8px 10px,
+        var(--sim-trial-selected-bg, #f0f0f0) 10px);
+  }
+  /* The end cards meet the panel's own corners, which square off for the selected
+     trial — there is no straight edge there to flare into. */
+  .collapse-trials .trial-card.selected:first-child::before,
+  .collapse-trials .trial-card.selected:last-child::after {
+    display: none;
+  }
+
+  /* The extension must track the card's current fill, not a fixed colour — at the
+     rounded corner the notch is visible, and a hovered card would show the resting
+     surface there. The card's own background still comes from the shared rules;
+     --card-fill just mirrors them for the parts those rules cannot reach. */
+  .collapse-trials .trial-card { --card-fill: var(--sim-surface, #fff); }
+  .collapse-trials .trial-card:not(.selected):hover,
+  .collapse-trials .trial-card:not(.selected):focus-visible { --card-fill: var(--sim-btn-hover, #f0f0f0); }
+  .collapse-trials .trial-card:not(.selected):active { --card-fill: var(--sim-btn-active, #d0d0d0); }
+  .collapse-trials .trial-card.selected { --card-fill: var(--sim-trial-selected-bg, #f0f0f0); }
+
+  .collapse-trials .trial-card:not(.selected)::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    left: 100%;
+    width: 12px;
+    box-sizing: border-box;
+    background: var(--card-fill);
+    border-top: 2px solid var(--sim-panel-border, #555);
+    border-bottom: 2px solid var(--sim-panel-border, #555);
+  }
+
+  /* The shared rule adds an inset 1px ring on top of the 2px border, which reads as
+     a 3px edge when selected. Collapse! drops the ring only — the darker border
+     colour and the background change still carry the selected state. */
+  .collapse-trials .trial-card.selected {
+    box-shadow: none;
+    /* same border as an unselected card — selection is carried by the fill and the
+       letter badge, not by the edge */
+    border-color: var(--sim-panel-border, #555);
+    /* Reads as a tab joined to the Simulation panel: it spans its own 142.23, then
+       the row's 10px gap, then laps 2px over the panel's left border so no edge is
+       left between them. Its fill is already the panel's fill, so the seam closes.
+       z-index lifts it over the panel, which sits later in the DOM. */
+    width: 154.23px;
+    margin-left: 0;
+    border-right: none;
+    z-index: 2;
+  }
+
+  /* The table is its own container inside the panel rather than a full-bleed area:
+     inset 10px from the panel's left, right and bottom edges. No outer border — the
+     white against the panel's green is enough to read as a container, and the
+     header's own rule still separates the headings from the rows. */
+  .collapse-stage {
+    flex: 1;
+    min-height: 0;
+    margin: 0 10px 10px 10px;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
   }
 
   /* --- Collapse data table ---------------------------------------------------
@@ -1410,21 +1655,51 @@
 
   .collapse-attr-row {
     display: flex;
-    align-items: center;
+    /* top-aligned so the wrapped note cannot drag the icon to the block's middle */
+    align-items: flex-start;
+    /* the icon's negative margin pulls it out of this box, which would otherwise
+       shrink a one-line row and close the gap between rows */
+    min-height: 22px;
     gap: 5px;
   }
+  /* The inline SVGs carry their own width/height attributes, so sizing the slot
+     alone does nothing — the art keeps rendering at 24 (25 for Granite) and spills
+     into the gap. Sizing the svg itself is what actually makes the icon 22px; the
+     default preserveAspectRatio fits Granite's 25x24 viewBox without distorting it. */
+  .collapse-attr-icon svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+  }
   .collapse-attr-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     flex-shrink: 0;
     display: block;
+    /* (22 - 18) / 2: centres the icon on the first line, as in the sim's summary */
+    margin-top: -2px;
     color: var(--sim-icon-color, #124929);
   }
   .collapse-attr-label {
     font-family: 'Roboto Condensed', sans-serif;
     font-size: 16px;
     line-height: 18px;
+    /* Medium, matching how Nor'easter sets its pathway value ("N/NW"). Both the
+       rock type and the Wet:/Dry: word take it; only the note stays regular. */
+    font-weight: 500;
+  }
+  .collapse-attr-label.has-note {
+    position: relative;
+    top: -2px;
+  }
+  .collapse-attr-note {
+    /* the note stays regular; only the "Wet:" / "Dry:" word takes Medium */
     font-weight: 400;
+    /* its own block so the second line aligns under the first, not under "Wet:" */
+    display: inline-block;
+    vertical-align: top;
+    color: #333;
+    margin-left: 4px;
   }
   .collapse-sample-count {
     font-family: 'Roboto Condensed', sans-serif;
@@ -2645,8 +2920,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.21</div>
-      <div style="font-weight: 400;">Updated: 10/14/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.22</div>
+      <div style="font-weight: 400;">Updated: 10/15/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -9518,6 +9793,10 @@ function buildSimContent() {
     // leftmost sample already carries 100,000 years of accumulated depth — the
     // table never starts at zero.
     const EROSION_START_YEARS = 200000;
+
+    // TEMP: labels whose icon is still a standin — delete this and the .temp-ip CSS
+    // once the real artwork lands.
+    const TEMP_IP_LABELS = ["Limestone"];
     // The mock jitters the REPORTED rate by +/-15% per sample, which is what makes
     // sampling the same year twice worth doing. Depth deliberately uses the base
     // rate, so it stays smooth while the rate column scatters.
@@ -9568,7 +9847,9 @@ function buildSimContent() {
     var dataPanelId = "collapse-data-panel";
 
     const panels = [
-      { name: "Trials", fixedWidth: 155, subtitle: null },
+      // exactly the card width: the column holds the cards flush, so they start 10px
+      // from the container edge, matching the Data panel's 10px on the far side
+      { name: "Trials", fixedWidth: 142.23, subtitle: null },
       { name: "Simulation", flex: 564, subtitle: "Select a trial, then sample through time" },
       { name: "Data", flex: 285, subtitle: null, bg: "#fff" }
     ];
@@ -9594,23 +9875,30 @@ function buildSimContent() {
       } else {
         panel.setAttribute("role", "region");
         panel.id = p.name === "Simulation" ? simPanelId : dataPanelId;
+        if (p.name === "Simulation") {
+          panel.classList.add("collapse-sim-panel");
+          // drives which left corners stay square — see the CSS
+          panel.setAttribute("data-selected-trial", SIM.selectedTrial || "A");
+        }
       }
       panel.setAttribute("aria-label", p.name + " panel");
 
       // --- Trials panel ---
       if (p.name === "Trials") {
-        panel.classList.add("has-scroll");
+        // marks the panel so the Collapse-only chrome removal can reach it
+        panel.classList.add("has-scroll", "collapse-trials-panel");
         const scrollWrap = document.createElement("div");
         scrollWrap.className = "trials-scroll collapse-trials";
         scrollWrap.setAttribute("role", "listbox");
         scrollWrap.setAttribute("aria-orientation", "vertical");
         scrollWrap.setAttribute("aria-label", "Trials");
+        // Collapse! never scrolls its trials — the four cards are sized to fit the
+        // column exactly — so the list is never a tab stop and never shows the
+        // panel-wide scroll ring. The shared version measures on the next frame,
+        // when webfonts have not settled and the content is briefly taller, and
+        // then latches tabindex="0" because its observer only watches childList.
         function updateTrialsTabindex() {
-          if (scrollWrap.scrollHeight > scrollWrap.clientHeight) {
-            scrollWrap.setAttribute("tabindex", "0");
-          } else {
-            scrollWrap.removeAttribute("tabindex");
-          }
+          scrollWrap.removeAttribute("tabindex");
         }
         const allLabels = ["A", "B", "C", "D"];
         const trialState = {};
@@ -9634,15 +9922,20 @@ function buildSimContent() {
           const rows = TRIAL_CONTENT[letter] || [];
           var html = "";
           rows.forEach(function (label) {
+            // same shape as the sim's summary block: the note wraps after "rainy",
+            // and its second line hangs under the first rather than under the label
+            const note = MOISTURE_NOTE[label];
+            // TEMP: marks artwork still in progress — remove with .temp-ip
+            const ip = TEMP_IP_LABELS.indexOf(label) !== -1 ? " temp-ip" : "";
             html += '<div class="collapse-attr-row">'
-                 +    '<span class="collapse-attr-icon">' + (LABEL_ICON[label] || greenBox24) + '</span>'
-                 +    '<span class="collapse-attr-label">' + label + '</span>'
+                 +    '<span class="collapse-attr-icon' + ip + '">' + (LABEL_ICON[label] || greenBox24) + '</span>'
+                 +    '<span class="collapse-attr-label' + (note ? ' has-note' : '') + '">' + label + (note ? ':' : '')
+                 +      (note ? '<span class="collapse-attr-note">' + note[0] + '<br>' + note[1] + '</span>' : '')
+                 +    '</span>'
                  +  '</div>';
           });
-          html += '<div class="collapse-sample-count">'
-               +    '<span class="collapse-sample-n">' + st.sampleCount + '</span>'
-               +    (st.sampleCount === 1 ? ' sample' : ' samples')
-               +  '</div>';
+          // No visible sample count on the cards. st.sampleCount is still tracked —
+          // it gates Reset Trial and is still announced in the card's aria-label.
           statsEl.innerHTML = html;
           var aria = "Trial " + letter;
           if (rows.length) aria += ". " + rows.join(", ");
@@ -9704,6 +9997,21 @@ function buildSimContent() {
           return card;
         }
 
+        // A focused card hides its notch-filler (it would otherwise paint over the
+        // panel), so the panel has to square that corner while the card is focused,
+        // exactly as it does when the card is selected.
+        scrollWrap.addEventListener("focusin", function (e) {
+          const card = e.target.closest && e.target.closest(".trial-card");
+          const simPanelEl = document.getElementById(simPanelId);
+          if (!card || !simPanelEl) return;
+          const lbl = card.querySelector(".trial-card-label");
+          if (lbl) simPanelEl.setAttribute("data-focused-trial", lbl.textContent);
+        });
+        scrollWrap.addEventListener("focusout", function () {
+          const simPanelEl = document.getElementById(simPanelId);
+          if (simPanelEl) simPanelEl.removeAttribute("data-focused-trial");
+        });
+
         function selectTrialByCard(targetCard, targetLetter) {
           scrollWrap.querySelectorAll(".trial-card:not(.new-card)").forEach(c => {
             c.classList.remove("selected");
@@ -9718,9 +10026,10 @@ function buildSimContent() {
           const rb = targetCard.querySelector(".trial-card-reset");
           if (rb) rb.setAttribute("tabindex", "0");
           SIM.selectedTrial = targetLetter;
+          const simPanelEl = document.getElementById(simPanelId);
+          if (simPanelEl) simPanelEl.setAttribute("data-selected-trial", targetLetter);
           const indicator = document.querySelector(".sim-trial-indicator");
           if (indicator) indicator.textContent = targetLetter;
-          if (SIM._syncNowBlock) SIM._syncNowBlock();
           if (SIM._syncActions) SIM._syncActions();
           scrollItemIntoView(targetCard, scrollWrap);
           updateTrialCardTabindex();
@@ -9790,13 +10099,10 @@ function buildSimContent() {
         updateTrialPositions();
 
         panel.appendChild(scrollWrap);
-        const focusRing = document.createElement("div");
-        focusRing.className = "scroll-focus-ring";
-        panel.appendChild(focusRing);
-        requestAnimationFrame(updateTrialsTabindex);
+        // no .scroll-focus-ring and no observer: with nothing to scroll there is
+        // nothing to focus, so the ring can never be summoned
+        updateTrialsTabindex();
         if (SIM.trialsObserver) SIM.trialsObserver.disconnect();
-        SIM.trialsObserver = new MutationObserver(updateTrialsTabindex);
-        SIM.trialsObserver.observe(scrollWrap, { childList: true });
       }
 
       // --- Simulation panel ---
@@ -9807,11 +10113,9 @@ function buildSimContent() {
         const inner = document.createElement("div");
         inner.className = "sim-panel-inner";
 
-        const indicator = document.createElement("div");
-        indicator.className = "sim-trial-indicator";
-        indicator.textContent = "A";
-        indicator.setAttribute("aria-hidden", "true");
-        panel.appendChild(indicator);
+        // No A/B/C/D badge in the Simulation panel — the selected card is joined to
+        // this panel, so the letter is already right there. selectTrialByCard still
+        // looks for the element and no-ops when it is absent.
 
         // --- Timeline ---
         // Two separate things: the dots are fixed landmarks the student reads, and the
@@ -9908,6 +10212,8 @@ function buildSimContent() {
 
           const ico = document.createElement("span");
           ico.className = "collapse-tl-ico";
+          // TEMP: marks artwork still in progress — remove with .temp-ip
+          if (st.years === 0) ico.classList.add("temp-ip");
           if (st.art) {
             ico.classList.add("art");
             ico.innerHTML = st.art;
@@ -10084,37 +10390,9 @@ function buildSimContent() {
         const controls = document.createElement("div");
         controls.className = "collapse-controls";
 
-        // left: mirrors the selected trial card
-        const nowBlock = document.createElement("div");
-        nowBlock.className = "collapse-now";
-        controls.appendChild(nowBlock);
-
-        // Lock the block to the widest trial so Wet/Dry never changes the row's geometry.
-        function lockNowWidth() {
-          const saved = nowBlock.innerHTML;
-          nowBlock.style.width = "";
-          let widest = 0;
-          Object.keys(TRIAL_CONTENT).forEach(function (letter) {
-            renderNow(TRIAL_CONTENT[letter]);
-            widest = Math.max(widest, nowBlock.scrollWidth);
-          });
-          nowBlock.innerHTML = saved;
-          nowBlock.style.width = widest + "px";
-        }
-
-        function renderNow(rows) {
-          nowBlock.innerHTML = rows.map(function (label) {
-            const note = MOISTURE_NOTE[label];
-            return '<span class="collapse-now-row">'
-                 +   '<span class="collapse-now-ico">' + (LABEL_ICON[label] || greenBox24) + '</span>'
-                 +   '<span class="collapse-now-label' + (note ? ' has-note' : '') + '">' + label + (note ? ':' : '')
-                 +     (note ? '<span class="collapse-now-note">' + note[0] + '<br>' + note[1] + '</span>' : '')
-                 +   '</span>'
-                 + '</span>';
-          }).join("");
-        }
-        function syncNowBlock() { renderNow(TRIAL_CONTENT[SIM.selectedTrial] || []); }
-        SIM._syncNowBlock = syncNowBlock;
+        // No trial summary here: the selected card is joined to this panel and
+        // already carries the letter, rock type and moisture, so repeating them
+        // beside Sample was the same information twice.
 
         // middle: the year stepper, moving through the same 14 values as the timeline
         const stepWrap = document.createElement("div");
@@ -10177,6 +10455,7 @@ function buildSimContent() {
         SIM.sampleBtn = makeAction("Sample", SAMPLE_ICON);
         controls.appendChild(SIM.sampleBtn);
         SIM.resetTrialBtn = makeAction("Reset Trial", resetIconSVG);
+        controls.appendChild(SIM.resetTrialBtn);
 
         // Reset Trial has nothing to undo until the trial has been sampled at least once.
         function syncActions() {
@@ -10221,15 +10500,12 @@ function buildSimContent() {
         });
 
         inner.appendChild(controls);
-        syncNowBlock();
-        requestAnimationFrame(lockNowWidth);
-        if (document.fonts && document.fonts.ready) document.fonts.ready.then(lockNowWidth);
         syncStepper();
         syncActions();
 
         // White stage, holding the data table for the selected trial.
         const stage = document.createElement("div");
-        stage.style.cssText = "flex:1;min-height:0;background:#fff;overflow:hidden;";
+        stage.className = "collapse-stage";
         const tableWrap = document.createElement("div");
         tableWrap.className = "collapse-table-wrap";
         const table = document.createElement("table");
@@ -10309,12 +10585,6 @@ function buildSimContent() {
         SIM._renderTable = renderTable;
         renderTable();
 
-        // Reset Trial sits below the table, which it clears; it will be absorbed
-        // into the table's own chrome once that exists.
-        const tableActions = document.createElement("div");
-        tableActions.className = "collapse-table-actions";
-        tableActions.appendChild(SIM.resetTrialBtn);
-        inner.appendChild(tableActions);
 
         panel.appendChild(inner);
         SIM._panel = panel;
