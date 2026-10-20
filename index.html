@@ -12,9 +12,6 @@
 /* Lato 400 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 400; src: url('fonts/d5b18a30a456.woff2') format('woff2'); }
 /* Lato 400i */ @font-face { font-family: 'Lato'; font-style: italic; font-weight: 400; src: url('fonts/lato-italic-400.woff2') format('woff2'); }
 /* Lato 700 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 700; src: url('fonts/a658a6a6ab26.woff2') format('woff2'); }
-/* Lato 700i - the real bold italic. Without it the browser synthesises one by
-   smearing Lato 400 italic, which is heavier and wider than the genuine face. */ @font-face { font-family: 'Lato'; font-style: italic; font-weight: 700; src: url('fonts/lato-bolditalic-700.woff2') format('woff2'); }
-/* Lato 900 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 900; src: url('fonts/lato-black-900.woff2') format('woff2'); }
 /* Roboto Condensed */ @font-face { font-family: 'Roboto Condensed'; font-style: normal; font-weight: 100 900; src: url('fonts/d2466d84dfac.woff2') format('woff2'); }
 /* Slackey */ @font-face { font-family: 'Slackey'; font-style: normal; font-weight: 400; src: url('fonts/b9e0133fed40.woff2') format('woff2'); }
 /* Fontdiner Swanky */ @font-face { font-family: 'Fontdiner Swanky'; font-style: normal; font-weight: 400; src: url('fonts/ab612a511c9f.woff2') format('woff2'); }
@@ -1496,6 +1493,12 @@
        radius there would break the single line they share */
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+    /* 8px on the left, matching the Simulation panel's own outer corners. The shared
+       .trial-card is 6px, which left the two outer corners of the pair 2px apart --
+       the card's left and the panel's right are the only rounded corners on that
+       block, so they read as a set. Collapse only: the other sims keep the base 6. */
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
     /* Unselected cards sit 7px right, which puts their 2px right border exactly on
        top of the Simulation panel's 2px left border — the two render as one line
        rather than as two parallel edges. Selecting slides a card back to 0 and
@@ -1539,18 +1542,21 @@
     border-right-color: transparent;
   }
   /* FLARE (experiment): where the selected card meets the panel, its top and bottom
-     borders sweep through a 10px arc instead of turning a right angle, so the tab
-     looks like it widens into the panel. Each corner is a 10px box tucked just
-     outside the card's end, filled with the selected fill and cut by a 10px radius
+     borders sweep through an 8px arc instead of turning a right angle, so the tab
+     looks like it widens into the panel. Each corner is an 8px box tucked just
+     outside the card's end, filled with the selected fill and cut by an 8px radius
      — the radius IS the arc, and the two borders trace it. ::before is free on the
-     selected card and ::after is too, since the 12px extension is :not(.selected). */
+     selected card and ::after is too, since the 12px extension is :not(.selected).
+     8px matches the card's own outer corners and the Simulation panel's, so every
+     curve on this block is the same. The two colour stops stay 2px apart, which is
+     the border weight the arc has to trace. */
   .collapse-trials .trial-card.selected::before,
   .collapse-trials .trial-card.selected::after {
     content: "";
     position: absolute;
     right: 0;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     box-sizing: border-box;
     background: var(--sim-trial-selected-bg, #f0f0f0);
     pointer-events: none;
@@ -1561,27 +1567,27 @@
     z-index: -1;
   }
   .collapse-trials .trial-card.selected::before {
-    top: -10px;
+    top: -8px;
     /* mirror of the bottom flare: arc centred on the box's TOP-left corner */
     border: none;
     background:
-      radial-gradient(circle 10px at 0 0,
-        transparent 0 8px,
-        var(--sim-panel-border, #555) 8px 10px,
-        var(--sim-trial-selected-bg, #f0f0f0) 10px);
+      radial-gradient(circle 8px at 0 0,
+        transparent 0 6px,
+        var(--sim-panel-border, #555) 6px 8px,
+        var(--sim-trial-selected-bg, #f0f0f0) 8px);
   }
   .collapse-trials .trial-card.selected::after {
-    bottom: -10px;
+    bottom: -8px;
     /* Painted as a ring from a radial gradient rather than a border-radius, which
        would clip the fill and leave an unpainted corner. Inside the arc is
        transparent — that is open gap between the cards; only beyond the arc is
        filled, which is the card widening into the panel. */
     border: none;
     background:
-      radial-gradient(circle 10px at 0 100%,
-        transparent 0 8px,
-        var(--sim-panel-border, #555) 8px 10px,
-        var(--sim-trial-selected-bg, #f0f0f0) 10px);
+      radial-gradient(circle 8px at 0 100%,
+        transparent 0 6px,
+        var(--sim-panel-border, #555) 6px 8px,
+        var(--sim-trial-selected-bg, #f0f0f0) 8px);
   }
   /* The end cards meet the panel's own corners, which square off for the selected
      trial — there is no straight edge there to flare into. */
@@ -1786,9 +1792,7 @@
     letter-spacing: 0.32px;
   }
   .collapse-table th {
-    /* white, not the panel green: the green has to stop at the top of the stage,
-       the way it did before the table existed. Opaque is required anyway, or
-       rows scroll under the sticky head and show through. */
+    /* Opaque, always: rows scroll under the sticky head and would show through. */
     background: #fff;
     color: var(--sim-icon-color, #124929);
     font-weight: 500;
@@ -1802,6 +1806,14 @@
        header's own and stays with it. */
     box-shadow: inset 0 -1.5px 0 var(--sim-panel-border, #358D5A);
   }
+  /* The header band takes --sim-surface, the resting fill of every button in the sim
+     (Sample, the stepper), because that is what the band is: three sort buttons and
+     the two dead cells at the ends. Colouring the whole band rather than the buttons
+     alone is the point — the buttons are transparent and show it through, so the band
+     reads as one strip instead of three green blocks with white gaps at the ends.
+     Scoped to the header table: the "Average:" th lives in a tfoot, and the body
+     table carries a zero-height thead for assistive tech. */
+  .collapse-thead-wrap thead th { background: var(--sim-surface, #fff); }
   /* 0.01em, half the 0.02em the table sets: the headings are the widest text in the
      table and the first thing to run out of room. thead only — on .collapse-table th
      it would also catch the summary strip's "Average", whose own row of numbers stays
@@ -1836,7 +1848,18 @@
     padding: 7px 10px;
     border-bottom: 1px solid #949494;
   }
-  .collapse-table tbody tr:last-child td { border-bottom: none; }
+  /* The LAST row keeps its border box and only loses the ink, so its content box is
+     the same height as every other row's and vertical-align: middle lands in the same
+     place (border-bottom: none removed the box and left its content 0.25px low).
+     The FIRST row gets nothing: it is left exactly like the others. Its content does
+     sit a quarter pixel high, because every other row gives up half a pixel at the top
+     to the collapsed divider above it and row 0 has nothing above it to give up to —
+     but every way of spending that surplus costs more than it buys. A transparent
+     border-top shows a pixel of the table's white between the header's rule and the
+     row; padding grows the row, because the picture cell is height-bound (48px became
+     51px); and shortening the row moves the content the wrong way (23.5 to 23). All
+     three were tried and measured. A quarter pixel is invisible; a white line is not. */
+  .collapse-table tbody tr:last-child td { border-bottom-color: transparent; }
 
   /* The heading is the sort control: the text block and the indicator sit together
      so the whole heading is clickable and reads as one thing. */
@@ -1888,22 +1911,81 @@
      The padding-bottom is what keeps the LABEL still. 8 + content + 26 = 70, so the
      content box is the same 36px it was and its centre is still 26px from the top —
      grow the height without it and align-items: center would drop every heading 9px. */
-  .collapse-thead-wrap.has-prompt .collapse-th-sort { padding-bottom: 26px; }
+  /* 25.5 + 0.5 on the th below, not 26 + 0: the band still measures 70, but the
+     button stops half a pixel short of it so the hover/press fill no longer runs
+     over the whole 2px rule. Nothing else moves — the content box is still 36px
+     and the label's centre is still 26px from the top. */
+  .collapse-thead-wrap.has-prompt .collapse-th-sort { padding-bottom: 25.5px; }
+  .collapse-thead-wrap.has-prompt thead th { padding-bottom: 0.5px; }
   .collapse-thead-wrap.has-prompt .collapse-table th {
     box-shadow: inset 0 -2px 0 var(--sim-panel-border, #358D5A);
   }
   .collapse-th-sort > * { transform: translateX(var(--head-shift)); }
   .collapse-th-sort:focus { outline: none; }
-  .collapse-th-sort:focus-visible { outline: 2px solid #005FCC; outline-offset: 2px; border-radius: 3px; }
-  .collapse-sort-ico { flex: 0 0 auto; }
-  /* Both triangles faded until the column is the sorted one, then the active
-     direction goes solid. */
+  /* The ring traces the heading's own box — the same box the hover band fills, which
+     is wider than the column (see --grow-l/--grow-r). Inset and square, not the old
+     +2px rounded ring floating outside it: outside the box it was a different shape
+     from the thing it was marking, and it strayed under the neighbouring th.
+     The fill, the band treatment and the z-index all come from the :hover rule below,
+     which :focus-visible is listed in.
+
+     Drawn as a pseudo-element, not an outline: it is 1px shorter than the box, and
+     outline-offset is uniform on all four sides so it cannot do that. inset 2/2/3/2
+     keeps the sides and top where an outline at -2px put them and lifts the bottom
+     edge clear of the band's rule. */
+  .collapse-th-sort:focus-visible { outline: none; }
+  .collapse-th-sort:focus-visible::after {
+    content: "";
+    position: absolute;
+    /* 3.5 at the bottom, half a pixel more than the sides. The band's rule is 1.5px,
+       so it spans the last pixel and the blended half above it, and at 3 the white
+       outer ring sat on that half. Half a pixel is exactly what it was taking, so
+       half a pixel is what comes off — on a 1x display that rounds away and renders
+       the same as 3, but at 2x it is a whole device pixel and the rule is clear. */
+    inset: 2px 2px 3.5px 2px;
+    border: 2px solid #005FCC;
+    /* ...and 2px of white outside the blue, as the rows have. An OUTSET shadow, so it
+       paints beyond the border box and therefore outside the blue rather than inside
+       it. The inset above leaves exactly the 2px it needs on every side. */
+    box-shadow: 0 0 0 2px #fff;
+    pointer-events: none;
+  }
+  /* overflow visible: the active triangle is scaled 1.3 about its centre, which makes
+     it 15.6px wide in a 14px box — SVG clips at the viewBox by default, and the base
+     corners were being cut off. The 0.8px it overhangs on each side falls inside the
+     button's own 10px padding, so nothing else is touched. */
+  .collapse-sort-ico { flex: 0 0 auto; overflow: visible; }
+  /* Both triangles carry the resting state until the column is the sorted one, then
+     the active direction goes solid AND larger.
+     0.6, not the old 0.3: at 0.3 the icon green composited to #adc5b7 on the band and
+     measured 1.72:1, under the 3:1 that 1.4.11 wants. These chevrons are the only
+     thing saying the headings are sortable, and with nothing sorted — which is how
+     the sim loads — there is no solid arrow anywhere to carry it. 0.6 is the first
+     step that clears 3:1 on both the band (3.34) and the row hover fill (3.23).
+     Doubling the resting weight narrows the gap to the active state from 0.3->1.0
+     down to 0.6->1.0, so the active arrow takes a size step as well: opacity alone no
+     longer separates them enough to read which column is sorted at a glance.
+     Scaled about its own centre (transform-box: fill-box), so it grows in place
+     inside the 14x22 box without moving the pair or touching layout. */
   .collapse-sort-ico .sort-up,
-  .collapse-sort-ico .sort-down { opacity: 0.3; }
-  th[aria-sort="ascending"] .sort-up,
-  th[aria-sort="descending"] .sort-down { opacity: 1; }
-  th[aria-sort="ascending"] .sort-down,
-  th[aria-sort="descending"] .sort-up { opacity: 0.2; }
+  .collapse-sort-ico .sort-down { opacity: 0.6; }
+  /* data-sort-dir, not aria-sort: the visible header is presentational, so aria-sort
+     lives on the real (sr-only) headers in the body table. This is the cosmetic hook
+     for the same state. */
+  th[data-sort-dir="ascending"] .sort-up,
+  th[data-sort-dir="descending"] .sort-down {
+    opacity: 1;
+    transform-box: fill-box;
+    transform: scale(1.3);
+  }
+  /* Anchored on the flat base, so each arrow grows AWAY from the gap between the two
+     rather than out from its middle: the inner edges stay put and the pair keeps its
+     spacing. For the up arrow the base is its bottom; for the down arrow the base is
+     its top (its bottom is the point), which is why the two origins differ. */
+  th[data-sort-dir="ascending"] .sort-up { transform-origin: bottom; }
+  th[data-sort-dir="descending"] .sort-down { transform-origin: top; }
+  th[data-sort-dir="ascending"] .sort-down,
+  th[data-sort-dir="descending"] .sort-up { opacity: 0.35; }
 
   /* Hover / sorted states. The fill goes on the th, not on the button: the th's
      bottom rule is an inset shadow, which paints under child content, so an opaque
@@ -1937,6 +2019,7 @@
      The heading's contents are transformed (--head-shift), which gives them a stacking
      context, so they already paint above this absolutely positioned ::before. */
   .collapse-th-sort:hover,
+  .collapse-th-sort:focus-visible,
   .collapse-th-sort:active {
     /* above the neighbouring th's opaque white, so the whole band shows */
     z-index: 1;
@@ -1946,7 +2029,8 @@
                 inset 0 2px 0 #fff,
                 inset 2px 0 0 #fff, inset -2px 0 0 #fff;
   }
-  .collapse-th-sort:hover { background: var(--sim-btn-hover, #f0f0f0); }
+  .collapse-th-sort:hover,
+  .collapse-th-sort:focus-visible { background: var(--sim-btn-hover, #f0f0f0); }
   .collapse-th-sort:active { background: var(--sim-btn-active, #d0d0d0); }
 
   /* ...and the same states reach down the column, so you can see which cells the
@@ -2031,8 +2115,13 @@
      47px band, and nothing in the row depends on the delete button's intrinsic
      height any more. Table rows treat height as a minimum, so this only ever grows
      the row, never clips it. */
-  .collapse-table tbody tr { cursor: pointer; height: 48px; }
-  .collapse-table tbody tr:hover td { background: var(--sim-btn-hover, #f0f0f0); }
+  /* position: relative so the focus ring below can be a pseudo-element pinned to the
+     row's box -- see there for why it cannot be an outline or a plain box-shadow */
+  .collapse-table tbody tr { cursor: pointer; height: 48px; position: relative; }
+  /* keyboard focus takes the hover fill, the same way .collapse-step-arrow does —
+     the ring says where you are, the fill says what you are on */
+  .collapse-table tbody tr:hover td,
+  .collapse-table tbody tr.kb-focus td { background: var(--sim-btn-hover, #f0f0f0); }
   .collapse-table tbody tr.is-selected td {
     background: var(--sim-trial-selected-bg, #CEF3DD);
     font-weight: 500;
@@ -2044,11 +2133,70 @@
   .collapse-table tbody tr.is-selected td:first-child {
     box-shadow: inset 3px 0 0 var(--sim-btn-border, #555);
   }
-  .collapse-table tbody tr:focus { outline: none; }
-  .collapse-table tbody tr:focus-visible {
-    outline: 2px solid #005FCC;
-    outline-offset: -2px;
+  /* :focus, NOT :focus-visible. Arrow keys move the roving tab stop with a .focus()
+     call, and :focus-visible does not match programmatic focus — bound to it, every
+     arrow press moved an invisible focus. But :focus alone is wrong the other way: a
+     tr with tabindex takes focus on CLICK too, so selecting a row with the mouse lit
+     the keyboard ring. Neither pseudo-class can tell the two apart, so the row
+     carries an explicit .kb-focus class that only the keyboard paths set — see
+     focusInGrid. */
+  .collapse-table tbody tr.kb-focus {
+    /* Two rings: white against the row's edge, blue inside it. Everywhere else in the
+       panels a bare blue ring is enough, because the backgrounds are flat and light
+       (#F0FAF4 / #DBF5E6 / #CEF3DD, all 5:1 or better against #005FCC). This row is
+       the exception: its ring runs the full height of the cave thumbnail and passes
+       within 1px of it, and that artwork is nearly black. The white keeps the
+       indicator readable against it however the picture cell's padding changes.
+       The sim already does this on the teal device switcher and the AP sidebar, for
+       the same reason -- see body.teal-bg .toggle-btn:focus-visible.
+
+       Two rings means box-shadow, since an outline is one ring and cannot be doubled.
+       But the shadow cannot go on the <tr> itself: a focused row takes the hover fill
+       on its CELLS, and an opaque cell background paints over the row's inset shadow,
+       so the ring vanished exactly when it was needed. (An outline survives that,
+       because outlines paint above descendants; inset shadows do not.) Hence a
+       pseudo-element, which is generated after the cells and paints above them.
+       First shadow wins where they overlap, so white occupies 0-2px and blue 2-4px. */
+    outline: none;
   }
+  /* On the first CELL, not on the row. A ::after on a <tr> is wrapped in an anonymous
+     table cell before position:absolute is ever applied, so the row grew a sixth
+     column and squeezed the three data columns from 153.5px to 115.1 — the content
+     visibly scrunched left the moment a row took focus. A cell's pseudo-element has
+     no such problem, and with the row positioned it still resolves its inset against
+     the ROW, so the ring is the full width of the row rather than of one cell. */
+  .collapse-table tbody tr.kb-focus td:first-child::after {
+    content: "";
+    position: absolute;
+    /* 0.5px, measured off the rendering rather than reasoned about. The dividers are
+       COLLAPSED borders (border-collapse on .collapse-table), so a 1px line is drawn
+       centred on the boundary between two rows — half a pixel into each. Flush at 0
+       therefore ate the line above the focused row, and a full 1px cleared it twice
+       over and left a sliver of the row's own fill showing below the ring. Half a
+       pixel each side clears exactly the half that belongs to this row. */
+    inset: 0.5px 0;
+    box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px #005FCC;
+    pointer-events: none;
+  }
+  /* The ends own no divider, so there the ring goes flush:
+       first row — the line above it is the HEADER's rule, not a border it shares, so
+                   a 0.5px top inset just exposed a band of the row's own fill;
+       last row  — tr:last-child td drops its border-bottom, so there is none below;
+       only row  — both at once.
+     Equal specificity to the rule above, so these have to come after it. */
+  /* -1px so the ring sits on the border box rather than inside that transparent
+     border, and a blue top edge instead of the usual white one: the white outer ring
+     exists to separate the blue from the grey dividers, and above row 0 there is no
+     divider — only the header's own green rule. Against the white table behind it
+     that white band read as a gap holding the ring away from the rule. The first
+     shadow wins where they overlap, so the blue bar replaces the white at the top
+     and the other three sides keep both rings. */
+  /* Only the inset differs: the ring itself is the same 2px white + 2px blue as every
+     other row, on all four sides. Flush at the top because there is no divider above
+     row 0 to leave room for — the line there is the header's own rule. */
+  .collapse-table tbody tr:first-child.kb-focus td:first-child::after { inset: 0 0 0.5px 0; }
+  .collapse-table tbody tr:last-child.kb-focus td:first-child::after { inset: 0.5px 0 0 0; }
+  .collapse-table tbody tr:only-child.kb-focus td:first-child::after { inset: 0; }
 
   /* Data panel: the selected row's measurements, centred */
   .collapse-data-body {
@@ -2075,11 +2223,16 @@
     font-weight: 700;
     color: var(--sim-icon-color, #124929);
   }
+  /* .sim-offspring-placeholder, the Bananas sim's "Each cross will produce 5-20
+     offspring." — the house voice for a panel that is waiting on the student. */
   .collapse-data-empty {
     font-family: 'Lato', sans-serif;
     font-size: 16px;
+    line-height: 20px;
     font-style: italic;
-    color: #4D4D4D;
+    font-weight: 400;
+    letter-spacing: 0.32px;
+    color: #333;
     text-align: center;
   }
 
@@ -2194,7 +2347,8 @@
      click therefore reads mostly as a saturation step (45% -> 75%) rather than a
      lightness one. More punch on the press means changing --sim-btn-active, which is
      shared by every button in the sim. */
-  .collapse-row-del:hover { background: #AEE4C2; }
+  .collapse-row-del:hover,
+  .collapse-row-del:focus-visible { background: #AEE4C2; }
   .collapse-row-del:active { background: var(--sim-btn-active, #70EBA3); }
   .collapse-row-del:focus { outline: none; }
   .collapse-row-del:focus-visible { outline: 2px solid #005FCC; outline-offset: -2px; }
@@ -3487,8 +3641,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.26</div>
-      <div style="font-weight: 400;">Updated: 10/19/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.27</div>
+      <div style="font-weight: 400;">Updated: 10/20/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -3708,7 +3862,7 @@ const SIMS = {
     name: "Mystery Lumps",
     description: "Short description of the sim",
     titleFont: "'Trade Winds', 'Lato', cursive",
-    titleSize: "22px",
+    titleSize: "21px",
     titleLetterSpacing: "2px",
     aboutTitleSize: "17px",
     theme: {
@@ -10776,6 +10930,20 @@ function buildSimContent() {
           if (SIM._syncActions) SIM._syncActions();
           scrollItemIntoView(targetCard, scrollWrap);
           updateTrialCardTabindex();
+
+          // Say which trial you landed on and what is in it. Both finished sims do
+          // this (see the Bananas and Nor'easter selectTrial paths) and Collapse! was
+          // the only one that switched trials silently -- the table, the picture and
+          // the averages all change underneath, with nothing spoken to say why.
+          // Same shape as theirs: the letter, then the trial's own conditions, then
+          // what has been collected so far.
+          const stSel = SIM.trialState && SIM.trialState[targetLetter];
+          const cond = TRIAL_CONTENT[targetLetter];
+          if (cond && SIM.announce) {
+            const n = (stSel && stSel.rows) ? stSel.rows.length : 0;
+            SIM.announce("Trial " + targetLetter + ", " + cond[0] + ", " + cond[1]
+              + ", " + (n === 0 ? "no samples yet" : n + (n === 1 ? " sample" : " samples")));
+          }
         }
 
         function getTrialNavCards() {
@@ -11254,6 +11422,16 @@ function buildSimContent() {
         flag.addEventListener("pointerup", tlUp);
         flag.addEventListener("pointercancel", tlUp);
         flag.addEventListener("blur", function () { flag.classList.remove("no-ring"); });
+        // ...and on arrival, because blur alone could not clear it. Dragging the flag
+        // adds no-ring but never focuses it, so no blur ever fired and the class stayed
+        // on indefinitely: tabbing back afterwards matched :focus-visible but still had
+        // no-ring suppressing the outline, so the ring was simply missing until an
+        // arrow key happened to clear it. Guarded on :focus-visible, so a pointer
+        // arrival (clicking the track, which does focus the flag) keeps the suppression
+        // it asked for.
+        flag.addEventListener("focus", function () {
+          if (flag.matches(":focus-visible")) flag.classList.remove("no-ring");
+        });
         flag.addEventListener("keydown", function (e) {
           flag.classList.remove("no-ring");
           if (e.key === "ArrowRight" || e.key === "ArrowDown") SIM._tlStep(1);
@@ -11333,6 +11511,16 @@ function buildSimContent() {
           btn.addEventListener("click", function () {
             if (btn.getAttribute("aria-disabled") === "true") return;
             SIM._tlStep(dir);
+            // Say where we landed. The year lives in a plain div, so pressing an arrow
+            // changed it silently: the button's own name ("Later, fewer years before
+            // collapse") says what the control does, never what it did. The slider does
+            // not need this — it carries aria-valuetext, which is how a slider reports
+            // its value — and announcing here as well would say the year twice when the
+            // two are driven together, so this fires only on the arrows.
+            if (SIM.announce) {
+              SIM.announce(SIM.tlYears.toLocaleString("en-US")
+                + (SIM.tlYears === 1 ? " year" : " years") + " before collapse.");
+            }
           });
           return btn;
         }
@@ -11412,8 +11600,8 @@ function buildSimContent() {
           if (SIM.announce) {
             SIM.announce("Sampled " + SIM.tlYears.toLocaleString("en-US")
               + " years before collapse. Erosion rate " + fmtCell(rate)
-              + " millimetres per 1,000 years, rock above the cave " + fmtCell(roof)
-              + " millimetres. Trial " + letter + " now has "
+              + " millimeters per 1,000 years, rock above the cave " + fmtCell(roof)
+              + " millimeters. Trial " + letter + " now has "
               + st.sampleCount + (st.sampleCount === 1 ? " sample." : " samples."));
           }
         });
@@ -11449,7 +11637,11 @@ function buildSimContent() {
         const CTL_BTN_PAD_L = [6, 8];
         const CTL_BTN_PAD_R = [8, 12];
         const CTL_BTN_GAP   = [3, 4];     // Sample's icon to its label
-        const CTL_BTN_ICON  = [22, 24];
+        // The icon does NOT shrink. It used to scale 24 -> 22 with everything else,
+        // which bought 0.73px across the entire responsive band -- the row never gets
+        // tight enough to reach the bottom of that range -- while taking the glyph
+        // under the 24x24 the rest of the sim's icons hold to. The other levers have
+        // plenty of range left, so t simply leans on them a little harder instead.
         // "Years before collapse" never comes closer than this to the panel's inner
         // edge. The row is centred on the TABLE, not the panel, so at the narrowest
         // the centred group hangs further left than its own padding — this is the
@@ -11503,8 +11695,6 @@ function buildSimContent() {
           SIM.sampleBtn.style.padding = "8px " + lerp(CTL_BTN_PAD_R)
             + "px 8px " + lerp(CTL_BTN_PAD_L) + "px";
           SIM.sampleBtn.style.gap = lerp(CTL_BTN_GAP) + "px";
-          const ic = SIM.sampleBtn.querySelector("svg");
-          if (ic) { ic.style.width = ic.style.height = lerp(CTL_BTN_ICON) + "px"; }
 
           if (w) {
             // flex-basis, not width: both boxes live in a flex row, where a plain
@@ -11592,13 +11782,20 @@ function buildSimContent() {
         headWrap.className = "collapse-thead-wrap";
         const headTable = document.createElement("table");
         headTable.className = "collapse-table";
+        // Presentational: these th's head nothing. The REAL column headers are the
+        // zero-height thead inside the body table (srHead below), which is what
+        // associates with the cells; this table exists only so the labels can sit
+        // outside the scroller and not scroll away. Declaring five columnheaders
+        // with no data cells behind them is what axe flags on it.
+        // role="presentation" propagates only to a table's required children (tr, th,
+        // td) — the sort buttons inside keep their roles and names.
+        headTable.setAttribute("role", "presentation");
 
         const tableWrap = document.createElement("div");
         tableWrap.className = "collapse-table-wrap";
         const table = document.createElement("table");
         table.className = "collapse-table";
         // rows are selectable, which is a grid rather than a plain table
-        table.setAttribute("role", "grid");
         // Split as [name, unit] so the break always lands before the unit. Left to
         // wrap on its own, "Erosion rate (mm/1,000 yr)" breaks inside the unit and
         // orphans "yr)" on the second line.
@@ -11636,6 +11833,14 @@ function buildSimContent() {
           const th = document.createElement("th");
           th.setAttribute("scope", "col");
           if (col.srOnly) {
+            // The whole CELL is hidden from assistive tech. This table is
+            // presentational, so these th's are not headers any more -- but their text
+            // was still being announced, so "Cave" and "Delete row" came through
+            // twice: once here and once from the real sr-only header row in the body
+            // table. Hiding the span alone was not enough: that left the th with no
+            // accessible name, which axe reports as an empty table header. Hiding the
+            // th hides its content with it and leaves no nameless cell behind.
+            th.setAttribute("aria-hidden", "true");
             const sr = document.createElement("span");
             sr.className = "sr-only";
             sr.textContent = col.srOnly;
@@ -11655,19 +11860,39 @@ function buildSimContent() {
             txt.appendChild(second);
             sortBtn.appendChild(txt);
             sortBtn.insertAdjacentHTML("beforeend", SORT_ICON);
-            sortBtn.addEventListener("click", function () { setSort(col.key, col.l1); });
-            // pointer only: mouseleave clears both, so a press released off the
-            // heading cannot leave the column stuck in its active fill
+            // The whole column name, not just its first line. col.l1 alone announced
+            // "Sorted by Years before" and "Sorted by Rock above" -- sentences that
+            // stop halfway. The unit in the parentheses is dropped: "Sorted by Rock
+            // above cave (mm), lowest first" reads as clutter when spoken.
+            const sortName = (col.l1 + " " + col.l2).replace(/\s*\([^)]*\)/, "").trim();
+            sortBtn.addEventListener("click", function () { setSort(col.key, sortName); });
+            // The column preview below the heading — "this is what you are about to
+            // reorder". mouseleave clears both, so a press released off the heading
+            // cannot leave the column stuck in its active fill.
+            // Keyboard focus gets the same preview: it was pointer-only, so tabbing to
+            // a heading told you the control was focused but not which column it acts
+            // on, while a mouse user got exactly that. Same standard the sim applies
+            // elsewhere (.collapse-step-arrow, and the headings' own fill).
+            // focus-visible, not focus: a CLICK also focuses the heading, and the
+            // pointer path already owns the preview there.
             const colNth = String(colIdx + 1);
-            sortBtn.addEventListener("mouseenter", function () { table.dataset.colHover = colNth; });
-            sortBtn.addEventListener("mousedown", function () { table.dataset.colActive = colNth; });
-            sortBtn.addEventListener("mouseup", function () { delete table.dataset.colActive; });
-            sortBtn.addEventListener("mouseleave", function () {
+            const colOn = function () { table.dataset.colHover = colNth; };
+            const colOff = function () {
               delete table.dataset.colHover;
               delete table.dataset.colActive;
+            };
+            sortBtn.addEventListener("mouseenter", colOn);
+            sortBtn.addEventListener("mousedown", function () { table.dataset.colActive = colNth; });
+            sortBtn.addEventListener("mouseup", function () { delete table.dataset.colActive; });
+            sortBtn.addEventListener("mouseleave", colOff);
+            sortBtn.addEventListener("focus", function () {
+              if (sortBtn.matches(":focus-visible")) colOn();
             });
+            sortBtn.addEventListener("blur", colOff);
             th.appendChild(sortBtn);
-            th.setAttribute("aria-sort", "none");
+            // the cosmetic hook, not aria-sort: this table is presentational, so the
+            // real aria-sort goes on the sr-only headers in the body table
+            th.dataset.sortDir = "none";
             th.dataset.sortKey = col.key;
           }
           headRow.appendChild(th);
@@ -11690,7 +11915,6 @@ function buildSimContent() {
         const promptVerb = document.createElement("b");
         promptVerb.textContent = "Sample";
         promptPill.appendChild(promptVerb);
-        promptPill.appendChild(document.createTextNode("."));
         promptWrap.appendChild(promptPill);
         headWrap.appendChild(promptWrap);
         SIM._promptWrap = promptWrap;
@@ -11707,6 +11931,8 @@ function buildSimContent() {
         TABLE_COLS.forEach(function (col) {
           const th = document.createElement("th");
           th.setAttribute("scope", "col");
+          // sort state is written here, not on the visible header — see renderTable
+          if (col.key) th.dataset.sortKey = col.key;
           th.textContent = col.srOnly || (col.l1 + " " + col.l2);
           srRow.appendChild(th);
         });
@@ -11715,6 +11941,99 @@ function buildSimContent() {
 
         const tbody = document.createElement("tbody");
         table.appendChild(tbody);
+
+        // --- Keyboard model: a plain table, not a grid ---------------------------
+        // This WAS role="grid" with a roving tabindex and arrow navigation. The grid
+        // pattern earns its keep when tabbing every row would be punishing and when
+        // you genuinely move cell to cell -- neither is true here. The three data
+        // cells were never navigable; left/right only ever hopped between a row and
+        // its delete button, so the pattern was charging a discovery cost (an 8th
+        // grader has to work out that arrows drive it) for a tab-stop saving that
+        // does not matter across a handful of samples.
+        // So: native table semantics, every row and every delete button in the
+        // natural Tab order, Enter or Space to select a row. That is what GOV.UK,
+        // USWDS, Carbon and Material all ship for a data table with row actions.
+        // Rows are marked with aria-current, NOT aria-selected: aria-selected only
+        // means anything inside a grid, listbox or tree, and this is none of those.
+        //
+        // Up/Down (and Home/End) are added ON TOP as a fast path down the rows, so
+        // you are not Tabbing past a delete button between every pair of samples.
+        // This is additive, not the grid pattern coming back: every row is still its
+        // own tab stop, Tab still walks row, delete, row, delete, and the arrows are
+        // simply a shortcut that costs nothing to ignore. The table binds no other
+        // meaning to the arrow keys, so there is nothing for them to collide with.
+        // Moving focus here is a .focus() call, which is why the rows' ring is bound
+        // to :focus and not :focus-visible -- :focus-visible does not match
+        // programmatic focus, so an arrow press would move an invisible focus.
+        // Which ring to paint. A tr with tabindex takes focus on click as well as on
+        // Tab, so the CSS cannot tell a pointer selection from a keyboard one: the row
+        // only gets .kb-focus when the focus arrived by keyboard. Capture phase, so the
+        // flag is set before the arrow handler below runs.
+        let kbNav = false;
+        tbody.addEventListener("pointerdown", function () { kbNav = false; }, true);
+        tbody.addEventListener("keydown", function () { kbNav = true; }, true);
+        function focusInGrid(el) {
+          Array.prototype.forEach.call(tbody.querySelectorAll("tr.kb-focus"),
+            function (r) { r.classList.remove("kb-focus"); });
+          if (kbNav && el.tagName === "TR") el.classList.add("kb-focus");
+          // preventScroll, then scroll deliberately: .focus() scrolls by itself, and
+          // the scrollIntoView that follows scrolled again on top of it. Arrowing down
+          // a long table moved 0, 0, 22, 109, 0, 35, 109 ... instead of a row at a time.
+          el.focus({ preventScroll: true });
+        }
+        // Tabbing to a row is a keyboard arrival too, but it goes through the browser
+        // rather than through focusInGrid, so it is caught here.
+        // The browser also scrolls on its own when Tab moves focus, and there is no
+        // preventScroll to pass it — it is free to centre the row or jump a screen.
+        // So: remember where the scroller was just before focus moved, put it back,
+        // and then scroll the minimum ourselves. Same single-row step as the arrows.
+        let scrollBefore = null;
+        tbody.addEventListener("focusout", function (e) {
+          scrollBefore = tbody.contains(e.target) ? tableWrap.scrollTop : null;
+        });
+        tbody.addEventListener("focusin", function (e) {
+          Array.prototype.forEach.call(tbody.querySelectorAll("tr.kb-focus"),
+            function (r) { if (r !== e.target) r.classList.remove("kb-focus"); });
+          if (e.target.tagName === "TR" && e.target.matches(":focus-visible")) {
+            e.target.classList.add("kb-focus");
+          }
+          const row = e.target.closest && e.target.closest("tr");
+          if (!row) return;
+          // only when focus MOVED within the table: arriving from outside has no
+          // earlier position worth restoring
+          if (scrollBefore !== null) tableWrap.scrollTop = scrollBefore;
+          if (row.scrollIntoView) row.scrollIntoView({ block: "nearest" });
+        });
+        tbody.addEventListener("focusout", function (e) {
+          if (!tbody.contains(e.relatedTarget)) {
+            Array.prototype.forEach.call(tbody.querySelectorAll("tr.kb-focus"),
+              function (r) { r.classList.remove("kb-focus"); });
+          }
+        });
+
+        tbody.addEventListener("keydown", function (e) {
+          if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+          if (e.key !== "ArrowUp" && e.key !== "ArrowDown"
+              && e.key !== "Home" && e.key !== "End") return;
+          const rows = Array.prototype.slice.call(tbody.children);
+          const row = e.target.closest && e.target.closest("tr");
+          const i = rows.indexOf(row);
+          if (i === -1) return;
+          e.preventDefault();
+          const to = e.key === "ArrowDown" ? Math.min(i + 1, rows.length - 1)
+                   : e.key === "ArrowUp"   ? Math.max(i - 1, 0)
+                   : e.key === "Home"      ? 0
+                   : rows.length - 1;
+          const dest = rows[to];
+          if (!dest) return;
+          // stay in the column you were in: from a delete button you land on the next
+          // delete button, not back out on the row
+          const onDel = e.target.classList
+            && e.target.classList.contains("collapse-row-del");
+          const b = onDel && dest.querySelector(".collapse-row-del");
+          focusInGrid(b || dest);
+          if (dest.scrollIntoView) dest.scrollIntoView({ block: "nearest" });
+        });
         tableWrap.appendChild(table);
         stage.appendChild(tableWrap);
 
@@ -11866,9 +12185,12 @@ function buildSimContent() {
 
         const dataBox = document.createElement("div");
         dataBox.className = "collapse-data-box";
-        // it lost the panel chrome and the tab that used to name it
+        // Named for the tab that sits on it, so the landmark a screen reader
+        // announces and the label a student sees are the same words. It was "Data"
+        // from when the panel had no chrome and nothing named it; the Cross Section
+        // tab was added later and this never caught up.
         dataBox.setAttribute("role", "region");
-        dataBox.setAttribute("aria-label", "Data");
+        dataBox.setAttribute("aria-label", "Cross Section");
         const dataInner = document.createElement("div");
         dataInner.className = "data-panel-inner collapse-data";
         const body = document.createElement("div");
@@ -11902,7 +12224,7 @@ function buildSimContent() {
           if (!row) {
             const empty = document.createElement("div");
             empty.className = "collapse-data-empty";
-            empty.textContent = "Select a row in the table to see the terrain cross section.";
+            empty.textContent = "Select a row in the table to see its cross section.";
             body.appendChild(empty);
             return;
           }
@@ -11981,6 +12303,16 @@ function buildSimContent() {
           const st = SIM.trialState[letter] || {};
           const rows = st.rows || [];
           syncPrompt(rows.length > 0);
+          // Selecting or deleting rebuilds every row, which drops focus to the body
+          // and strands a keyboard user at the top of the page. Remember where they
+          // were by POSITION, since the row object itself may be gone.
+          const focusWasInGrid = tbody.contains(document.activeElement);
+          const focusWasOnDel = focusWasInGrid && document.activeElement.classList
+            && document.activeElement.classList.contains("collapse-row-del");
+          const focusedIdx = focusWasInGrid
+            ? Array.prototype.indexOf.call(tbody.children,
+                document.activeElement.closest("tr"))
+            : -1;
           // consumed here rather than at the end, so an early return cannot leave a
           // stale row to be scrolled to on some later, unrelated render
           const revealTarget = SIM._revealRow;
@@ -11991,10 +12323,21 @@ function buildSimContent() {
             ? "Samples for trial " + letter + ": " + rows.length
                 + (rows.length === 1 ? " row." : " rows.")
             : "Samples for trial " + letter + ": no rows yet.";
-          // reflect the sort on the headings for assistive tech and the icons
-          headRow.querySelectorAll("th[data-sort-key]").forEach(function (th) {
+          // Sort state goes to the REAL headers (the sr-only thead in this table):
+          // aria-sort only means anything on an element that is a columnheader, and
+          // the visible header table is presentational now.
+          srRow.querySelectorAll("th[data-sort-key]").forEach(function (th) {
             th.setAttribute("aria-sort", th.dataset.sortKey !== sortState.key ? "none"
               : (sortState.dir === 1 ? "ascending" : "descending"));
+          });
+          // ...and the visible header keeps a plain data attribute for the chevrons.
+          // It carries no semantics: it exists because the CSS used to key off
+          // aria-sort, and moving that attribute alone left both arrows faded on the
+          // sorted column — the sort still worked but nothing showed which way.
+          headRow.querySelectorAll("th[data-sort-key]").forEach(function (th) {
+            th.removeAttribute("aria-sort");
+            th.dataset.sortDir = th.dataset.sortKey !== sortState.key ? "none"
+              : (sortState.dir === 1 ? "ascending" : "descending");
           });
           // the averages are over every row in the trial, so sorting cannot change
           // them — only sampling and deleting can
@@ -12022,8 +12365,8 @@ function buildSimContent() {
             const tr = document.createElement("tr");
             const isSel = st.selected === r;
             tr.className = isSel ? "is-selected" : "";
-            tr.setAttribute("aria-selected", isSel ? "true" : "false");
-            tr.setAttribute("tabindex", isSel ? "0" : "-1");
+            if (isSel) tr.setAttribute("aria-current", "true");
+            tr.setAttribute("tabindex", "0");
             function pick() {
               const stNow = SIM.trialState[SIM.selectedTrial];
               if (!stNow) return;
@@ -12037,6 +12380,9 @@ function buildSimContent() {
             if (r === revealTarget) revealEl = tr;
             tr.addEventListener("click", pick);
             tr.addEventListener("keydown", function (e) {
+              // only when the ROW has focus: this also fires for the delete button
+              // inside it, where Space is the button's own activation
+              if (e.target !== tr) return;
               if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); }
             });
 
@@ -12046,6 +12392,12 @@ function buildSimContent() {
             pic.className = "collapse-cell-pic";
             const art = caveArt(r);
             const box = document.createElement("span");
+            // Decorative: the same cross-section is in the Data panel at a readable
+            // size, and the row already announces its three values. Unhidden, a
+            // screen reader walks the inlined SVG's shapes in a cell whose header
+            // reads "Cave" and finds nothing it can use. (WCAG 1.1.1 — the Data
+            // panel's own copy still needs a real alternative; see the cave-art note.)
+            box.setAttribute("aria-hidden", "true");
             if (art) {
               box.className = "collapse-pic-img";
               box.innerHTML = art;
@@ -12110,6 +12462,16 @@ function buildSimContent() {
 
             tbody.appendChild(tr);
           });
+          if (focusedIdx > -1) {
+            // the row that was focused may have been the one deleted, so clamp
+            const back = tbody.children[Math.min(focusedIdx, tbody.children.length - 1)];
+            if (back) {
+              const b = focusWasOnDel && back.querySelector(".collapse-row-del");
+              focusInGrid(b || back);
+              // nearest: bring it just into view without yanking the viewport about
+              if (back.scrollIntoView) back.scrollIntoView({ block: "nearest" });
+            }
+          }
           // Chase the row that was just sampled, wherever the sort has put it, and
           // only far enough to bring it fully into view. Scrolling solely on an add
           // keeps selecting or deleting a row from moving the viewport underfoot.
@@ -12736,9 +13098,14 @@ function buildDemoView() {
     if (theme) {
       btn.style.borderWidth = "2px";
       if (isActive) {
-        btn.style.background = theme.btnActive;
-        btn.style.color = theme.titleText;
-        btn.style.borderColor = theme.btnBorder;
+        // The same inversion a selected trial card uses on its letter chip: the dark
+        // tone filled, with the pale text on it. The old btnActive fill only reached
+        // 1.22-1.60 against surface -- 1.18 for Bananas under deuteranopia, which is
+        // invisible -- so selection now reads as a LIGHTNESS flip (8.6-12.2) rather
+        // than a pale colour shift, and holds up under every form of colour blindness.
+        btn.style.background = theme.trialLabelSelectedBg;
+        btn.style.color = theme.trialLabelSelectedText;
+        btn.style.borderColor = theme.trialLabelSelectedBg;
       } else {
         btn.style.background = theme.surface;
         btn.style.color = theme.titleText;
@@ -12764,13 +13131,22 @@ function buildDemoView() {
     btn.setAttribute("aria-pressed", activeSim === s.key ? "true" : "false");
     btn.dataset.simKey = s.key;
     btn.textContent = s.label.toUpperCase();
+    // The button IS the sim's wordmark, so it takes the same type settings the sim's
+    // own title does -- all of them, not some. It used to copy titleFont and
+    // titleLetterSpacing but hard-code 24px, which broke the one sim that sets a size:
+    // Mystery Lumps declares titleSize 22px (Trade Winds overshoots its em box, see
+    // the title code) and its button rendered 24px, 2px bigger than its own header.
+    // Tracking had the mirror problem: with no titleLetterSpacing a sim's title still
+    // inherits the body's 0.02em, while a <button> does not, so Bananas read 0.32px in
+    // the header and normal in the button. Both now fall back to what the title gets.
     const simData = SIMS[s.key];
     if (simData && simData.titleFont) btn.style.fontFamily = simData.titleFont;
-    if (simData && simData.titleLetterSpacing) btn.style.letterSpacing = simData.titleLetterSpacing;
+    btn.style.letterSpacing = (simData && simData.titleLetterSpacing)
+      || getComputedStyle(document.body).letterSpacing;
     if (simData && simData.titleOffset) { btn.innerHTML = '<span style="position:relative;top:' + simData.titleOffset + '">' + btn.textContent + '</span>'; }
-    btn.style.fontSize = "24px";
+    btn.style.fontSize = (simData && simData.titleSize) || "24px";
     btn.style.fontWeight = "700";
-    btn.style.padding = "8px 10px";
+    btn.style.padding = "8px 12px";
     btn.style.minHeight = "50px";
     applyDemoBtnStyle(btn, s.key, activeSim === s.key);
 
@@ -12820,10 +13196,20 @@ function buildDemoView() {
   container.appendChild(demoWrap);
 
   // Equalize button widths to the widest
-  const btns = simBtns.querySelectorAll(".toggle-btn");
-  let maxW = 0;
-  btns.forEach(b => { if (b.offsetWidth > maxW) maxW = b.offsetWidth; });
-  btns.forEach(b => { b.style.width = maxW + "px"; b.style.textAlign = "center"; });
+  function equaliseDemoSimBtns() {
+    const bs = simBtns.querySelectorAll(".toggle-btn");
+    let m = 0;
+    bs.forEach(b => { b.style.width = ""; });
+    // getBoundingClientRect, not offsetWidth: offsetWidth is rounded to whole pixels
+    // and rounds DOWN, so the widest button measured 247 against a true 247.3 and the
+    // longest wordmark overflowed its own button by a third of a pixel. Ceil what is
+    // left, so the width is never short of the label that set it.
+    bs.forEach(b => { const w = b.getBoundingClientRect().width; if (w > m) m = w; });
+    m = Math.ceil(m);
+    bs.forEach(b => { b.style.width = m + "px"; b.style.textAlign = "center"; });
+    return m;
+  }
+  let maxW = equaliseDemoSimBtns();
 
   // Sim content (TD/Standalone: responsive 768–1024 x 562)
   const standaloneMax = 1024;
@@ -12855,6 +13241,25 @@ function buildDemoView() {
 
   contentCol.appendChild(content);
   demoRow.appendChild(contentCol);
+
+  // Measure again once the wordmark faces have landed. Each button is set in its
+  // sim's own display font, and a @font-face is not "pending" until something uses
+  // it -- so at build time document.fonts.ready has long since resolved and these
+  // faces are still not loaded. offsetWidth therefore returns FALLBACK metrics and
+  // freezes a width that is too narrow for the real wordmark: measured 229px frozen
+  // against 252px once Trade Winds lands, which left MYSTERY LUMPS spilling out of
+  // its button. maxW also sets how much room is left for the sim, so the content
+  // width is recomputed from the same formula rather than left on the stale number.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      const m = equaliseDemoSimBtns();
+      if (m === maxW) return;
+      maxW = m;
+      const avail = window.innerWidth - (m + 24) - demoPad - standaloneBorder;
+      content.style.width =
+        Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, avail))) + "px";
+    });
+  }
 
   if (SIM.updateDataPanel) SIM.updateDataPanel();
   if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
