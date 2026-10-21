@@ -1192,8 +1192,18 @@
      Sample on the TABLE's centre instead of the panel's. The margin is outside the
      item, so it shifts the visible group left by half of itself — exactly the
      offset between the two centres. gap does not double it: there is no item after
-     the last one for a gap to sit in. */
-  .collapse-controls > *:last-child { margin-right: calc(var(--data-w) - 2px); }
+     the last one for a gap to sit in.
+
+     MOCK NOTE (2026-10-21): this used to be *:last-child. The Compare Trials
+     button is appended after Sample so that focus order matches reading order, and
+     *:last-child would have put the phantom margin on that button -- which is
+     absolutely positioned, so the margin would have done nothing at all and the
+     three real controls would have centred on the panel instead of the table,
+     sliding ~140px right. Naming the Sample button is what keeps them centred.
+     Reverting the mock means putting *:last-child back. */
+  .collapse-controls > .sim-btn:not(.collapse-compare-open) {
+    margin-right: calc(var(--data-w) - 2px);
+  }
   .collapse-now {
     display: flex;
     flex-direction: column;
@@ -1719,6 +1729,521 @@
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     overflow: hidden;
+  }
+
+  /* MOCK (2026-10-21) -- the caption above the sim. Zero height, so it occupies no
+     space in the flow and the sim does not move; the text hangs out of that line,
+     20px clear of the sim's top edge. Centred rather than left-aligned because the
+     .content-area it sits over is centred in this column and its own left edge
+     moves with the viewport. See syncMockNote. */
+  .collapse-mock-note {
+    position: relative;
+    height: 0;
+    overflow: visible;
+  }
+  .collapse-mock-note span {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Lato', sans-serif;
+    /* 16px, the sim's minimum body size -- it was already this, confirmed by
+       measurement rather than by reading the declaration */
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 700;
+    /* The red already in the palette rather than a new one. Measured against the
+       page behind it, not assumed -- see the contrast note in the probe. */
+    color: #C62828;
+  }
+
+  /* --- Compare Trials overlay -------------------------------------------------
+     MOCK, added 2026-10-21. Everything in this block, the SIM._renderCompare
+     section in the Collapse branch, and the open button in the controls row are
+     the whole feature -- delete those three and the sim is back to v1.27.
+
+     It lives inside .collapse-stage-row, which is already position:relative, so
+     inset:0 covers exactly the table and the Cross Section box and nothing else.
+     The timeline, the controls row and the trial cards stay visible and live
+     behind it, which is why this is NOT a modal dialog: the two things it hides
+     are made inert instead, so a keyboard user cannot tab into what is covered
+     while everything still on screen keeps working. */
+  .collapse-controls { position: relative; }
+  /* Over the Cross Section column, in the dead space the centred group's phantom
+     margin already reserves (see .collapse-controls > *:last-child). Absolute, not
+     a flex child: a fourth child would take that phantom margin onto itself and
+     throw the centring of the other three off by the width of the Data box. */
+  .collapse-compare-open {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  /* The Cross Section pill straddles the top edge of the row by 17 of its 36px, so
+     17px of it would stand above an inset:0 overlay no matter what z-index it had.
+     Hiding it is the only way the overlay reads as one clean surface. */
+  .collapse-sim-content.comparing .collapse-cross-tab { display: none; }
+  /* Scoped to Collapse: .sim-content is shared with the other two sims and making
+     it a containing block everywhere could re-anchor an absolute in one of them. */
+  .collapse-sim-content { position: relative; }
+  .collapse-compare {
+    position: absolute;
+    /* Top edge level with the tops of the two panels. .sim-content starts at the
+       title bar's bottom edge and the panels start 17px below that -- the straddle
+       the Trials and Simulation tab pills sit in -- so 17 is the panel line, and it
+       measures 17.00 at 1512, 1140 and 1000 alike. 10px in from the other three
+       sides. Measured: at 1512 that is 1004 x 485. */
+    top: 17px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    /* over the Cross Section pill's 11 */
+    z-index: 12;
+    display: flex;
+    flex-direction: column;
+    background: var(--sim-surface, #fff);
+    border: 2px solid var(--sim-panel-border, #358D5A);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .collapse-compare[hidden] { display: none; }
+
+  .collapse-compare-head {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 6px 6px 10px;
+    border-bottom: 2px solid var(--sim-panel-border, #358D5A);
+  }
+  .collapse-compare-titles { flex: 1 1 auto; min-width: 0; }
+  .collapse-compare-title {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+    color: #333;
+    margin: 0;
+  }
+  /* The units live here, once, instead of four times in the column heads. Three
+     two-line headings plus a thumbnail will not fit in a quarter of this panel at
+     16px -- "(mm/1,000 yr)" alone is 95.2px and the whole column is 206 -- so the
+     heads below are the short names and this line carries what they mean. */
+  .collapse-compare-legend {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    color: #333;
+  }
+  /* The three keys are set as the sim table sets its column headings -- Roboto
+     Condensed Medium in the icon green at half the body tracking -- which is also
+     what .collapse-cmp-sort uses, so the word here and the heading it names are
+     typographically the same thing. */
+  .collapse-compare-key {
+    font-weight: 500;
+    letter-spacing: 0.16px;
+    color: var(--sim-icon-color, #124929);
+  }
+  .collapse-compare-close {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    /* 44 high in a head that is only 38: the same negative-margin trick the row
+       delete uses, so the target is full size without setting the band's height */
+    margin: -3px 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--sim-icon-color, #124929);
+  }
+  .collapse-compare-close svg { width: 24px; height: 24px; display: block; }
+  .collapse-compare-close:hover { background: #AEE4C2; }
+  .collapse-compare-close:active { background: var(--sim-btn-active, #70EBA3); }
+  .collapse-compare-close:focus { outline: none; }
+  .collapse-compare-close:focus-visible {
+    background: #AEE4C2;
+    outline: 2px solid #005FCC;
+    outline-offset: -2px;
+  }
+
+  /* Sideways only. Vertical scrolling belongs to each column's rows, not to the
+     grid: scrolling the grid took the trial names, the conditions and the column
+     heads up with it. */
+  .collapse-compare-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: var(--sim-surface, #fff);
+  }
+  .collapse-compare-grid:focus { outline: none; }
+  /* House pattern (Bananas, then the trials rail): a scrollable region gets a tab
+     stop only while it actually scrolls, and shows the shared inset ring when it
+     has focus. The ring is a sibling, positioned against .collapse-compare. */
+  .collapse-compare-grid:focus ~ .scroll-focus-ring,
+  .collapse-compare-grid:focus-visible ~ .scroll-focus-ring { display: block; }
+  .collapse-compare-grid:focus:not(:focus-visible) ~ .scroll-focus-ring { display: none; }
+  /* 225 = 40 thumb + 62 years + 58 rate + 61 rock + 4 of column padding. Each of
+     the three is sized on the wider of its own heading-plus-chevron and its widest
+     value, all measured in Roboto Condensed: Years is held by "200,000" at 52.8
+     plus padding, Rate and Rock by their headings (54.3 and 57.2 with the chevron).
+     Four of them plus three 2px dividers need 906. Keeping four columns and
+     scrolling sideways below that is the honest degradation -- the whole point of
+     the view is the four trials next to each other. */
+  .collapse-compare-col {
+    flex: 1 0 var(--cmp-colmin, 225px);
+    min-width: var(--cmp-colmin, 225px);
+    border-left: 2px solid var(--sim-panel-border, #358D5A);
+    /* head pinned, rows scrolling underneath it */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .collapse-compare-col:first-child { border-left: 0; }
+  /* Trial name, conditions and column heads never move: they are outside the
+     scroller entirely, so which trial and which column a number belongs to is
+     always on screen. */
+  .collapse-compare-colhead {
+    flex: 0 0 auto;
+    background: var(--sim-surface, #fff);
+  }
+  /* The only thing that scrolls. One per trial, because the four are separate
+     lists of different lengths -- there is no row N that means the same thing in
+     all four, so scrolling them as one would be a coincidence, not an alignment. */
+  .collapse-compare-rowsbox {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    /* White, not the sim surface the head band takes -- the rows read as the paper
+       the samples are written on, the way they do in the sim's own table, and the
+       split also marks where the scrolling part of the column starts. */
+    background: #fff;
+  }
+  .collapse-compare-rows {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .collapse-compare-rows:focus { outline: none; }
+  .collapse-compare-rows:focus ~ .scroll-focus-ring,
+  .collapse-compare-rows:focus-visible ~ .scroll-focus-ring { display: block; }
+  .collapse-compare-rows:focus:not(:focus-visible) ~ .scroll-focus-ring { display: none; }
+  /* Just the letter, in the same badge the trial cards wear: 28x28, 4px radius,
+     Lato 700 at 18. Centred here rather than pinned top-left as it is on a card --
+     a card is 120 wide and reads left to right, a column is 186 to 250 and
+     everything else in this head is centred on it. */
+  .collapse-compare-trial {
+    display: flex;
+    justify-content: center;
+    padding: 4px 2px 2px 2px;
+  }
+  /* All four badges wear the card's SELECTED colours, not just the trial you were
+     last on. Marking one of them current said "you are here", which is the one
+     thing this view is not about -- it exists to put the four trials on equal
+     footing, and a single dark badge made the other three read as inactive. */
+  .collapse-compare-letter {
+    font-family: 'Lato', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sim-trial-label-selected-text, #fff);
+    background: var(--sim-trial-label-selected-bg, #000);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  /* Rock and weather on one line, bulleted, centred under the trial name. Both
+     fit: the widest pair is Limestone + Wet at 107.2px of text plus two 22px icons,
+     their 5px gaps and the bullet -- about 170 in a column that is never under
+     225. */
+  .collapse-compare-cond {
+    padding: 2px 6px 5px 6px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    /* Flat 12, not one of the responsive levers: this line is 157.5px wide at its
+       widest (Limestone + Wet) and the column is never under 201, so the gap has
+       no bearing on what fits and nothing is bought by condensing it. */
+    gap: 12px;
+  }
+
+  /* The conditions reuse .collapse-attr-row from the trial cards -- same icon, same
+     label, same spacing -- but without the ">50 rainy days/yr" note, which is two
+     more lines per trial and this overlay has 258px for everything. */
+  .collapse-compare-cond .collapse-attr-row { margin: 0; }
+
+  /* Same typography as the sim's own table: Roboto Condensed 16 at 0.02em, heads
+     at 500 in the icon green with half the tracking, cells at 400. The numbers in
+     the two tables are the same numbers, so they should not be set differently. */
+  /* What Wet and Dry mean, under the pair and centred on the column. Same face,
+     size and tracking as the trial cards' own note (.collapse-attr-noteline):
+     Roboto Condensed 400 at 0.01em, which is the narrowest tracking in the sim and
+     is used there for the same reason -- this is the widest run in the block.
+     There is no spare room above the column heads to hide it in: the conditions
+     row ends at 57 and the heads begin at 57. The 12.5px of white you can see
+     below the conditions is INSIDE the 44px sort button, so a label there would
+     eat into a touch target. So it goes in the flow and the heads move down,
+     with the 10px of clearance asked for -- that is this padding-bottom, measured
+     from the note's line box to the top of the heading row. */
+  .collapse-compare-note {
+    padding: 0 6px 10px 6px;
+    text-align: center;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 16px;
+    line-height: 18px;
+    font-weight: 400;
+    letter-spacing: 0.16px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  .collapse-compare-tbl {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.32px;
+  }
+  .collapse-compare-tbl th, .collapse-compare-tbl td {
+    padding: 2px var(--cmp-cellpad, 2px);
+    text-align: center;
+    font-weight: 400;
+    line-height: 18px;
+    white-space: nowrap;
+  }
+  .collapse-compare-tbl td { color: var(--sim-btn-text, #333); }
+  .collapse-compare-tbl th {
+    font-weight: 700;
+    border-bottom: 1.5px solid var(--sim-panel-border, #358D5A);
+    /* the sort button fills the cell, so the padding lives on it */
+    padding: 0;
+  }
+  /* Sorting, driven from the same sortState the main table uses -- see setSort, so
+     one click reorders all four trials and the table behind them at once.
+     44px tall rather than the painted-box-plus-hit-overlay the table's own headings
+     use: there is vertical room here, so the target can simply be full size. */
+  .collapse-cmp-sort {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--cmp-btngap, 3px);
+    padding: 2px var(--cmp-btnpad, 4px);
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    /* the table's thead tracking, half the body's -- the headings are the widest
+       text in the column and the first thing to run out of room */
+    letter-spacing: 0.16px;
+    color: var(--sim-icon-color, #124929);
+  }
+  /* The chevron narrows with everything else. Height is stated rather than left to
+     auto so it keeps the icon's own 14:22 ratio exactly. */
+  .collapse-cmp-sort .collapse-sort-ico {
+    width: var(--cmp-chev, 14px);
+    height: calc(var(--cmp-chev, 14px) * 22 / 14);
+  }
+  /* The heading's states reach down its own column, exactly as they do in the sim
+     table -- see the .collapse-table[data-col-hover] rules. The head and the rows
+     are separate tables here too, so CSS cannot select across them: the heading's
+     listeners put the column number on the .collapse-compare-col that holds both.
+     Only the three measurement columns; the thumbnail is not sortable, same as
+     there. The head table has no tbody, so "tbody td" cannot reach it.
+     These outrank the collapsed row's tint (0,4,2 against 0,3,1), so the band
+     stays unbroken through a collapse row. */
+  .collapse-compare-col[data-col-hover="2"] .collapse-compare-tbl tbody td:nth-child(2),
+  .collapse-compare-col[data-col-hover="3"] .collapse-compare-tbl tbody td:nth-child(3),
+  .collapse-compare-col[data-col-hover="4"] .collapse-compare-tbl tbody td:nth-child(4) {
+    background: var(--sim-btn-hover, #DBF5E6);
+    box-shadow: inset 2px 0 0 #fff, inset -2px 0 0 #fff;
+  }
+  .collapse-compare-col[data-col-active="2"] .collapse-compare-tbl tbody td:nth-child(2),
+  .collapse-compare-col[data-col-active="3"] .collapse-compare-tbl tbody td:nth-child(3),
+  .collapse-compare-col[data-col-active="4"] .collapse-compare-tbl tbody td:nth-child(4) {
+    background: var(--sim-btn-active, #70EBA3);
+    box-shadow: inset 2px 0 0 #fff, inset -2px 0 0 #fff;
+  }
+  /* --- Linked rows ------------------------------------------------------------
+     Hovering, focusing or pinning a row lights every row with the SAME YEAR in all
+     four trials, so a year can be read across instead of hunted for column by
+     column. Years come from TL_VALUES -- sixteen fixed integers -- so the match is
+     exact equality, never a tolerance.
+     The long selector is not a specificity hack: it is the real nesting, and it is
+     there so these beat the column rules above, which are (0,4,2). This is (0,4,3)
+     -- same class count, one more element -- so at the cross-hair the row wins and
+     the pinned band stays continuous across the lit column. Pin is declared after
+     hover at equal specificity, so pin wins over hover by source order. */
+  .collapse-compare-col .collapse-compare-rows .collapse-compare-tbl tbody tr.cmp-link td {
+    background: var(--sim-btn-hover, #DBF5E6);
+  }
+  .collapse-compare-col .collapse-compare-rows .collapse-compare-tbl tbody tr.cmp-pin td {
+    background: var(--sim-trial-selected-bg, #CEF3DD);
+  }
+  /* the note under a collapsed row joins whichever band its row is in */
+  .collapse-compare-col .collapse-compare-rows .collapse-compare-tbl tbody tr.cmp-link-note td,
+  .collapse-compare-col .collapse-compare-rows .collapse-compare-tbl tbody tr.cmp-pin-note td {
+    background: var(--sim-trial-selected-bg, #CEF3DD);
+  }
+  .collapse-compare-tbl tbody tr[tabindex] { cursor: pointer; }
+  .collapse-compare-tbl tbody tr:focus { outline: none; }
+  /* Same two-layer ring the sim table's rows use: white inside, blue outside, drawn
+     on the first cell so it cannot squeeze the row (a ::after on a <tr> is wrapped
+     in an anonymous cell and creates a phantom column). */
+  .collapse-compare-tbl tbody tr.kb-focus td:first-child { position: relative; }
+  .collapse-compare-tbl tbody tr.kb-focus td:first-child::after {
+    content: "";
+    position: absolute;
+    inset: 0.5px 0;
+    box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px #005FCC;
+    pointer-events: none;
+  }
+  .collapse-cmp-sort:hover { background: var(--sim-btn-hover, #DBF5E6); }
+  .collapse-cmp-sort:active { background: var(--sim-btn-active, #70EBA3); }
+  .collapse-cmp-sort:focus { outline: none; }
+  .collapse-cmp-sort:focus-visible {
+    outline: 2px solid #005FCC;
+    outline-offset: -2px;
+  }
+  /* Centred, heads and values alike, so each measurement sits in the middle of its
+     own column; only the thumbnail stays left, against the column's edge.
+     Trade-off taken knowingly: right-aligned figures line their digits up, which
+     makes 200,000 over 20,000 quicker to scan down a column. */
+  /* Widths live on <col>, NOT on the cells. table-layout: fixed sizes a table from
+     its FIRST row, and the body table's first row is the zero-height sr-only thead,
+     whose th's are .sr-only -- width: 1px. So every width set on a td was being
+     thrown away and the four columns were splitting evenly, which at 1080 and below
+     left "200,000" overflowing its cell by up to 2.5px. A colgroup is read ahead of
+     any row, so it holds whichever row comes first. */
+  .collapse-compare-tbl col.cmp-pic { width: var(--cmp-pic, 40px); }
+  .collapse-compare-tbl col.cmp-rate { width: var(--cmp-rate, 58px); }
+  .collapse-compare-tbl col.cmp-rock { width: var(--cmp-rock, 61px); }
+  /* no col rule for years: it takes whatever the other three leave */
+  /* Years slides to the left side of its own column as things narrow, and sits
+     where it always did at the widest. The mechanism is a growing right pad with
+     the text still centred: centring in (cell - pad) moves the text left by half
+     the pad, so a pad equal to the cell's whole slack lands it flush left. The
+     head takes the same pad, so the label and chevron travel with their numbers
+     instead of drifting off them. --cmp-yrpad is 0 at the widest, so nothing
+     there moves at all. */
+  .collapse-compare-tbl td.cmp-years {
+    padding-right: calc(var(--cmp-cellpad, 2px) + var(--cmp-yrpad, 0px));
+  }
+  .collapse-compare-tbl th.cmp-years { padding-right: var(--cmp-yrpad, 0px); }
+  .collapse-compare-tbl .cmp-pic {
+    text-align: left;
+    padding-left: 4px;
+  }
+  .collapse-compare-tbl .cmp-years,
+  .collapse-compare-tbl .cmp-rate,
+  .collapse-compare-tbl .cmp-rock { text-align: center; }
+  /* Measured in Roboto Condensed 500, not guessed: label + 3px gap + the 14px
+     chevron + 8px of button padding is 54.3 for Rate and 57.2 for Rock. The extra
+     ~3px is the active chevron's scale(1.3), which paints ~1.6px proud of its own
+     14px box. Condensing bought about 4px a column over Lato. */
+
+  /* years takes the remainder -- "200,000" is 61.3px in Lato 400 and the slack at
+     full width puts it near 74, so it never has to wrap */
+  .collapse-compare-tbl tbody tr + tr td { border-top: 1px solid #C9C9C9; }
+  .collapse-compare-tbl tbody td { height: 32px; }
+  /* 36x28 rather than the table's 44x43: four of these columns and a 258px row do
+     not have the height for full-size thumbnails, and the shape still reads. */
+  .collapse-compare-thumb {
+    display: block;
+    box-sizing: border-box;
+    width: var(--cmp-thumb, 36px);
+    height: 28px;
+    overflow: hidden;
+    /* same 3:1 non-text contrast grey as the table's thumbnails */
+    border: 1px solid #828282;
+    border-radius: 3px;
+  }
+  .collapse-compare-thumb svg { display: block; width: 100%; height: 100%; }
+  /* The collapse marker. The row above keeps its three numbers; this line names
+     what happened, left-aligned under them and in the same bold the main table
+     gives the failure. A tint alone would be colour-only (WCAG 1.4.1) -- the word
+     is what carries it, and the fill is the enhancement. */
+  .collapse-compare-tbl tr.cmp-collapsed td { padding-bottom: 0; }
+  .collapse-compare-tbl tr.cmp-collapsed-note td {
+    border-top: 0;
+    height: auto;
+    padding: 0 6px 3px 4px;
+    text-align: left;
+    /* 500, one step over the cells it sits under -- the main table's own failure
+       cell leans on wording and position rather than weight, and the tint is doing
+       work here that it does not do there */
+    font-weight: 500;
+    line-height: 18px;
+  }
+  .collapse-compare-tbl tr.cmp-collapsed td,
+  .collapse-compare-tbl tr.cmp-collapsed-note td { background: #FBE6C8; }
+  /* The house empty-state voice, lifted from .collapse-data-empty -- Lato italic
+     at the table tracking. min-height rather than height so a column that somehow
+     needed more than the box could still scroll instead of clipping. */
+  /* The summary strip, pinned below the rows the way the heads are pinned above
+     them -- outside .collapse-compare-rows, so it stays put while the samples
+     scroll. Same treatment as the sim table's own strip: white, icon green,
+     Medium, and its rule above it rather than below. */
+  .collapse-compare-foot { flex: 0 0 auto; background: #fff; }
+  .collapse-compare-foot[hidden] { display: none; }
+  .collapse-compare-tbl .collapse-compare-footrow th,
+  .collapse-compare-tbl .collapse-compare-footrow td {
+    background: #fff;
+    color: var(--sim-icon-color, #124929);
+    font-weight: 500;
+    line-height: 18px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 5px var(--cmp-cellpad, 2px);
+    border-top: 0;
+    /* The "Average:" cell is a th, so it was inheriting the column heads' own
+       border-bottom and drawing a green rule under itself -- under that one cell
+       only, since the two value cells are td's. The strip's rule belongs ABOVE it,
+       and that is the inset shadow below. */
+    border-bottom: 0;
+    box-shadow: inset 0 1.5px 0 var(--sim-panel-border, #358D5A);
+  }
+  /* The only th in the strip. Right-aligned so it sits against the first column it
+     actually describes; it spans the thumbnail and Years because neither has an
+     average, and because "Average:" is 61.9px in Roboto Condensed Medium and the
+     Years column is only 54.8 at its narrowest -- on its own it would wrap. */
+  .collapse-compare-tbl .collapse-compare-footrow th {
+    text-align: right;
+    padding-right: 6px;
+  }
+  .collapse-compare-empty {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    font-family: 'Lato', sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0.32px;
+    color: #333;
+    text-align: center;
   }
 
   /* --- Collapse data table ---------------------------------------------------
@@ -3641,8 +4166,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.27</div>
-      <div style="font-weight: 400;">Updated: 10/20/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.28</div>
+      <div style="font-weight: 400;">Updated: 10/21/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -4000,6 +4525,46 @@ function applySimTheme(contentEl) {
     if (v) contentEl.style.setProperty(k, v);
     else contentEl.style.removeProperty(k);
   }
+  syncMockNote(contentEl);
+}
+
+// MOCK (2026-10-21). Floats a caption above the sim for Collapse only, saying the
+// Compare Trials button and overlay are not real yet. Hung off applySimTheme
+// because that is the one function every path that builds a .content-area calls --
+// the demo rebuild, both AP layouts and the device frames -- so the note survives
+// a layout change instead of being orphaned by it.
+// It CANNOT live inside .content-area: that box is overflow:hidden, so anything
+// above its top edge is clipped. It is a sibling just before it instead, with zero
+// height so it takes no space in the flow and cannot push the sim down; the text
+// is absolutely positioned out of that zero-height line.
+// Rip-out: this function, its one call above, and the .collapse-mock-note CSS.
+function syncMockNote(contentEl) {
+  const parent = contentEl.parentElement;
+  // applySimTheme runs on the content element BEFORE it is appended -- see
+  // rebuildDemoContent, which themes it and then puts it in the column -- so on
+  // the first pass there is no parent to insert beside. One retry on the next
+  // frame, by which time it is attached. Not a loop: the retry does not re-arm.
+  if (!parent) {
+    requestAnimationFrame(function () {
+      if (contentEl.parentElement) syncMockNote(contentEl);
+    });
+    return;
+  }
+  let note = parent.querySelector(":scope > .collapse-mock-note");
+  if (activeSim !== "collapse") {
+    if (note) note.remove();
+    return;
+  }
+  if (!note) {
+    note = document.createElement("div");
+    note.className = "collapse-mock-note";
+    const span = document.createElement("span");
+    span.textContent = "Note: Compare Trials button/table is a mock-up only.";
+    note.appendChild(span);
+  }
+  // before, not after: the zero-height line has to sit on the sim's top edge for
+  // the text to hang 20px above it
+  parent.insertBefore(note, contentEl);
 }
 
 const infoIconSVG = '<svg aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="nonzero" d="M11,7 L13,7 L13,9 L11,9 L11,7 Z M11,11 L13,11 L13,17 L11,17 L11,11 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z"/></svg>';
@@ -10659,11 +11224,13 @@ function buildSimContent() {
 
     // The artwork for a row. Every TL_VALUES stop is present, so the green standin
     // below is now only a guard against a year being added without art.
-    function caveArt(row) {
+    function caveArt(row, letter) {
       if (!row) return null;
       const byYear = CAVE_IMG[row.years];
       if (!byYear) return null;
-      return byYear[(TRIAL_CONTENT[SIM.selectedTrial] || []).join("|")] || null;
+      // letter is optional: the table and the Cross Section panel always want the
+      // trial you are on, and only the Compare overlay asks for a different one
+      return byYear[(TRIAL_CONTENT[letter || SIM.selectedTrial] || []).join("|")] || null;
     }
 
     // TEMP: labels whose icon is still a standin — delete this and the .temp-ip CSS
@@ -10703,7 +11270,10 @@ function buildSimContent() {
     };
 
     const wrap = document.createElement("div");
-    wrap.className = "sim-content";
+    // collapse-sim-content is the Compare overlay's positioning frame -- see the
+    // .collapse-compare rules. Scoped, because .sim-content is shared with Bananas
+    // and Nor'easter and must not become a containing block for them.
+    wrap.className = "sim-content collapse-sim-content";
 
     const liveAnnounce = document.createElement("div");
     liveAnnounce.className = "sr-only";
@@ -11566,6 +12136,25 @@ function buildSimContent() {
         SIM.sampleBtn = makeAction("Sample", SAMPLE_ICON);
         controls.appendChild(SIM.sampleBtn);
 
+        // MOCK (2026-10-21) -- opens the Compare Trials overlay built further down.
+        // No icon: the label alone is 112.2px in Lato 700 and the space it sits in
+        // is var(--data-w), which is 206.9 at its narrowest, so a glyph would have
+        // taken it past that. Absolutely positioned, so it is NOT part of the three
+        // items syncControls measures and centres -- see .collapse-compare-open.
+        const compareBtn = document.createElement("button");
+        compareBtn.type = "button";
+        compareBtn.className = "sim-btn collapse-compare-open";
+        compareBtn.setAttribute("aria-expanded", "false");
+        const compareBtnLabel = document.createElement("span");
+        compareBtnLabel.textContent = "Compare Trials";
+        compareBtn.appendChild(compareBtnLabel);
+        // Appended, so a keyboard reaches it where the eye does -- after Sample, at
+        // the right-hand end of the row. That costs the phantom-margin rule its
+        // :last-child selector, which now names the Sample button instead; see
+        // .collapse-controls > .sim-btn:not(.collapse-compare-open).
+        controls.appendChild(compareBtn);
+        SIM.compareBtn = compareBtn;
+
         // No Reset Trial here: every trial card carries its own reset button, so a
         // second one in this row was the same action twice. SIM.resetTrialBtn is
         // left undefined; the shared sync helpers all guard on it.
@@ -11719,7 +12308,11 @@ function buildSimContent() {
         }
 
         function ctlMeasure() {
-          const kids = Array.prototype.slice.call(controls.children);
+          // The Compare Trials button is out of flow and pinned to the row's right
+          // edge, so including it would report the group as the whole panel and peg
+          // the row at its narrowest state everywhere.
+          const kids = Array.prototype.slice.call(controls.children)
+            .filter(function (k) { return !k.classList.contains("collapse-compare-open"); });
           let l = Infinity, r = -Infinity;
           kids.forEach(function (k) {
             const b = k.getBoundingClientRect();
@@ -12261,6 +12854,661 @@ function buildSimContent() {
         crossLabel.textContent = "Cross Section";
         crossTab.appendChild(crossLabel);
         stageRow.appendChild(crossTab);
+
+        // --- Compare Trials overlay (MOCK, 2026-10-21) -------------------------
+        // All four trials side by side: conditions, then that trial's own samples.
+        // Covers the table and the Cross Section box only; the timeline, controls
+        // and trial cards stay live behind it. Rip-out: this block, the
+        // .collapse-compare CSS, and the compareBtn in the controls row.
+        const compare = document.createElement("div");
+        compare.className = "collapse-compare";
+        compare.hidden = true;
+        // A region, not a dialog: it covers two things, not the sim, and everything
+        // still on screen keeps working. The two it covers are made inert on open,
+        // so nothing focusable hides underneath it.
+        compare.setAttribute("role", "region");
+        compare.setAttribute("aria-label", "Compare trials");
+
+        const cmpHead = document.createElement("div");
+        cmpHead.className = "collapse-compare-head";
+        const cmpTitles = document.createElement("div");
+        cmpTitles.className = "collapse-compare-titles";
+        // h2, matching the panel tabs it sits over. As an h3 it followed the page
+        // h1 directly once the panels went inert, which is a skipped level.
+        const cmpTitle = document.createElement("h2");
+        cmpTitle.className = "collapse-compare-title";
+        cmpTitle.textContent = "Compare Trials";
+        const cmpLegend = document.createElement("div");
+        cmpLegend.className = "collapse-compare-legend";
+        // Spells out what each short heading stands for, rather than listing the
+        // three full names and leaving the reader to pair them up by order. The
+        // word before each "=" is set exactly as the heading it names, so the two
+        // read as the same thing rather than as a word about a thing.
+        [["Years", "Years before collapse (yr)"],
+         ["Rate",  "Erosion rate (mm/1,000 yr)"],
+         ["Rock",  "Rock above cave (mm)"]].forEach(function (pair, i) {
+          if (i) cmpLegend.appendChild(document.createTextNode(" | "));
+          const key = document.createElement("span");
+          key.className = "collapse-compare-key";
+          key.textContent = pair[0];
+          cmpLegend.appendChild(key);
+          cmpLegend.appendChild(document.createTextNode(" = " + pair[1]));
+        });
+        cmpTitles.appendChild(cmpTitle);
+        cmpTitles.appendChild(cmpLegend);
+        cmpHead.appendChild(cmpTitles);
+
+        const cmpClose = document.createElement("button");
+        cmpClose.type = "button";
+        cmpClose.className = "collapse-compare-close";
+        cmpClose.setAttribute("aria-label", "Close the trial comparison");
+        cmpClose.appendChild(createSVGIcon(closeIconSVG));
+        cmpHead.appendChild(cmpClose);
+        compare.appendChild(cmpHead);
+
+        const cmpGrid = document.createElement("div");
+        cmpGrid.className = "collapse-compare-grid";
+        compare.appendChild(cmpGrid);
+        const cmpRing = document.createElement("div");
+        cmpRing.className = "scroll-focus-ring";
+        compare.appendChild(cmpRing);
+        // Parked on SIM for now. It cannot be appended here: the Simulation panel is
+        // not in the wrapper yet at this point in the build, so appending put the
+        // overlay BETWEEN the two panels and shifted every later child's index.
+        // It goes on last, just before the Collapse branch returns the wrapper.
+        SIM._compareEl = compare;
+
+        // Short heads, with the full column name kept for screen readers. The three
+        // real two-line headings plus a thumbnail need about 300px and a quarter of
+        // this row is 206, so the units moved to the legend above instead.
+        // Both tables need the same colgroup -- the visible head and the rows are
+        // separate tables and have to agree on their columns.
+        function cmpColGroup() {
+          const cg = document.createElement("colgroup");
+          ["cmp-pic", "cmp-years", "cmp-rate", "cmp-rock"].forEach(function (c) {
+            const col = document.createElement("col");
+            col.className = c;
+            cg.appendChild(col);
+          });
+          return cg;
+        }
+
+        const CMP_COLS = [
+          { cls: "cmp-years", head: "Years", full: "Years before collapse", key: "years" },
+          { cls: "cmp-rate",  head: "Rate",  full: "Erosion rate",          key: "rate" },
+          { cls: "cmp-rock",  head: "Rock",  full: "Rock above cave",       key: "roof" }
+        ];
+
+        // --- Linked rows across trials ----------------------------------------
+        // A year is the only thing the four trials genuinely share: they are four
+        // different lists, but every sample sits on one of the sixteen TL_VALUES
+        // stops. Lighting the same year everywhere is what lets the view be read
+        // across rather than down.
+        let cmpPinYear = null;
+        function cmpRowsFor(year) {
+          if (year === null || year === undefined) return [];
+          return Array.prototype.slice.call(cmpGrid.querySelectorAll(
+            'tr[data-cmp-year="' + year + '"], tr[data-cmp-year-note="' + year + '"]'));
+        }
+        function cmpClear(cls) {
+          cmpGrid.querySelectorAll("tr." + cls).forEach(function (t) {
+            t.classList.remove(cls);
+          });
+        }
+        // transient: hover and keyboard focus
+        function cmpLink(year) {
+          cmpClear("cmp-link"); cmpClear("cmp-link-note");
+          if (year === null || year === undefined) return;
+          cmpRowsFor(year).forEach(function (t) {
+            t.classList.add(t.dataset.cmpYearNote ? "cmp-link-note" : "cmp-link");
+          });
+        }
+        // sticky: survives letting go of the mouse, scrolling and a re-render
+        function cmpApplyPin() {
+          cmpClear("cmp-pin"); cmpClear("cmp-pin-note");
+          cmpGrid.querySelectorAll("tr[aria-current]").forEach(function (t) {
+            t.removeAttribute("aria-current");
+          });
+          if (cmpPinYear === null) return;
+          cmpRowsFor(cmpPinYear).forEach(function (t) {
+            t.classList.add(t.dataset.cmpYearNote ? "cmp-pin-note" : "cmp-pin");
+            if (!t.dataset.cmpYearNote) t.setAttribute("aria-current", "true");
+          });
+        }
+        function cmpTogglePin(year) {
+          cmpPinYear = (cmpPinYear === year) ? null : year;
+          cmpApplyPin();
+          cmpSyncRows();
+          if (!SIM.announce) return;
+          if (cmpPinYear === null) {
+            SIM.announce("Pin cleared.");
+            return;
+          }
+          // how many trials actually have that year is the useful part: it says
+          // where the comparison is still missing data
+          const letters = Object.keys(TRIAL_CONTENT).filter(function (L) {
+            const st = SIM.trialState[L];
+            return st && st.rows && st.rows.some(function (x) { return x.years === year; });
+          });
+          SIM.announce(fmtCell(year) + " years before collapse pinned. Sampled in "
+            + (letters.length === 1 ? "trial " : "trials ") + letters.join(", ")
+            + "; not in " + (letters.length === 4 ? "none"
+              : Object.keys(TRIAL_CONTENT).filter(function (L) {
+                  return letters.indexOf(L) === -1; }).join(", ")) + ".");
+        }
+        // Arrows move within the column, because the four columns are different
+        // lists -- stepping sideways between them would land on an unrelated year.
+        function cmpRowKey(e, tr) {
+          const keys = ["ArrowDown", "ArrowUp", "Home", "End"];
+          if (keys.indexOf(e.key) === -1) return;
+          e.preventDefault();
+          const rows = Array.prototype.slice.call(
+            tr.closest("tbody").querySelectorAll("tr[tabindex]"));
+          const i = rows.indexOf(tr);
+          const next = e.key === "ArrowDown" ? Math.min(rows.length - 1, i + 1)
+            : e.key === "ArrowUp" ? Math.max(0, i - 1)
+            : e.key === "Home" ? 0 : rows.length - 1;
+          if (!rows[next] || rows[next] === tr) return;
+          rows.forEach(function (x) { x.tabIndex = -1; });
+          rows[next].tabIndex = 0;
+          rows[next].focus();
+          rows[next].scrollIntoView({ block: "nearest" });
+        }
+        // One tab stop per column: the pinned row if that column has it, else the
+        // first. Also drops the scroller's own stop once its rows are reachable --
+        // two stops for the same region is one too many.
+        function cmpSyncRows() {
+          cmpGrid.querySelectorAll(".collapse-compare-col").forEach(function (col) {
+            const rows = Array.prototype.slice.call(
+              col.querySelectorAll("tbody tr[tabindex]"));
+            if (!rows.length) return;
+            let want = rows.filter(function (t) {
+              return t.dataset.cmpYear === String(cmpPinYear); })[0] || rows[0];
+            rows.forEach(function (t) { t.tabIndex = (t === want) ? 0 : -1; });
+            const sc = col.querySelector(".collapse-compare-rows");
+            if (sc) {
+              sc.removeAttribute("tabindex");
+              sc.removeAttribute("role");
+              sc.removeAttribute("aria-label");
+            }
+          });
+        }
+
+        function renderCompare() {
+          if (compare.hidden) return;
+          cmpGrid.innerHTML = "";
+          const cmpScrollers = [];
+          // not the trials panel's allLabels -- that one is scoped to the panel
+          // builder and is not visible from here
+          Object.keys(TRIAL_CONTENT).forEach(function (letter) {
+            const col = document.createElement("div");
+            col.className = "collapse-compare-col";
+
+            const colHead = document.createElement("div");
+            colHead.className = "collapse-compare-colhead";
+            const name = document.createElement("div");
+            name.className = "collapse-compare-trial";
+            const badge = document.createElement("div");
+            badge.className = "collapse-compare-letter";
+            // the word is still spoken, just not drawn -- "A" on its own is not a
+            // heading anyone could use
+            const sr = document.createElement("span");
+            sr.className = "sr-only";
+            sr.textContent = "Trial ";
+            badge.appendChild(sr);
+            badge.appendChild(document.createTextNode(letter));
+            name.appendChild(badge);
+            colHead.appendChild(name);
+
+            // conditions, in the trial card's own markup minus the rainy-days note
+            const cond = document.createElement("div");
+            cond.className = "collapse-compare-cond";
+            var condHtml = "";
+            (TRIAL_CONTENT[letter] || []).forEach(function (label) {
+              condHtml += '<div class="collapse-attr-row">'
+                + '<span class="collapse-attr-icon">'
+                + (LABEL_ICON[label] || greenBox24) + '</span>'
+                + '<span class="collapse-attr-label">' + label + '</span>'
+                + '</div>';
+            });
+            cond.innerHTML = condHtml;
+            colHead.appendChild(cond);
+
+            // MOISTURE_NOTE is stored as two parts so the trial cards can break it
+            // where they choose; there is room for one line here, so it is joined.
+            const wx = (TRIAL_CONTENT[letter] || [])[1];
+            const mn = MOISTURE_NOTE[wx];
+            if (mn) {
+              const note = document.createElement("div");
+              note.className = "collapse-compare-note";
+              note.textContent = mn.join(" ");
+              colHead.appendChild(note);
+            }
+
+            // head and body are separate tables, same split and same reason as the
+            // main table: only the rows scroll under a head that stays put
+            const headTbl = document.createElement("table");
+            headTbl.className = "collapse-compare-tbl";
+            headTbl.setAttribute("role", "presentation");
+            headTbl.appendChild(cmpColGroup());
+            const hr = document.createElement("tr");
+            const hPic = document.createElement("th");
+            hPic.className = "cmp-pic";
+            hPic.setAttribute("aria-hidden", "true");
+            hr.appendChild(hPic);
+            CMP_COLS.forEach(function (c, ci) {
+              const th = document.createElement("th");
+              th.className = c.cls;
+              // Not a real columnheader -- this table is presentational and the
+              // headers that associate with the cells are the sr-only thead below.
+              // data-sort-dir is only here to drive the chevron CSS, which is the
+              // same unscoped rule the main table's headings use.
+              th.dataset.sortDir = sortState.key !== c.key ? "none"
+                : (sortState.dir === 1 ? "ascending" : "descending");
+              const sb = document.createElement("button");
+              sb.type = "button";
+              sb.className = "collapse-cmp-sort";
+              // the full name, not the four-letter head: "Sort by Rate" would be
+              // the only place in the sim that abbreviation is spoken
+              sb.setAttribute("aria-label", "Sort by " + c.full);
+              const lbl = document.createElement("span");
+              lbl.textContent = c.head;
+              sb.appendChild(lbl);
+              sb.insertAdjacentHTML("beforeend", SORT_ICON);
+              // setSort flips the direction when the key is unchanged, re-renders
+              // the table, and that render calls renderCompare -- so all four
+              // columns and the table behind them reorder together, which is the
+              // point: a comparison you can only sort one side of is not one.
+              sb.addEventListener("click", function () { setSort(c.key, c.full); });
+              // The same column preview the sim table gives: hovering or tabbing to
+              // a heading lights the cells it is about to reorder. +2 because the
+              // thumbnail is column 1 and these three start at 2.
+              const colNth = String(ci + 2);
+              const colOn = function () { col.dataset.colHover = colNth; };
+              const colOff = function () {
+                delete col.dataset.colHover;
+                delete col.dataset.colActive;
+              };
+              sb.addEventListener("mouseenter", colOn);
+              sb.addEventListener("mousedown", function () { col.dataset.colActive = colNth; });
+              sb.addEventListener("mouseup", function () { delete col.dataset.colActive; });
+              // clears both, so a press released off the heading cannot leave the
+              // column stuck in its active fill
+              sb.addEventListener("mouseleave", colOff);
+              // focus-visible, not focus: a click focuses it too, and the pointer
+              // path already owns the preview there
+              sb.addEventListener("focus", function () {
+                if (sb.matches(":focus-visible")) colOn();
+              });
+              sb.addEventListener("blur", colOff);
+              // All four trials carry the heading, and every copy sorts every
+              // trial -- so the other three are the same three actions over again.
+              // Only the first trial's are in the tab sequence: twelve stops to
+              // reach three outcomes is a lot of tabbing to get past on the way to
+              // the rows. The rest stay buttons, clickable and named, just not
+              // stops of their own.
+              if (letter !== Object.keys(TRIAL_CONTENT)[0]) sb.tabIndex = -1;
+              th.appendChild(sb);
+              hr.appendChild(th);
+            });
+            headTbl.appendChild(document.createElement("thead")).appendChild(hr);
+            colHead.appendChild(headTbl);
+            col.appendChild(colHead);
+
+            // The rows, and only the rows, scroll -- see .collapse-compare-rows.
+            const rowsBox = document.createElement("div");
+            rowsBox.className = "collapse-compare-rowsbox";
+            const rowsEl = document.createElement("div");
+            rowsEl.className = "collapse-compare-rows";
+            rowsBox.appendChild(rowsEl);
+            const rowsRing = document.createElement("div");
+            rowsRing.className = "scroll-focus-ring";
+            rowsBox.appendChild(rowsRing);
+            col.appendChild(rowsBox);
+            cmpScrollers.push({ el: rowsEl, letter: letter });
+
+            const st = SIM.trialState[letter] || {};
+            const rows = st.rows || [];
+            if (!rows.length) {
+              const empty = document.createElement("div");
+              empty.className = "collapse-compare-empty";
+              empty.textContent = "No samples taken yet";
+              rowsEl.appendChild(empty);
+              cmpGrid.appendChild(col);
+              return;
+            }
+
+            // the same sort the main table is using, so the columns stay comparable
+            const view = rows.slice();
+            if (sortState.key) {
+              view.sort(function (a, b) {
+                return (a[sortState.key] - b[sortState.key]) * sortState.dir;
+              });
+            }
+
+            const bodyTbl = document.createElement("table");
+            bodyTbl.className = "collapse-compare-tbl";
+            const cap = document.createElement("caption");
+            cap.className = "sr-only";
+            cap.textContent = "Trial " + letter + ", "
+              + (TRIAL_CONTENT[letter] || []).join(", ") + ": "
+              + rows.length + (rows.length === 1 ? " sample" : " samples");
+            bodyTbl.appendChild(cap);
+            // after the caption, which must be the table's first child
+            bodyTbl.appendChild(cmpColGroup());
+            // real headers, kept out of sight: the visible ones above are in their
+            // own presentational table and cannot associate with these cells
+            const srHead = document.createElement("thead");
+            const srTr = document.createElement("tr");
+            const srPic = document.createElement("th");
+            srPic.className = "sr-only";
+            srPic.setAttribute("scope", "col");
+            srPic.textContent = "Cave";
+            srTr.appendChild(srPic);
+            CMP_COLS.forEach(function (c) {
+              const th = document.createElement("th");
+              th.className = "sr-only";
+              th.setAttribute("scope", "col");
+              // aria-sort means something only on a real columnheader, which is
+              // what these are -- the visible row above is presentational
+              th.setAttribute("aria-sort", sortState.key !== c.key ? "none"
+                : (sortState.dir === 1 ? "ascending" : "descending"));
+              th.textContent = c.full;
+              srTr.appendChild(th);
+            });
+            srHead.appendChild(srTr);
+            srHead.style.cssText = "position:absolute;height:0;overflow:hidden;";
+            bodyTbl.appendChild(srHead);
+
+            const tb = document.createElement("tbody");
+            view.forEach(function (r) {
+              const tr = document.createElement("tr");
+              // the link key. Integer, straight from TL_VALUES.
+              tr.dataset.cmpYear = String(r.years);
+              const pic = document.createElement("td");
+              pic.className = "cmp-pic";
+              const art = caveArt(r, letter);
+              if (art) {
+                const box = document.createElement("span");
+                box.className = "collapse-compare-thumb";
+                // decorative here for the same reason as in the table: the row's
+                // own numbers carry the information
+                box.setAttribute("aria-hidden", "true");
+                box.innerHTML = art;
+                const svg = box.querySelector("svg");
+                if (svg) svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+                pic.appendChild(box);
+              }
+              tr.appendChild(pic);
+              CMP_COLS.forEach(function (c) {
+                const td = document.createElement("td");
+                td.className = c.cls;
+                td.textContent = fmtCell(r[c.key]);
+                tr.appendChild(td);
+              });
+              // The main table turns the last cell into "collapsed (was 2,800)".
+              // That is 85px of text and this column is 50, so here the number
+              // stays put and the word goes on a line of its own under the row,
+              // across all four cells. Same information, same emphasis on the
+              // thickness it failed at, in a quarter of the width.
+              if (r.roof <= CAVE_ROOF_FAIL) tr.className = "cmp-collapsed";
+              // Roving tabindex: one stop per column, not one per row. Which row
+              // holds it is set in cmpSyncRows once the column is built.
+              tr.tabIndex = -1;
+              tr.addEventListener("mouseenter", function () { cmpLink(r.years); });
+              tr.addEventListener("mouseleave", function () { cmpLink(null); });
+              tr.addEventListener("click", function () { cmpTogglePin(r.years); });
+              tr.addEventListener("focus", function () {
+                if (tr.matches(":focus-visible")) {
+                  tr.classList.add("kb-focus");
+                  cmpLink(r.years);
+                }
+              });
+              tr.addEventListener("blur", function () {
+                tr.classList.remove("kb-focus");
+                cmpLink(null);
+              });
+              tr.addEventListener("keydown", function (e) {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault(); cmpTogglePin(r.years); return;
+                }
+                cmpRowKey(e, tr);
+              });
+              tb.appendChild(tr);
+              if (r.roof <= CAVE_ROOF_FAIL) {
+                const note = document.createElement("tr");
+                note.className = "cmp-collapsed-note";
+                note.dataset.cmpYearNote = String(r.years);
+                const ntd = document.createElement("td");
+                ntd.colSpan = 4;
+                ntd.textContent = "collapsed";
+                note.appendChild(ntd);
+                tb.appendChild(note);
+              }
+            });
+            bodyTbl.appendChild(tb);
+            rowsEl.appendChild(bodyTbl);
+
+            // Averages over every row in the trial, so sorting cannot change them --
+            // only sampling and deleting can. Same statistic as the sim's strip: a
+            // plain mean, and no average for Years, which has none to give.
+            const footWrapC = document.createElement("div");
+            footWrapC.className = "collapse-compare-foot";
+            const footTblC = document.createElement("table");
+            footTblC.className = "collapse-compare-tbl";
+            const footCapC = document.createElement("caption");
+            footCapC.className = "sr-only";
+            footCapC.textContent = "Averages for trial " + letter;
+            footTblC.appendChild(footCapC);
+            footTblC.appendChild(cmpColGroup());
+            const footBodyC = document.createElement("tfoot");
+            const footRowC = document.createElement("tr");
+            footRowC.className = "collapse-compare-footrow";
+            const lblC = document.createElement("th");
+            lblC.setAttribute("scope", "row");
+            lblC.colSpan = 2;              // the thumbnail and Years columns
+            lblC.textContent = "Average:";
+            footRowC.appendChild(lblC);
+            [["cmp-rate", "rate"], ["cmp-rock", "roof"]].forEach(function (pair) {
+              const td = document.createElement("td");
+              td.className = pair[0];
+              td.textContent = fmtCell(avgOf(view.map(function (x) { return x[pair[1]]; })));
+              footRowC.appendChild(td);
+            });
+            footBodyC.appendChild(footRowC);
+            footTblC.appendChild(footBodyC);
+            footWrapC.appendChild(footTblC);
+            col.appendChild(footWrapC);
+
+            cmpGrid.appendChild(col);
+          });
+          cmpApplyPin();
+          cmpSyncRows();
+          // House rule: a scroll region is a tab stop only while there is
+          // something to scroll to. Runs after the columns are in, because until
+          // then scrollHeight and clientHeight are equal.
+          cmpScrollers.forEach(function (sc) {
+            if (sc.el.scrollHeight > sc.el.clientHeight) {
+              sc.el.setAttribute("tabindex", "0");
+              sc.el.setAttribute("role", "group");
+              sc.el.setAttribute("aria-label", "Trial " + sc.letter
+                + " samples, scrollable");
+            } else {
+              sc.el.removeAttribute("tabindex");
+              sc.el.removeAttribute("role");
+              sc.el.removeAttribute("aria-label");
+            }
+          });
+          // the grid itself only ever scrolls sideways, when four columns do not
+          // fit across
+          if (cmpGrid.scrollWidth > cmpGrid.clientWidth) {
+            cmpGrid.setAttribute("tabindex", "0");
+            cmpGrid.setAttribute("role", "group");
+            cmpGrid.setAttribute("aria-label", "Trials, scrollable sideways");
+          } else {
+            cmpGrid.removeAttribute("tabindex");
+            cmpGrid.removeAttribute("role");
+            cmpGrid.removeAttribute("aria-label");
+          }
+        }
+        SIM._renderCompare = renderCompare;
+
+        // --- Responsive narrowing, the same shape as syncControls ---------------
+        // Every pair is [narrowest, widest]. The face does NOT change here: the
+        // table is already Roboto Condensed, so the only levers are space -- the
+        // thumbnail, the cell and button padding, the chevron's gap to its label,
+        // and the gap between the rock and weather pairs.
+        // Floors chosen against the measured budget, not picked: the content area
+        // stops shrinking at 772px, which leaves 744 of grid and 184.5 a column
+        // once the three dividers are out. Everything below bottoms out at 180.3,
+        // so four columns still fit at the narrowest the app reaches and nothing
+        // is ever cut off. The sort chevron is a lever too -- holding it at 14
+        // while everything else shrank was what made the floor 201 and started
+        // clipping Trial D at about 875px of overlay.
+        const CMP_THUMB   = [28, 36];
+        const CMP_CELLPAD = [1, 2];
+        const CMP_BTNPAD  = [1, 4];
+        const CMP_BTNGAP  = [1, 3];
+        const CMP_CHEV    = [11, 14];
+        // the active chevron is scaled 1.3 about its own box, so it paints ~15%
+        // proud either side; this is the clearance that keeps it off the divider
+        const CMP_CHEV_AIR = [2, 3];
+        // measured once, off the rendered page rather than from a table of numbers
+        let cmpText = null;
+        function cmpMeasureText() {
+          if (cmpText) return cmpText;
+          const sp = document.createElement("span");
+          sp.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;"
+            + "font-family:'Roboto Condensed',sans-serif;font-size:16px;"
+            + "letter-spacing:0.32px;";
+          document.body.appendChild(sp);
+          const w = function (t, wt) {
+            sp.style.fontWeight = wt; sp.textContent = t;
+            return sp.getBoundingClientRect().width;
+          };
+          cmpText = {
+            headYears: w("Years", "500"), headRate: w("Rate", "500"),
+            headRock: w("Rock", "500"),
+            // the widest value each column can ever hold: the run starts at
+            // 200,000 years and the roof starts at 8,800mm
+            valYears: w("200,000", "400"), valRate: w("30", "400"),
+            valRock: w("8,800", "400")
+          };
+          sp.remove();
+          return cmpText;
+        }
+        const cmpLerp = function (pair, t) { return pair[0] + t * (pair[1] - pair[0]); };
+        // What one column needs at a given t. Each measurement column is sized on
+        // the wider of its heading-plus-chevron and its widest value.
+        function cmpColNeed(t) {
+          const m = cmpMeasureText();
+          const btnpad = cmpLerp(CMP_BTNPAD, t), btngap = cmpLerp(CMP_BTNGAP, t);
+          const cellpad = cmpLerp(CMP_CELLPAD, t);
+          const chev = cmpLerp(CMP_CHEV, t), air = cmpLerp(CMP_CHEV_AIR, t);
+          const head = function (lbl) {
+            return lbl + btngap + chev + 2 * btnpad + air;
+          };
+          const cell = function (v) { return v + 2 * cellpad; };
+          return {
+            pic: cmpLerp(CMP_THUMB, t) + 4,
+            years: Math.max(head(m.headYears), cell(m.valYears)),
+            rate: Math.max(head(m.headRate), cell(m.valRate)),
+            rock: Math.max(head(m.headRock), cell(m.valRock))
+          };
+        }
+        function cmpSetState(t) {
+          const n = cmpColNeed(t);
+          const col = n.pic + n.years + n.rate + n.rock;
+          const st = compare.style;
+          st.setProperty("--cmp-thumb", cmpLerp(CMP_THUMB, t) + "px");
+          st.setProperty("--cmp-cellpad", cmpLerp(CMP_CELLPAD, t) + "px");
+          st.setProperty("--cmp-btnpad", cmpLerp(CMP_BTNPAD, t) + "px");
+          st.setProperty("--cmp-btngap", cmpLerp(CMP_BTNGAP, t) + "px");
+          st.setProperty("--cmp-chev", cmpLerp(CMP_CHEV, t) + "px");
+          st.setProperty("--cmp-pic", n.pic + "px");
+          st.setProperty("--cmp-rate", n.rate + "px");
+          st.setProperty("--cmp-rock", n.rock + "px");
+          st.setProperty("--cmp-colmin", col + "px");
+        }
+        // Linear in t, so nothing jumps: at the crossover the budget equals the
+        // full width and t is exactly 1. NO rounding anywhere -- raw floats are
+        // what keep the narrowing smooth instead of stepping a pixel at a time.
+        function syncCompare() {
+          if (compare.hidden) return;
+          const trials = Object.keys(TRIAL_CONTENT).length;
+          // the dividers between columns are not part of what a column needs
+          const budget = (cmpGrid.clientWidth - 2 * (trials - 1)) / trials;
+          const full = cmpColNeed(1), min = cmpColNeed(0);
+          const sum = function (n) { return n.pic + n.years + n.rate + n.rock; };
+          const fw = sum(full), mw = sum(min);
+          const t = budget >= fw ? 1
+            : (fw > mw ? Math.max(0, Math.min(1, (budget - mw) / (fw - mw))) : 0);
+          cmpSetState(t);
+          SIM._cmpT = t;          // for probes
+          cmpShiftYears(t);
+        }
+        // Second pass, because the Years column is the one with no width of its own
+        // -- it takes whatever the other three leave, so how much slack it has can
+        // only be read after the first pass has sized them. Setting a pad inside a
+        // fixed-width column cannot change that column's width, so this cannot feed
+        // back into the ResizeObserver.
+        function cmpShiftYears(t) {
+          const col = cmpGrid.querySelector(".collapse-compare-col");
+          if (!col) return;
+          const n = cmpColNeed(t);
+          const yearsW = col.getBoundingClientRect().width
+            - n.pic - n.rate - n.rock;
+          const slack = yearsW - cmpMeasureText().valYears
+            - 2 * cmpLerp(CMP_CELLPAD, t);
+          // (1 - t): none of it at the widest, all of it at the narrowest
+          const pad = Math.max(0, (1 - t) * slack);
+          compare.style.setProperty("--cmp-yrpad", pad + "px");
+        }
+        SIM._syncCompare = syncCompare;
+        // The overlay resizes with the panel, and Roboto Condensed's metrics are
+        // not known until the webfont swaps in -- which happens after the first
+        // frame, so a single pass would measure the fallback face.
+        if (SIM._cmpRO) SIM._cmpRO.disconnect();
+        SIM._cmpRO = new ResizeObserver(syncCompare);
+        SIM._cmpRO.observe(compare);
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function () { cmpText = null; syncCompare(); });
+        }
+
+        // Everything in the sim except the overlay itself. It covers both panels
+        // now, so naming the two boxes it used to cover is no longer enough.
+        function cmpBehind() {
+          return Array.prototype.slice.call(wrap.children)
+            .filter(function (c) { return c !== compare; });
+        }
+        function openCompare() {
+          cmpPinYear = null;
+          compare.hidden = false;
+          wrap.classList.add("comparing");
+          // what the overlay covers must not stay tabbable underneath it
+          cmpBehind().forEach(function (c) { c.inert = true; });
+          compareBtn.setAttribute("aria-expanded", "true");
+          renderCompare();
+          syncCompare();
+          cmpClose.focus();
+          if (SIM.announce) SIM.announce("Comparing all four trials.");
+        }
+        function closeCompare() {
+          compare.hidden = true;
+          wrap.classList.remove("comparing");
+          cmpBehind().forEach(function (c) { c.inert = false; });
+          compareBtn.setAttribute("aria-expanded", "false");
+          compareBtn.focus();
+          if (SIM.announce) SIM.announce("Comparison closed.");
+        }
+        compareBtn.addEventListener("click", function () {
+          if (compare.hidden) openCompare(); else closeCompare();
+        });
+        cmpClose.addEventListener("click", closeCompare);
+        compare.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") { e.preventDefault(); closeCompare(); }
+        });
+
         inner.appendChild(stageRow);
 
         // Whole numbers with thousands separators, matching the mock, which renders
@@ -12482,6 +13730,9 @@ function buildSimContent() {
             else if (rr.bottom > wr.bottom) tableWrap.scrollTop += rr.bottom - wr.bottom;
           }
           syncGutters();
+          // the trial cards and the controls row stay live behind the overlay, so
+          // sampling or switching trial while it is open has to reach it too
+          if (SIM._renderCompare) SIM._renderCompare();
         }
         SIM._renderTable = renderTable;
         renderTable();
@@ -12580,6 +13831,10 @@ function buildSimContent() {
       }
     };
     document.addEventListener("keydown", SIM.panelNavHandler);
+
+    // Last child of the sim: positioned against this wrapper, painted over both
+    // panels, and after everything else in DOM order. See SIM._compareEl above.
+    if (SIM._compareEl) wrap.appendChild(SIM._compareEl);
 
     return wrap;
   }
