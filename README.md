@@ -1,6 +1,6 @@
 # CODAP "About" Modal — Design Mockup
 
-An interactive prototype and implementation spec for a proposed **"About CODAP"** experience: a Help‑menu entry that opens an About dialog surfacing CODAP's branding, version, licensing (MIT for the source code; the hosted site at codap.concord.org governed by Concord's [Terms of Use](https://concord.org/terms-of-use/)), and a discoverable‑but‑tucked‑away list of third‑party libraries.
+An interactive prototype and implementation spec for a proposed **"About CODAP"** experience: a Help‑menu entry that opens an About dialog surfacing CODAP's branding, version, licensing (MIT for the source code; use of CODAP governed by Concord's [Terms of Use](https://concord.org/terms-of-use/)), and a discoverable‑but‑tucked‑away list of third‑party libraries.
 
 ## Launch the mockup
 

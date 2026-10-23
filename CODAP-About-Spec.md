@@ -40,20 +40,20 @@ Section heading: **License & Terms of Use**
 
 > **CODAP is free, open‑source software.** The CODAP source code is released under the MIT License, so you're welcome to use, modify, and build on it.
 >
-> **Your use of codap.concord.org** is governed by our Terms of Use. The hosted site is free for non‑commercial use. Commercial use of codap.concord.org, including integrating it into paid, subscription, or otherwise revenue‑generating products, requires a separate written agreement with the Concord Consortium. Visit concord.org/licensing or contact licensing@concord.org.
+> **Your use of CODAP** is governed by our Terms of Use. CODAP is free for non‑commercial use. Commercial use of CODAP, including integrating it into paid, subscription, or otherwise revenue‑generating products, requires a separate written agreement with the Concord Consortium. Visit concord.org/licensing or contact licensing@concord.org.
 
 Links in the modal:
 
 | Text | Target |
 |---|---|
 | MIT License | https://github.com/concord-consortium/codap/blob/main/LICENSE |
-| codap.concord.org (first mention) | https://codap.concord.org/ |
 | Terms of Use | https://concord.org/terms-of-use/ |
 | concord.org/licensing | https://concord.org/licensing |
 | licensing@concord.org | mailto:licensing@concord.org |
 
 Notes:
-- The copy keeps the two‑part framing from Scott Cytacki's review: MIT for the source code, and the site **Terms of Use** for the hosted service at `codap.concord.org`.
+- The copy keeps the two‑part framing from Scott Cytacki's review: MIT for the source code, and Concord's **Terms of Use** for using CODAP as a Concord‑hosted service.
+- The copy says "CODAP" rather than `codap.concord.org`, because codap.concord.org is the CODAP project website, not the app itself.
 - The wording is aligned with the published Terms of Use: commercial use of the hosted Services requires "a separate written agreement" (Terms §4), and open‑source licenses govern Concord's open‑source software (Terms §6). This replaces the earlier "requires a commercial license" phrasing.
 - Approved by Kiley Brown; no further legal review required.
 
@@ -79,11 +79,11 @@ Notes:
 5. **License categories** — should any bundled sample datasets/plugins carry their own attribution rows?
 6. **Localization of legal copy** — keep the License & Terms of Use copy English‑only in v1, or localize it?
 
-Resolved: license framing (MIT for source code; hosted site governed by the Terms of Use) — see §6.
+Resolved: license framing (MIT for source code; use of CODAP governed by the Terms of Use) — see §6.
 
 ## 10. Out of scope (v1)
 Full license text rendering in‑app; per‑plugin about panels; usage tracking for commercial‑use auditing.
 
 ## 11. Version history
-- **v0.2 (October 2026)** — License copy aligned with the published Terms of Use and linked to it; "Terms of Use" quick link and proposed Help menu item added; Michael's typography and menu notes applied. Live mockup: https://models-resources.concord.org/demos/branch/codap-about-modal/
+- **v0.2 (October 2026)** — Copy refers to "CODAP" rather than codap.concord.org (Oct 23). License copy aligned with the published Terms of Use and linked to it; "Terms of Use" quick link and proposed Help menu item added; Michael's typography and menu notes applied. Live mockup: https://models-resources.concord.org/demos/branch/codap-about-modal/
 - **v0.1 (July 27, 2026)** — Initial mockup and spec, revised after Scott's review (Terms of Use framing; "What counts as commercial use?" expander removed). Frozen at: https://models-resources.concord.org/demos/branch/codap-about-modal-v0.1/
