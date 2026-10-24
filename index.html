@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nor’easter Explorer</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #1e242c;
+    --ink-2: #4a5360;
+    --rule: #d5dae0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .app-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .app-name { font-size: 20px; font-weight: 600; margin: 0; }
+  .app-updated { font-size: 16px; color: var(--ink-2); }
+  .app-main { flex: 1; }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-name">Nor’easter Explorer &bull; v0.1</h1>
+    <div class="app-updated">Updated: 10/23/26</div>
+  </header>
+  <main class="app-main" id="app"></main>
+</body>
+</html>
