@@ -6,39 +6,1862 @@
 <title>Nor’easter Explorer</title>
 <style>
   :root {
-    --bg: #ffffff;
-    --ink: #1e242c;
-    --ink-2: #4a5360;
-    --rule: #d5dae0;
+    --space: #05070d;
+    --ink-on-dark: #f2f4f7;
+    --ink-on-dark-2: #b8c0cc;
+    --ocean: #1f4f8c;
+    --land: #7d8a5e;
+    --land-edge: #5c6845;
+    --jet: #fff15a;
+    --cold: #4a7fe0;
+    --warm: #e0605a;
+    --storm: #b3261e;
+    --panel: #10141d;
+    --panel-edge: #2a3140;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
   body {
-    background: var(--bg);
-    color: var(--ink);
+    background: var(--space);
+    color: var(--ink-on-dark);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     font-size: 16px;
     display: flex;
     flex-direction: column;
   }
-  .app-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+
+  /* ---- Top bar: version tag (left) + prompt (centred) ---- */
+  .ne-top {
+    display: grid;
+    /* Tag and tools keep their natural width; the prompt gets the rest and
+       may wrap to a second line rather than squeezing the others. */
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
     gap: 16px;
     padding: 12px 16px;
-    border-bottom: 1px solid var(--rule);
+    background: var(--panel);
+    border-bottom: 1px solid var(--panel-edge);
   }
-  .app-name { font-size: 20px; font-weight: 600; margin: 0; }
-  .app-updated { font-size: 16px; color: var(--ink-2); }
-  .app-main { flex: 1; }
+  .app-tag { line-height: 1.4; }
+  .app-name { font-size: 18px; font-weight: 600; margin: 0; }
+  .app-updated { font-size: 16px; color: var(--ink-on-dark-2); }
+  .ne-prompt { margin: 0; font-size: 20px; font-weight: 600; text-align: center; }
+  .ne-top-tools { justify-self: end; display: flex; align-items: center; gap: 12px; }
+  .app-tag { white-space: nowrap; }
+
+  /* ---- Info modal: how a nor'easter forms ---- */
+  .ne-modal {
+    width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+    padding: 0; color: var(--ink-on-dark); background: var(--panel);
+    border: 1px solid var(--ink-on-dark-2); border-radius: 10px;
+  }
+  .ne-modal::backdrop { background: rgba(0,0,0,.6); }
+  .ne-modal-head { display: flex; align-items: center; justify-content: space-between;
+                   gap: 16px; padding: 12px 12px 12px 24px; border-bottom: 1px solid var(--panel-edge); }
+  .ne-modal-head h2 { margin: 0; font-size: 22px; }
+  .ne-modal-body { padding: 16px 24px 24px; font-size: 16px; line-height: 1.5; }
+  .ne-modal-body ol { padding-left: 24px; margin: 0 0 16px; }
+  .ne-modal-body li { margin-bottom: 8px; }
+  .ne-modal-body strong { color: #fff; }
+  .ne-modal-table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; }
+  .ne-modal-table th, .ne-modal-table td { padding: 8px; border: 1px solid var(--panel-edge);
+                                           text-align: center; font-size: 16px; }
+  .ne-modal-table thead th { color: var(--ink-on-dark-2); font-weight: 600; }
+  .ne-modal-table tbody th { font-weight: 700; }
+  .ne-modal-table .is-none { color: var(--ink-on-dark-2); }
+  .ne-modal-table .is-strong { background: rgba(179,38,30,.35); font-weight: 700; }
+  .ne-modal-note { margin: 0; color: var(--ink-on-dark-2); }
+  .ne-step-num { color: var(--ink-on-dark-2); margin-right: 12px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden;
+             clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---- Bottom toolbar: the same choice as clicking a loop on the globe ---- */
+  .ne-toolbar {
+    display: flex;
+    justify-content: center;
+    padding: 12px 16px;
+    background: var(--panel);
+    border-top: 1px solid var(--panel-edge);
+  }
+  .ne-toolbar fieldset { display: flex; align-items: center; gap: 8px; border: 0; margin: 0; padding: 0; }
+  .ne-toolbar legend { float: left; margin-right: 8px; font-size: 16px; font-weight: 600; padding: 0; }
+  .ne-seg {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    /* Circles, to read as the A–D badges on the globe. */
+    width: 44px; height: 44px; padding: 0;
+    border: 2px solid var(--ink-on-dark-2); border-radius: 50%;
+    font-size: 18px; font-weight: 700; cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .ne-seg input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .ne-seg:hover { background: rgba(255,255,255,.08); }
+  .ne-seg:has(input:checked) { background: var(--jet); border-color: var(--jet); color: #1e242c; }
+  .ne-seg:has(input:focus-visible) { outline: 3px solid #fff; outline-offset: 2px; }
+
+  /* Each step's toolbar: controls, then Back/Next right beside them; the
+     whole row is centred. */
+  .ne-step { display: flex; align-items: center; gap: 32px; }
+  .ne-controls { display: flex; align-items: center; gap: 24px; }
+  .ne-nav { display: flex; gap: 12px; }
+  .ne-step[hidden] { display: none; }
+  .ne-btn {
+    min-width: 44px; min-height: 44px; padding: 0 20px;
+    background: transparent; color: var(--ink-on-dark);
+    border: 1px solid var(--ink-on-dark-2); border-radius: 6px;
+    font: inherit; font-size: 18px; font-weight: 700; cursor: pointer;
+  }
+  .ne-btn:hover { background: rgba(255,255,255,.08); }
+  .ne-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .ne-btn[hidden], .ne-nav[hidden] { display: none; }
+  .ne-btn:disabled { opacity: .45; cursor: default; background: transparent; }
+  .ne-stepper { display: flex; align-items: center; gap: 12px; }
+  /* Circles with a white ring, to read as the −/+ buttons on the globe. Glyphs
+     are stroked paths centred in the svg, not text (fonts sit them off-centre). */
+  .ne-stepper .ne-btn { padding: 0; width: 44px; height: 44px; border-radius: 50%;
+                        display: grid; place-items: center; }
+  .ne-stepper .ne-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor;
+                            stroke-width: 2.5; stroke-linecap: round; }
+  /* Step 3 −/+ take their air mass's colour, matching the buttons on the globe. */
+  .ne-btn-air, .ne-btn-air:disabled { background: var(--air-color); border: 2px solid #fff; color: #fff; }
+  .ne-btn-air:hover:not(:disabled) { background: var(--air-color); filter: brightness(.85); }
+  .ne-steppers { display: flex; align-items: center; gap: 32px; }
+  .ne-temp-out { min-width: 5ch; text-align: center; font-size: 18px; font-weight: 700;
+                 font-variant-numeric: tabular-nums; }
+
+  .ne-range-label { font-size: 16px; font-weight: 600; }
+  .ne-range { width: min(420px, 50vw); height: 44px; margin: 0; accent-color: var(--jet); cursor: pointer; }
+  .ne-range:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .ne-range-out { min-width: 4ch; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Stage = the space between the bars; the globe fills it and the view
+     tools float in its upper-left corner. */
+  .ne-stage { position: relative; flex: 1; min-height: 0; }
+  .ne-globe { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .ne-view-tools {
+    position: absolute; top: 16px; left: 16px; z-index: 1;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .ne-icon-btn {
+    width: 44px; height: 44px; padding: 0;
+    display: grid; place-items: center;
+    background: var(--panel); color: var(--ink-on-dark);
+    border: 1px solid var(--ink-on-dark-2); border-radius: 6px; cursor: pointer;
+  }
+  .ne-icon-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor;
+                     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ne-icon-btn:hover { background: #1b2130; }
+  .ne-icon-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .ne-icon-btn:disabled { opacity: .45; cursor: default; background: var(--panel); }
+
+  /* Trial card: upper right of the globe, mirroring the view tools. Rows
+     fill in as their step is reached; the current step's row is marked. */
+  /* Side view inset: left of the globe, under the view tools. Run step only. */
+  .ne-side {
+    position: absolute; left: 16px; top: 196px; z-index: 1;
+    width: 380px; padding: 12px 12px 8px;
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px;
+    display: none;
+  }
+  .ne-stage.is-step-4 .ne-side { display: block; }
+  .ne-side h2 { margin: 0 0 4px 4px; font-size: 18px; font-weight: 700; }
+  .ne-side svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .ne-side-box { fill: none; stroke: rgba(255,255,255,.35); stroke-width: 1; }
+  .ne-side-label { fill: var(--ink-on-dark-2); font-size: 16px; }
+  .ne-side-cold { fill: var(--cold); fill-opacity: var(--air-alpha, .35); stroke: var(--cold); stroke-width: 1.5; }
+  .ne-side-warm { fill: var(--warm); fill-opacity: var(--air-alpha, .35); stroke: var(--warm); stroke-width: 1.5; }
+  .ne-side-mass { fill: #fff; font-size: 16px; font-weight: 600; text-anchor: middle;
+                  paint-order: stroke; stroke: rgba(0,0,0,.5); stroke-width: 3px; }
+  .ne-side-H { fill: #8fb3ff; font-size: 24px; font-weight: 800; text-anchor: middle; dominant-baseline: central;
+               paint-order: stroke; stroke: #05070d; stroke-width: 3px; stroke-linejoin: round; }
+  .ne-side-L circle { fill: var(--storm); stroke: #fff; stroke-width: 2; }
+  .ne-side-L text { fill: #fff; font-size: 18px; font-weight: 800; text-anchor: middle; dominant-baseline: central; }
+  .ne-side-sink { stroke: #8fb3ff; stroke-width: 2.5; marker-end: url(#ne-head-cold); }
+  .ne-side-rise { stroke: #ff8a80; stroke-width: 2.5; marker-end: url(#ne-head-warm); }
+  .ne-side-cfront { fill: none; stroke: var(--cold); stroke-width: 4; stroke-linecap: round; }
+  .ne-side-wfront { fill: none; stroke: var(--warm); stroke-width: 4; stroke-linecap: round; }
+  .ne-side-jet { fill: none; stroke: var(--jet); stroke-width: 4; stroke-linecap: round; }
+  .ne-side .ne-jet-flow { stroke-width: 2; }
+  .ne-side-snow { fill: #fff; }
+  .ne-side-coastlabel { paint-order: stroke; stroke: var(--panel); stroke-width: 4px; }
+  .ne-side-coast { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 5 5; opacity: .7; }
+  /* Same look as the globe's cloud shield: soft white puffs, no outline. */
+  .ne-side-cloud circle { fill: #f4f6fa; }
+  .ne-side-gauge { display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+                   gap: 10px; margin: 0 4px 8px; font-size: 16px; }
+  .ne-side-gauge-label { color: var(--ink-on-dark-2); }
+  .ne-side-gauge-bar { height: 10px; border-radius: 5px; background: rgba(255,255,255,.12); overflow: hidden; }
+  .ne-side-gauge-bar i { display: block; height: 100%; border-radius: 5px;
+                         background: linear-gradient(90deg, var(--cold), var(--warm)); }
+  .ne-side-gauge b { min-width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
+  .ne-side-rain { stroke: #d6e6ff; stroke-width: 2; stroke-linecap: round; }
+
+  .ne-trials {
+    position: absolute; top: 16px; right: 16px; bottom: 16px; z-index: 1;
+    width: 260px; display: flex; flex-direction: column; gap: 12px;
+    overflow-y: auto; pointer-events: none; /* empty column space stays draggable */
+  }
+  .ne-trials > * { pointer-events: auto; flex: none; }
+  .ne-trial {
+    padding: 12px 16px 14px;
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px;
+  }
+  .ne-trial.is-live { border-color: var(--ink-on-dark-2); }
+  /* Saved trials open on click. */
+  .ne-trial.is-clickable { cursor: pointer; }
+  .ne-trial.is-clickable:hover { background: #161b26; }
+  .ne-trial.is-clickable:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .ne-trial.is-shown { border: 2px solid var(--jet); }
+
+  .ne-trial-new {
+    min-height: 56px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(16,20,29,.75); color: var(--ink-on-dark);
+    border: 2px dashed var(--ink-on-dark-2); border-radius: 8px;
+    font: inherit; font-size: 18px; font-weight: 700; text-align: left; cursor: pointer;
+  }
+  .ne-trial-new:hover { background: var(--panel); }
+  .ne-trial-new:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .ne-trial-new svg { width: 24px; height: 24px; fill: none; stroke: currentColor;
+                      stroke-width: 2.5; stroke-linecap: round; }
+  .ne-trial-head { display: flex; align-items: center; justify-content: space-between;
+                   gap: 8px; margin: -6px -8px 4px 0; }
+  .ne-trial h2 { margin: 0; font-size: 18px; font-weight: 700; }
+  .ne-trial-head .ne-icon-btn { border-color: transparent; background: transparent; }
+  .ne-trial-head .ne-icon-btn:hover:not(:disabled) { background: #1b2130; border-color: var(--ink-on-dark-2); }
+  .ne-trial dl { margin: 0; display: grid; grid-template-columns: auto 1fr; }
+  .ne-trial dt, .ne-trial dd { margin: 0; padding: 6px 8px; font-size: 16px; }
+  .ne-trial dt { color: var(--ink-on-dark-2); }
+  .ne-trial dd { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ne-trial .is-current { background: rgba(255,255,255,.08); }
+  .ne-trial dt.is-current { border-radius: 4px 0 0 4px; box-shadow: inset 3px 0 0 var(--jet); }
+  .ne-trial dd.is-current { border-radius: 0 4px 4px 0; }
+  .ne-trial .is-pending { color: var(--ink-on-dark-2); font-weight: 400; }
+  .ne-ocean { fill: var(--ocean); }
+  .ne-land { fill: var(--land); stroke: var(--land-edge); stroke-width: 0.5; }
+  .ne-graticule { fill: none; stroke: rgba(255,255,255,.12); stroke-width: 0.5; }
+  .ne-globe { cursor: grab; touch-action: none; }
+  .ne-globe.is-dragging, .ne-globe.is-dragging .ne-jet-opt { cursor: grabbing; }
+  .ne-shade { fill: url(#ne-shade-grad); pointer-events: none; }
+  .ne-limb { fill: none; stroke: rgba(255,255,255,.35); stroke-width: 1; }
+
+  .ne-jet-opt { cursor: pointer; }
+  .ne-jet { fill: none; stroke: var(--jet); stroke-linecap: round; stroke-linejoin: round;
+            stroke-width: 3; opacity: .6; transition: opacity .2s, stroke-width .2s; }
+  .ne-jet-hit { fill: none; stroke: transparent; stroke-width: 24; }
+  /* Flow: dark streaks travelling along the line in the direction it was
+     drawn (west → east, which is how the jet blows). One dash period per
+     FLOW cycle, so speed is constant on screen at any zoom. */
+  .ne-jet-flow { fill: none; stroke: var(--space); stroke-width: 2; stroke-linecap: round;
+                 stroke-dasharray: 6 34; opacity: .6; pointer-events: none;
+                 animation: ne-flow 1.2s linear infinite; }
+  .ne-jet-opt.is-on .ne-jet-flow { stroke-width: 3; opacity: .7; }
+  .has-selection .ne-jet-opt:not(.is-on) .ne-jet-flow { opacity: .25; }
+  @keyframes ne-flow { to { stroke-dashoffset: -40; } }
+  @media (prefers-reduced-motion: reduce) { .ne-jet-flow { animation: none; } }
+  .ne-jet-opt:hover .ne-jet { opacity: 1; }
+  .ne-jet-opt.is-on .ne-jet { stroke-width: 6; opacity: 1; }
+  .has-selection .ne-jet-opt:not(.is-on) .ne-jet { opacity: .35; stroke-dasharray: 6 6; }
+  .has-selection .ne-jet-opt:not(.is-on):hover .ne-jet { opacity: .8; }
+  .ne-jet-badge circle { fill: var(--jet); stroke: var(--space); stroke-width: 2; }
+  .ne-jet-badge text { fill: #1e242c; font-size: 16px; font-weight: 700;
+                       text-anchor: middle; dominant-baseline: central; }
+  .has-selection .ne-jet-opt:not(.is-on) .ne-jet-badge { opacity: .6; }
+  /* Step 2: only the chosen jet stays; grabbing it slides its trough. */
+  /* Steps 2+: only the chosen jet stays. In step 2 grabbing it slides its trough. */
+  .ne-globe:not(.is-step-1) .ne-jet-opt:not(.is-on) { display: none; }
+  .ne-globe.is-step-2 .ne-jet-opt.is-on { cursor: ew-resize; }
+  .ne-globe:not(.is-step-1) .ne-jet-opt { cursor: default; }
+
+  /* Step 3: the two air masses. Each <g.ne-air-mass> sets --air-color and
+     --air-alpha from JS; the fill deepens toward the extreme of its scale
+     (colder continental air, warmer ocean air). */
+  .ne-air { display: none; }
+  .ne-globe.is-step-3 .ne-air, .ne-globe.is-step-4 .ne-air { display: inline; }
+  .ne-globe.is-step-4 .ne-air-btn { display: none; } /* read-only after step 3 */
+
+  /* Step 4 (run): PLACEHOLDER storm — an "L" that forms near the trough and
+     tracks up the coast. Not a model; see drawStorm(). */
+  .ne-storm { display: none; pointer-events: none; }
+  .ne-globe.is-step-4 .ne-storm { display: inline; }
+  .ne-storm-track { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 2 6;
+                    stroke-linecap: round; opacity: .8; }
+  .ne-storm-mark circle { fill: var(--storm); fill-opacity: .9; stroke: #fff; stroke-width: 2; }
+  /* Fronts (standard symbols) and the winds feeding the storm. */
+  .ne-front-line { fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  .ne-front-cold .ne-front-line, .ne-front-cold .ne-front-sym { stroke: var(--cold); }
+  .ne-front-warm .ne-front-line, .ne-front-warm .ne-front-sym { stroke: var(--warm); }
+  .ne-front-cold .ne-front-sym { fill: var(--cold); stroke-width: 1; }
+  .ne-front-warm .ne-front-sym { fill: var(--warm); stroke-width: 1; }
+  .ne-wind { stroke-width: 3; stroke-linecap: round; }
+  .ne-cloud-puff { fill: #f4f6fa; }
+  .ne-wind-warm { stroke: #ff8a80; marker-end: url(#ne-wind-head-warm); }
+  .ne-wind-cold { stroke: #8fb3ff; marker-end: url(#ne-wind-head-cold); }
+  .ne-storm-mark text { fill: #fff; font-size: 18px; font-weight: 800; text-anchor: middle;
+                        dominant-baseline: central; }
+  .ne-run-btn { display: inline-flex; align-items: center; gap: 8px; /* width: sizeRunBtn() */
+                justify-content: center; }
+  .ne-run-btn svg { width: 20px; height: 20px; fill: currentColor; }
+  .ne-air-shape { fill: var(--air-color); fill-opacity: var(--air-alpha, .35);
+                  stroke: var(--air-color); stroke-width: 4; stroke-linejoin: round; }
+  .ne-air-label { fill: #fff; font-size: 18px; font-weight: 700; text-anchor: middle;
+                  dominant-baseline: central; paint-order: stroke;
+                  stroke: rgba(0,0,0,.55); stroke-width: 3px; pointer-events: none; }
+  .ne-air-btn { cursor: pointer; }
+  .ne-air-btn circle { fill: var(--air-color); stroke: #fff; stroke-width: 2; }
+  .ne-air-btn:hover circle { filter: brightness(.85); }
+  /* Mirrors the toolbar −/+ when a temperature hits its limit. */
+  .ne-air-btn.is-disabled { opacity: .45; cursor: default; }
+  .ne-air-btn.is-disabled:hover circle { filter: none; }
+  /* Glyphs are drawn as strokes centred on (0,0), not text: a font's − and +
+     sit off the circle's centre by an amount that varies with the font. */
+  .ne-air-btn path { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round;
+                     pointer-events: none; }
 </style>
 </head>
 <body>
-  <header class="app-header">
-    <h1 class="app-name">Nor’easter Explorer &bull; v0.1</h1>
-    <div class="app-updated">Updated: 10/23/26</div>
+  <header class="ne-top">
+    <div class="app-tag">
+      <h1 class="app-name">Nor’easter Explorer &bull; v0.2</h1>
+      <div class="app-updated">Updated: 10/26/26</div>
+    </div>
+    <!-- Placeholder copy — content design to supply. -->
+    <p class="ne-prompt" id="ne-prompt" aria-live="polite"><span class="ne-step-num">Setup: Step 1 of 3<span class="sr-only">:</span></span><span id="ne-prompt-text">Choose the shape and position of the jet stream.</span></p>
+    <div class="ne-top-tools">
+      <button type="button" class="ne-icon-btn" id="info-btn" aria-haspopup="dialog"
+              aria-label="How a nor’easter forms" title="How a nor’easter forms">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>
+      </button>
+    </div>
   </header>
-  <main class="app-main" id="app"></main>
+
+  <dialog class="ne-modal" id="info-modal" aria-labelledby="info-title">
+    <div class="ne-modal-head">
+      <h2 id="info-title">How a nor’easter forms (shown for prototype only)</h2>
+      <button type="button" class="ne-icon-btn" id="info-close" aria-label="Close" title="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="ne-modal-body">
+      <p>A nor’easter forms when all three of these line up:</p>
+      <ol>
+        <li><strong>The trough sits over the East Coast</strong>: between <span data-rule="coast"></span>.
+            Further west, the storm goes inland. Further east, it goes out to sea.</li>
+        <li><strong>The storm is strong enough.</strong> A deeper jet stream and a bigger temperature
+            difference (ocean air minus continental air) make a stronger storm:</li>
+      </ol>
+      <table class="ne-modal-table" id="info-table"></table>
+      <ol start="3">
+        <li><strong>Snow or rain</strong> depends on the continental air: below <span data-rule="snow"></span>
+            gives snow (a blizzard if strong); warmer gives rain.</li>
+      </ol>
+      <p class="ne-modal-note">Draft rules: to be confirmed by content design.</p>
+    </div>
+  </dialog>
+
+  <main class="ne-stage">
+  <div class="ne-trials" id="trials"></div>
+  <div class="sr-only" id="outcome-live" aria-live="polite"></div>
+  <section class="ne-side" aria-labelledby="side-title">
+    <h2 id="side-title">Side view</h2>
+    <div class="ne-side-gauge">
+      <span class="ne-side-gauge-label" id="gauge-label">Temperature contrast</span>
+      <div class="ne-side-gauge-bar" role="meter" aria-labelledby="gauge-label"
+           aria-valuemin="0" aria-valuemax="100" id="gauge-bar"><i id="gauge-fill"></i></div>
+      <b id="gauge-out"></b>
+    </div>
+    <svg id="side" viewBox="0 40 380 236" role="img"
+         aria-label="Side view of the storm: the jet stream 10 km up, with sinking air under the west side of its trough and rising air under the east side, above cold air and warm air at the surface.">
+      <defs>
+<!-- Dark outline for symbols: dilate the shape's alpha, fill it near-black,
+           draw the symbol on top. userSpaceOnUse region, because a vertical
+           arrow's bounding box has ~0 width and a % region would clip it. -->
+      <filter id="ne-side-outline" filterUnits="userSpaceOnUse" x="-50" y="-50" width="500" height="400">
+        <feMorphology in="SourceAlpha" operator="dilate" radius="1.3" result="grown"/>
+        <feFlood flood-color="#05070d" flood-opacity=".9"/>
+        <feComposite in2="grown" operator="in" result="outline"/>
+        <feMerge><feMergeNode in="outline"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+        <filter id="ne-side-cloud-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2"/></filter>
+        <marker id="ne-head-cold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8fb3ff"/></marker>
+        <marker id="ne-head-warm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ff8a80"/></marker>
+      </defs>
+    </svg>
+  </section>
+  <div class="ne-view-tools" role="group" aria-label="Globe view">
+    <button type="button" class="ne-icon-btn" id="zoom-in" aria-label="Zoom in" title="Zoom in">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6"/></svg>
+    </button>
+    <button type="button" class="ne-icon-btn" id="zoom-out" aria-label="Zoom out" title="Zoom out">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M7.5 10.5h6"/></svg>
+    </button>
+    <button type="button" class="ne-icon-btn" id="zoom-fit" aria-label="Fit whole globe" title="Fit whole globe">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><circle cx="12" cy="12" r="4"/></svg>
+    </button>
+  </div>
+  <svg class="ne-globe" id="globe" role="img" aria-label="Globe of the Northern Hemisphere showing four possible jet stream paths, A to D. Drag to turn it.">
+    <defs>
+      <!-- Lit from upper left: a highlight there, darkening toward the limb. -->
+      <marker id="ne-wind-head-warm" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ff8a80"/></marker>
+      <marker id="ne-wind-head-cold" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8fb3ff"/></marker>
+<!-- Dark outline for symbols: dilate the shape's alpha, fill it near-black,
+           draw the symbol on top. userSpaceOnUse region, because a vertical
+           arrow's bounding box has ~0 width and a % region would clip it. -->
+      <filter id="ne-outline" filterUnits="userSpaceOnUse" x="-500" y="-500" width="4000" height="3000">
+        <feMorphology in="SourceAlpha" operator="dilate" radius="1.3" result="grown"/>
+        <feFlood flood-color="#05070d" flood-opacity=".9"/>
+        <feComposite in2="grown" operator="in" result="outline"/>
+        <feMerge><feMergeNode in="outline"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="ne-cloud-blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.5"/></filter>
+      <radialGradient id="ne-shade-grad" cx="35%" cy="30%" r="75%">
+        <stop offset="0%"   stop-color="#fff" stop-opacity=".14"/>
+        <stop offset="55%"  stop-color="#000" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#000" stop-opacity=".45"/>
+      </radialGradient>
+    </defs>
+    <g id="earth"></g>
+    <!-- Paint order = altitude, matching the side view (bottom → top):
+         surface air masses → surface storm (track, fronts, winds) → cloud
+         shield → jet stream at 10 km (mouse shortcut only; the toolbar is the
+         accessible control) → the L (on top for readability, as in the side
+         view) → the air-mass −/+ controls. -->
+    <g id="air" class="ne-air" aria-hidden="true"></g>
+    <g id="storm" class="ne-storm" aria-hidden="true"></g>
+    <g id="clouds" class="ne-storm" aria-hidden="true"></g>
+    <g id="jets" aria-hidden="true"></g>
+    <g id="storm-top" class="ne-storm" aria-hidden="true"></g>
+    <g id="air-controls" class="ne-air" aria-hidden="true"></g>
+  </svg>
+  </main>
+
+  <footer class="ne-toolbar">
+    <!-- Step 1: pick a jet stream; Next is shown but disabled until one is chosen. -->
+    <div class="ne-step" id="step-1">
+      <div class="ne-controls">
+        <fieldset aria-describedby="ne-prompt">
+          <legend>Jet stream</legend>
+        </fieldset>
+      </div>
+      <div class="ne-nav">
+        <button type="button" class="ne-btn" id="next-1" disabled>Next</button>
+      </div>
+    </div>
+    <!-- Step 2: slide the chosen jet's trough east/west. -->
+    <div class="ne-step" id="step-2" hidden>
+      <div class="ne-controls">
+        <label class="ne-range-label" for="trough-lon">Trough longitude</label>
+        <input class="ne-range" type="range" id="trough-lon" min="-105" max="-60" step="1">
+        <output class="ne-range-out" id="trough-lon-out" for="trough-lon"></output>
+      </div>
+      <div class="ne-nav">
+        <button type="button" class="ne-btn" data-back="1">Back</button>
+        <button type="button" class="ne-btn" id="next-2">Next</button>
+      </div>
+    </div>
+    <!-- Step 3: both air mass temperatures on one screen. -->
+    <div class="ne-step" id="step-3" hidden>
+      <div class="ne-controls">
+        <div class="ne-steppers" id="air-steppers"></div>
+      </div>
+      <div class="ne-nav">
+        <button type="button" class="ne-btn" data-back="2">Back</button>
+        <button type="button" class="ne-btn" id="next-3">Next</button>
+      </div>
+    </div>
+    <!-- Step 4: run the model. Run/Pause plays the hours; the slider scrubs. -->
+    <div class="ne-step" id="step-4" hidden>
+      <div class="ne-controls">
+        <button type="button" class="ne-btn ne-run-btn" id="run-btn"></button>
+        <label class="ne-range-label" for="run-time">Time</label>
+        <input class="ne-range" type="range" id="run-time" min="0" max="72" step="1" value="0">
+        <output class="ne-range-out" id="run-time-out" for="run-time"></output>
+      </div>
+      <!-- Removed once Run is pressed: a run locks the trial's setup. -->
+      <div class="ne-nav" id="run-nav">
+        <button type="button" class="ne-btn" data-back="3">Back</button>
+      </div>
+    </div>
+  </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script>
+/* ---- Jet stream model ----------------------------------------------------
+   The polar jet is one closed, wavy loop around the hemisphere. It starts at
+   BASE latitude; each feature adds a bell-shaped bump — ridges push it north,
+   troughs pull it south:
+       lat(lon) = BASE − Σ depth · exp(−(Δlon / width)²)  + small wiggle
+   (negative depth = ridge). Features sit where they are climatologically most
+   frequent in winter: ridge over western North America, troughs over eastern
+   North America (downstream of the Rockies), eastern Europe and East Asia.
+   Each has its own depth and width, so the loop is irregular. The 7-wave
+   WIGGLE stands for the smaller short waves riding on the big ones.
+
+   TILT: each point is also shifted east by tilt · (its share of the dip), so
+   a trough's bottom sits east of its shoulders. That makes the trough axis
+   run northwest→southeast (a "negative tilt"), the shape that favours strong
+   nor'easters. Tilted troughs are centred further west so their bottoms
+   still land at ~79°W.
+
+   A → D: the eastern-US trough deepens, widens and tilts more; the other
+   troughs deepen a little, so the whole loop's mean latitude drops
+   54 → 51°N. Measured eastern-US trough bottoms (node, 0.5° sampling):
+       A 38.5°N  B 35.5°N  C 32.4°N  D 29.4°N   — all at ~79°W
+   D stops at the Gulf Coast / north Florida: the polar jet rarely gets
+   further south than that on its own. */
+const BASE = 54;
+const WIGGLE = 1.2;
+const T = (lon, depth, width, tilt = 0) => ({ lon, depth, width, tilt });
+const RIDGES = [T(-138, -12, 26), T(-15, -9, 28), T(85, -6, 30)];
+/* Flow speed per jet: seconds for the streaks to travel one dash period
+   (40px). Deeper, more southerly (winter-like) jets blow harder, so they
+   stream faster: A slowest … D fastest. Same on the globe and side view. */
+const JET_FLOW_S = { A: 1.8, B: 1.4, C: 1.05, D: 0.75 };
+const JET_PATHS = [
+  { id: "A", troughs: [T(-82, 15,   26),    T(40, 5, 20), T(138,  9, 28)] },
+  { id: "B", troughs: [T(-85, 18.4, 28, 3), T(40, 6, 20), T(138, 10, 28)] },
+  { id: "C", troughs: [T(-88, 22,   30, 6), T(40, 7, 21), T(138, 11, 29)] },
+  { id: "D", troughs: [T(-91, 25.5, 32, 9), T(40, 8, 21), T(138, 12, 30)] },
+];
+const D2R = Math.PI / 180;
+const wrapLon = d => ((d + 540) % 360) - 180;
+/* `shift` slides the eastern-US trough (troughs[0]) east (+) or west (−). */
+function jetCoords(j, shift = 0) {
+  const coords = [];
+  for (let lon = -180; lon <= 180; lon += 0.5) {
+    let lat = BASE + WIGGLE * Math.sin(7 * lon * D2R + 1), tiltShift = 0;
+    for (const t of [...RIDGES, ...j.troughs]) {
+      const c = t === j.troughs[0] ? t.lon + shift : t.lon;
+      const g = Math.exp(-((wrapLon(lon - c) / t.width) ** 2));
+      lat -= t.depth * g;
+      tiltShift += t.tilt * g;
+    }
+    coords.push([lon + tiltShift, lat]);
+  }
+  return coords;
+}
+
+/* ---- Globe -------------------------------------------------------------- */
+const projection = d3.geoOrthographic().rotate([85, -52]).clipAngle(90);
+const geoPath = d3.geoPath(projection);
+const svg = d3.select("#globe");
+const gEarth = d3.select("#earth");
+const gJets = d3.select("#jets");
+let land = null, landCoarse = null;
+let selected = null;
+let step = 1;
+let troughShift = 0; // degrees the chosen jet's eastern-US trough has moved
+
+const sphere = { type: "Sphere" };
+const graticule = d3.geoGraticule10();
+
+JET_PATHS.forEach(j => {
+  const g = gJets.append("g")
+    .attr("class", "ne-jet-opt").attr("data-jet", j.id)
+    .on("click", () => { if (!didDrag && step === 1) select(j.id); })
+    .on("pointerdown", ev => startTroughDrag(ev, j.id));
+  g.append("path").attr("class", "ne-jet");
+  g.append("path").attr("class", "ne-jet-flow").style("animation-duration", `${JET_FLOW_S[j.id]}s`);
+  g.append("path").attr("class", "ne-jet-hit");
+  const badge = g.append("g").attr("class", "ne-jet-badge");
+  badge.append("circle").attr("r", 12);
+  badge.append("text").text(j.id);
+});
+
+/* Toolbar: native radios, so arrow keys and roving focus come for free. */
+const elOptions = d3.select(".ne-toolbar fieldset");
+JET_PATHS.forEach(j => {
+  const lab = elOptions.append("label").attr("class", "ne-seg");
+  lab.append("input").attr("type", "radio").attr("name", "jet").attr("value", j.id)
+    .attr("aria-label", `Jet stream ${j.id}`)
+    .on("change", () => select(j.id));
+  lab.append("span").attr("aria-hidden", "true").text(j.id);
+});
+
+/* Each letter rides ON its own line in a badge, so which letter belongs to
+   which line is never in doubt. The trough bottoms are only ~3° (≈20px)
+   apart, so the badges are staggered west→east along the trough (A west,
+   D east): diagonal spacing keeps 24px badges from touching. */
+const BADGE_LON = { A: -92, B: -84, C: -76, D: -68 };
+const JET_LINES = {}, JET_LABEL_AT = {}, TROUGH_BOTTOM_LON = {};
+function buildJet(j, shift = 0) {
+  const c = jetCoords(j, shift);
+  JET_LINES[j.id] = { type: "LineString", coordinates: c };
+  // Point on the line's eastern-US trough nearest the badge longitude.
+  const at = BADGE_LON[j.id] + shift;
+  JET_LABEL_AT[j.id] = c.filter(p => p[1] < 45)
+    .reduce((m, p) => (Math.abs(p[0] - at) < Math.abs(m[0] - at) ? p : m));
+  // Where the trough actually bottoms out (tilt moves it off the centre).
+  return c.filter(p => p[0] > -140 + shift && p[0] < -20 + shift)
+    .reduce((m, p) => (p[1] < m[1] ? p : m))[0];
+}
+JET_PATHS.forEach(j => { TROUGH_BOTTOM_LON[j.id] = buildJet(j); });
+
+/* ---- Air masses (step 3) -------------------------------------------------
+   Both shapes are built from the LIVE jet line, so they follow the trough
+   wherever step 2 put it. Shapes follow Mike's sketch:
+
+   Continental (blue): a bean filling the trough. South edge runs AIR_INSET
+   inside the jet from CONT_W west to CONT_E east of the trough bottom; north
+   edge runs back CONT_H above the trough's lowest point (≈ Great Lakes),
+   sagging CONT_SAG in the middle.
+
+   Ocean (red): a band along the coast on the warm side of the jet. Its inner
+   edge follows the jet's east flank (OCEAN_FROM…OCEAN_TO east of the bottom),
+   nudged south-east; the outer edge is that line pushed OCEAN_OFFSET out to
+   sea; a tip reaches south past the trough bottom, as in the sketch. */
+const AIR_INSET = 1.2;
+const CONT_W = 13, CONT_E = 7, CONT_H = 8, CONT_SAG = 1.5;
+const OCEAN_FROM = 1, OCEAN_TO = 14, OCEAN_OFFSET = [4, -3], OCEAN_TIP = 5;
+
+function troughBottom() {
+  const lon = TROUGH_BOTTOM_LON[selected] + troughShift;
+  return JET_LINES[selected].coordinates
+    .reduce((m, p) => (Math.abs(p[0] - lon) < Math.abs(m[0] - lon) ? p : m));
+}
+function jetBetween(lonA, lonB) {
+  return JET_LINES[selected].coordinates
+    .filter(p => p[0] >= lonA && p[0] <= lonB && p[1] < 50)
+    .filter((p, i) => i % 4 === 0);
+}
+function contCoords() {
+  const [bLon] = troughBottom();
+  const south = jetBetween(bLon - CONT_W, bLon + CONT_E).map(([x, y]) => [x, y + AIR_INSET]);
+  const w = south[0], e = south[south.length - 1];
+  const top = Math.min(...south.map(p => p[1])) + CONT_H;
+  const north = [];
+  for (let k = 0; k <= 6; k++) {
+    const f = k / 6;
+    north.push([e[0] + (w[0] - e[0]) * f, top - CONT_SAG * Math.sin(Math.PI * f)]);
+  }
+  return south.concat(north);
+}
+function oceanCoords() {
+  const [bLon, bLat] = troughBottom();
+  const inner = jetBetween(bLon + OCEAN_FROM, bLon + OCEAN_TO)
+    .map(([x, y]) => [x + 0.5, y - AIR_INSET]);
+  const tip = [bLon + 0.5, bLat - OCEAN_TIP];
+  const outer = inner.map(([x, y]) => [x + OCEAN_OFFSET[0], y + OCEAN_OFFSET[1]]).reverse();
+  return [tip, ...inner, ...outer];
+}
+
+/* PLACEHOLDER SCALES (°F, 5° steps): not from content design yet.
+   `deep` is the end of the scale where the fill is most opaque. */
+const AIRS = [
+  { key: "cont",  name: "Continental air", color: "var(--cold)", coords: contCoords,
+    min: -20, max: 40, step: 5, start: 15, deep: "min" },
+  { key: "ocean", name: "Ocean air",       color: "var(--warm)", coords: oceanCoords,
+    min: 40,  max: 80, step: 5, start: 65, deep: "max" },
+];
+const airCurve = d3.line().curve(d3.curveCatmullRomClosed.alpha(0.5));
+const gAir = d3.select("#air");
+const gAirControls = d3.select("#air-controls");
+AIRS.forEach(m => {
+  m.temp = m.start;
+  m.g = gAir.append("g").attr("class", "ne-air-mass").style("--air-color", m.color);
+  m.shape = m.g.append("path").attr("class", "ne-air-shape");
+  m.label = m.g.append("text").attr("class", "ne-air-label");
+  m.controls = gAirControls.append("g").style("--air-color", m.color);
+  const btn = (glyph, dir) => {
+    const b = m.controls.append("g").attr("class", "ne-air-btn")
+      .on("click", function () { if (!this.classList.contains("is-disabled")) setTemp(m, m.temp + dir * m.step); });
+    b.append("circle").attr("r", 16);
+    b.append("path").attr("d", glyph);
+    return b;
+  };
+  m.down = btn("M-7 0H7", -1);
+  m.up = btn("M-7 0H7M0 -7V7", 1);
+});
+
+function drawAir() {
+  if (step < 3 || !selected) return;
+  const centre = projection.invert(projection.translate());
+  AIRS.forEach(m => {
+    const ll = m.coords();
+    const hidden = ll.some(p => d3.geoDistance(p, centre) > Math.PI / 2);
+    m.g.attr("display", hidden ? "none" : null);
+    m.controls.attr("display", hidden ? "none" : null);
+    if (hidden) return;
+    const xy = ll.map(p => projection(p));
+    m.shape.attr("d", airCurve(xy));
+    const [cx, cy] = d3.polygonCentroid(xy);
+    m.label.attr("x", cx).attr("y", cy);
+    m.down.attr("transform", `translate(${cx - 52},${cy})`);
+    m.up.attr("transform", `translate(${cx + 52},${cy})`);
+  });
+}
+
+/* Persistent layers, in paint order. Shade sits over the land, under the jets,
+   so the jets stay full-strength yellow on the dark side of the ball. */
+const elOcean = gEarth.append("path").attr("class", "ne-ocean");
+const elLand = gEarth.append("path").attr("class", "ne-land");
+const elGrat = gEarth.append("path").attr("class", "ne-graticule");
+const elShade = gEarth.append("circle").attr("class", "ne-shade");
+const elLimb = gEarth.append("path").attr("class", "ne-limb");
+
+/* Re-fit to the viewport (keeps the current rotation), then redraw. */
+/* Camera per step. Step 1 shows the whole hemisphere so the loops can be
+   compared; steps 2+ close in on North America the way Mike's sketches are
+   framed, so the trough and the air mass are big enough to work with.
+   zoom is a multiple of the fit-to-viewport radius (>1 = globe overflows). */
+const VIEWS = {
+  1: { rotate: [85, -52], zoom: 1 },
+  2: { rotate: [80, -40], zoom: 1.8 },
+  3: { rotate: [80, -40], zoom: 1.8 },
+  4: { rotate: [80, -40], zoom: 1.8 },
+};
+let fitScale = 1, zoom = VIEWS[1].zoom;
+
+function layout() {
+  const w = svg.node().clientWidth, h = svg.node().clientHeight;
+  svg.attr("viewBox", `0 0 ${w} ${h}`);
+  const r = projection.rotate();
+  projection.rotate([0, 0]).fitExtent([[16, 16], [w - 16, h - 16]], sphere).rotate(r);
+  fitScale = projection.scale();
+  projection.scale(fitScale * zoom);
+  draw();
+}
+
+/* Glide to a step's camera. Rotation is interpolated per axis; the coarse
+   coastline is used during the move, the detailed one when it lands. */
+function flyTo(view, duration = 700) {
+  const r0 = projection.rotate(), z0 = zoom;
+  const r1 = view.rotate ? [r0[0] + wrapLon(view.rotate[0] - r0[0]), view.rotate[1], 0] : r0;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const set = t => {
+    projection.rotate(r0.map((v, i) => v + (r1[i] - v) * t));
+    zoom = z0 + (view.zoom - z0) * t;
+    projection.scale(fitScale * zoom);
+  };
+  zoomTarget = view.zoom;
+  syncZoomButtons();
+  if (reduce) { set(1); draw(); return; }
+  d3.transition("camera").duration(duration).ease(d3.easeCubicInOut)
+    .tween("camera", () => t => { set(t); draw(true); })
+    .on("end", () => draw());
+}
+
+/* ---- View tools (upper left) ---------------------------------------------
+   Zoom in/out in ZOOM_STEP multiples between ZOOM_MIN (whole globe) and
+   ZOOM_MAX, keeping the current rotation. Fit = whole globe, centred where
+   the current step is centred. zoomTarget tracks where a glide is heading
+   so fast repeated clicks stack instead of restarting from mid-glide. */
+const ZOOM_MIN = 1, ZOOM_MAX = 4, ZOOM_STEP = 1.5;
+let zoomTarget = zoom;
+const elZoomIn = document.getElementById("zoom-in");
+const elZoomOut = document.getElementById("zoom-out");
+const elZoomFit = document.getElementById("zoom-fit");
+function syncZoomButtons() {
+  elZoomIn.disabled = zoomTarget >= ZOOM_MAX - 1e-6;
+  elZoomOut.disabled = zoomTarget <= ZOOM_MIN + 1e-6;
+}
+function zoomBy(f) {
+  const z = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomTarget * f));
+  if (z !== zoomTarget) flyTo({ zoom: z }, 300);
+}
+elZoomIn.addEventListener("click", () => zoomBy(ZOOM_STEP));
+elZoomOut.addEventListener("click", () => zoomBy(1 / ZOOM_STEP));
+elZoomFit.addEventListener("click", () => flyTo({ rotate: VIEWS[step].rotate, zoom: ZOOM_MIN }));
+
+/* ---- Zoom gestures -------------------------------------------------------
+   Same limits and buttons as above, but applied immediately (no glide) so
+   the globe tracks the fingers. Zoom is about the globe's centre.
+   - Mouse wheel / trackpad scroll: wheel events.
+   - Trackpad pinch: Chrome/Firefox/Edge send it as a wheel event with
+     ctrlKey set; Safari sends its own gesturestart/gesturechange.
+   - Touchscreen pinch: two pointers on the globe (handled with the drag code). */
+let settleTimer = 0;
+function setZoomNow(z) {
+  z = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z));
+  d3.interrupt(document.documentElement, "camera"); // a gesture beats a glide
+  zoom = zoomTarget = z;
+  projection.scale(fitScale * zoom);
+  syncZoomButtons();
+  if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(true); });
+  clearTimeout(settleTimer);
+  settleTimer = setTimeout(() => draw(), 150); // detailed coastline once it stops
+}
+svg.node().addEventListener("wheel", ev => {
+  ev.preventDefault(); // otherwise ctrl+wheel zooms the whole page
+  const perPx = ev.ctrlKey ? 0.01 : 0.002; // pinch deltas are small, wheel deltas large
+  const px = ev.deltaMode === 1 ? ev.deltaY * 16 : ev.deltaY; // lines → px
+  setZoomNow(zoom * Math.exp(-px * perPx));
+}, { passive: false });
+let gestureZ0 = null;
+svg.node().addEventListener("gesturestart", ev => { ev.preventDefault(); gestureZ0 = zoom; });
+svg.node().addEventListener("gesturechange", ev => {
+  ev.preventDefault();
+  if (gestureZ0 != null) setZoomNow(gestureZ0 * ev.scale);
+});
+svg.node().addEventListener("gestureend", ev => { ev.preventDefault(); gestureZ0 = null; });
+
+/* While dragging, the coarse 110m coastline keeps the spin smooth; the
+   detailed 50m one comes back when the globe is let go. */
+function draw(fast = false) {
+  const [cx, cy] = projection.translate();
+  elShade.attr("cx", cx).attr("cy", cy).attr("r", projection.scale());
+  const sph = geoPath(sphere);
+  elOcean.attr("d", sph);
+  elLimb.attr("d", sph);
+  const l = fast ? (landCoarse || land) : (land || landCoarse);
+  elLand.attr("d", l ? geoPath(l) : null);
+  elGrat.attr("d", geoPath(graticule));
+
+  gJets.selectAll(".ne-jet-opt").each(function () {
+    const j = JET_PATHS.find(p => p.id === this.dataset.jet);
+    const g = d3.select(this);
+    g.selectAll("path").attr("d", geoPath(JET_LINES[j.id]));
+    const pt = JET_LABEL_AT[j.id];
+    const visible = d3.geoDistance(pt, projection.invert(projection.translate())) < Math.PI / 2;
+    const [x, y] = projection(pt);
+    g.select(".ne-jet-badge").attr("transform", `translate(${x},${y})`)
+      .attr("display", visible ? null : "none");
+  });
+  drawAir();
+  drawStorm();
+  drawSide();
+}
+
+/* ---- Drag to spin -------------------------------------------------------
+   Horizontal drag turns the globe around its axis; vertical drag tilts it
+   toward/away from the pole (clamped so it never flips over). One degree per
+   (radius·π/180) px, so the surface under the pointer roughly tracks it.
+   No pointer capture: capture retargets the click to the svg, and clicking
+   a jet stream must still reach the jet stream. */
+const DRAG_SLOP = 4; // px of movement before a press counts as a drag
+let drag = null, didDrag = false, raf = 0;
+/* Two fingers on the globe = pinch zoom; it cancels any one-finger spin and
+   suppresses the click that would otherwise follow. */
+const touches = new Map();
+let pinch = null;
+const touchGap = () => { const [a, b] = [...touches.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+svg.on("pointerdown", ev => {
+  if (ev.pointerType === "touch") touches.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  if (touches.size === 2) {
+    drag = null;
+    didDrag = true;
+    svg.classed("is-dragging", false);
+    pinch = { d0: touchGap(), z0: zoom };
+    return;
+  }
+  if (ev.button !== 0) return;
+  drag = { x: ev.clientX, y: ev.clientY, rot: projection.rotate(), moved: false };
+  didDrag = false;
+});
+window.addEventListener("pointermove", ev => {
+  if (touches.has(ev.pointerId)) touches.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  if (pinch && touches.size === 2) { setZoomNow(pinch.z0 * touchGap() / pinch.d0); return; }
+  if (!drag) return;
+  if (drag.mode === "trough") {
+    const lon = pointerLon(ev);
+    if (lon == null) return;
+    drag.moved = true;
+    const target = drag.trough0 + wrapLon(lon - drag.lon0);
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; setTroughLon(target); });
+    return;
+  }
+  const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+  if (!drag.moved && Math.hypot(dx, dy) < DRAG_SLOP) return;
+  drag.moved = true;
+  svg.classed("is-dragging", true);
+  const k = 180 / (Math.PI * projection.scale());
+  const [l0, p0, g0] = drag.rot;
+  projection.rotate([l0 + dx * k, Math.max(-90, Math.min(90, p0 - dy * k)), g0]);
+  if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(true); });
+});
+const endTouch = ev => {
+  touches.delete(ev.pointerId);
+  if (touches.size < 2) pinch = null;
+};
+window.addEventListener("pointercancel", endTouch);
+window.addEventListener("pointerup", ev => {
+  endTouch(ev);
+  if (!drag) return;
+  didDrag = drag.moved;
+  drag = null;
+  svg.classed("is-dragging", false);
+  if (didDrag) draw();
+});
+
+/* One choice, two ways in: clicking a loop and the toolbar both land here. */
+function select(id) {
+  if (selected && id !== selected) {
+    buildJet(JET_PATHS.find(p => p.id === selected), 0);
+    troughShift = 0;
+  }
+  selected = id;
+  svg.classed("has-selection", true);
+  gJets.selectAll(".ne-jet-opt").each(function () {
+    const on = this.dataset.jet === id;
+    this.classList.toggle("is-on", on);
+    if (on) this.parentNode.appendChild(this); // paint the chosen loop on top
+  });
+  elOptions.selectAll("input").property("checked", function () { return this.value === id; });
+  elNext1.disabled = false;
+  updateTrial();
+}
+
+/* ---- Steps --------------------------------------------------------------- */
+const PROMPTS = {
+  1: "Choose the shape and position of the jet stream.",
+  2: "Choose the longitude of the jet stream trough.",
+  3: "Choose the temperatures of the continental and ocean air masses.",
+  4: "Run the model to see if a nor’easter forms.",
+};
+/* Steps 1–3 are the storm SETUP. Step 4 is past setup, so it has no label
+   until that phase is designed. */
+const SETUP_STEPS = 3;
+const stepLabel = n => (n <= SETUP_STEPS ? `Setup: Step ${n} of ${SETUP_STEPS}` : "");
+/* ---- Trial cards ---------------------------------------------------------
+   Right-hand column: saved trials (read-only snapshots), then the live trial,
+   then an empty "Trial N+1" card. Clicking the empty card freezes the live
+   trial as it stands and starts the next one from Step 1.
+   Live rows show "—" until their step has been reached at least once; the
+   rows for the current step are marked. */
+const TRIAL_ROWS = [
+  { step: 1, label: "Jet stream",      value: () => selected },
+  { step: 2, label: "Trough",          value: () => fmtLon(troughLon()) },
+  { step: 3, label: "Continental air", value: () => `${AIRS[0].temp}°F` },
+  { step: 3, label: "Ocean air",       value: () => `${AIRS[1].temp}°F` },
+  { step: 4, label: "Outcome",         value: () => (runComplete ? outcome().label : null) },
+];
+let reached = 1;
+/* Saved trials keep their full state (so they can be reopened) plus the card
+   values. The globals always describe the trial ON SCREEN: the live one, or
+   a saved one being viewed (`viewing` = its index; the live trial waits in
+   `liveStash`). */
+const savedTrials = [];          // [{ n, state, values }]
+let viewing = null, liveStash = null, loadingState = false;
+const elTrials = d3.select("#trials");
+const liveValues = () =>
+  TRIAL_ROWS.map(r => (r.step <= reached && selected ? r.value() : null));
+const captureState = () => ({
+  selected, troughShift, temps: AIRS.map(m => m.temp),
+  reached, hasRun, runComplete, runHour, step,
+});
+/* Put a trial's state on screen. Steps through the normal setters so the
+   globe, toolbar and side view all follow; updateTrial is held off until
+   the whole state is in place. */
+function loadState(st) {
+  loadingState = true;
+  pauseRun();
+  if (selected && selected !== st.selected) buildJet(JET_PATHS.find(p => p.id === selected), 0);
+  selected = st.selected;
+  troughShift = st.troughShift;
+  if (selected) buildJet(JET_PATHS.find(p => p.id === selected), troughShift);
+  AIRS.forEach((m, i) => setTemp(m, st.temps[i]));
+  reached = st.reached;
+  lockSetup(st.hasRun);
+  runComplete = st.runComplete;
+  svg.classed("has-selection", !!selected);
+  gJets.selectAll(".ne-jet-opt").each(function () {
+    const on = this.dataset.jet === selected;
+    this.classList.toggle("is-on", on);
+    if (on) this.parentNode.appendChild(this);
+  });
+  elOptions.selectAll("input").property("checked", function () { return this.value === selected; });
+  elNext1.disabled = !selected;
+  goToStep(st.step);
+  if (st.step === 4) setHour(st.runHour);
+  loadingState = false;
+}
+
+/* Open any saved trial and carry on with it: a run trial stays locked (it can
+   be replayed), an unrun one can be run or edited, a half-set-up one opens
+   on the step it was left at. Its record updates as it changes. */
+function viewTrial(i) {
+  if (viewing === i) return returnToLive();
+  if (viewing === null) liveStash = { state: captureState(), values: liveValues() };
+  else savedTrials[viewing].state = captureState();
+  viewing = i;
+  document.body.classList.add("is-viewing");
+  loadState(savedTrials[i].state);  // focus lands on that step's main control
+  updateTrial();
+}
+function returnToLive() {
+  if (viewing === null) return;
+  savedTrials[viewing].state = captureState();
+  savedTrials[viewing].values = liveValues();
+  viewing = null;
+  document.body.classList.remove("is-viewing");
+  loadState(liveStash.state);
+  liveStash = null;
+  updateTrial();
+}
+// To get back, click (or Enter on) the live trial's card — see trialCard().
+
+const ICON_RESET = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>';
+
+/* Live card: Reset (start this trial over). Saved cards open on click.
+   `shown` = on screen now. */
+function trialCard(container, n, values, live, { index = null, shown = false } = {}) {
+  const card = container.append("section").attr("class", "ne-trial")
+    .classed("is-live", live).classed("is-shown", shown && viewing !== null)
+    .attr("aria-labelledby", `trial-title-${n}`);
+  // The open trial's card carries Reset; every other card is itself a button
+  // that opens its trial (never both, so no nested interactive controls).
+  if (!shown) {
+    const open = live ? returnToLive : () => viewTrial(index);
+    const what = live ? "Return to" : "View";
+    const outcomeText = values[values.length - 1] ?? "not run yet";
+    card.classed("is-clickable", true)
+      .attr("role", "button").attr("tabindex", 0)
+      .attr("aria-label", `${what} Trial ${n}: ${outcomeText}`)
+      .on("click", open)
+      .on("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); open(); } });
+  }
+  const head = card.append("div").attr("class", "ne-trial-head");
+  head.append("h2").attr("id", `trial-title-${n}`).text(`Trial ${n}`);
+  if (shown) head.append("button").attr("type", "button").attr("class", "ne-icon-btn")
+    .attr("data-trial-action", "reset")
+    .attr("aria-label", `Reset Trial ${n}`).attr("title", `Reset Trial ${n}`)
+    .html(ICON_RESET)
+    // Nothing to reset yet: no jet stream chosen (the first thing a trial
+    // records) and never past Step 1. The shown card is always the trial in
+    // the globals, so they describe it.
+    .property("disabled", !selected && reached === 1 && !hasRun)
+    .on("click", resetChoices);
+  const dl = card.append("dl");
+  TRIAL_ROWS.forEach((r, i) => {
+    const cur = shown && r.step === step;
+    dl.append("dt").text(r.label).classed("is-current", cur);
+    dl.append("dd").text(values[i] ?? "—")
+      .classed("is-pending", values[i] == null).classed("is-current", cur);
+  });
+}
+
+function updateTrial() {
+  if (loadingState) return;
+  const live = savedTrials.length + 1;
+  // The trial on screen may be a saved one being viewed: keep its record current.
+  if (viewing !== null) {
+    savedTrials[viewing].state = captureState();
+    savedTrials[viewing].values = liveValues();
+  }
+  const focusedView = document.activeElement?.closest?.(".ne-trial.is-clickable")?.getAttribute("aria-labelledby");
+  elTrials.selectAll("*").remove();
+  savedTrials.forEach((t, i) => trialCard(elTrials, t.n, t.values, false, { index: i, shown: viewing === i }));
+  trialCard(elTrials, live, viewing === null ? liveValues() : liveStash.values, true, { shown: viewing === null });
+  const btn = elTrials.append("button").attr("type", "button").attr("class", "ne-trial-new")
+    .attr("aria-label", `Start Trial ${live + 1}`)
+    .on("click", startNewTrial);
+  btn.append("svg").attr("viewBox", "0 0 24 24").attr("aria-hidden", "true")
+    .append("path").attr("d", "M12 5v14M5 12h14");
+  btn.append("span").text(`Trial ${live + 1}`);
+  // Re-rendering replaced the card that had focus; put focus back on it.
+  if (focusedView) elTrials.select(`[aria-labelledby="${focusedView}"]`).node()?.focus({ preventScroll: true });
+  // Keep the card that's on screen fully visible in the (scrollable) column.
+  elTrials.select(".ne-trial.is-shown").node()?.scrollIntoView({ block: "nearest" });
+}
+
+function startNewTrial() {
+  returnToLive();
+  savedTrials.push({ n: savedTrials.length + 1, state: captureState(), values: liveValues() });
+  resetLiveTrial();
+  // Show the new live card (the column may have scrolled).
+  elTrials.select(".ne-trial.is-live").node().scrollIntoView({ block: "nearest" });
+}
+
+/* Start the live trial over: every choice back to its starting state. */
+function resetLiveTrial() {
+  returnToLive();
+  resetChoices();
+}
+/* Clear the trial on screen (live or an open saved one) back to Step 1. */
+function resetChoices() {
+  if (selected) buildJet(JET_PATHS.find(p => p.id === selected), 0);
+  selected = null;
+  troughShift = 0;
+  AIRS.forEach(m => setTemp(m, m.start));
+  reached = 1;
+  lockSetup(false);
+  runComplete = false;
+  svg.classed("has-selection", false);
+  gJets.selectAll(".ne-jet-opt").classed("is-on", false);
+  elOptions.selectAll("input").property("checked", false);
+  elNext1.disabled = true;
+  goToStep(1);
+}
+
+const elPrompt = document.getElementById("ne-prompt");
+const elStepNum = elPrompt.querySelector(".ne-step-num");
+const elPromptText = document.getElementById("ne-prompt-text");
+const elNext1 = document.getElementById("next-1");
+const elLon = document.getElementById("trough-lon");
+const elLonOut = document.getElementById("trough-lon-out");
+
+/* Each step's toolbar replaces the last, so focus would fall to <body>; put it
+   on the new step's main control instead. */
+function goToStep(n) {
+  if (n !== 4) pauseRun();
+  const from = step;
+  step = n;
+  reached = Math.max(reached, n);
+  if (VIEWS[n].zoom !== VIEWS[from].zoom) flyTo(VIEWS[n]);
+  // One update of the live region, so it is announced once: "Step 2: Choose …"
+  // While a saved trial is open, the label says which: "Trial 1 · Setup: Step 2 of 3".
+  const label = viewing === null ? stepLabel(n)
+    : [`Trial ${savedTrials[viewing].n}`, stepLabel(n)].filter(Boolean).join(" · ");
+  elStepNum.firstChild.nodeValue = label;
+  elStepNum.hidden = !label;
+  elPromptText.textContent = PROMPTS[n];
+  [1, 2, 3, 4].forEach(k => {
+    document.getElementById(`step-${k}`).hidden = k !== n;
+    svg.classed(`is-step-${k}`, k === n);
+    d3.select(".ne-stage").classed(`is-step-${k}`, k === n);
+  });
+  if (n === 1) {
+    draw();
+    (elOptions.select("input:checked").node() || elOptions.select("input").node()).focus();
+  } else if (n === 2) {
+    setTroughLon(troughLon());
+    elLon.focus();
+  } else if (n === 3) {
+    AIRS.forEach(m => setTemp(m, m.temp));
+    draw();
+    AIRS[0].btnDown.focus();
+  } else if (n === 4) {
+    sizeRunBtn();
+    startClouds();
+    setHour(0); // choices may have changed since the last run
+    elRunBtn.focus();
+  }
+  updateTrial();
+}
+elNext1.addEventListener("click", () => goToStep(2));
+document.getElementById("next-2").addEventListener("click", () => goToStep(3));
+document.getElementById("next-3").addEventListener("click", () => goToStep(4));
+document.querySelectorAll("[data-back]").forEach(b =>
+  b.addEventListener("click", () => goToStep(+b.dataset.back)));
+
+/* ---- Step 4: run ---------------------------------------------------------
+   RUN_HOURS of model time play in RUN_MS of real time. Run plays from the
+   slider's position (from 0 if it is at the end); dragging the slider pauses
+   and scrubs. */
+const RUN_HOURS = 72, RUN_MS = 9000;
+const elRunBtn = document.getElementById("run-btn");
+const elRunTime = document.getElementById("run-time");
+const elRunOut = document.getElementById("run-time-out");
+const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>';
+let runHour = 0, running = false, runRaf = 0, runLast = 0;
+let hasRun = false; // once true, this trial's setup is locked (no Back)
+let runComplete = false; // the run has reached the end: outcome is revealed
+
+/* ---- Outcome rules (DRAFT — for content design to confirm) ---------------
+   From the nor'easter research (2026-10-26):
+   1. STRENGTH = trough depth + temperature contrast (ocean − continental).
+        depth points:     A 0 · B 1 · C 2 · D 3
+        contrast points:  < 30°F → 0 · 30–49°F → 1 · ≥ 50°F → 2
+        total 0–1 no storm · 2–3 storm · 4–5 strong storm ("bomb")
+   2. TRACK = trough longitude (the low forms just downstream of the trough):
+        west of 85°W → inland (Ohio Valley / Great Lakes; rain on the coast)
+        85–74°W     → up the coast: a nor'easter
+        east of 74°W → out to sea
+   3. SNOW or RAIN = continental air: below 32°F → snow, otherwise rain.
+   No storm wins over track; track wins over snow/rain. */
+const DEPTH_POINTS = { A: 0, B: 1, C: 2, D: 3 };
+const CONTRAST_STEPS = [30, 50];       // °F: crossing each adds a point
+const STORM_AT = 2, STRONG_AT = 4;     // strength totals
+const COAST_WEST = 85, COAST_EAST = 74; // °W window for a coastal track
+const SNOW_BELOW = 32;                 // °F continental air
+
+function outcome() {
+  const contrast = AIRS[1].temp - AIRS[0].temp;
+  const strength = DEPTH_POINTS[selected] + CONTRAST_STEPS.filter(c => contrast >= c).length;
+  const west = -troughLon();           // degrees West
+  const snow = AIRS[0].temp < SNOW_BELOW;
+  if (strength < STORM_AT) return { key: "none", label: "No storm", strength: 0 };
+  const strong = strength >= STRONG_AT;
+  const level = strong ? 2 : 1;
+  if (west > COAST_WEST) return { key: "inland", label: "Inland storm", strength: level };
+  if (west < COAST_EAST) return { key: "sea", label: "Storm out to sea", strength: level };
+  return strong
+    ? { key: "strong", label: snow ? "Strong nor’easter: blizzard" : "Strong nor’easter: rain & wind", strength: 2 }
+    : { key: "noreaster", label: snow ? "Nor’easter: snow" : "Nor’easter: rain", strength: 1 };
+}
+const elRunNav = document.getElementById("run-nav");
+/* Back is made invisible, not removed, so the centred toolbar row (and the
+   time slider in it) doesn't shift. visibility:hidden also takes it out of
+   the tab order and the accessibility tree. */
+function lockSetup(locked) {
+  hasRun = locked;
+  elRunNav.style.visibility = locked ? "hidden" : "";
+}
+
+function setHour(h) {
+  runHour = Math.max(0, Math.min(RUN_HOURS, h));
+  const whole = Math.round(runHour);
+  elRunTime.value = whole;
+  elRunOut.textContent = `${whole} h`;
+  elRunTime.setAttribute("aria-valuetext", `Hour ${whole} of ${RUN_HOURS}`);
+  syncRunBtn();
+  if (hasRun && !runComplete && runHour >= RUN_HOURS) {
+    runComplete = true;
+    document.getElementById("outcome-live").textContent = `Outcome: ${outcome().label}`;
+    updateTrial();
+  }
+  draw();
+}
+/* Only rewrite the button when its mode changes. Rewriting it every frame
+   (setHour runs per frame while playing) swapped out the node under the
+   pointer between mousedown and mouseup, so the Pause click never fired. */
+let runBtnMode = "";
+/* The label changes (Run / Pause / Run again); fix the button to its widest
+   state so the slider beside it never moves. Measured once, on first show
+   (a hidden toolbar measures 0). */
+let runBtnSized = false;
+function sizeRunBtn() {
+  if (runBtnSized || !elRunBtn.offsetParent) return;
+  const was = runBtnMode;
+  let widest = 0;
+  ["run", "pause", "again"].forEach(m => {
+    elRunBtn.style.minWidth = "";
+    elRunBtn.innerHTML = m === "pause" ? `${ICON_PAUSE}<span>Pause</span>`
+      : `${ICON_PLAY}<span>${m === "again" ? "Run again" : "Run"}</span>`;
+    widest = Math.max(widest, elRunBtn.getBoundingClientRect().width);
+  });
+  elRunBtn.style.minWidth = `${Math.ceil(widest)}px`;
+  runBtnSized = true;
+  runBtnMode = ""; // force a redraw of the real state
+  syncRunBtn();
+}
+function syncRunBtn() {
+  const mode = running ? "pause" : runHour >= RUN_HOURS ? "again" : "run";
+  if (mode === runBtnMode) return;
+  runBtnMode = mode;
+  elRunBtn.innerHTML = mode === "pause" ? `${ICON_PAUSE}<span>Pause</span>`
+    : `${ICON_PLAY}<span>${mode === "again" ? "Run again" : "Run"}</span>`;
+}
+function playRun() {
+  if (!hasRun) lockSetup(true);
+  if (runHour >= RUN_HOURS) runHour = 0;
+  running = true;
+  runLast = performance.now();
+  syncRunBtn();
+  const tick = now => {
+    if (!running) return;
+    const h = runHour + (now - runLast) * RUN_HOURS / RUN_MS;
+    runLast = now;
+    if (h >= RUN_HOURS) { running = false; setHour(RUN_HOURS); return; }
+    setHour(h);
+    runRaf = requestAnimationFrame(tick);
+  };
+  runRaf = requestAnimationFrame(tick);
+}
+function pauseRun() {
+  running = false;
+  cancelAnimationFrame(runRaf);
+  syncRunBtn();
+}
+elRunBtn.addEventListener("click", () => (running ? pauseRun() : playRun()));
+elRunTime.addEventListener("input", () => {
+  pauseRun();
+  if (!hasRun) lockSetup(true); // scrubbing is running the model too
+  setHour(+elRunTime.value);
+});
+
+/* STORM TRACKS — one per outcome, so the Low always ends up where its
+   outcome says. (Riding the jet's east flank, as before, sent deep-trough
+   inland storms offshore, kept shallow-trough nor'easters on land, and let
+   storms "out to sea" clip Newfoundland — found by the land/sea check.)
+   - Nor'easter: COAST_TRACK, just offshore up the East Coast past the
+     40°N 70°W benchmark to south of Nova Scotia. Deeper jets start it
+     further south (COAST_START): D off Florida … A near Cape Hatteras.
+   - Inland: from north-east of the trough bottom, over land to the Great
+     Lakes, then up the St. Lawrence (lakes count as land in the map).
+   - Out to sea: from south-east of the trough bottom, east-north-east into
+     the open Atlantic, south of Newfoundland.
+   Waypoints are [lon, lat]; densified so the L moves evenly. */
+const COAST_TRACK = [[-80, 30.5], [-78.8, 32], [-77.2, 33.6], [-75, 35], [-73.5, 37],
+                     [-71.5, 39], [-70, 40], [-68, 41.5], [-65.6, 42.9], [-63.2, 43.7]];
+const COAST_START = { D: 0, C: 1, B: 2, A: 3 };
+const INLAND_FROM = [4, 4], GREAT_LAKES = [-80.5, 43.3], ST_LAWRENCE = [[-77, 45.5], [-73.5, 47.5]];
+const SEA_FROM = [3, -1], SEA_LEGS = [[6, 2.5], [13, 4.5], [20, 6]];
+const TRACK_STEPS = 12; // points per waypoint leg
+const gStorm = d3.select("#storm");
+const elStormTrack = gStorm.append("path").attr("class", "ne-storm-track")
+  .attr("filter", "url(#ne-outline)");
+/* Fronts + winds, in lon/lat offsets from the Low (scaled by `reach`, so they
+   grow with the storm). After Mike's Google Earth sketch: the cold front
+   trails south-west, the warm front runs east; warm air flows north into the
+   warm sector, cold air pushes south-east behind the cold front. */
+const COLD_FRONT = [[0, 0], [-2.5, -4.5], [-7, -10], [-13, -14]];
+const WARM_FRONT = [[0, 0], [4.5, -1], [10, -3], [15, -6.5]];
+const WARM_WINDS = [[[2, -12], [4.5, -6]], [[7, -12.5], [9.5, -7]], [[12, -13], [14.5, -8.5]]];
+const COLD_WINDS = [[[-12, -2], [-9, -6.5]], [[-16, -7], [-13, -11.5]]];
+const SYM_GAP = 26; // px along the front; symbols start just outside the L
+/* ---- Cloud shield: particles spinning around the Low --------------------
+   CLOUD_N puffs on three spiral arms. Each puff sits at a fraction s along
+   its arm: radius grows with s, and the angle trails back as s grows, so the
+   arms wind INTO the centre. The whole shield turns counterclockwise (the
+   Northern Hemisphere way). Puffs on the south-west side are faded to leave
+   the dry slot behind the cold front: that gives the comma shape.
+   Positions are in screen px around the projected Low, scaled with the
+   globe's zoom so the shield keeps its geographic size. Drawn under the
+   track, fronts and the L. */
+const CLOUD_N = 320, CLOUD_ARMS = 3, CLOUD_WIND = 2.6;   // rad of trailing per arm
+const CLOUD_SPIN = 0.5;                                    // rad/s, counterclockwise
+const DRY_SLOT = 5 * Math.PI / 4;                          // south-west, in screen-math angle
+const gCloudLayer = d3.select("#clouds"), gStormTop = d3.select("#storm-top");
+const gClouds = gCloudLayer.append("g").attr("class", "ne-clouds")
+  .attr("filter", "url(#ne-cloud-blur)");                  // soften puffs into one shield
+const rand = d3.randomLcg(7);                              // seeded: same shield every load
+const puffs = d3.range(CLOUD_N).map(i => ({
+  arm: i % CLOUD_ARMS,
+  s: Math.pow(rand(), 0.8),                                // a little denser outward
+  jitter: (rand() - 0.5) * 0.7,
+  size: 0.6 + rand() * 0.8,
+  alpha: 0.18 + rand() * 0.22,
+  // "ragged" placement, for storms that are NOT nor'easters: scattered all
+  // round with no arms and no dry slot — a loose, disorganised cluster.
+  ra: rand() * 2 * Math.PI,
+  rs: Math.sqrt(rand()),
+}));
+/* Only a nor'easter gets the classic comma shield. Inland storms and storms
+   out to sea are real storms, but get a smaller, fainter, ragged cluster
+   that barely turns (cloud.mode = "ragged"). */
+const RAGGED_SPIN = 0.25, RAGGED_ALPHA = 0.6;
+const elPuffs = puffs.map(() => gClouds.append("circle").attr("class", "ne-cloud-puff"));
+const cloud = { x: 0, y: 0, R: 0, on: false, mode: "comma" }; // set by drawStorm
+let cloudRaf = 0, cloudSpin = 0, cloudLast = 0;
+
+function drawClouds() {
+  gClouds.attr("display", cloud.on && cloud.R > 4 ? null : "none");
+  if (!cloud.on || cloud.R <= 4) return;
+  const k = projection.scale() / 560;
+  const comma = cloud.mode === "comma";
+  puffs.forEach((p, i) => {
+    let r, a, op;
+    if (comma) {
+      r = cloud.R * (0.12 + 0.88 * p.s);
+      a = cloudSpin + p.arm * 2 * Math.PI / CLOUD_ARMS - CLOUD_WIND * p.s + p.jitter;
+      const dry = Math.max(0, Math.cos(a - DRY_SLOT));     // 1 = deep in the dry slot
+      op = p.alpha * (1 - 0.85 * dry);
+    } else {
+      r = cloud.R * p.rs;
+      a = cloudSpin * RAGGED_SPIN + p.ra;
+      op = p.alpha * RAGGED_ALPHA;
+    }
+    elPuffs[i]
+      .attr("cx", cloud.x + r * Math.cos(a))
+      .attr("cy", cloud.y - r * Math.sin(a))                // screen y is down
+      .attr("r", ((0.05 + 0.07 * (comma ? p.s : p.rs)) * cloud.R + 3 * k) * p.size) // puffs scale with the shield
+      .attr("fill-opacity", op);
+  });
+}
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function spinClouds(now) {
+  if (step !== 4) { cloudRaf = 0; return; }
+  const dt = now - (cloudLast || now);
+  if (!reduceMotion()) {
+    cloudSpin += dt / 1000 * CLOUD_SPIN;
+    sinkPhase = (sinkPhase + dt / sinkMs()) % 1;
+    risePhase = (risePhase + dt / riseMs()) % 1;
+    precipPhase = (precipPhase + dt / (precip.snow ? PRECIP_SNOW_MS : PRECIP_RAIN_MS)) % 1;
+  }
+  cloudLast = now;
+  drawClouds();
+  drawSinking();
+  drawRising();
+  drawPrecip();
+  cloudRaf = requestAnimationFrame(spinClouds);
+}
+function startClouds() {
+  if (!cloudRaf) { cloudLast = 0; cloudRaf = requestAnimationFrame(spinClouds); }
+}
+
+const gFronts = gStorm.append("g").attr("filter", "url(#ne-outline)");
+const gWinds = gStorm.append("g").attr("filter", "url(#ne-outline)");
+const elStormMark = gStormTop.append("g").attr("class", "ne-storm-mark");
+elStormMark.append("circle");
+elStormMark.append("text").text("L");
+const stormLine = d3.line().curve(d3.curveCatmullRom.alpha(0.5));
+
+function stormTrack() {
+  const key = outcome().key;
+  const [bLon, bLat] = troughBottom();
+  let way;
+  if (key === "inland") {
+    const start = [bLon + INLAND_FROM[0], bLat + INLAND_FROM[1]];
+    const mid = [(start[0] + GREAT_LAKES[0]) / 2, (start[1] + GREAT_LAKES[1]) / 2];
+    way = [start, mid, GREAT_LAKES, ...ST_LAWRENCE];
+  } else if (key === "sea") {
+    const start = [bLon + SEA_FROM[0], bLat + SEA_FROM[1]];
+    way = [start, ...SEA_LEGS.map(([dx, dy]) => [start[0] + dx, start[1] + dy])];
+  } else {
+    way = COAST_TRACK.slice(COAST_START[selected]);
+  }
+  const pts = [];
+  for (let i = 0; i < way.length - 1; i++) {
+    const [a, b] = [way[i], way[i + 1]];
+    for (let k = 0; k < TRACK_STEPS; k++) {
+      const f = k / TRACK_STEPS;
+      pts.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
+    }
+  }
+  pts.push(way[way.length - 1]);
+  return pts;
+}
+/* ---- Side view inset -----------------------------------------------------
+   An oblique box, after Mike's sketch: the surface plane at the bottom, the
+   jet stream 10 km up on the top plane. P(u, v, h) maps box coordinates to
+   the svg: u = west→east (0…1), v = south→north (front→back), h = height.
+   The trough axis sits at u = TROUGH_U. West of it the jet converges and air
+   sinks to the surface High; east of it the jet diverges and air rises from
+   the surface Low — which only forms, and grows, as the run plays.
+   Everything that changes is driven by outcome() and the run hour. */
+// dy is deep enough that the jet's dip toward the front (south) reads clearly.
+const SIDE = { x0: 96, y0: 262, w: 214, dx: 60, dy: 90, h: 120 };
+const TROUGH_U = 0.5;
+const P = (u, v, h = 0) => [SIDE.x0 + u * SIDE.w + v * SIDE.dx, SIDE.y0 - v * SIDE.dy - h * SIDE.h];
+const sideSvg = d3.select("#side");
+const sideLine = d3.line().curve(d3.curveCatmullRom.alpha(0.5));
+const sidePoly = pts => "M" + pts.map(p => P(...p).join(",")).join("L") + "Z";
+
+// Static frame: back edges, surface, top plane, verticals, labels.
+(function buildSide() {
+  const g = sideSvg.append("g");
+  const box = [[0,0],[1,0],[1,1],[0,1]];
+  g.append("path").attr("class", "ne-side-box").attr("d", sidePoly(box.map(([u,v]) => [u, v, 0])));
+  g.append("path").attr("class", "ne-side-box").attr("d", sidePoly(box.map(([u,v]) => [u, v, 1])));
+  box.forEach(([u, v]) => g.append("path").attr("class", "ne-side-box")
+    .attr("d", "M" + P(u, v, 0) + "L" + P(u, v, 1)));
+  const [lx1, ly1] = P(0, 0, 1), [lx0, ly0] = P(0, 0, 0);
+  g.append("text").attr("class", "ne-side-label").attr("x", lx1 - 8).attr("y", ly1 + 5)
+    .attr("text-anchor", "end").text("10 km");
+  g.append("text").attr("class", "ne-side-label").attr("x", lx0 - 8).attr("y", ly0 + 5)
+    .attr("text-anchor", "end").text("Surface");
+})();
+
+// Surface air masses (footprints on the surface plane).
+const sideCold = sideSvg.append("path").attr("class", "ne-side-cold")
+  .attr("d", sidePoly([[0.04,0.18],[0.48,0.1],[0.6,0.42],[0.54,0.88],[0.12,0.92]]));
+const sideWarm = sideSvg.append("path").attr("class", "ne-side-warm")
+  .attr("d", sidePoly([[0.6,0.06],[0.98,0.06],[0.98,0.94],[0.64,0.9],[0.68,0.44]]));
+const massLabel = (u, v, t) => { const [x, y] = P(u, v, 0);
+  return sideSvg.append("text").attr("class", "ne-side-mass").attr("x", x).attr("y", y + 5).text(t); };
+massLabel(0.22, 0.26, "Cold air");
+massLabel(0.86, 0.74, "Warm air"); // back of the warm area, clear of the Low and its fronts
+
+// The coast: land (west) | ocean (east). Where the Low forms relative to it
+// shows the track — inland, on the coast (nor'easter), or out to sea.
+const COAST = [[0.6, 0], [0.63, 0.5], [0.66, 1]];
+sideSvg.append("path").attr("class", "ne-side-coast").attr("d", sideLine(COAST.map(p => P(p[0], p[1], 0))));
+{ const [x, y] = P(0.66, 1, 0);
+  sideSvg.append("text").attr("class", "ne-side-label ne-side-coastlabel").attr("x", x + 6).attr("y", y - 6).text("Coast"); }
+
+// Where the Low forms, by outcome track (u, v on the surface).
+const L_BY_TRACK = { inland: [0.4, 0.42], coast: [0.64, 0.42], sea: [0.9, 0.28] }; // sea sits forward, clear of the "Warm air" label
+// Everything that hangs off the Low is an offset from it.
+const CF_OFF = [[0, 0], [-0.04, -0.12], [-0.12, -0.26], [-0.24, -0.36]];
+const WF_OFF = [[0, 0], [0.1, 0.02], [0.2, -0.06], [0.28, -0.2]];
+// Snow/rain falls on the cold (west) side of the Low, below the cloud base, so
+// it isn't lost inside the white cloud tower.
+/* Falling precipitation: PRECIP_N seeded particles under the cloud base on
+   the Low's cold (west) side. Each falls from PRECIP_TOP to the surface and
+   loops, offset in phase so they don't fall in step. Snow drifts down slowly
+   and sways; rain falls fast at a slant. The count grows with the storm.
+   Animated in the cloud loop (drawPrecip); still under reduced motion. */
+const PRECIP_N = 18, PRECIP_TOP = 0.34;   // falls from about a third of the way up
+const PRECIP_SNOW_MS = 3200, PRECIP_RAIN_MS = 900;
+const precipRand = d3.randomLcg(5);
+const PRECIP = d3.range(PRECIP_N).map(() => ({
+  du: -0.27 + precipRand() * 0.25, dv: -0.2 + precipRand() * 0.32,   // spread over the cold side
+  phase: precipRand(), sway: precipRand() * 2 * Math.PI,
+}));
+const precip = { on: false, at: [0, 0], snow: true, count: 0 };  // set by drawSide
+let precipPhase = 0;
+const clampU = u => Math.max(0.01, Math.min(0.99, u));
+const frontPath = (at, off) => sideLine(off.map(([du, dv]) => P(clampU(at[0] + du), at[1] + dv, 0)));
+const sideCF = sideSvg.append("path").attr("class", "ne-side-cfront").attr("pathLength", 1).attr("stroke-dasharray", "1 1").attr("filter", "url(#ne-side-outline)");
+const sideWF = sideSvg.append("path").attr("class", "ne-side-wfront").attr("pathLength", 1).attr("stroke-dasharray", "1 1").attr("filter", "url(#ne-side-outline)");
+// Their symbols (same shapes as on the globe, smaller), redrawn as they grow.
+const sideCFsym = sideSvg.append("g").attr("class", "ne-front-cold").attr("filter", "url(#ne-side-outline)");
+const sideWFsym = sideSvg.append("g").attr("class", "ne-front-warm").attr("filter", "url(#ne-side-outline)");
+
+// High: always there, over the cold air. Sinking air streams down onto it:
+// SINK_N arrows travel from just under the jet (SINK_TOP) to just above the
+// H (SINK_BOTTOM) at a speed set by sinkMs(), fading in and out at the ends. Animated in
+// the cloud loop; still and evenly spaced under reduced motion.
+const H_AT = [0.2, 0.66];
+const [hx, hy] = P(H_AT[0], H_AT[1], 0);
+sideSvg.append("text").attr("class", "ne-side-H").attr("x", hx).attr("y", hy).text("H");
+const SINK_N = 3, SINK_TOP = 0.92, SINK_BOTTOM = 0.16, SINK_LEN = 0.14;
+/* Clear space between arrows in a column. The arrowhead tip sticks out past
+   the line end (marker 5×stroke 2.5 → 12.5 units for a 10-unit marker whose
+   tip is 2 past refX: 2.5 units), and each arrow's dark outline adds 1.3 all
+   round. Arrow length is capped so the space left is ARROW_GAP_PX on screen.
+   Spacing between arrows = (top − bottom − len) / N, so
+     len ≤ (top − bottom − N·gap) / (N + 1)     (all in h units). */
+const ARROW_TIP = 2.5, ARROW_OUTLINE = 1.3, ARROW_GAP_PX = 4;
+function maxArrowLen(top, bottom, n) {
+  const svgEl = sideSvg.node(), vbW = svgEl.viewBox.baseVal.width;
+  const pxPerUnit = (svgEl.getBoundingClientRect().width || vbW) / vbW;
+  const gapUnits = ARROW_TIP + 2 * ARROW_OUTLINE + ARROW_GAP_PX / pxPerUnit;
+  return (top - bottom - n * gapUnits / SIDE.h) / (n + 1);
+}
+/* Speeds (ms per trip down/up the column). Sinking: colder continental air is
+   denser and sinks faster. Rising: a bigger temperature contrast lifts the
+   warm air faster, and a stronger storm faster still. Both only reflect the
+   student's own settings until the run, so nothing hints at the outcome.
+   Phases accumulate per frame, so a speed change never makes arrows jump. */
+const SINK_MS_SLOW = 5000, SINK_MS_FAST = 1800;  // at warmest / coldest continental air
+const RISE_MS_SLOW = 5000, RISE_MS_FAST = 1300;  // at no / maximum lift
+let sinkPhase = 0, risePhase = 0;
+function sinkMs() {
+  const m = AIRS[0], cold = (m.max - m.temp) / (m.max - m.min);   // 0 warmest … 1 coldest
+  return SINK_MS_SLOW + (SINK_MS_FAST - SINK_MS_SLOW) * cold;
+}
+function riseMs() {
+  const lift = Math.max(0, Math.min(1, (AIRS[1].temp - AIRS[0].temp) / 100)) * 0.6 + rise.level * 0.4;
+  return RISE_MS_SLOW + (RISE_MS_FAST - RISE_MS_SLOW) * Math.min(1, lift);
+}
+const sideSink = d3.range(SINK_N).map(() => sideSvg.append("line").attr("class", "ne-side-sink").attr("filter", "url(#ne-side-outline)"));
+function drawSinking() {
+  const phase = reduceMotion() ? 0 : sinkPhase;
+  const len = Math.min(SINK_LEN, maxArrowLen(SINK_TOP, SINK_BOTTOM, SINK_N));
+  const span = SINK_TOP - SINK_BOTTOM - len;
+  sideSink.forEach((ln, i) => {
+    const f = reduceMotion() ? (i + 0.5) / SINK_N            // still: spread down the column
+                             : (phase + i / SINK_N) % 1;     // 0 at top … 1 at bottom
+    const h = SINK_TOP - f * span;
+    const [x1, y1] = P(H_AT[0], H_AT[1], h), [x2, y2] = P(H_AT[0], H_AT[1], h - len);
+    const fade = reduceMotion() ? 1 : Math.min(1, f / 0.15, (1 - f) / 0.15);
+    ln.attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2).attr("opacity", fade);
+  });
+}
+
+// Cloud tower in the rising air: rows of puffs, taller for a stronger storm.
+const sideCloud = sideSvg.append("g").attr("class", "ne-side-cloud")
+  .attr("filter", "url(#ne-side-cloud-blur)");
+// Seeded per-puff jitter (like the globe's), so the tower isn't a neat stack.
+const sideRand = d3.randomLcg(11);
+const SIDE_PUFFS = d3.range(12).map(() => d3.range(5).map(() => ({
+  du: (sideRand() - 0.5) * 0.04, dh: (sideRand() - 0.5) * 0.05,
+  r: 7 + sideRand() * 7, alpha: 0.35 + sideRand() * 0.35,
+})));
+// Labels paint above the cloud tower (it can rise in front of them), but
+// below the Low, its rising air and the precipitation, which come next.
+{ const gLabels = sideSvg.append("g");
+  sideSvg.selectAll(".ne-side-mass, .ne-side-H, .ne-side-coastlabel")
+    .each(function () { gLabels.node().appendChild(this); }); }
+// Rising air: three arrows streaming UP under the east side of the trough.
+// Before the run they are faint and identical for every setup (gentle lift
+// under the jet's divergence — no hint of the outcome). As the run plays
+// they slide to the Low's spot and strengthen with the storm, or fade away
+// if no storm forms. Animated in the cloud loop (drawRising).
+const RISE_PRE = [0.64, 0.42];                       // before the run: east of the trough, at the coast
+const RISE_N = 3, RISE_TOP = 0.92, RISE_BOTTOM = 0.1;
+const sideRise = d3.range(RISE_N).map(() => sideSvg.append("line").attr("class", "ne-side-rise").attr("filter", "url(#ne-side-outline)"));
+const rise = { u: RISE_PRE[0], v: RISE_PRE[1], level: 0.35 };   // set by drawSide
+function drawRising() {
+  const len = Math.min(0.06 + 0.14 * rise.level, maxArrowLen(RISE_TOP, RISE_BOTTOM, RISE_N));
+  const span = RISE_TOP - RISE_BOTTOM - len;
+  const phase = reduceMotion() ? 0 : risePhase;
+  sideRise.forEach((ln, i) => {
+    const f = reduceMotion() ? (i + 0.5) / RISE_N : (phase + i / RISE_N) % 1; // 0 bottom … 1 top
+    const h = RISE_BOTTOM + f * span;
+    const [x1, y1] = P(rise.u, rise.v, h), [x2, y2] = P(rise.u, rise.v, h + len);
+    const fade = reduceMotion() ? 1 : Math.min(1, f / 0.15, (1 - f) / 0.15);
+    ln.attr("display", rise.level > 0.03 ? null : "none")
+      .attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
+      .attr("opacity", fade * Math.min(1, 0.35 + rise.level));
+  });
+}
+const sidePrecip = sideSvg.append("g").attr("filter", "url(#ne-side-outline)");
+const elFlakes = PRECIP.map(() => sidePrecip.append("circle").attr("class", "ne-side-snow").attr("r", 2.5));
+const elDrops = PRECIP.map(() => sidePrecip.append("line").attr("class", "ne-side-rain"));
+function drawPrecip() {
+  const still = reduceMotion();
+  PRECIP.forEach((p, i) => {
+    const show = precip.on && i < precip.count;
+    const f = still ? (p.phase * 0.8 + 0.1) : (precipPhase + p.phase) % 1;   // 0 cloud base … 1 ground
+    const h = PRECIP_TOP * (1 - f);
+    const sway = precip.snow && !still ? 0.008 * Math.sin(f * 6 * Math.PI + p.sway) : 0;
+    const [x, y] = P(clampU(precip.at[0] + p.du + sway), precip.at[1] + p.dv, h);
+    const fade = still ? 1 : Math.min(1, f / 0.1, (1 - f) / 0.1);
+    elFlakes[i].attr("display", show && precip.snow ? null : "none")
+      .attr("cx", x).attr("cy", y).attr("opacity", fade);
+    elDrops[i].attr("display", show && !precip.snow ? null : "none")
+      .attr("x1", x + 1.5).attr("y1", y - 5).attr("x2", x - 1.5).attr("y2", y + 5).attr("opacity", fade);
+  });
+}
+
+// Low.
+const sideL = sideSvg.append("g").attr("class", "ne-side-L");
+sideL.append("circle");
+sideL.append("text").text("L");
+
+// Jet on the top plane: dips south (toward the front) into the trough.
+const sideJet = sideSvg.append("path").attr("class", "ne-side-jet");
+const sideJetFlow = sideSvg.append("path").attr("class", "ne-jet-flow");
+
+const elGaugeFill = document.getElementById("gauge-fill");
+const elGaugeBar = document.getElementById("gauge-bar");
+const elGaugeOut = document.getElementById("gauge-out");
+
+function drawSide() {
+  if (step !== 4 || !selected) return;
+  const out = outcome();
+  const t = runHour / RUN_HOURS;
+  const grow = out.strength ? t * t * (3 - 2 * t) : 0;          // 0 … 1, eased
+  const power = out.strength === 2 ? 1 : out.strength === 1 ? 0.6 : 0;
+  const track = out.key === "inland" ? "inland" : out.key === "sea" ? "sea" : "coast";
+  const at = L_BY_TRACK[track];
+
+  // Air-mass shading matches the globe; the gauge shows the gap between them.
+  sideCold.style("--air-alpha", AIRS[0].g.style("--air-alpha"));
+  sideWarm.style("--air-alpha", AIRS[1].g.style("--air-alpha"));
+  const contrast = AIRS[1].temp - AIRS[0].temp;
+  elGaugeFill.style.width = `${Math.max(0, Math.min(100, contrast))}%`;
+  elGaugeOut.textContent = `${contrast}°F`;
+  elGaugeBar.setAttribute("aria-valuenow", contrast);
+  elGaugeBar.setAttribute("aria-valuetext", `${contrast} degrees Fahrenheit`);
+
+  // Jet: deeper dip for deeper jet streams (A → D).
+  const depth = 0.22 + 0.12 * DEPTH_POINTS[selected];
+  const jet = d3.range(0, 1.0001, 0.02).map(u =>
+    P(u, 0.85 - depth * Math.exp(-(((u - TROUGH_U) / 0.14) ** 2)), 1));
+  sideJet.attr("d", sideLine(jet));
+  sideJetFlow.attr("d", sideLine(jet)).style("animation-duration", `${JET_FLOW_S[selected]}s`);
+
+  // Low, fronts, cloud tower, rising air and precipitation — all at the Low's
+  // spot for this track, all scaled by the storm.
+  const show = grow > 0.02 ? null : "none";
+  const [lx, ly] = P(at[0], at[1], 0);
+  sideL.attr("display", show).attr("transform", `translate(${lx},${ly})`)
+    .select("circle").attr("r", 12 + 8 * power * grow);
+  // Hidden at zero length: a round cap would otherwise paint a dot.
+  sideCF.attr("d", frontPath(at, CF_OFF)).attr("stroke-dashoffset", 1 - grow).attr("display", show);
+  sideWF.attr("d", frontPath(at, WF_OFF)).attr("stroke-dashoffset", 1 - grow).attr("display", show);
+  // Symbols only along the part of each front drawn so far (getTotalLength is
+  // the real length; pathLength=1 only rescales the dash maths).
+  sideCFsym.selectAll("*").remove();
+  sideWFsym.selectAll("*").remove();
+  if (!show) {
+    const opts = n => ({ from: 14 + 8 * power * grow, gap: 17, size: 5, to: n.getTotalLength() * grow });
+    frontSymbols(sideCFsym, sideCF.node(), "tri", [1, 0], opts(sideCF.node()));   // cold: faces east
+    frontSymbols(sideWFsym, sideWF.node(), "semi", [0, -1], opts(sideWF.node())); // warm: faces north
+  }
+
+  sideCloud.selectAll("*").remove();
+  const top = (0.2 + 0.75 * power) * grow;                     // cloud-top height (0…0.95)
+  for (let h = 0.12, row = 0; h <= top && row < SIDE_PUFFS.length; h += 0.08, row++) {
+    const spread = 0.025 + 0.035 * (h / 0.95) * power;          // widens toward an anvil
+    SIDE_PUFFS[row].forEach((p, k) => {
+      const [x, y] = P(clampU(at[0] + 0.03 + (k - 2) * spread + p.du), at[1] + 0.06, h + p.dh);
+      sideCloud.append("circle").attr("cx", x).attr("cy", y).attr("r", p.r).attr("fill-opacity", p.alpha);
+    });
+  }
+
+  // Rising air: from the generic pre-run spot to the Low's, faint → storm-sized.
+  const e = t * t * (3 - 2 * t);
+  rise.u = clampU(RISE_PRE[0] + (at[0] + 0.03 - RISE_PRE[0]) * e);
+  rise.v = RISE_PRE[1] + (at[1] + 0.02 - RISE_PRE[1]) * e;
+  rise.level = 0.35 * (1 - e) + power * e;   // no storm → fades to 0
+  drawRising();
+
+  Object.assign(precip, {
+    on: out.strength > 0 && t > 0.35, at,
+    snow: AIRS[0].temp < SNOW_BELOW,
+    count: Math.round(6 + 12 * power * grow),
+  });
+  drawPrecip();
+}
+
+function drawStorm() {
+  if (step !== 4 || !selected) return;
+  const track = stormTrack();
+  const t = runHour / RUN_HOURS;
+  const k = t * (track.length - 1), i = Math.floor(k), f = k - i;
+  const a = track[i], b = track[Math.min(i + 1, track.length - 1)];
+  const here = [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+  const centre = projection.invert(projection.translate());
+  const visible = d3.geoDistance(here, centre) < Math.PI / 2;
+  const out = outcome();
+  // Inline style, not the display attribute: `.is-step-4 .ne-storm {display:inline}`
+  // outranks a presentation attribute, so attr("display","none") never hid it
+  // and No storm still showed a storm.
+  const stormOn = visible && runHour > 0 && out.strength > 0;
+  [gStorm, gCloudLayer, gStormTop].forEach(g => g.style("display", stormOn ? null : "none"));
+  cloud.on = false;
+  if (!visible) return;
+  elStormTrack.attr("d", stormLine(track.slice(0, i + 1).concat([here]).map(p => projection(p))));
+  const [x, y] = projection(here);
+  const ease = t * t * (3 - 2 * t);
+  // Grows as it forms; a strong storm ends much bigger than an ordinary one.
+  const r = 12 + (out.strength === 2 ? 20 : 8) * ease;
+  elStormMark.attr("transform", `translate(${x},${y})`).select("circle").attr("r", r);
+  drawFronts(here, ease * (out.strength === 2 ? 1 : 0.7), r + 10);
+  // Cloud shield: grows with the storm; a strong storm's is much bigger.
+  const zoomK = projection.scale() / 560;
+  const nor = out.key === "noreaster" || out.key === "strong";
+  const shield = (30 + (out.strength === 2 ? 120 : 60)) * ease * zoomK;
+  Object.assign(cloud, { x, y, on: true, mode: nor ? "comma" : "ragged", R: nor ? shield : shield * 0.6 });
+  drawClouds();
+}
+
+/* Weather-map front symbols along an svg path: "tri" (cold front) or "semi"
+   (warm front), `size` px half-width, every `gap` px from `from` up to `to`
+   (default: the whole path). `side` is a screen direction the symbols should
+   face. Shared by the globe and the side view so the two always match. */
+function frontSymbols(g, node, sym, side, { from, gap, size, to = Infinity }) {
+  const len = Math.min(node.getTotalLength(), to);
+  for (let d = from; d < len - size * 0.8; d += gap) {
+    const p = node.getPointAtLength(d), q = node.getPointAtLength(d + 1);
+    let tx = q.x - p.x, ty = q.y - p.y; const n = Math.hypot(tx, ty) || 1; tx /= n; ty /= n;
+    let nx = -ty, ny = tx;                                      // a normal…
+    if (nx * side[0] + ny * side[1] < 0) { nx = -nx; ny = -ny; } // …on the wanted side
+    const pts = sym === "tri"
+      ? [[p.x - tx * size, p.y - ty * size], [p.x + nx * size * 1.4, p.y + ny * size * 1.4], [p.x + tx * size, p.y + ty * size]]
+      : d3.range(0, 9).map(i => { const a = Math.PI * i / 8;
+          return [p.x + size * (-Math.cos(a) * tx + Math.sin(a) * nx), p.y + size * (-Math.cos(a) * ty + Math.sin(a) * ny)]; });
+    g.append("path").attr("class", "ne-front-sym").attr("d", "M" + pts.join("L") + "Z");
+  }
+}
+
+/* Fronts with their symbols. Symbols are placed by walking the projected
+   front line, so they stay evenly spaced at any zoom. `side` picks which
+   side of the line they sit on: cold-front triangles face east (the way it
+   moves), warm-front half-circles face north. */
+function drawFronts(here, reach, symFirst) {
+  gFronts.selectAll("*").remove();
+  gWinds.selectAll("*").remove();
+  if (reach < 0.05) return;
+  const at = ([du, dv], k = reach) => projection([here[0] + du * k, here[1] + dv * k]);
+  const front = (pts, cls, sym, side) => {
+    const g = gFronts.append("g").attr("class", `ne-front-${cls}`);
+    const line = g.append("path").attr("class", "ne-front-line")
+      .attr("d", stormLine(pts.map(p => at(p))));
+    frontSymbols(g, line.node(), sym, side, { from: symFirst, gap: SYM_GAP, size: 7 });
+  };
+  front(COLD_FRONT, "cold", "tri", [1, 0]);   // triangles point east (screen +x)
+  front(WARM_FRONT, "warm", "semi", [0, -1]); // half-circles point north (screen −y)
+  const wind = (pair, cls) => {
+    const [a, b] = pair.map(p => at(p));
+    gWinds.append("line").attr("class", `ne-wind ne-wind-${cls}`)
+      .attr("x1", a[0]).attr("y1", a[1]).attr("x2", b[0]).attr("y2", b[1]);
+  };
+  WARM_WINDS.forEach(w => wind(w, "warm"));
+  COLD_WINDS.forEach(w => wind(w, "cold"));
+}
+
+/* ---- Info modal ----------------------------------------------------------
+   Built from the same constants outcome() uses, so it can't drift from the
+   rules. Native <dialog>: showModal() traps focus, Esc closes, and focus goes
+   back to the info button on close. */
+const elInfo = document.getElementById("info-modal");
+(function buildInfo() {
+  const [c1, c2] = CONTRAST_STEPS;
+  const bands = [`under ${c1}°F`, `${c1}–${c2 - 1}°F`, `${c2}°F or more`];
+  const cell = pts => pts < STORM_AT ? ["No storm", "is-none"]
+                    : pts < STRONG_AT ? ["Nor’easter", ""] : ["Strong nor’easter", "is-strong"];
+  const t = d3.select("#info-table");
+  t.append("caption").attr("class", "sr-only")
+    .text("Outcome by jet stream and temperature difference, when the trough is over the East Coast");
+  const hr = t.append("thead").append("tr");
+  hr.append("th").attr("scope", "col").text("Jet stream");
+  bands.forEach(b => hr.append("th").attr("scope", "col").text(`Difference ${b}`));
+  const tb = t.append("tbody");
+  Object.entries(DEPTH_POINTS).forEach(([jet, d]) => {
+    const tr = tb.append("tr");
+    tr.append("th").attr("scope", "row").text(jet);
+    [0, 1, 2].forEach(c => { const [txt, cls] = cell(d + c); tr.append("td").attr("class", cls).text(txt); });
+  });
+  document.querySelector('[data-rule="coast"]').textContent = `${COAST_WEST}°W and ${COAST_EAST}°W`;
+  document.querySelector('[data-rule="snow"]').textContent = `${SNOW_BELOW}°F`;
+})();
+document.getElementById("info-btn").addEventListener("click", () => elInfo.showModal());
+document.getElementById("info-close").addEventListener("click", () => elInfo.close());
+elInfo.addEventListener("click", ev => { if (ev.target === elInfo) elInfo.close(); }); // backdrop click
+elInfo.addEventListener("close", () => document.getElementById("info-btn").focus());
+
+/* ---- Step 3 toolbar: one − value + stepper per air mass ------------------ */
+const elSteppers = d3.select("#air-steppers");
+AIRS.forEach(m => {
+  const g = elSteppers.append("div").attr("class", "ne-stepper")
+    .style("--air-color", m.color)
+    .attr("role", "group").attr("aria-labelledby", `temp-label-${m.key}`);
+  g.append("span").attr("class", "ne-range-label").attr("id", `temp-label-${m.key}`).text(m.name);
+  m.btnDown = g.append("button").attr("type", "button").attr("class", "ne-btn ne-btn-air")
+    .attr("aria-label", `${m.name} colder`)
+    .html('<svg viewBox="-12 -12 24 24" aria-hidden="true"><path d="M-7 0H7"/></svg>')
+    .on("click", () => setTemp(m, m.temp - m.step)).node();
+  m.out = g.append("output").attr("class", "ne-temp-out").attr("aria-live", "polite").node();
+  m.btnUp = g.append("button").attr("type", "button").attr("class", "ne-btn ne-btn-air")
+    .attr("aria-label", `${m.name} warmer`)
+    .html('<svg viewBox="-12 -12 24 24" aria-hidden="true"><path d="M-7 0H7M0 -7V7"/></svg>')
+    .on("click", () => setTemp(m, m.temp + m.step)).node();
+});
+
+function setTemp(m, t) {
+  m.temp = Math.max(m.min, Math.min(m.max, t));
+  const label = `${m.temp}°F`;
+  m.out.textContent = label;
+  m.label.text(label);
+  m.btnDown.disabled = m.temp <= m.min;
+  m.btnUp.disabled = m.temp >= m.max;
+  m.down.classed("is-disabled", m.btnDown.disabled);  // the globe's −/+ follow
+  m.up.classed("is-disabled", m.btnUp.disabled);
+  const f = (m.temp - m.min) / (m.max - m.min);           // 0 at min … 1 at max
+  const depth = m.deep === "min" ? 1 - f : f;              // 1 = most extreme
+  m.g.style("--air-alpha", (0.15 + 0.6 * depth).toFixed(2));
+  updateTrial();
+}
+
+/* Trough longitude in signed degrees (west negative), as the slider holds it. */
+const troughLon = () => Math.round(TROUGH_BOTTOM_LON[selected] + troughShift);
+const fmtLon = lon => (lon < 0 ? `${-lon}°W` : lon > 0 ? `${lon}°E` : "0°");
+
+function setTroughLon(lon) {
+  lon = Math.max(+elLon.min, Math.min(+elLon.max, Math.round(lon)));
+  troughShift = lon - TROUGH_BOTTOM_LON[selected];
+  buildJet(JET_PATHS.find(p => p.id === selected), troughShift);
+  elLon.value = lon;
+  elLonOut.textContent = fmtLon(lon);
+  elLon.setAttribute("aria-valuetext", `${Math.abs(lon)} degrees ${lon < 0 ? "West" : "East"}`);
+  draw();
+  updateTrial();
+}
+elLon.addEventListener("input", () => setTroughLon(+elLon.value));
+
+/* Step 2, on the globe: grab the chosen jet and drag sideways. The trough
+   follows the change in longitude under the pointer, so it does not jump to
+   wherever the line was grabbed. Stops the svg's spin-drag from starting. */
+function startTroughDrag(ev, id) {
+  if (step !== 2 || id !== selected || ev.button !== 0) return;
+  const lon0 = pointerLon(ev);
+  if (lon0 == null) return;
+  ev.stopPropagation();
+  drag = { mode: "trough", lon0, trough0: troughLon(), moved: false };
+}
+function pointerLon(ev) {
+  const ll = projection.invert(d3.pointer(ev, svg.node()));
+  return ll && isFinite(ll[0]) ? ll[0] : null;
+}
+
+svg.classed("is-step-1", true);
+updateTrial();
+layout();
+syncZoomButtons();
+window.addEventListener("resize", layout);
+const ATLAS = "https://cdn.jsdelivr.net/npm/world-atlas@2/";
+fetch(ATLAS + "land-110m.json").then(r => r.json())
+  .then(w => { landCoarse = topojson.feature(w, w.objects.land); if (!land) draw(); });
+fetch(ATLAS + "land-50m.json").then(r => r.json())
+  .then(w => { land = topojson.feature(w, w.objects.land); draw(); });
+
+window.NE = {
+  get jetStream() { return selected; },
+  get troughLon() { return selected ? troughLon() : null; },
+  get step() { return step; },
+  get zoom() { return zoom; },
+  get runHour() { return runHour; },
+  get airTemps() { return Object.fromEntries(AIRS.map(m => [m.key, m.temp])); },
+  select, goToStep, setTroughLon, setTemp,
+};
+</script>
 </body>
 </html>
