@@ -13,13 +13,27 @@
     --land: #7d8a5e;
     --land-edge: #5c6845;
     --jet: #fff15a;
+    --thumb-rest: #fff9b8; --thumb-hover: #fff482; --thumb-drag: var(--jet);
     --cold: #4a7fe0;
     --warm: #e0605a;
     --storm: #b3261e;
     --panel: #10141d;
     --panel-edge: #2a3140;
+    /* Keyboard focus ring: 8.2:1 on --panel, 9.0:1 on --space, 3.7:1 on --ocean
+       (WCAG 1.4.11 needs 3:1). A 2px --panel gap inside it (box-shadow) keeps a
+       contrasting edge even over land, where no light blue reaches 3:1. */
+    --focus: #66b2ff;
+    /* Disabled buttons stay focusable (aria-disabled) and are dimmed by colour,
+       not opacity — opacity would fade their focus ring too. 45% over --panel
+       is what opacity: .45 used to paint. */
+    --ink-off: color-mix(in srgb, var(--ink-on-dark) 45%, var(--panel));
+    --edge-off: color-mix(in srgb, var(--ink-on-dark-2) 45%, var(--panel));
   }
   * { box-sizing: border-box; }
+  /* No text on the page is selectable (Mike) — a stray drag on the globe or a
+     double-click on a button shouldn't highlight labels. */
+  html, body, svg, svg text { -webkit-user-select: none; user-select: none; }
+  input, textarea { -webkit-user-select: text; user-select: text; }
   html, body { margin: 0; height: 100%; overflow: hidden; }
   body {
     background: var(--space);
@@ -47,6 +61,14 @@
   .app-updated { font-size: 16px; color: var(--ink-on-dark-2); }
   .ne-prompt { margin: 0; font-size: 20px; font-weight: 600; text-align: center; }
   .ne-top-tools { justify-self: end; display: flex; align-items: center; gap: 12px; }
+  .ne-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 8px;
+               font-size: 16px; white-space: nowrap; cursor: pointer; border-radius: 6px; }
+  /* Rule: keyboard focus also shows the hover state (every :hover below has a
+     :focus-visible twin), so a focused control looks like a pointed-at one. */
+  .ne-toggle:hover, .ne-toggle:has(input:focus-visible) { background: #1b2130; }
+  .ne-toggle input { width: 20px; height: 20px; margin: 0; accent-color: var(--jet); cursor: pointer; }
+  .ne-toggle:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--panel); }
+  .ne-canned[hidden] { display: none; }
   .app-tag { white-space: nowrap; }
 
   /* ---- Info modal: how a nor'easter forms ---- */
@@ -59,7 +81,15 @@
   .ne-modal-head { display: flex; align-items: center; justify-content: space-between;
                    gap: 16px; padding: 12px 12px 12px 24px; border-bottom: 1px solid var(--panel-edge); }
   .ne-modal-head h2 { margin: 0; font-size: 22px; }
-  .ne-modal-body { padding: 16px 24px 24px; font-size: 16px; line-height: 1.5; }
+  /* Header stays put; the body scrolls when the modal is taller than the window. */
+  .ne-modal[open] { display: flex; flex-direction: column; }
+  .ne-modal-body:focus-visible { outline: 3px solid var(--focus); outline-offset: -5px; }  /* inside its edge: the dialog would clip an outer ring */
+  .ne-modal-body { padding: 16px 24px 24px; font-size: 16px; line-height: 1.5;
+                   overflow-y: auto; min-height: 0; }
+  .ne-modal-body h3 { margin: 24px 0 4px; font-size: 18px; }
+  .ne-modal-table td.is-num { font-variant-numeric: tabular-nums; }
+  .ne-modal-table td.is-left, .ne-modal-table th.is-left { text-align: left; }
+  .ne-modal-table th.is-plain { font-weight: 400; }
   .ne-modal-body ol { padding-left: 24px; margin: 0 0 16px; }
   .ne-modal-body li { margin-bottom: 8px; }
   .ne-modal-body strong { color: #fff; }
@@ -76,7 +106,11 @@
              clip: rect(0 0 0 0); white-space: nowrap; }
 
   /* ---- Bottom toolbar: the same choice as clicking a loop on the globe ---- */
+  /* Every step's toolbar is as tall as the tallest (Step 2: a 44px control row
+     plus the value line under the slider), so the bar never changes height
+     and the globe never re-fits between steps. */
   .ne-toolbar {
+    --control-h: 44px; --value-line: 21px; --value-pull: 4px;
     display: flex;
     justify-content: center;
     padding: 12px 16px;
@@ -91,17 +125,22 @@
     /* Circles, to read as the A–D badges on the globe. */
     width: 44px; height: 44px; padding: 0;
     border: 2px solid var(--ink-on-dark-2); border-radius: 50%;
+    background: transparent; color: var(--ink-on-dark); font: inherit;
     font-size: 18px; font-weight: 700; cursor: pointer;
-    transition: background .15s, color .15s;
+    transition: background .15s, color .15s, transform .08s, filter .08s;
   }
-  .ne-seg input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
-  .ne-seg:hover { background: rgba(255,255,255,.08); }
-  .ne-seg:has(input:checked) { background: var(--jet); border-color: var(--jet); color: #1e242c; }
-  .ne-seg:has(input:focus-visible) { outline: 3px solid #fff; outline-offset: 2px; }
+  .ne-seg:hover, .ne-seg:focus-visible { background: rgba(255,255,255,.08); }
+  .ne-seg[aria-pressed="true"] { background: var(--jet); border-color: var(--jet); color: #1e242c; }
+  /* Pressed: one step past hover (16% wash) and a slight press-in. The
+     selected (yellow) circle darkens instead, since a white wash won't show. */
+  .ne-seg:active { background: rgba(255,255,255,.16); transform: scale(.97); }
+  .ne-seg[aria-pressed="true"]:active { background: var(--jet); filter: brightness(.9); }
+  .ne-seg:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--panel); }
 
   /* Each step's toolbar: controls, then Back/Next right beside them; the
      whole row is centred. */
-  .ne-step { display: flex; align-items: center; gap: 32px; }
+  .ne-step { display: flex; align-items: center; gap: 32px;
+             min-height: calc(var(--control-h) + var(--value-line) - var(--value-pull)); }
   .ne-controls { display: flex; align-items: center; gap: 24px; }
   .ne-nav { display: flex; gap: 12px; }
   .ne-step[hidden] { display: none; }
@@ -110,29 +149,103 @@
     background: transparent; color: var(--ink-on-dark);
     border: 1px solid var(--ink-on-dark-2); border-radius: 6px;
     font: inherit; font-size: 18px; font-weight: 700; cursor: pointer;
+    transition: background .08s, transform .08s;
   }
-  .ne-btn:hover { background: rgba(255,255,255,.08); }
-  .ne-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .ne-btn:hover, .ne-btn:focus-visible { background: rgba(255,255,255,.08); }
+  .ne-btn:not(.ne-btn-air):not(:disabled):not([aria-disabled="true"]):active { background: rgba(255,255,255,.16); transform: scale(.97); }
+
+  /* Bottom-bar buttons: no fill at rest, 8% white wash on hover, 16% pressed
+     (the rules above). Outlines are 1px grey everywhere, A–D included. */
+  .ne-toolbar .ne-seg { border-width: 1px; }
+
+  /* PRESSED state on every other button: one step past its own hover, plus
+     the same 97% press-in (80ms). Dark-fill buttons: #1b2130 hover → #283043
+     pressed. Coloured buttons: brightness .85 hover → .72 pressed. */
+  .ne-icon-btn, .ne-canned button, .ne-trial-new, .ne-toggle, .ne-trial.is-clickable {
+    transition: background .08s, transform .08s, filter .08s; }
+  .ne-icon-btn:not(:disabled):not([aria-disabled="true"]):active,
+  .ne-canned button:not(:disabled):not([aria-disabled="true"]):active,
+  .ne-toggle:active { background: #283043; transform: scale(.97); }
+  .ne-trial-head .ne-icon-btn:not(:disabled):not([aria-disabled="true"]):active { background: #283043; border-color: var(--ink-on-dark-2); }
+  .ne-trial-new:active { background: #1b2130; transform: scale(.98); }
+  .ne-trial.is-clickable:active { background: #1b2130; transform: scale(.99); }   /* big card: subtler press */
+  .ne-btn-air:not(:disabled):not([aria-disabled="true"]):active { filter: brightness(.72); transform: scale(.97); }
+  .ne-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--panel); }
   .ne-btn[hidden], .ne-nav[hidden] { display: none; }
-  .ne-btn:disabled { opacity: .45; cursor: default; background: transparent; }
+  .ne-btn:is(:disabled, [aria-disabled="true"]) { cursor: default; background: transparent; color: var(--ink-off); border-color: var(--edge-off); }
   .ne-stepper { display: flex; align-items: center; gap: 12px; }
   /* Circles with a white ring, to read as the −/+ buttons on the globe. Glyphs
      are stroked paths centred in the svg, not text (fonts sit them off-centre). */
   .ne-stepper .ne-btn { padding: 0; width: 44px; height: 44px; border-radius: 50%;
                         display: grid; place-items: center; }
-  .ne-stepper .ne-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor;
+  /* Same proportions as the globe's −/+ (14-unit glyph in a 32px circle =
+     44%): 14 of the svg's 24 units = 19.25px in a 44px button → 33px svg.
+     The 2.5-unit stroke scales with it (~3.4px), matching the globe's weight. */
+  .ne-stepper .ne-btn svg { width: 33px; height: 33px; fill: none; stroke: currentColor;
                             stroke-width: 2.5; stroke-linecap: round; }
   /* Step 3 −/+ take their air mass's colour, matching the buttons on the globe. */
-  .ne-btn-air, .ne-btn-air:disabled { background: var(--air-color); border: 2px solid #fff; color: #fff; }
-  .ne-btn-air:hover:not(:disabled) { background: var(--air-color); filter: brightness(.85); }
+  .ne-btn-air { background: var(--air-color); border: 1px solid var(--ink-on-dark-2); color: #fff; }  /* same outline as all other buttons */
+  .ne-btn-air:is(:disabled, [aria-disabled="true"]) { background: color-mix(in srgb, var(--air-color) 45%, var(--panel));
+                                     border-color: var(--edge-off); color: color-mix(in srgb, #fff 45%, var(--panel)); }
+  .ne-btn-air:hover:not(:disabled):not([aria-disabled="true"]), .ne-btn-air:focus-visible:not(:disabled):not([aria-disabled="true"]) { background: var(--air-color); filter: brightness(.85); }
   .ne-steppers { display: flex; align-items: center; gap: 32px; }
   .ne-temp-out { min-width: 5ch; text-align: center; font-size: 18px; font-weight: 700;
                  font-variant-numeric: tabular-nums; }
 
   .ne-range-label { font-size: 16px; font-weight: 600; }
-  .ne-range { width: min(420px, 50vw); height: 44px; margin: 0; accent-color: var(--jet); cursor: pointer; }
-  .ne-range:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
-  .ne-range-out { min-width: 4ch; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  /* Custom slider: 6px track (yellow up to the thumb, via --fill set from JS)
+     and a 24px yellow thumb with a dark outline, like the jet badges. The
+     input itself stays 44px tall, so the whole strip is the touch target. */
+  .ne-range { --fill: 0%; width: min(420px, 50vw); height: 44px; margin: 0; cursor: pointer;
+              -webkit-appearance: none; appearance: none; background: transparent; }
+  /* Off (the run's time slider before the first full run): still focusable
+     (aria-disabled), dimmed by colour — 55% over --panel, what opacity .55
+     painted — so the thumb's focus ring stays full strength. */
+  .ne-range:is(:disabled, [aria-disabled="true"]) { cursor: default;
+    --range-on: color-mix(in srgb, var(--jet) 55%, var(--panel));
+    --range-off: color-mix(in srgb, #fff 14%, var(--panel));
+    --thumb-cur: color-mix(in srgb, var(--thumb-rest) 55%, var(--panel)); }
+  .ne-range:focus-visible { outline: none; }
+  .ne-range::-webkit-slider-runnable-track {
+    height: 6px; border-radius: 3px;
+    background: linear-gradient(to right, var(--range-on, var(--jet)) var(--fill), var(--range-off, rgba(255,255,255,.25)) var(--fill)); }
+  .ne-range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 24px; height: 24px; margin-top: -9px;
+    border-radius: 50%; background: var(--thumb-cur, var(--thumb-rest)); border: 2px solid var(--space);
+    transition: transform .12s, box-shadow .12s, background-color .12s; }
+  .ne-range::-moz-range-track { height: 6px; border-radius: 3px; background: var(--range-off, rgba(255,255,255,.25)); }
+  .ne-range::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--range-on, var(--jet)); }
+  .ne-range::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--thumb-cur, var(--thumb-rest));
+    border: 2px solid var(--space); transition: transform .12s, box-shadow .12s, background-color .12s; }
+  /* Thumb states (Mike): light yellow at rest → medium on hover → full yellow
+     while dragging. :active comes after :hover so it wins during a drag. */
+  .ne-range:not(:disabled):not([aria-disabled="true"]):hover::-webkit-slider-thumb, .ne-range:not(:disabled):not([aria-disabled="true"]):focus-visible::-webkit-slider-thumb { transform: scale(1.15); background: var(--thumb-hover); }
+  .ne-range:not(:disabled):not([aria-disabled="true"]):hover::-moz-range-thumb, .ne-range:not(:disabled):not([aria-disabled="true"]):focus-visible::-moz-range-thumb { transform: scale(1.15); background: var(--thumb-hover); }
+  .ne-range:not(:disabled):not([aria-disabled="true"]):active::-webkit-slider-thumb { transform: scale(1.15); background: var(--thumb-drag); }
+  .ne-range:not(:disabled):not([aria-disabled="true"]):active::-moz-range-thumb { transform: scale(1.15); background: var(--thumb-drag); }
+  .ne-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--panel), 0 0 0 5px var(--focus); }
+  .ne-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--panel), 0 0 0 5px var(--focus); }
+  .ne-slider-group { display: flex; align-items: flex-start; gap: 10px; }
+  .ne-slider-group > .ne-btn, .ne-slider-group > .ne-range-out { margin-top: 0; height: 44px; }
+  .ne-slider-col { display: flex; flex-direction: column; align-items: center; }
+  .ne-slider-group > .ne-range-label { height: 44px; display: flex; align-items: center; }
+  .ne-slider-value { display: block; min-width: 0; text-align: center;
+                     line-height: var(--value-line); margin-top: calc(-1 * var(--value-pull)); }
+  .ne-nudge { width: 44px; padding: 0; display: grid; place-items: center; }
+  /* "West" / "East" under the Step 2 nudge buttons, on the value line. The
+     buttons' accessible names already say it, so the captions are hidden from
+     screen readers. */
+  .ne-nudge-col { display: flex; flex-direction: column; align-items: center; }
+  .ne-nudge-label { font-size: 16px; color: var(--ink-on-dark-2); line-height: var(--value-line);
+                    margin-top: calc(-1 * var(--value-pull));
+                    position: relative; top: 7px; }  /* nudged down (clear of the 2px-offset focus ring) without changing the bar height */
+  /* A caption fades with its button when the button is disabled (e.g. the
+     run's Earlier/Later before the first full run). */
+  .ne-nudge:is(:disabled, [aria-disabled="true"]) + .ne-nudge-label { opacity: .45; }
+  .ne-nudge svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.5;
+                  stroke-linecap: round; stroke-linejoin: round; }
+  .ne-range-out { display: flex; align-items: center; min-width: 4ch; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
   /* Stage = the space between the bars; the globe fills it and the view
      tools float in its upper-left corner. */
@@ -150,9 +263,9 @@
   }
   .ne-icon-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor;
                      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .ne-icon-btn:hover { background: #1b2130; }
-  .ne-icon-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
-  .ne-icon-btn:disabled { opacity: .45; cursor: default; background: var(--panel); }
+  .ne-icon-btn:hover, .ne-icon-btn:focus-visible { background: #1b2130; }
+  .ne-icon-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--panel); }
+  .ne-icon-btn:is(:disabled, [aria-disabled="true"]) { cursor: default; background: var(--panel); color: var(--ink-off); border-color: var(--edge-off); }
 
   /* Trial card: upper right of the globe, mirroring the view tools. Rows
      fill in as their step is reached; the current step's row is marked. */
@@ -183,8 +296,9 @@
   .ne-side-jet { fill: none; stroke: var(--jet); stroke-width: 4; stroke-linecap: round; }
   .ne-side .ne-jet-flow { stroke-width: 2; }
   .ne-side-snow { fill: #fff; }
-  .ne-side-coastlabel { paint-order: stroke; stroke: var(--panel); stroke-width: 4px; }
-  .ne-side-coast { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 5 5; opacity: .7; }
+  /* A label the moving Low passes over dims, then comes back (drawSide). */
+  .ne-side-mass, .ne-side-H { transition: opacity .3s; }
+  .ne-side-under-L { opacity: .25; }
   /* Same look as the globe's cloud shield: soft white puffs, no outline. */
   .ne-side-cloud circle { fill: #f4f6fa; }
   .ne-side-gauge { display: grid; grid-template-columns: auto 1fr auto; align-items: center;
@@ -196,9 +310,35 @@
   .ne-side-gauge b { min-width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
   .ne-side-rain { stroke: #d6e6ff; stroke-width: 2; stroke-linecap: round; }
 
+  /* Canned outcomes (prototype only): a column just left of the trials. */
+  .ne-canned {
+    position: absolute; top: 16px; right: calc(16px + 260px + 12px); z-index: 1;
+    width: 200px; padding: 12px 12px 14px;
+    background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px;
+    /* Never taller than the stage: on short windows the button list scrolls
+       (the title and note stay put). */
+    max-height: calc(100% - 32px); display: flex; flex-direction: column;
+  }
+  .ne-canned h2 { margin: 0 0 2px; font-size: 18px; font-weight: 700; }
+  .ne-canned p { margin: 0 0 10px; font-size: 16px; color: var(--ink-on-dark-2); }
+  .ne-canned ul { list-style: none; padding: 6px; scroll-padding: 6px; display: flex; flex-direction: column; gap: 6px;
+                  overflow-y: auto; min-height: 0; margin: -6px; }  /* a focus ring reaches 5px past its button: 6px keeps it unclipped, also when focus scrolls it in */
+  .ne-canned button {
+    width: 100%; min-height: 44px; padding: 6px 10px; text-align: left;
+    background: transparent; color: var(--ink-on-dark);
+    border: 1px solid var(--ink-on-dark-2); border-radius: 6px;
+    font: inherit; font-size: 16px; line-height: 1.25; cursor: pointer;
+  }
+  .ne-canned button:hover:not(:disabled):not([aria-disabled="true"]), .ne-canned button:focus-visible:not(:disabled):not([aria-disabled="true"]) { background: #1b2130; }
+  .ne-canned button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--panel); }
+  .ne-canned button:is(:disabled, [aria-disabled="true"]) { cursor: default; color: var(--ink-off); border-color: var(--edge-off); }
+  /* A scroll container clips what's drawn outside it, and a focus ring reaches
+     5px past its card (2px gap + 3px ring). So the column is 6px bigger all
+     round with 6px padding: the cards stay put and their rings fit inside. */
   .ne-trials {
-    position: absolute; top: 16px; right: 16px; bottom: 16px; z-index: 1;
-    width: 260px; display: flex; flex-direction: column; gap: 12px;
+    position: absolute; top: 10px; right: 10px; bottom: 10px; z-index: 1;
+    width: 272px; padding: 6px; scroll-padding: 6px;   /* focus scrolls a card in WITH its ring */
+    display: flex; flex-direction: column; gap: 12px;
     overflow-y: auto; pointer-events: none; /* empty column space stays draggable */
   }
   .ne-trials > * { pointer-events: auto; flex: none; }
@@ -209,9 +349,16 @@
   .ne-trial.is-live { border-color: var(--ink-on-dark-2); }
   /* Saved trials open on click. */
   .ne-trial.is-clickable { cursor: pointer; }
-  .ne-trial.is-clickable:hover { background: #161b26; }
-  .ne-trial.is-clickable:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
-  .ne-trial.is-shown { border: 2px solid var(--jet); }
+  .ne-trial.is-clickable:hover, .ne-trial.is-clickable:focus-visible { background: #161b26; }
+  .ne-trial.is-clickable:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--panel); }
+  /* The open trial takes focus too (Mike): blue ring, yellow edge kept. */
+  .ne-trial.is-shown:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px;
+                                     box-shadow: inset 0 0 0 1px var(--jet), 0 0 0 2px var(--panel); }
+  /* The open trial (live by default, or a saved one you clicked): a 2px
+     yellow edge drawn INSIDE the card (1px border + 1px inset ring), so the
+     card keeps its size and the trials column (a scroll container) can't clip
+     it — an outer ring was clipped, unevenly, depending on the card's spot. */
+  .ne-trial.is-shown { border-color: var(--jet); box-shadow: inset 0 0 0 1px var(--jet); }
 
   .ne-trial-new {
     min-height: 56px; padding: 12px 16px;
@@ -220,15 +367,15 @@
     border: 2px dashed var(--ink-on-dark-2); border-radius: 8px;
     font: inherit; font-size: 18px; font-weight: 700; text-align: left; cursor: pointer;
   }
-  .ne-trial-new:hover { background: var(--panel); }
-  .ne-trial-new:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .ne-trial-new:hover, .ne-trial-new:focus-visible { background: var(--panel); }
+  .ne-trial-new:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--panel); }
   .ne-trial-new svg { width: 24px; height: 24px; fill: none; stroke: currentColor;
                       stroke-width: 2.5; stroke-linecap: round; }
   .ne-trial-head { display: flex; align-items: center; justify-content: space-between;
                    gap: 8px; margin: -6px -8px 4px 0; }
   .ne-trial h2 { margin: 0; font-size: 18px; font-weight: 700; }
   .ne-trial-head .ne-icon-btn { border-color: transparent; background: transparent; }
-  .ne-trial-head .ne-icon-btn:hover:not(:disabled) { background: #1b2130; border-color: var(--ink-on-dark-2); }
+  .ne-trial-head .ne-icon-btn:hover:not(:disabled):not([aria-disabled="true"]), .ne-trial-head .ne-icon-btn:focus-visible:not(:disabled):not([aria-disabled="true"]) { background: #1b2130; border-color: var(--ink-on-dark-2); }
   .ne-trial dl { margin: 0; display: grid; grid-template-columns: auto 1fr; }
   .ne-trial dt, .ne-trial dd { margin: 0; padding: 6px 8px; font-size: 16px; }
   .ne-trial dt { color: var(--ink-on-dark-2); }
@@ -247,13 +394,32 @@
 
   .ne-jet-opt { cursor: pointer; }
   .ne-jet { fill: none; stroke: var(--jet); stroke-linecap: round; stroke-linejoin: round;
-            stroke-width: 3; opacity: .6; transition: opacity .2s, stroke-width .2s; }
+            stroke-width: 3; opacity: .75; transition: opacity .2s, stroke-width .2s; }
+  /* Step 2 trough-range slider on the globe: track / fill / thumb, styled like
+     the bottom slider. Drag the thumb or along the track (a wide invisible hit
+     path) to move the trough; click the track to jump there. Mouse/touch
+     shortcut only: the bottom slider is the accessible control. */
+  #trough-range { display: none; cursor: ew-resize; }
+  .ne-range-hit { fill: none; stroke: transparent; stroke-width: 28; stroke-linecap: round; }
+  .ne-range-track, .ne-range-fill { pointer-events: none; }
+  .ne-globe.is-step-2 #trough-range { display: inline; }
+  .ne-range-track { fill: none; stroke: rgba(255,255,255,.35); stroke-width: 6; stroke-linecap: round; }
+  .ne-range-fill { fill: none; stroke: var(--jet); stroke-width: 6; stroke-linecap: round; }
+  /* Same thumb as the bottom slider (measured: 24px across, 2px dark edge,
+     20px of yellow → r 11 with a centred 2px stroke) and the same states:
+     rest → hover (pointer over the slider) → dragging, each 1.15× bigger.
+     CSS scale, not the transform attribute (cx/cy place it), about its centre. */
+  .ne-range-thumb { fill: var(--thumb-rest); stroke: var(--space); stroke-width: 2;
+                    transform-box: fill-box; transform-origin: center;
+                    transition: transform .12s, fill .12s; }
+  #trough-range:hover .ne-range-thumb { transform: scale(1.15); fill: var(--thumb-hover); }
+  #trough-range.is-active .ne-range-thumb { transform: scale(1.15); fill: var(--thumb-drag); }
   .ne-jet-hit { fill: none; stroke: transparent; stroke-width: 24; }
   /* Flow: dark streaks travelling along the line in the direction it was
      drawn (west → east, which is how the jet blows). One dash period per
      FLOW cycle, so speed is constant on screen at any zoom. */
   .ne-jet-flow { fill: none; stroke: var(--space); stroke-width: 2; stroke-linecap: round;
-                 stroke-dasharray: 6 34; opacity: .6; pointer-events: none;
+                 stroke-dasharray: 6 34; opacity: .75; pointer-events: none;
                  animation: ne-flow 1.2s linear infinite; }
   .ne-jet-opt.is-on .ne-jet-flow { stroke-width: 3; opacity: .7; }
   .has-selection .ne-jet-opt:not(.is-on) .ne-jet-flow { opacity: .25; }
@@ -261,12 +427,26 @@
   @media (prefers-reduced-motion: reduce) { .ne-jet-flow { animation: none; } }
   .ne-jet-opt:hover .ne-jet { opacity: 1; }
   .ne-jet-opt.is-on .ne-jet { stroke-width: 6; opacity: 1; }
-  .has-selection .ne-jet-opt:not(.is-on) .ne-jet { opacity: .35; stroke-dasharray: 6 6; }
-  .has-selection .ne-jet-opt:not(.is-on):hover .ne-jet { opacity: .8; }
-  .ne-jet-badge circle { fill: var(--jet); stroke: var(--space); stroke-width: 2; }
-  .ne-jet-badge text { fill: #1e242c; font-size: 16px; font-weight: 700;
-                       text-anchor: middle; dominant-baseline: central; }
-  .has-selection .ne-jet-opt:not(.is-on) .ne-jet-badge { opacity: .6; }
+  .has-selection .ne-jet-opt:not(.is-on) .ne-jet { opacity: .5; stroke-dasharray: 6 6; }
+  .has-selection .ne-jet-opt:not(.is-on):hover .ne-jet { opacity: 1; }
+  /* Badges match the bottom-bar A–D: dark (the bar's colour), white letter,
+     1px grey outline; hover = 8% white wash + 110%; selected = yellow with a
+     dark letter. Scale is on the circle/text (centred at 0,0), not the <g>,
+     whose position is its transform attribute. */
+  .ne-jet-badge circle { fill: var(--panel); stroke: var(--ink-on-dark-2); stroke-width: 1;
+                         transition: transform .12s, fill .12s; }
+  .ne-jet-badge text { fill: #fff; font-size: 16px; font-weight: 700;
+                       text-anchor: middle; dominant-baseline: central; transition: transform .12s; }
+  /* Washes are computed over the badge's #10141d: 8% white → #232730,
+     16% → #363a43 (the same as the bottom bar's 8% / 16% over the bar). */
+  .ne-jet-opt:hover .ne-jet-badge circle { fill: #232730; transform: scale(1.1); }
+  .ne-jet-opt:hover .ne-jet-badge text { transform: scale(1.1); }
+  .ne-jet-opt:active .ne-jet-badge circle { fill: #363a43; transform: scale(1.067); }  /* 110% × 97% press-in */
+  .ne-jet-opt:active .ne-jet-badge text { transform: scale(1.067); }
+  .ne-jet-opt.is-on .ne-jet-badge circle { fill: var(--jet); stroke: var(--jet); }
+  .ne-jet-opt.is-on .ne-jet-badge text { fill: #1e242c; }
+  .ne-jet-opt.is-on:active .ne-jet-badge circle { fill: var(--jet); filter: brightness(.9); }
+  .has-selection .ne-jet-opt:not(.is-on) .ne-jet-badge { opacity: .75; }
   /* Step 2: only the chosen jet stays; grabbing it slides its trough. */
   /* Steps 2+: only the chosen jet stays. In step 2 grabbing it slides its trough. */
   .ne-globe:not(.is-step-1) .ne-jet-opt:not(.is-on) { display: none; }
@@ -283,6 +463,10 @@
   /* Step 4 (run): PLACEHOLDER storm — an "L" that forms near the trough and
      tracks up the coast. Not a model; see drawStorm(). */
   .ne-storm { display: none; pointer-events: none; }
+  /* Only the clouds are see-through (80%); the L, fronts, winds and track stay
+     at full strength. Set on the cloud LAYER, so overlapping puffs composite
+     first and then fade together — no darker seams. */
+  #clouds { opacity: .8; }
   .ne-globe.is-step-4 .ne-storm { display: inline; }
   .ne-storm-track { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 2 6;
                     stroke-linecap: round; opacity: .8; }
@@ -308,8 +492,12 @@
                   dominant-baseline: central; paint-order: stroke;
                   stroke: rgba(0,0,0,.55); stroke-width: 3px; pointer-events: none; }
   .ne-air-btn { cursor: pointer; }
-  .ne-air-btn circle { fill: var(--air-color); stroke: #fff; stroke-width: 2; }
+  .ne-air-btn circle { fill: var(--air-color); stroke: var(--ink-on-dark-2); stroke-width: 1; }  /* same outline as all other buttons */
   .ne-air-btn:hover circle { filter: brightness(.85); }
+  .ne-air-btn:active circle { filter: brightness(.72); }
+  /* Press-in on the circle and glyph, NOT the <g>: the group is positioned by
+     its transform attribute, which a CSS transform would override. */
+  .ne-air-btn:active circle, .ne-air-btn:active path { transform: scale(.94); }
   /* Mirrors the toolbar −/+ when a temperature hits its limit. */
   .ne-air-btn.is-disabled { opacity: .45; cursor: default; }
   .ne-air-btn.is-disabled:hover circle { filter: none; }
@@ -322,12 +510,17 @@
 <body>
   <header class="ne-top">
     <div class="app-tag">
-      <h1 class="app-name">Nor’easter Explorer &bull; v0.2</h1>
-      <div class="app-updated">Updated: 10/26/26</div>
+      <h1 class="app-name">Nor’easter Explorer &bull; v0.3</h1>
+      <div class="app-updated">Updated: 10/27/26</div>
     </div>
     <!-- Placeholder copy — content design to supply. -->
-    <p class="ne-prompt" id="ne-prompt" aria-live="polite"><span class="ne-step-num">Setup: Step 1 of 3<span class="sr-only">:</span></span><span id="ne-prompt-text">Choose the shape and position of the jet stream.</span></p>
+    <p class="ne-prompt" id="ne-prompt" aria-live="polite"><span class="ne-step-num">Setup: Step 1 of 3<span class="sr-only">:</span></span><span id="ne-prompt-text">Choose the position of the jet stream.</span></p>
     <div class="ne-top-tools">
+      <!-- Prototype only: shows/hides the Canned outcomes panel. Off by default. -->
+      <label class="ne-toggle">
+        <input type="checkbox" id="canned-toggle" aria-controls="canned-panel">
+        <span>Canned outcomes</span>
+      </label>
       <button type="button" class="ne-icon-btn" id="info-btn" aria-haspopup="dialog"
               aria-label="How a nor’easter forms" title="How a nor’easter forms">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>
@@ -342,24 +535,41 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
-    <div class="ne-modal-body">
-      <p>A nor’easter forms when all three of these line up:</p>
+    <div class="ne-modal-body" tabindex="0" role="region" aria-labelledby="info-title">
+      <p>A nor’easter forms when all four of these line up:</p>
       <ol>
         <li><strong>The trough sits over the East Coast</strong>: between <span data-rule="coast"></span>.
             Further west, the storm goes inland. Further east, it goes out to sea.</li>
-        <li><strong>The storm is strong enough.</strong> A deeper jet stream and a bigger temperature
-            difference (ocean air minus continental air) make a stronger storm:</li>
+        <li><strong>The cold and warm air meet in the right place.</strong> A storm forms only where
+            the continental air and the ocean air meet, along the jet on the trough’s east side.
+            For a nor’easter, that line has to cross the coast between the Gulf and Cape Cod;
+            for an inland storm, it has to lie over land; for a storm out to sea, over open ocean.
+            If it doesn’t, or it never gets north of <span data-rule="tropical-2"></span> (the tropics),
+            no storm forms. The last column below shows where each jet’s air masses meet at the coast.</li>
+        <li><strong>The storm is strong enough.</strong> A trough that reaches the Southeast and
+            Gulf (B, C) and a bigger temperature difference (ocean air minus continental air)
+            make a stronger storm:</li>
       </ol>
       <table class="ne-modal-table" id="info-table"></table>
-      <ol start="3">
-        <li><strong>Snow or rain</strong> depends on the continental air: below <span data-rule="snow"></span>
-            gives snow (a blizzard if strong); warmer gives rain.</li>
+      <ol start="4">
+        <li><strong>Snow or rain:</strong> snow (a blizzard if strong) needs continental air below
+            <span data-rule="snow"></span> and a trough that stays north of <span data-rule="tropical"></span>.
+            A trough reaching further south (C, D) pulls in tropical air, so it rains.</li>
       </ol>
+      <h3 id="outcomes-title">All outcomes</h3>
+      <p>Share = how often each outcome happens across every possible setting
+         (<span data-rule="combos"></span> combinations).</p>
+      <table class="ne-modal-table" id="outcomes-table" aria-labelledby="outcomes-title"></table>
       <p class="ne-modal-note">Draft rules: to be confirmed by content design.</p>
     </div>
   </dialog>
 
   <main class="ne-stage">
+  <section class="ne-canned" id="canned-panel" aria-labelledby="canned-title" hidden>
+    <h2 id="canned-title">Canned outcomes</h2>
+    <p>Shown for prototype only. Click an Outcome button below to set up a Trial then click Run.</p>
+    <ul id="canned-list"></ul>
+  </section>
   <div class="ne-trials" id="trials"></div>
   <div class="sr-only" id="outcome-live" aria-live="polite"></div>
   <section class="ne-side" aria-labelledby="side-title">
@@ -429,6 +639,8 @@
     <g id="air" class="ne-air" aria-hidden="true"></g>
     <g id="storm" class="ne-storm" aria-hidden="true"></g>
     <g id="clouds" class="ne-storm" aria-hidden="true"></g>
+    <!-- Step 2: how far the trough can move (mirrors the bottom slider). -->
+    <g id="trough-range" aria-hidden="true"></g>
     <g id="jets" aria-hidden="true"></g>
     <g id="storm-top" class="ne-storm" aria-hidden="true"></g>
     <g id="air-controls" class="ne-air" aria-hidden="true"></g>
@@ -439,20 +651,37 @@
     <!-- Step 1: pick a jet stream; Next is shown but disabled until one is chosen. -->
     <div class="ne-step" id="step-1">
       <div class="ne-controls">
-        <fieldset aria-describedby="ne-prompt">
-          <legend>Jet stream</legend>
+        <fieldset role="toolbar" aria-labelledby="jet-legend" aria-describedby="ne-prompt">
+          <legend id="jet-legend">Jet stream</legend>
         </fieldset>
       </div>
       <div class="ne-nav">
-        <button type="button" class="ne-btn" id="next-1" disabled>Next</button>
+        <button type="button" class="ne-btn" id="next-1" aria-disabled="true">Next</button>
       </div>
     </div>
     <!-- Step 2: slide the chosen jet's trough east/west. -->
     <div class="ne-step" id="step-2" hidden>
       <div class="ne-controls">
-        <label class="ne-range-label" for="trough-lon">Trough longitude</label>
-        <input class="ne-range" type="range" id="trough-lon" min="-105" max="-60" step="1">
-        <output class="ne-range-out" id="trough-lon-out" for="trough-lon"></output>
+        <!-- Trough longitude ‹ slider ›, with the value centred under the slider. -->
+        <div class="ne-slider-group">
+          <label class="ne-range-label" for="trough-lon">Trough longitude</label>
+          <div class="ne-nudge-col">
+            <button type="button" class="ne-btn ne-nudge" id="lon-west" aria-label="Move trough 1 degree west">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <span class="ne-nudge-label" aria-hidden="true">West</span>
+          </div>
+          <div class="ne-slider-col">
+            <input class="ne-range" type="range" id="trough-lon" min="-95" max="-65" step="1">
+            <output class="ne-range-out ne-slider-value" id="trough-lon-out" for="trough-lon"></output>
+          </div>
+          <div class="ne-nudge-col">
+            <button type="button" class="ne-btn ne-nudge" id="lon-east" aria-label="Move trough 1 degree east">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <span class="ne-nudge-label" aria-hidden="true">East</span>
+          </div>
+        </div>
       </div>
       <div class="ne-nav">
         <button type="button" class="ne-btn" data-back="1">Back</button>
@@ -473,13 +702,30 @@
     <div class="ne-step" id="step-4" hidden>
       <div class="ne-controls">
         <button type="button" class="ne-btn ne-run-btn" id="run-btn"></button>
-        <label class="ne-range-label" for="run-time">Time</label>
-        <input class="ne-range" type="range" id="run-time" min="0" max="72" step="1" value="0">
-        <output class="ne-range-out" id="run-time-out" for="run-time"></output>
+        <!-- Same pattern as Step 2: Time ‹ slider ›, value centred under the slider. -->
+        <div class="ne-slider-group">
+          <label class="ne-range-label" for="run-time">Time</label>
+          <div class="ne-nudge-col">
+            <button type="button" class="ne-btn ne-nudge" id="time-back" aria-label="1 hour earlier">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <span class="ne-nudge-label" aria-hidden="true">Earlier</span>
+          </div>
+          <div class="ne-slider-col">
+            <input class="ne-range" type="range" id="run-time" min="0" max="72" step="1" value="0">
+            <output class="ne-range-out ne-slider-value" id="run-time-out" for="run-time"></output>
+          </div>
+          <div class="ne-nudge-col">
+            <button type="button" class="ne-btn ne-nudge" id="time-fwd" aria-label="1 hour later">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <span class="ne-nudge-label" aria-hidden="true">Later</span>
+          </div>
+        </div>
       </div>
       <!-- Removed once Run is pressed: a run locks the trial's setup. -->
       <div class="ne-nav" id="run-nav">
-        <button type="button" class="ne-btn" data-back="3">Back</button>
+        <button type="button" class="ne-btn" data-back="3">Back to setup</button>
       </div>
     </div>
   </footer>
@@ -488,58 +734,67 @@
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <script>
 /* ---- Jet stream model ----------------------------------------------------
-   The polar jet is one closed, wavy loop around the hemisphere. It starts at
-   BASE latitude; each feature adds a bell-shaped bump — ridges push it north,
-   troughs pull it south:
-       lat(lon) = BASE − Σ depth · exp(−(Δlon / width)²)  + small wiggle
-   (negative depth = ridge). Features sit where they are climatologically most
-   frequent in winter: ridge over western North America, troughs over eastern
-   North America (downstream of the Rockies), eastern Europe and East Asia.
-   Each has its own depth and width, so the loop is irregular. The 7-wave
-   WIGGLE stands for the smaller short waves riding on the big ones.
+   A–D are TRACED from the content designers' reference (a 500 mb chart:
+   five long waves, four nested contours that never cross). The chart's
+   viewpoint was fitted to our coastlines (rotate [40.8, −75.4, 67.8]; the
+   pole and Hudson Bay land within ~8 px), its contour lines were extracted,
+   assigned A (innermost) … D (outermost), joined into closed loops,
+   unprojected to [lon, lat] and resampled every 0.75°, then smoothed on the
+   sphere (Gaussian, σ = 3° of arc) to remove tracing kinks: each loop keeps
+   just the ~10 bends of its five waves, and nothing moves more than 1.5°.
+   D also had a corner just west of its trough bottom (over Honduras, a 14°
+   turn per 2.25° step against ~5° elsewhere); it is rounded locally (σ 7°,
+   blended over ~10° around it) to a 7° turn, moving the line ≤ 1.5°.
+   Ordered west → east (the flow animation runs along the line).
+   Neighbouring lines are ≥ 3.4° apart everywhere, so they never touch.
 
-   TILT: each point is also shifted east by tilt · (its share of the dip), so
-   a trough's bottom sits east of its shoulders. That makes the trough axis
-   run northwest→southeast (a "negative tilt"), the shape that favours strong
-   nor'easters. Tilted troughs are centred further west so their bottoms
-   still land at ~79°W.
+   Eastern-North-America trough bottoms, as traced:
+       A 40.3°N @ 74.4°W   B 32.4°N @ 78.2°W   C 23.9°N @ 79.3°W   D 13.6°N @ 80.9°W
 
-   A → D: the eastern-US trough deepens, widens and tilts more; the other
-   troughs deepen a little, so the whole loop's mean latitude drops
-   54 → 51°N. Measured eastern-US trough bottoms (node, 0.5° sampling):
-       A 38.5°N  B 35.5°N  C 32.4°N  D 29.4°N   — all at ~79°W
-   D stops at the Gulf Coast / north Florida: the polar jet rarely gets
-   further south than that on its own. */
-const BASE = 54;
-const WIGGLE = 1.2;
-const T = (lon, depth, width, tilt = 0) => ({ lon, depth, width, tilt });
-const RIDGES = [T(-138, -12, 26), T(-15, -9, 28), T(85, -6, 30)];
-/* Flow speed per jet: seconds for the streaks to travel one dash period
-   (40px). Deeper, more southerly (winter-like) jets blow harder, so they
-   stream faster: A slowest … D fastest. Same on the globe and side view. */
-const JET_FLOW_S = { A: 1.8, B: 1.4, C: 1.05, D: 0.75 };
-const JET_PATHS = [
-  { id: "A", troughs: [T(-82, 15,   26),    T(40, 5, 20), T(138,  9, 28)] },
-  { id: "B", troughs: [T(-85, 18.4, 28, 3), T(40, 6, 20), T(138, 10, 28)] },
-  { id: "C", troughs: [T(-88, 22,   30, 6), T(40, 7, 21), T(138, 11, 29)] },
-  { id: "D", troughs: [T(-91, 25.5, 32, 9), T(40, 8, 21), T(138, 12, 30)] },
-];
+   STEP 2 SHIFT: only that trough slides. Each point moves east/west by
+   shift × a bell (WARP_W wide) centred on the trough bottom, so the
+   neighbouring waves blend smoothly and the rest of the loop stays put
+   (max bell slope × max shift < 1, so the line never folds). */
+const JET_SHAPES = {
+  A: [[179.42,60.62],[-179.71,61.21],[-178.86,61.82],[-178.01,62.44],[-177.17,63.08],[-176.32,63.72],[-175.45,64.37],[-174.56,65.01],[-173.63,65.65],[-172.67,66.29],[-171.66,66.93],[-170.6,67.55],[-169.47,68.17],[-168.27,68.78],[-166.99,69.37],[-165.61,69.94],[-164.12,70.49],[-162.51,71.01],[-160.77,71.5],[-158.9,71.95],[-156.89,72.35],[-154.74,72.69],[-152.48,72.96],[-150.11,73.16],[-147.68,73.28],[-145.23,73.31],[-142.8,73.25],[-140.44,73.1],[-138.19,72.86],[-136.1,72.53],[-134.19,72.13],[-132.46,71.66],[-130.93,71.14],[-129.59,70.57],[-128.42,69.96],[-127.4,69.31],[-126.51,68.65],[-125.75,67.96],[-125.08,67.26],[-124.5,66.55],[-123.98,65.84],[-123.52,65.12],[-123.09,64.4],[-122.69,63.68],[-122.29,62.98],[-121.88,62.29],[-121.43,61.63],[-120.94,61.02],[-120.38,60.46],[-119.75,59.97],[-119.05,59.58],[-118.25,59.29],[-117.38,59.1],[-116.44,59.03],[-115.42,59.06],[-114.35,59.18],[-113.22,59.38],[-112.05,59.65],[-110.83,59.96],[-109.58,60.29],[-108.28,60.63],[-106.93,60.95],[-105.55,61.26],[-104.12,61.54],[-102.65,61.77],[-101.14,61.96],[-99.61,62.09],[-98.05,62.17],[-96.5,62.18],[-94.96,62.13],[-93.44,62.01],[-91.97,61.82],[-90.56,61.56],[-89.22,61.25],[-87.97,60.87],[-86.82,60.43],[-85.78,59.94],[-84.85,59.4],[-84.03,58.82],[-83.32,58.21],[-82.72,57.56],[-82.22,56.89],[-81.81,56.2],[-81.47,55.49],[-81.2,54.77],[-80.99,54.04],[-80.82,53.3],[-80.69,52.56],[-80.59,51.82],[-80.5,51.07],[-80.43,50.33],[-80.36,49.58],[-80.3,48.83],[-80.24,48.08],[-80.17,47.34],[-80.09,46.6],[-79.99,45.87],[-79.86,45.14],[-79.7,44.44],[-79.48,43.76],[-79.2,43.11],[-78.85,42.51],[-78.42,41.95],[-77.92,41.47],[-77.34,41.05],[-76.69,40.72],[-75.98,40.47],[-75.22,40.31],[-74.42,40.25],[-73.6,40.26],[-72.77,40.37],[-71.94,40.54],[-71.11,40.79],[-70.29,41.09],[-69.5,41.45],[-68.73,41.85],[-67.98,42.29],[-67.28,42.78],[-66.6,43.29],[-65.97,43.85],[-65.38,44.43],[-64.84,45.03],[-64.34,45.67],[-63.88,46.32],[-63.46,46.99],[-63.07,47.68],[-62.71,48.38],[-62.38,49.09],[-62.06,49.8],[-61.76,50.52],[-61.46,51.24],[-61.17,51.97],[-60.89,52.69],[-60.61,53.42],[-60.32,54.14],[-60.03,54.87],[-59.73,55.59],[-59.41,56.32],[-59.07,57.04],[-58.71,57.76],[-58.3,58.47],[-57.85,59.17],[-57.34,59.85],[-56.76,60.52],[-56.08,61.15],[-55.29,61.75],[-54.39,62.3],[-53.35,62.8],[-52.19,63.25],[-50.89,63.62],[-49.49,63.94],[-47.98,64.2],[-46.39,64.4],[-44.74,64.55],[-43.05,64.66],[-41.33,64.73],[-39.59,64.77],[-37.84,64.79],[-36.1,64.8],[-34.36,64.8],[-32.62,64.79],[-30.91,64.79],[-29.22,64.81],[-27.56,64.85],[-25.95,64.93],[-24.4,65.05],[-22.92,65.22],[-21.53,65.46],[-20.24,65.76],[-19.07,66.13],[-18.01,66.57],[-17.08,67.07],[-16.26,67.63],[-15.52,68.23],[-14.85,68.87],[-14.19,69.52],[-13.51,70.18],[-12.75,70.83],[-11.85,71.45],[-10.76,72.03],[-9.44,72.55],[-7.88,73.0],[-6.05,73.36],[-4.0,73.63],[-1.76,73.8],[0.62,73.87],[3.07,73.84],[5.53,73.72],[7.96,73.52],[10.32,73.25],[12.58,72.93],[14.73,72.56],[16.78,72.15],[18.73,71.71],[20.58,71.25],[22.34,70.76],[24.02,70.27],[25.64,69.76],[27.19,69.25],[28.68,68.73],[30.14,68.21],[31.56,67.7],[32.96,67.2],[34.34,66.72],[35.71,66.27],[37.08,65.85],[38.45,65.49],[39.82,65.19],[41.18,64.97],[42.54,64.83],[43.89,64.79],[45.22,64.84],[46.52,64.99],[47.78,65.24],[49.01,65.57],[50.2,65.98],[51.37,66.45],[52.51,66.97],[53.64,67.53],[54.77,68.11],[55.92,68.72],[57.08,69.33],[58.29,69.94],[59.54,70.56],[60.86,71.17],[62.26,71.77],[63.75,72.36],[65.34,72.94],[67.05,73.51],[68.89,74.05],[70.87,74.58],[73.01,75.08],[75.3,75.55],[77.77,75.99],[80.42,76.39],[83.24,76.74],[86.24,77.05],[89.39,77.29],[92.68,77.47],[96.06,77.58],[99.48,77.62],[102.9,77.57],[106.24,77.45],[109.46,77.25],[112.52,76.97],[115.38,76.63],[118.03,76.23],[120.46,75.78],[122.69,75.29],[124.73,74.76],[126.59,74.2],[128.31,73.63],[129.89,73.03],[131.36,72.42],[132.73,71.8],[134.03,71.18],[135.28,70.55],[136.47,69.92],[137.64,69.3],[138.78,68.68],[139.92,68.06],[141.05,67.46],[142.19,66.87],[143.34,66.29],[144.51,65.72],[145.68,65.17],[146.87,64.63],[148.08,64.11],[149.28,63.59],[150.5,63.09],[151.71,62.6],[152.93,62.12],[154.15,61.64],[155.36,61.18],[156.57,60.73],[157.79,60.29],[159.0,59.87],[160.22,59.47],[161.44,59.09],[162.66,58.74],[163.88,58.42],[165.11,58.14],[166.34,57.91],[167.57,57.74],[168.8,57.64],[170.01,57.61],[171.2,57.65],[172.36,57.78],[173.49,57.99],[174.58,58.28],[175.63,58.63],[176.63,59.06],[177.6,59.53],[178.52,60.06]],
+  B: [[-179.89,51.47],[-178.89,51.83],[-177.91,52.23],[-176.96,52.67],[-176.05,53.14],[-175.16,53.63],[-174.3,54.16],[-173.48,54.71],[-172.69,55.28],[-171.93,55.88],[-171.2,56.49],[-170.5,57.12],[-169.82,57.76],[-169.16,58.42],[-168.52,59.09],[-167.89,59.76],[-167.26,60.44],[-166.62,61.12],[-165.97,61.8],[-165.28,62.47],[-164.56,63.14],[-163.78,63.8],[-162.94,64.45],[-162.02,65.07],[-161.01,65.67],[-159.89,66.23],[-158.66,66.74],[-157.31,67.2],[-155.84,67.58],[-154.27,67.87],[-152.62,68.07],[-150.92,68.16],[-149.21,68.15],[-147.53,68.02],[-145.91,67.79],[-144.39,67.47],[-142.99,67.06],[-141.71,66.58],[-140.55,66.04],[-139.52,65.46],[-138.6,64.84],[-137.77,64.2],[-137.03,63.53],[-136.36,62.85],[-135.76,62.16],[-135.21,61.46],[-134.71,60.75],[-134.24,60.04],[-133.82,59.32],[-133.41,58.6],[-133.03,57.88],[-132.65,57.16],[-132.28,56.45],[-131.91,55.74],[-131.54,55.02],[-131.15,54.32],[-130.75,53.62],[-130.34,52.93],[-129.9,52.25],[-129.43,51.58],[-128.94,50.94],[-128.4,50.33],[-127.82,49.76],[-127.19,49.24],[-126.5,48.79],[-125.76,48.42],[-124.96,48.13],[-124.13,47.93],[-123.25,47.83],[-122.35,47.82],[-121.42,47.89],[-120.48,48.05],[-119.53,48.27],[-118.58,48.56],[-117.63,48.88],[-116.68,49.25],[-115.73,49.64],[-114.78,50.05],[-113.82,50.47],[-112.85,50.9],[-111.88,51.33],[-110.9,51.77],[-109.9,52.2],[-108.88,52.62],[-107.85,53.04],[-106.8,53.45],[-105.73,53.84],[-104.63,54.21],[-103.51,54.56],[-102.37,54.88],[-101.22,55.16],[-100.05,55.38],[-98.89,55.54],[-97.75,55.62],[-96.65,55.61],[-95.61,55.51],[-94.65,55.3],[-93.79,55.0],[-93.02,54.6],[-92.36,54.12],[-91.8,53.57],[-91.33,52.96],[-90.94,52.32],[-90.61,51.64],[-90.34,50.95],[-90.1,50.25],[-89.9,49.53],[-89.73,48.82],[-89.57,48.1],[-89.41,47.38],[-89.27,46.66],[-89.12,45.93],[-88.97,45.2],[-88.82,44.47],[-88.66,43.73],[-88.48,43.0],[-88.3,42.27],[-88.1,41.54],[-87.89,40.81],[-87.65,40.08],[-87.4,39.37],[-87.12,38.66],[-86.82,37.96],[-86.48,37.28],[-86.1,36.62],[-85.68,35.99],[-85.22,35.4],[-84.71,34.84],[-84.14,34.33],[-83.53,33.87],[-82.87,33.47],[-82.17,33.14],[-81.43,32.86],[-80.66,32.66],[-79.87,32.51],[-79.05,32.44],[-78.23,32.42],[-77.39,32.46],[-76.56,32.56],[-75.73,32.71],[-74.91,32.9],[-74.09,33.14],[-73.27,33.41],[-72.47,33.71],[-71.67,34.04],[-70.88,34.39],[-70.1,34.76],[-69.32,35.15],[-68.55,35.55],[-67.79,35.97],[-67.04,36.4],[-66.29,36.84],[-65.55,37.3],[-64.83,37.77],[-64.11,38.26],[-63.41,38.76],[-62.72,39.27],[-62.04,39.8],[-61.38,40.35],[-60.74,40.91],[-60.11,41.48],[-59.49,42.06],[-58.89,42.66],[-58.31,43.27],[-57.74,43.89],[-57.2,44.52],[-56.67,45.16],[-56.17,45.81],[-55.69,46.47],[-55.24,47.14],[-54.82,47.82],[-54.44,48.51],[-54.09,49.21],[-53.77,49.92],[-53.49,50.64],[-53.24,51.36],[-53.01,52.09],[-52.8,52.82],[-52.59,53.55],[-52.37,54.28],[-52.13,55.0],[-51.84,55.71],[-51.48,56.41],[-51.04,57.07],[-50.49,57.71],[-49.83,58.3],[-49.04,58.84],[-48.12,59.31],[-47.08,59.72],[-45.92,60.06],[-44.65,60.31],[-43.31,60.49],[-41.91,60.59],[-40.46,60.62],[-39.0,60.59],[-37.52,60.51],[-36.05,60.38],[-34.59,60.22],[-33.14,60.04],[-31.71,59.83],[-30.29,59.63],[-28.89,59.42],[-27.5,59.22],[-26.11,59.04],[-24.74,58.88],[-23.38,58.76],[-22.02,58.68],[-20.67,58.64],[-19.34,58.65],[-18.03,58.72],[-16.74,58.84],[-15.48,59.03],[-14.26,59.28],[-13.08,59.59],[-11.95,59.96],[-10.88,60.39],[-9.86,60.86],[-8.9,61.38],[-7.99,61.94],[-7.12,62.53],[-6.28,63.15],[-5.47,63.78],[-4.65,64.42],[-3.8,65.06],[-2.92,65.68],[-1.95,66.28],[-0.89,66.84],[0.29,67.34],[1.6,67.78],[3.05,68.13],[4.64,68.39],[6.33,68.55],[8.1,68.61],[9.91,68.58],[11.73,68.45],[13.53,68.23],[15.28,67.95],[16.96,67.6],[18.57,67.21],[20.1,66.77],[21.56,66.31],[22.95,65.82],[24.27,65.31],[25.54,64.79],[26.76,64.25],[27.94,63.72],[29.09,63.18],[30.22,62.64],[31.34,62.1],[32.44,61.58],[33.55,61.06],[34.66,60.56],[35.77,60.07],[36.89,59.6],[38.03,59.16],[39.17,58.75],[40.34,58.37],[41.52,58.03],[42.71,57.74],[43.91,57.5],[45.13,57.32],[46.35,57.21],[47.56,57.17],[48.77,57.2],[49.96,57.31],[51.12,57.49],[52.26,57.75],[53.37,58.07],[54.44,58.45],[55.48,58.89],[56.49,59.36],[57.49,59.88],[58.47,60.42],[59.44,60.98],[60.41,61.56],[61.4,62.14],[62.4,62.72],[63.43,63.31],[64.49,63.89],[65.58,64.47],[66.72,65.05],[67.9,65.61],[69.14,66.17],[70.44,66.71],[71.8,67.24],[73.23,67.75],[74.73,68.24],[76.32,68.72],[77.98,69.17],[79.73,69.59],[81.56,69.99],[83.48,70.36],[85.49,70.68],[87.58,70.97],[89.74,71.21],[91.97,71.39],[94.25,71.51],[96.56,71.57],[98.89,71.56],[101.19,71.49],[103.46,71.36],[105.67,71.16],[107.81,70.91],[109.87,70.61],[111.84,70.26],[113.72,69.88],[115.51,69.46],[117.21,69.02],[118.83,68.55],[120.38,68.06],[121.86,67.56],[123.27,67.05],[124.63,66.52],[125.94,65.99],[127.2,65.44],[128.43,64.9],[129.61,64.35],[130.77,63.79],[131.9,63.24],[133.0,62.68],[134.09,62.13],[135.16,61.58],[136.22,61.03],[137.27,60.48],[138.31,59.94],[139.34,59.41],[140.37,58.88],[141.4,58.36],[142.42,57.85],[143.44,57.34],[144.47,56.85],[145.49,56.36],[146.52,55.89],[147.56,55.43],[148.59,54.98],[149.64,54.54],[150.68,54.12],[151.74,53.71],[152.79,53.31],[153.85,52.93],[154.92,52.56],[155.99,52.21],[157.06,51.88],[158.14,51.56],[159.22,51.26],[160.31,50.99],[161.41,50.74],[162.5,50.51],[163.61,50.31],[164.72,50.14],[165.83,50.01],[166.95,49.9],[168.08,49.83],[169.2,49.8],[170.32,49.8],[171.45,49.84],[172.56,49.92],[173.68,50.03],[174.78,50.18],[175.88,50.36],[176.96,50.59],[178.03,50.84],[179.08,51.14]],
+  C: [[179.48,41.81],[-179.67,42.21],[-178.82,42.61],[-177.98,43.03],[-177.15,43.46],[-176.32,43.9],[-175.5,44.36],[-174.68,44.82],[-173.88,45.3],[-173.08,45.8],[-172.28,46.3],[-171.5,46.81],[-170.72,47.34],[-169.95,47.88],[-169.19,48.42],[-168.43,48.98],[-167.68,49.54],[-166.93,50.11],[-166.19,50.69],[-165.45,51.27],[-164.71,51.86],[-163.97,52.45],[-163.22,53.05],[-162.47,53.65],[-161.71,54.25],[-160.94,54.86],[-160.15,55.45],[-159.34,56.04],[-158.49,56.62],[-157.61,57.19],[-156.68,57.72],[-155.7,58.22],[-154.66,58.68],[-153.57,59.07],[-152.42,59.39],[-151.23,59.63],[-150.02,59.76],[-148.8,59.79],[-147.61,59.7],[-146.46,59.51],[-145.37,59.22],[-144.36,58.83],[-143.45,58.37],[-142.62,57.84],[-141.89,57.26],[-141.23,56.63],[-140.65,55.98],[-140.12,55.31],[-139.65,54.62],[-139.22,53.91],[-138.83,53.2],[-138.46,52.49],[-138.12,51.77],[-137.79,51.05],[-137.47,50.32],[-137.17,49.6],[-136.86,48.88],[-136.56,48.16],[-136.26,47.44],[-135.94,46.72],[-135.62,46.01],[-135.27,45.31],[-134.9,44.62],[-134.5,43.95],[-134.07,43.31],[-133.59,42.69],[-133.06,42.12],[-132.49,41.59],[-131.87,41.12],[-131.2,40.72],[-130.48,40.4],[-129.71,40.16],[-128.91,40.0],[-128.08,39.92],[-127.22,39.92],[-126.35,39.99],[-125.46,40.12],[-124.57,40.31],[-123.68,40.54],[-122.79,40.81],[-121.9,41.1],[-121.01,41.42],[-120.13,41.75],[-119.24,42.1],[-118.36,42.46],[-117.47,42.83],[-116.58,43.2],[-115.69,43.57],[-114.79,43.95],[-113.87,44.31],[-112.95,44.67],[-112.02,45.03],[-111.07,45.38],[-110.12,45.71],[-109.14,46.03],[-108.16,46.34],[-107.16,46.62],[-106.15,46.88],[-105.12,47.11],[-104.1,47.3],[-103.07,47.43],[-102.07,47.51],[-101.09,47.51],[-100.16,47.43],[-99.29,47.27],[-98.51,47.01],[-97.82,46.67],[-97.23,46.24],[-96.75,45.73],[-96.37,45.15],[-96.07,44.53],[-95.84,43.86],[-95.66,43.16],[-95.52,42.45],[-95.4,41.72],[-95.29,40.98],[-95.18,40.24],[-95.06,39.5],[-94.93,38.76],[-94.77,38.03],[-94.6,37.3],[-94.39,36.57],[-94.15,35.86],[-93.88,35.15],[-93.58,34.46],[-93.25,33.78],[-92.88,33.12],[-92.48,32.47],[-92.04,31.84],[-91.58,31.24],[-91.09,30.66],[-90.57,30.1],[-90.03,29.56],[-89.47,29.04],[-88.89,28.53],[-88.29,28.04],[-87.68,27.56],[-87.06,27.1],[-86.41,26.65],[-85.76,26.22],[-85.09,25.82],[-84.4,25.43],[-83.7,25.08],[-82.99,24.76],[-82.27,24.49],[-81.53,24.26],[-80.79,24.09],[-80.04,23.98],[-79.29,23.94],[-78.53,23.95],[-77.78,24.03],[-77.03,24.17],[-76.28,24.36],[-75.53,24.59],[-74.79,24.86],[-74.05,25.16],[-73.32,25.48],[-72.59,25.82],[-71.86,26.18],[-71.14,26.55],[-70.41,26.92],[-69.69,27.31],[-68.97,27.7],[-68.25,28.1],[-67.53,28.5],[-66.82,28.91],[-66.1,29.32],[-65.39,29.74],[-64.68,30.17],[-63.97,30.6],[-63.26,31.04],[-62.55,31.48],[-61.85,31.93],[-61.15,32.39],[-60.46,32.86],[-59.77,33.34],[-59.09,33.82],[-58.41,34.31],[-57.74,34.82],[-57.08,35.33],[-56.43,35.85],[-55.79,36.39],[-55.16,36.94],[-54.55,37.5],[-53.95,38.07],[-53.37,38.66],[-52.82,39.26],[-52.28,39.87],[-51.76,40.5],[-51.26,41.14],[-50.78,41.79],[-50.32,42.45],[-49.88,43.12],[-49.45,43.8],[-49.04,44.49],[-48.65,45.18],[-48.27,45.88],[-47.9,46.59],[-47.54,47.29],[-47.18,48.0],[-46.82,48.71],[-46.46,49.41],[-46.07,50.11],[-45.66,50.79],[-45.2,51.45],[-44.69,52.08],[-44.1,52.67],[-43.42,53.2],[-42.65,53.67],[-41.79,54.07],[-40.83,54.39],[-39.78,54.63],[-38.66,54.78],[-37.48,54.87],[-36.27,54.89],[-35.02,54.85],[-33.77,54.77],[-32.51,54.66],[-31.25,54.52],[-29.99,54.37],[-28.74,54.21],[-27.5,54.04],[-26.27,53.88],[-25.03,53.73],[-23.81,53.59],[-22.59,53.47],[-21.37,53.37],[-20.16,53.3],[-18.95,53.27],[-17.75,53.27],[-16.56,53.32],[-15.39,53.41],[-14.23,53.56],[-13.08,53.75],[-11.97,53.99],[-10.87,54.28],[-9.8,54.62],[-8.76,55.0],[-7.75,55.42],[-6.77,55.88],[-5.8,56.37],[-4.86,56.88],[-3.93,57.41],[-3.01,57.96],[-2.08,58.52],[-1.13,59.07],[-0.15,59.61],[0.88,60.13],[1.96,60.62],[3.1,61.07],[4.32,61.46],[5.6,61.79],[6.96,62.03],[8.36,62.2],[9.8,62.27],[11.27,62.26],[12.73,62.16],[14.17,61.98],[15.58,61.73],[16.96,61.43],[18.29,61.08],[19.57,60.69],[20.82,60.28],[22.03,59.84],[23.21,59.39],[24.36,58.93],[25.5,58.47],[26.61,58.0],[27.7,57.53],[28.78,57.07],[29.85,56.61],[30.92,56.15],[31.98,55.7],[33.03,55.26],[34.09,54.83],[35.15,54.42],[36.22,54.02],[37.29,53.64],[38.37,53.29],[39.46,52.96],[40.56,52.65],[41.66,52.38],[42.77,52.14],[43.89,51.93],[45.0,51.77],[46.12,51.66],[47.23,51.6],[48.33,51.6],[49.43,51.66],[50.51,51.78],[51.58,51.96],[52.63,52.21],[53.67,52.5],[54.69,52.84],[55.69,53.23],[56.68,53.65],[57.66,54.09],[58.64,54.56],[59.6,55.05],[60.57,55.55],[61.55,56.05],[62.54,56.56],[63.53,57.07],[64.55,57.58],[65.59,58.09],[66.65,58.59],[67.73,59.09],[68.84,59.58],[69.98,60.07],[71.15,60.55],[72.35,61.01],[73.59,61.47],[74.87,61.91],[76.18,62.34],[77.54,62.76],[78.94,63.16],[80.38,63.54],[81.87,63.9],[83.4,64.23],[84.98,64.54],[86.6,64.83],[88.26,65.08],[89.96,65.3],[91.7,65.48],[93.46,65.62],[95.24,65.71],[97.03,65.75],[98.82,65.73],[100.6,65.66],[102.35,65.53],[104.07,65.35],[105.75,65.12],[107.38,64.84],[108.95,64.53],[110.48,64.18],[111.96,63.81],[113.38,63.41],[114.77,63.0],[116.11,62.56],[117.41,62.12],[118.67,61.66],[119.9,61.19],[121.09,60.71],[122.24,60.22],[123.37,59.73],[124.46,59.22],[125.52,58.71],[126.55,58.19],[127.56,57.66],[128.53,57.12],[129.49,56.58],[130.41,56.03],[131.32,55.48],[132.2,54.93],[133.07,54.37],[133.92,53.81],[134.76,53.25],[135.59,52.69],[136.4,52.12],[137.2,51.56],[138.0,51.0],[138.79,50.45],[139.58,49.89],[140.36,49.34],[141.14,48.79],[141.91,48.25],[142.68,47.71],[143.46,47.17],[144.23,46.65],[145.01,46.13],[145.79,45.63],[146.58,45.13],[147.38,44.65],[148.19,44.19],[149.0,43.75],[149.83,43.32],[150.68,42.91],[151.53,42.51],[152.39,42.14],[153.26,41.77],[154.14,41.42],[155.02,41.09],[155.91,40.77],[156.8,40.47],[157.69,40.18],[158.6,39.92],[159.5,39.67],[160.41,39.45],[161.33,39.25],[162.25,39.07],[163.18,38.93],[164.11,38.81],[165.04,38.73],[165.97,38.68],[166.91,38.66],[167.84,38.68],[168.77,38.73],[169.7,38.83],[170.62,38.96],[171.53,39.12],[172.44,39.32],[173.34,39.55],[174.24,39.81],[175.13,40.09],[176.01,40.4],[176.88,40.73],[177.75,41.07],[178.62,41.44]],
+  D: [[179.73,30.36],[-179.64,30.88],[-179.01,31.4],[-178.38,31.93],[-177.74,32.45],[-177.11,32.97],[-176.46,33.5],[-175.82,34.02],[-175.16,34.54],[-174.51,35.06],[-173.84,35.58],[-173.17,36.1],[-172.48,36.61],[-171.79,37.12],[-171.09,37.62],[-170.39,38.12],[-169.67,38.62],[-168.95,39.12],[-168.22,39.62],[-167.48,40.11],[-166.73,40.6],[-165.97,41.08],[-165.21,41.57],[-164.43,42.05],[-163.65,42.52],[-162.85,43.0],[-162.05,43.47],[-161.23,43.93],[-160.41,44.39],[-159.57,44.85],[-158.71,45.29],[-157.84,45.73],[-156.96,46.16],[-156.06,46.58],[-155.14,46.97],[-154.2,47.35],[-153.25,47.69],[-152.28,47.99],[-151.31,48.23],[-150.34,48.41],[-149.38,48.51],[-148.46,48.52],[-147.58,48.43],[-146.78,48.23],[-146.05,47.93],[-145.4,47.54],[-144.84,47.06],[-144.36,46.52],[-143.94,45.91],[-143.58,45.26],[-143.24,44.59],[-142.92,43.9],[-142.61,43.21],[-142.27,42.51],[-141.92,41.82],[-141.54,41.15],[-141.12,40.48],[-140.68,39.82],[-140.2,39.18],[-139.7,38.55],[-139.17,37.94],[-138.62,37.34],[-138.05,36.75],[-137.47,36.17],[-136.87,35.61],[-136.26,35.06],[-135.63,34.53],[-134.99,34.01],[-134.33,33.52],[-133.65,33.05],[-132.96,32.62],[-132.24,32.22],[-131.51,31.86],[-130.77,31.55],[-130.0,31.3],[-129.23,31.11],[-128.45,30.98],[-127.66,30.93],[-126.87,30.95],[-126.09,31.04],[-125.32,31.2],[-124.56,31.43],[-123.81,31.72],[-123.07,32.06],[-122.35,32.44],[-121.64,32.86],[-120.93,33.3],[-120.23,33.76],[-119.53,34.23],[-118.84,34.7],[-118.13,35.18],[-117.43,35.66],[-116.71,36.14],[-115.98,36.61],[-115.24,37.06],[-114.48,37.51],[-113.71,37.94],[-112.91,38.34],[-112.1,38.73],[-111.27,39.08],[-110.42,39.41],[-109.55,39.69],[-108.67,39.92],[-107.79,40.09],[-106.89,40.2],[-106.02,40.22],[-105.17,40.17],[-104.35,40.02],[-103.6,39.78],[-102.9,39.45],[-102.29,39.05],[-101.77,38.56],[-101.31,38.01],[-100.95,37.41],[-100.64,36.76],[-100.4,36.08],[-100.2,35.38],[-100.02,34.67],[-99.87,33.95],[-99.71,33.23],[-99.54,32.51],[-99.36,31.79],[-99.16,31.07],[-98.93,30.36],[-98.67,29.67],[-98.39,28.98],[-98.09,28.3],[-97.77,27.63],[-97.42,26.97],[-97.07,26.32],[-96.69,25.67],[-96.32,25.03],[-95.94,24.4],[-95.54,23.78],[-95.14,23.17],[-94.72,22.58],[-94.3,22.0],[-93.86,21.43],[-93.41,20.89],[-92.95,20.37],[-92.49,19.87],[-92.02,19.39],[-91.54,18.93],[-91.05,18.5],[-90.55,18.09],[-90.05,17.7],[-89.53,17.33],[-89.01,16.98],[-88.48,16.66],[-87.93,16.35],[-87.38,16.07],[-86.81,15.8],[-86.24,15.56],[-85.66,15.35],[-85.07,15.15],[-84.47,14.97],[-83.86,14.82],[-83.23,14.69],[-82.6,14.58],[-81.96,14.49],[-81.3,14.43],[-80.63,14.38],[-79.95,14.35],[-79.27,14.35],[-78.57,14.37],[-77.86,14.41],[-77.15,14.46],[-76.43,14.54],[-75.71,14.65],[-74.98,14.78],[-74.26,14.93],[-73.54,15.11],[-72.82,15.32],[-72.11,15.55],[-71.41,15.82],[-70.71,16.11],[-70.03,16.43],[-69.36,16.77],[-68.69,17.14],[-68.03,17.53],[-67.38,17.93],[-66.74,18.36],[-66.12,18.8],[-65.5,19.26],[-64.89,19.74],[-64.3,20.22],[-63.7,20.72],[-63.12,21.23],[-62.55,21.75],[-61.97,22.29],[-61.41,22.82],[-60.86,23.37],[-60.3,23.92],[-59.74,24.46],[-59.18,25.02],[-58.63,25.58],[-58.08,26.14],[-57.52,26.7],[-56.96,27.27],[-56.4,27.83],[-55.85,28.4],[-55.29,28.96],[-54.73,29.53],[-54.17,30.11],[-53.62,30.69],[-53.07,31.27],[-52.52,31.85],[-51.97,32.44],[-51.43,33.04],[-50.88,33.64],[-50.34,34.24],[-49.8,34.84],[-49.26,35.45],[-48.72,36.06],[-48.18,36.66],[-47.63,37.27],[-47.08,37.88],[-46.51,38.49],[-45.94,39.09],[-45.36,39.69],[-44.75,40.28],[-44.13,40.86],[-43.48,41.43],[-42.81,41.98],[-42.11,42.52],[-41.38,43.03],[-40.61,43.52],[-39.81,43.98],[-38.97,44.41],[-38.09,44.81],[-37.19,45.16],[-36.24,45.47],[-35.27,45.74],[-34.26,45.96],[-33.24,46.14],[-32.19,46.27],[-31.13,46.36],[-30.06,46.41],[-28.98,46.42],[-27.9,46.39],[-26.83,46.33],[-25.75,46.25],[-24.68,46.14],[-23.62,46.01],[-22.56,45.86],[-21.51,45.7],[-20.47,45.52],[-19.43,45.34],[-18.4,45.15],[-17.38,44.96],[-16.36,44.76],[-15.35,44.58],[-14.34,44.4],[-13.34,44.24],[-12.34,44.09],[-11.36,43.97],[-10.38,43.88],[-9.42,43.83],[-8.47,43.81],[-7.55,43.83],[-6.65,43.89],[-5.78,43.98],[-4.93,44.12],[-4.11,44.29],[-3.31,44.51],[-2.53,44.78],[-1.76,45.09],[-1.0,45.44],[-0.24,45.84],[0.51,46.28],[1.25,46.76],[1.99,47.26],[2.74,47.79],[3.48,48.33],[4.23,48.88],[4.99,49.43],[5.78,49.97],[6.59,50.49],[7.44,50.99],[8.34,51.46],[9.28,51.88],[10.27,52.25],[11.31,52.55],[12.39,52.79],[13.52,52.96],[14.67,53.05],[15.84,53.07],[17.01,53.01],[18.19,52.89],[19.35,52.72],[20.49,52.49],[21.62,52.23],[22.72,51.93],[23.81,51.6],[24.87,51.26],[25.92,50.9],[26.94,50.53],[27.96,50.15],[28.96,49.77],[29.96,49.38],[30.94,49.0],[31.92,48.62],[32.9,48.25],[33.87,47.88],[34.84,47.52],[35.81,47.17],[36.79,46.83],[37.76,46.5],[38.73,46.17],[39.71,45.86],[40.68,45.55],[41.66,45.25],[42.63,44.96],[43.6,44.67],[44.57,44.4],[45.54,44.14],[46.51,43.89],[47.48,43.67],[48.45,43.47],[49.42,43.31],[50.39,43.18],[51.36,43.09],[52.33,43.05],[53.29,43.06],[54.25,43.13],[55.2,43.24],[56.14,43.41],[57.07,43.63],[57.98,43.9],[58.88,44.21],[59.76,44.56],[60.62,44.94],[61.48,45.36],[62.32,45.8],[63.15,46.26],[63.97,46.74],[64.79,47.23],[65.6,47.73],[66.42,48.24],[67.24,48.76],[68.07,49.27],[68.91,49.79],[69.76,50.3],[70.62,50.81],[71.5,51.32],[72.39,51.83],[73.31,52.32],[74.25,52.81],[75.2,53.29],[76.19,53.76],[77.2,54.22],[78.24,54.66],[79.3,55.09],[80.4,55.51],[81.52,55.91],[82.68,56.3],[83.86,56.66],[85.08,57.01],[86.32,57.34],[87.6,57.64],[88.9,57.92],[90.24,58.17],[91.6,58.4],[92.98,58.59],[94.38,58.76],[95.8,58.9],[97.24,59.01],[98.68,59.09],[100.13,59.13],[101.59,59.13],[103.04,59.1],[104.49,59.03],[105.92,58.92],[107.33,58.78],[108.72,58.6],[110.09,58.38],[111.43,58.13],[112.73,57.84],[113.99,57.52],[115.22,57.18],[116.41,56.8],[117.55,56.4],[118.66,55.98],[119.73,55.53],[120.75,55.06],[121.75,54.58],[122.7,54.08],[123.62,53.56],[124.51,53.03],[125.37,52.49],[126.19,51.93],[126.99,51.37],[127.77,50.8],[128.52,50.22],[129.25,49.63],[129.95,49.04],[130.64,48.44],[131.31,47.84],[131.97,47.23],[132.61,46.62],[133.23,46.01],[133.85,45.39],[134.46,44.78],[135.06,44.16],[135.66,43.55],[136.26,42.94],[136.85,42.33],[137.44,41.73],[138.04,41.13],[138.64,40.53],[139.25,39.95],[139.86,39.36],[140.47,38.79],[141.09,38.22],[141.72,37.66],[142.35,37.11],[142.98,36.56],[143.63,36.03],[144.29,35.52],[144.96,35.02],[145.64,34.54],[146.34,34.09],[147.06,33.65],[147.79,33.24],[148.54,32.84],[149.29,32.47],[150.06,32.12],[150.83,31.78],[151.61,31.45],[152.39,31.14],[153.18,30.84],[153.97,30.55],[154.75,30.26],[155.54,29.98],[156.32,29.69],[157.1,29.4],[157.88,29.1],[158.65,28.79],[159.41,28.47],[160.16,28.14],[160.91,27.8],[161.65,27.46],[162.38,27.11],[163.12,26.77],[163.85,26.43],[164.59,26.1],[165.32,25.79],[166.06,25.51],[166.81,25.26],[167.56,25.05],[168.3,24.9],[169.05,24.8],[169.79,24.76],[170.53,24.8],[171.26,24.91],[171.97,25.09],[172.67,25.34],[173.36,25.65],[174.03,26.01],[174.69,26.41],[175.34,26.85],[175.98,27.32],[176.61,27.8],[177.24,28.3],[177.86,28.81],[178.49,29.32],[179.11,29.84]]
+};
+const WARP_W = 40;
 const D2R = Math.PI / 180;
 const wrapLon = d => ((d + 540) % 360) - 180;
-/* `shift` slides the eastern-US trough (troughs[0]) east (+) or west (−). */
+/* Flow speed per jet: seconds for the streaks to travel one dash period
+   (40px); same on the globe and side view. Derived from each traced line,
+   following the research:
+   - SEASON (dominant): the winter jet runs ~2× the summer jet and sits
+     further south (bigger pole–tropics temperature contrast). Winter-ness
+     w = how far south the eastern trough reaches (40°N → 0 … 14°N → ~1).
+   - MEANDER (slight): strongly wavy (meridional) patterns go with weaker
+     west–east winds. m = the line's north–south range beyond the flattest
+     jet's (A 39° → 0 … D 46° → 1).
+       seconds = 1.8 − 1.1·w + 0.15·m
+   Result (measured in-page): A 1.60 s · B 1.36 · C 1.11 · D 0.83 — A slowest, D
+   fastest, with the meander slightly closing the gap. */
+const JET_FLOW_S = Object.fromEntries(Object.entries(JET_SHAPES).map(([id, pts]) => {
+  const lats = pts.map(p => p[1]);
+  const bottom = Math.min(...pts.filter(p => p[0] > -120 && p[0] < -40).map(p => p[1]));
+  const w = (45 - bottom) / 31;
+  const m = (Math.max(...lats) - Math.min(...lats) - 39) / 7;
+  return [id, +(1.8 - 1.1 * w + 0.15 * m).toFixed(2)];
+}));
+const JET_PATHS = ["A", "B", "C", "D"].map(id => {
+  const pts = JET_SHAPES[id];
+  const bottom = pts.filter(p => p[0] > -120 && p[0] < -40).reduce((m, p) => (p[1] < m[1] ? p : m));
+  return { id, bottomLon: bottom[0], bottomLat: bottom[1] };
+});
+const JET_BOTTOM_LAT = Object.fromEntries(JET_PATHS.map(j => [j.id, j.bottomLat]));
+/*  slides the eastern-North-America trough east (+) or west (−). */
 function jetCoords(j, shift = 0) {
-  const coords = [];
-  for (let lon = -180; lon <= 180; lon += 0.5) {
-    let lat = BASE + WIGGLE * Math.sin(7 * lon * D2R + 1), tiltShift = 0;
-    for (const t of [...RIDGES, ...j.troughs]) {
-      const c = t === j.troughs[0] ? t.lon + shift : t.lon;
-      const g = Math.exp(-((wrapLon(lon - c) / t.width) ** 2));
-      lat -= t.depth * g;
-      tiltShift += t.tilt * g;
-    }
-    coords.push([lon + tiltShift, lat]);
-  }
-  return coords;
+  const c = JET_SHAPES[j.id].map(([lon, lat]) =>
+    [lon + shift * Math.exp(-((wrapLon(lon - j.bottomLon) / WARP_W) ** 2)), lat]);
+  c.push(c[0]); // close the loop
+  return c;
 }
 
 /* ---- Globe -------------------------------------------------------------- */
@@ -549,6 +804,16 @@ const svg = d3.select("#globe");
 const gEarth = d3.select("#earth");
 const gJets = d3.select("#jets");
 let land = null, landCoarse = null;
+/* Disabled BUTTONS stay focusable (Mike, 2026-10-27; WAI-ARIA APG): they get
+   aria-disabled="true" instead of the disabled attribute, so keyboard and
+   screen-reader users can still reach and hear them. setOff() sets it, isOff()
+   reads it, and a capturing click guard swallows any activation — mouse,
+   Return, Space or a script's .click(). (Inputs keep the native attribute.) */
+const setOff = (el, off) => { el.disabled = false; el.setAttribute("aria-disabled", off ? "true" : "false"); };
+const isOff = el => el.getAttribute("aria-disabled") === "true";
+document.addEventListener("click", ev => {
+  if (ev.target.closest?.('button[aria-disabled="true"]')) { ev.preventDefault(); ev.stopImmediatePropagation(); }
+}, true);
 let selected = null;
 let step = 1;
 let troughShift = 0; // degrees the chosen jet's eastern-US trough has moved
@@ -569,32 +834,48 @@ JET_PATHS.forEach(j => {
   badge.append("text").text(j.id);
 });
 
-/* Toolbar: native radios, so arrow keys and roving focus come for free. */
+/* Toolbar of toggle buttons (WAI-ARIA toolbar pattern, Mike 2026-10-27):
+   Tab enters the group once; arrow keys (and Home/End) only MOVE FOCUS among
+   A–D; Return or Space selects. (Native radios selected on every arrow press.)
+   Roving tabindex: the selected button — or A — is the group's Tab stop. */
 const elOptions = d3.select(".ne-toolbar fieldset");
 JET_PATHS.forEach(j => {
-  const lab = elOptions.append("label").attr("class", "ne-seg");
-  lab.append("input").attr("type", "radio").attr("name", "jet").attr("value", j.id)
-    .attr("aria-label", `Jet stream ${j.id}`)
-    .on("change", () => select(j.id));
-  lab.append("span").attr("aria-hidden", "true").text(j.id);
+  elOptions.append("button").attr("type", "button").attr("class", "ne-seg")
+    .attr("data-jet", j.id).attr("aria-pressed", "false")
+    .attr("aria-label", `Jet stream ${j.id}`).text(j.id)
+    .on("click", () => select(j.id));
+});
+const jetButtons = () => [...elOptions.node().querySelectorAll(".ne-seg")];
+function syncJetButtons(id) {
+  const bs = jetButtons();
+  bs.forEach(b => b.setAttribute("aria-pressed", b.dataset.jet === id ? "true" : "false"));
+  const stop = bs.find(b => b.dataset.jet === id) || bs[0];
+  bs.forEach(b => b.tabIndex = b === stop ? 0 : -1);
+}
+syncJetButtons(null);
+elOptions.on("keydown", ev => {
+  const bs = jetButtons(), i = bs.indexOf(document.activeElement);
+  if (i < 0) return;
+  const to = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: bs.length - 1 }[ev.key];
+  if (to === undefined) return;
+  ev.preventDefault();
+  const next = bs[(to + bs.length) % bs.length];
+  bs.forEach(b => b.tabIndex = b === next ? 0 : -1);   // focus moves; nothing is selected
+  next.focus();
 });
 
-/* Each letter rides ON its own line in a badge, so which letter belongs to
-   which line is never in doubt. The trough bottoms are only ~3° (≈20px)
-   apart, so the badges are staggered west→east along the trough (A west,
-   D east): diagonal spacing keeps 24px badges from touching. */
-const BADGE_LON = { A: -92, B: -84, C: -76, D: -68 };
+/* Each letter rides ON its own line in a badge, at the bottom of the
+   eastern trough, so which letter belongs to which line is never in doubt. */
 const JET_LINES = {}, JET_LABEL_AT = {}, TROUGH_BOTTOM_LON = {};
 function buildJet(j, shift = 0) {
   const c = jetCoords(j, shift);
   JET_LINES[j.id] = { type: "LineString", coordinates: c };
-  // Point on the line's eastern-US trough nearest the badge longitude.
-  const at = BADGE_LON[j.id] + shift;
-  JET_LABEL_AT[j.id] = c.filter(p => p[1] < 45)
-    .reduce((m, p) => (Math.abs(p[0] - at) < Math.abs(m[0] - at) ? p : m));
-  // Where the trough actually bottoms out (tilt moves it off the centre).
-  return c.filter(p => p[0] > -140 + shift && p[0] < -20 + shift)
-    .reduce((m, p) => (p[1] < m[1] ? p : m))[0];
+  // The badge sits at the bottom of the eastern trough (the troughs are
+  // 8–10° of latitude apart, so the four badges never collide).
+  const bottom = c.filter(p => p[0] > -140 + shift && p[0] < -20 + shift)
+    .reduce((m, p) => (p[1] < m[1] ? p : m));
+  JET_LABEL_AT[j.id] = bottom;
+  return bottom[0];
 }
 JET_PATHS.forEach(j => { TROUGH_BOTTOM_LON[j.id] = buildJet(j); });
 
@@ -602,18 +883,12 @@ JET_PATHS.forEach(j => { TROUGH_BOTTOM_LON[j.id] = buildJet(j); });
    Both shapes are built from the LIVE jet line, so they follow the trough
    wherever step 2 put it. Shapes follow Mike's sketch:
 
-   Continental (blue): a bean filling the trough. South edge runs AIR_INSET
-   inside the jet from CONT_W west to CONT_E east of the trough bottom; north
-   edge runs back CONT_H above the trough's lowest point (≈ Great Lakes),
-   sagging CONT_SAG in the middle.
-
-   Ocean (red): a band along the coast on the warm side of the jet. Its inner
-   edge follows the jet's east flank (OCEAN_FROM…OCEAN_TO east of the bottom),
-   nudged south-east; the outer edge is that line pushed OCEAN_OFFSET out to
-   sea; a tip reaches south past the trough bottom, as in the sketch. */
+   Continental (blue): fills the trough wall to wall (contCoords).
+   Ocean (red): a capsule alongside the jet's east wall (oceanCoords). */
 const AIR_INSET = 1.2;
-const CONT_W = 13, CONT_E = 7, CONT_H = 8, CONT_SAG = 1.5;
-const OCEAN_FROM = 1, OCEAN_TO = 14, OCEAN_OFFSET = [4, -3], OCEAN_TIP = 5;
+const OCEAN_START = 0, OCEAN_RISE = 14, OCEAN_W = 5.5;     // ° — ocean capsule along the east wall
+const CONT_SPAN = 25, CONT_H = 13;                          // a full bean, ~Great Lakes high
+const SMILE_DIP = 0.4, SMILE_MIN = 0.3, SMILE_STEPS = 12;    // top edge dips 40% of the height; never < 30% thick
 
 function troughBottom() {
   const lon = TROUGH_BOTTOM_LON[selected] + troughShift;
@@ -625,25 +900,109 @@ function jetBetween(lonA, lonB) {
     .filter(p => p[0] >= lonA && p[0] <= lonB && p[1] < 50)
     .filter((p, i) => i % 4 === 0);
 }
+/* The INSIDE of the dip, up to CONT_H above its bottom: walk the jet from the
+   bottom westward and eastward until it climbs to that height (both walls),
+   then close across the top. Every point is pulled AIR_INSET°
+   toward the dip's interior (not just north), so the outline stays inside
+   the jet on the steep walls too — a north-only nudge slid along a vertical
+   wall and folded the shape over the line. */
 function contCoords() {
-  const [bLon] = troughBottom();
-  const south = jetBetween(bLon - CONT_W, bLon + CONT_E).map(([x, y]) => [x, y + AIR_INSET]);
+  const c = JET_LINES[selected].coordinates;
+  const [bLon, bLat] = troughBottom();
+  const bi = c.reduce((m, p, i) => (Math.abs(p[0] - bLon) < Math.abs(c[m][0] - bLon) ? i : m), 0);
+  const top = bLat + CONT_H;
+  let wi = bi, ei = bi;
+  // Follow BOTH walls up to the same height, so the shape fills the trough
+  // wall to wall and its right edge curves up the east wall (Mike's ref).
+  // CONT_SPAN is only a safety stop for very wide dips.
+  while (wi > 0 && c[wi - 1][1] < top && bLon - c[wi - 1][0] < CONT_SPAN) wi--;
+  while (ei < c.length - 1 && c[ei + 1][1] < top && c[ei + 1][0] - bLon < CONT_SPAN) ei++;
+  const wall = c.slice(wi, ei + 1).filter((p, i) => i % 3 === 0);
+  const cx = bLon, cy = bLat + CONT_H / 2;               // interior reference point
+  const inward = ([x, y]) => {
+    const dx = (cx - x) * Math.cos(y * D2R), dy = cy - y, d = Math.hypot(dx, dy) || 1;
+    return [x + AIR_INSET * dx / d / Math.cos(y * D2R), y + AIR_INSET * dy / d];
+  };
+  const south = wall.map(inward);
   const w = south[0], e = south[south.length - 1];
-  const top = Math.min(...south.map(p => p[1])) + CONT_H;
+  // SMILE (Mike): the top edge is a smooth curve from each wall's own end,
+  // dipping in the middle — a quadratic Bézier, so its height has exactly one
+  // minimum. The dip is SMILE_DIP of the shape's height below the LOWER end,
+  // so the middle keeps (1 − SMILE_DIP) of the height: never a sliver, never a
+  // flat lid, never a box with one straight side.
+  const low = south.reduce((m, p) => (p[1] < m[1] ? p : m));   // bottom of the bean
+  const lowEnd = Math.min(w[1], e[1]);
+  const H = lowEnd - low[1];
+  const target = [low[0], lowEnd - SMILE_DIP * H];             // the smile's lowest point
+  const ctl = [2 * target[0] - (e[0] + w[0]) / 2, 2 * target[1] - (e[1] + w[1]) / 2];
+  // Height of the bottom edge at a longitude (linear between its points).
+  const under = x => {
+    for (let i = 0; i < south.length - 1; i++) {
+      const [x0, y0] = south[i], [x1, y1] = south[i + 1];
+      if ((x - x0) * (x - x1) <= 0 && x0 !== x1) return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+    }
+    return low[1];
+  };
   const north = [];
-  for (let k = 0; k <= 6; k++) {
-    const f = k / 6;
-    north.push([e[0] + (w[0] - e[0]) * f, top - CONT_SAG * Math.sin(Math.PI * f)]);
+  for (let k = 1; k < SMILE_STEPS; k++) {                      // interior points only (ends = wall ends)
+    const t = k / SMILE_STEPS, u = 1 - t;
+    const x = u * u * e[0] + 2 * u * t * ctl[0] + t * t * w[0];
+    const y = u * u * e[1] + 2 * u * t * ctl[1] + t * t * w[1];
+    // Keep it from getting thin: at least SMILE_MIN of the height in the
+    // middle, tapering to 0 at the two corners (the smile's upturned tips),
+    // so on narrow, steep dips (A) the lid never drops below the walls.
+    north.push([x, Math.max(y, under(x) + SMILE_MIN * H * Math.sin(Math.PI * t) ** 0.7)]);
   }
+  // Guarantee ONE low point: from the lowest lid point outward, heights only
+  // rise (raise any point that's lower than its inner neighbour). Raising
+  // can't make it thinner, and removes any bumps copied from the walls.
+  const hs = north.map(p => p[1]), m0 = hs.indexOf(Math.min(...hs));
+  for (let i = m0 - 1; i >= 0; i--) north[i][1] = Math.max(north[i][1], north[i + 1][1]);
+  for (let i = m0 + 1; i < north.length; i++) north[i][1] = Math.max(north[i][1], north[i - 1][1]);
+  // …and never above the wall end it runs to (the corners stay the highest).
+  north.forEach((p, i) => { const end = i < m0 ? e[1] : w[1]; p[1] = Math.min(p[1], end); });
   return south.concat(north);
 }
+/* Ocean air (Mike's ref): a rounded capsule lying alongside the jet's EAST
+   wall on the warm side — from just above the trough bottom, running
+   north-east parallel to the line for OCEAN_RISE° of latitude. Inner edge =
+   the wall pushed AIR_INSET° outward (away from the dip); outer edge = a
+   further OCEAN_W° out. The closed Catmull-Rom curve rounds the ends. */
+let oceanSpine = [];
 function oceanCoords() {
+  const c = JET_LINES[selected].coordinates;
   const [bLon, bLat] = troughBottom();
-  const inner = jetBetween(bLon + OCEAN_FROM, bLon + OCEAN_TO)
-    .map(([x, y]) => [x + 0.5, y - AIR_INSET]);
-  const tip = [bLon + 0.5, bLat - OCEAN_TIP];
-  const outer = inner.map(([x, y]) => [x + OCEAN_OFFSET[0], y + OCEAN_OFFSET[1]]).reverse();
-  return [tip, ...inner, ...outer];
+  const bi = c.reduce((m, p, i) => (Math.abs(p[0] - bLon) < Math.abs(c[m][0] - bLon) ? i : m), 0);
+  let i0 = bi;                                             // start a little up the east wall
+  while (i0 < c.length - 1 && c[i0][1] < bLat + OCEAN_START) i0++;
+  let i1 = i0;
+  while (i1 < c.length - 1 && c[i1 + 1][1] < bLat + OCEAN_START + OCEAN_RISE && c[i1 + 1][0] - bLon < CONT_SPAN) i1++;
+  const wall = c.slice(i0, i1 + 1).filter((p, i) => i % 2 === 0);
+  // Offset PERPENDICULAR to the line (its right-hand normal = the warm side,
+  // since the line runs west → east), in a local metric (lon × cos lat), so
+  // the capsule has an even width along its whole length.
+  const k = y => Math.cos(y * D2R);
+  const normal = i => {
+    const a = wall[Math.max(0, i - 1)], b = wall[Math.min(wall.length - 1, i + 1)];
+    const dx = (b[0] - a[0]) * k(wall[i][1]), dy = b[1] - a[1], n = Math.hypot(dx, dy) || 1;
+    return [dy / n, -dx / n];                              // right-hand normal (x east, y north)
+  };
+  const off = (i, d) => { const [nx, ny] = normal(i), [x, y] = wall[i]; return [x + d * nx / k(y), y + d * ny]; };
+  const mid = AIR_INSET + OCEAN_W / 2, r = OCEAN_W / 2;
+  const inner = wall.map((p, i) => off(i, AIR_INSET));
+  const outer = wall.map((p, i) => off(i, AIR_INSET + OCEAN_W)).reverse();
+  // Rounded end caps: half-circles of radius r about the centre line's ends.
+  const cap = (i, from, sweep) => {
+    const [nx, ny] = normal(i), [x, y] = wall[i];
+    const cxy = [x + mid * nx / k(y), y + mid * ny];
+    const t0 = Math.atan2(ny, nx), pts = [];
+    for (let s2 = 1; s2 < 6; s2++) { const t = t0 + from + sweep * s2 / 6;
+      pts.push([cxy[0] + r * Math.cos(t) / k(cxy[1]), cxy[1] + r * Math.sin(t)]); }
+    return pts;
+  };
+  const last = wall.length - 1;
+  oceanSpine = wall.map((p, i) => off(i, mid));           // centre line, for placing the controls
+  return [...inner, ...cap(last, Math.PI, -Math.PI), ...outer, ...cap(0, 0, -Math.PI)];
 }
 
 /* PLACEHOLDER SCALES (°F, 5° steps): not from content design yet.
@@ -682,13 +1041,52 @@ function drawAir() {
     const hidden = ll.some(p => d3.geoDistance(p, centre) > Math.PI / 2);
     m.g.attr("display", hidden ? "none" : null);
     m.controls.attr("display", hidden ? "none" : null);
+    m.at = null;
     if (hidden) return;
     const xy = ll.map(p => projection(p));
     m.shape.attr("d", airCurve(xy));
-    const [cx, cy] = d3.polygonCentroid(xy);
-    m.label.attr("x", cx).attr("y", cy);
-    m.down.attr("transform", `translate(${cx - 52},${cy})`);
-    m.up.attr("transform", `translate(${cx + 52},${cy})`);
+    m.at = d3.polygonCentroid(xy);
+  });
+  // Layout of the − label + rows — both HORIZONTAL (Mike: don't rotate).
+  // Elements are treated as circles (buttons r 16, label r 28 = its box's
+  // half-diagonal, badge r 13).
+  //  - Continental row: at its shape's centre, slid to clear the jet badge.
+  //  - Ocean row: tried at points along the capsule's centre line (middle
+  //    first); the first spot ≥ GAP from the continental row and the badge
+  //    wins, else the spot with the most clearance.
+  const [c, o] = AIRS;
+  const STEP = 52, BTN_R = 16, LBL_R = 28, BADGE_R = 13, GAP = 8;
+  c.angle = 0; o.angle = 0;
+  const parts = (m, at = m.at) =>
+    [[at[0] - STEP, at[1], BTN_R], [at[0], at[1], LBL_R], [at[0] + STEP, at[1], BTN_R]];
+  const badge = selected ? [...projection(JET_LABEL_AT[selected]), BADGE_R] : null;
+  const clearance = (ps, others) => Math.min(...ps.flatMap(p => others.map(q => Math.hypot(p[0] - q[0], p[1] - q[1]) - p[2] - q[2])));
+  if (c.at && badge && clearance(parts(c), [badge]) < GAP) {
+    search: for (let d = 6; d <= 160; d += 6) for (const [ax, ay] of [[0, -1], [0, 1], [1, 0], [-1, 0]]) {
+      const at = [c.at[0] + ax * d, c.at[1] + ay * d];
+      if (clearance(parts(c, at), [badge]) >= GAP) { c.at = at; break search; }
+    }
+  }
+  if (o.at && oceanSpine.length) {
+    const others = [...(badge ? [badge] : []), ...(c.at ? parts(c) : [])];
+    const spine = oceanSpine.map(p => projection(p));
+    const midI = (spine.length - 1) / 2;
+    const order = spine.map((p, i) => i).sort((a, b) => Math.abs(a - midI) - Math.abs(b - midI));
+    let best = null;
+    for (const i of order) {
+      const cl = others.length ? clearance(parts(o, spine[i]), others) : Infinity;
+      if (cl >= GAP) { best = spine[i]; break; }
+      if (!best || cl > best.cl) best = Object.assign([...spine[i]], { cl });
+    }
+    o.at = [best[0], best[1]];
+  }
+  AIRS.forEach(m => {
+    if (!m.at) return;
+    const [cx, cy] = m.at;
+    const [dn, , up] = parts(m);
+    m.label.attr("x", cx).attr("y", cy).attr("transform", null);
+    m.down.attr("transform", `translate(${dn[0]},${dn[1]})`);
+    m.up.attr("transform", `translate(${up[0]},${up[1]})`);
   });
 }
 
@@ -706,7 +1104,7 @@ const elLimb = gEarth.append("path").attr("class", "ne-limb");
    framed, so the trough and the air mass are big enough to work with.
    zoom is a multiple of the fit-to-viewport radius (>1 = globe overflows). */
 const VIEWS = {
-  1: { rotate: [85, -52], zoom: 1 },
+  1: { rotate: [85, -52, 0], zoom: 1 },
   2: { rotate: [80, -40], zoom: 1.8 },
   3: { rotate: [80, -40], zoom: 1.8 },
   4: { rotate: [80, -40], zoom: 1.8 },
@@ -727,7 +1125,9 @@ function layout() {
    coastline is used during the move, the detailed one when it lands. */
 function flyTo(view, duration = 700) {
   const r0 = projection.rotate(), z0 = zoom;
-  const r1 = view.rotate ? [r0[0] + wrapLon(view.rotate[0] - r0[0]), view.rotate[1], 0] : r0;
+  const r1 = view.rotate
+    ? [r0[0] + wrapLon(view.rotate[0] - r0[0]), view.rotate[1], r0[2] + wrapLon((view.rotate[2] || 0) - r0[2])]
+    : r0;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const set = t => {
     projection.rotate(r0.map((v, i) => v + (r1[i] - v) * t));
@@ -753,8 +1153,8 @@ const elZoomIn = document.getElementById("zoom-in");
 const elZoomOut = document.getElementById("zoom-out");
 const elZoomFit = document.getElementById("zoom-fit");
 function syncZoomButtons() {
-  elZoomIn.disabled = zoomTarget >= ZOOM_MAX - 1e-6;
-  elZoomOut.disabled = zoomTarget <= ZOOM_MIN + 1e-6;
+  setOff(elZoomIn, zoomTarget >= ZOOM_MAX - 1e-6);
+  setOff(elZoomOut, zoomTarget <= ZOOM_MIN + 1e-6);
 }
 function zoomBy(f) {
   const z = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomTarget * f));
@@ -798,6 +1198,37 @@ svg.node().addEventListener("gestureend", ev => { ev.preventDefault(); gestureZ0
 
 /* While dragging, the coarse 110m coastline keeps the spin smooth; the
    detailed 50m one comes back when the globe is let go. */
+/* Trough-range guide: along the parallel RANGE_BELOW° south of the chosen
+   jet's trough bottom, from the slider's min to max longitude. */
+const RANGE_BELOW = 4;
+const gRange = d3.select("#trough-range");
+const elRangeTrack = gRange.append("path").attr("class", "ne-range-track");
+const elRangeFill = gRange.append("path").attr("class", "ne-range-fill");
+const elRangeHit = gRange.append("path").attr("class", "ne-range-hit");
+const elRangeThumb = gRange.append("circle").attr("class", "ne-range-thumb").attr("r", 11);
+gRange.on("pointerdown", ev => {
+  if (step !== 2 || !selected || ev.button !== 0) return;
+  const lon = pointerLon(ev);
+  if (lon == null) return;
+  ev.stopPropagation();                  // don't spin the globe
+  drag = { mode: "range", moved: false };
+  gRange.classed("is-active", true);     // dragging colour, like the bottom thumb
+  setTroughLon(lon);                     // click = jump there
+});
+function drawTroughRange() {
+  if (step !== 2 || !selected) return;
+  const lat = JET_BOTTOM_LAT[selected] - RANGE_BELOW;
+  const min = +elLon.min, max = +elLon.max, now = troughLon();
+  const arc = (a, b) => ({ type: "LineString",
+    coordinates: d3.range(a, b + 0.01, 0.5).map(lon => [lon, lat]) });
+  elRangeTrack.attr("d", geoPath(arc(min, max)));
+  elRangeHit.attr("d", geoPath(arc(min, max)));
+  elRangeFill.attr("d", now > min ? geoPath(arc(min, now)) : null);
+  const p = projection([now, lat]);
+  const visible = d3.geoDistance([now, lat], projection.invert(projection.translate())) < Math.PI / 2;
+  elRangeThumb.attr("display", visible ? null : "none").attr("cx", p[0]).attr("cy", p[1]);
+}
+
 function draw(fast = false) {
   const [cx, cy] = projection.translate();
   elShade.attr("cx", cx).attr("cy", cy).attr("r", projection.scale());
@@ -819,6 +1250,7 @@ function draw(fast = false) {
       .attr("display", visible ? null : "none");
   });
   drawAir();
+  drawTroughRange();
   drawStorm();
   drawSide();
 }
@@ -853,12 +1285,20 @@ window.addEventListener("pointermove", ev => {
   if (touches.has(ev.pointerId)) touches.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
   if (pinch && touches.size === 2) { setZoomNow(pinch.z0 * touchGap() / pinch.d0); return; }
   if (!drag) return;
+  if (drag.mode === "range") {           // on-globe slider: absolute longitude
+    const lon = pointerLon(ev);
+    if (lon == null) return;
+    drag.moved = true;
+    drag.target = lon;                   // latest pointer wins (read at frame time)
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; if (drag) setTroughLon(drag.target); });
+    return;
+  }
   if (drag.mode === "trough") {
     const lon = pointerLon(ev);
     if (lon == null) return;
     drag.moved = true;
-    const target = drag.trough0 + wrapLon(lon - drag.lon0);
-    if (!raf) raf = requestAnimationFrame(() => { raf = 0; setTroughLon(target); });
+    drag.target = drag.trough0 + wrapLon(lon - drag.lon0);   // latest pointer wins
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; if (drag) setTroughLon(drag.target); });
     return;
   }
   const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
@@ -878,8 +1318,11 @@ window.addEventListener("pointercancel", endTouch);
 window.addEventListener("pointerup", ev => {
   endTouch(ev);
   if (!drag) return;
+  // A trough drag released before its frame ran: apply the final position.
+  if ((drag.mode === "trough" || drag.mode === "range") && drag.target != null) setTroughLon(drag.target);
   didDrag = drag.moved;
   drag = null;
+  gRange.classed("is-active", false);
   svg.classed("is-dragging", false);
   if (didDrag) draw();
 });
@@ -897,14 +1340,14 @@ function select(id) {
     this.classList.toggle("is-on", on);
     if (on) this.parentNode.appendChild(this); // paint the chosen loop on top
   });
-  elOptions.selectAll("input").property("checked", function () { return this.value === id; });
-  elNext1.disabled = false;
+  syncJetButtons(id);
+  setOff(elNext1, false);
   updateTrial();
 }
 
 /* ---- Steps --------------------------------------------------------------- */
 const PROMPTS = {
-  1: "Choose the shape and position of the jet stream.",
+  1: "Choose the position of the jet stream.",
   2: "Choose the longitude of the jet stream trough.",
   3: "Choose the temperatures of the continental and ocean air masses.",
   4: "Run the model to see if a nor’easter forms.",
@@ -960,8 +1403,8 @@ function loadState(st) {
     this.classList.toggle("is-on", on);
     if (on) this.parentNode.appendChild(this);
   });
-  elOptions.selectAll("input").property("checked", function () { return this.value === selected; });
-  elNext1.disabled = !selected;
+  syncJetButtons(selected);
+  setOff(elNext1, !selected);
   goToStep(st.step);
   if (st.step === 4) setHour(st.runHour);
   loadingState = false;
@@ -997,10 +1440,13 @@ const ICON_RESET = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8
    `shown` = on screen now. */
 function trialCard(container, n, values, live, { index = null, shown = false } = {}) {
   const card = container.append("section").attr("class", "ne-trial")
-    .classed("is-live", live).classed("is-shown", shown && viewing !== null)
+    .classed("is-live", live).classed("is-shown", shown)
     .attr("aria-labelledby", `trial-title-${n}`);
   // The open trial's card carries Reset; every other card is itself a button
-  // that opens its trial (never both, so no nested interactive controls).
+  // that opens its trial (never both, so no nested interactive controls). The
+  // open card still takes focus (Mike): focusable but NOT a button — it does
+  // nothing on Return, it's already open — and marked as the current trial.
+  if (shown) card.attr("tabindex", 0).attr("aria-current", "true");
   if (!shown) {
     const open = live ? returnToLive : () => viewTrial(index);
     const what = live ? "Return to" : "View";
@@ -1013,14 +1459,19 @@ function trialCard(container, n, values, live, { index = null, shown = false } =
   }
   const head = card.append("div").attr("class", "ne-trial-head");
   head.append("h2").attr("id", `trial-title-${n}`).text(`Trial ${n}`);
-  if (shown) head.append("button").attr("type", "button").attr("class", "ne-icon-btn")
-    .attr("data-trial-action", "reset")
+  // Every card has Reset in the same place; it's only visible on the open
+  // trial. visibility:hidden keeps its space (cards stay the same size) and
+  // takes it out of the tab order and accessibility tree, so the other cards,
+  // which are buttons themselves, have no nested control.
+  head.append("button").attr("type", "button").attr("class", "ne-icon-btn")
+    .style("visibility", shown ? null : "hidden")
+    .attr("data-trial-action", shown ? "reset" : null)
     .attr("aria-label", `Reset Trial ${n}`).attr("title", `Reset Trial ${n}`)
     .html(ICON_RESET)
     // Nothing to reset yet: no jet stream chosen (the first thing a trial
     // records) and never past Step 1. The shown card is always the trial in
     // the globals, so they describe it.
-    .property("disabled", !selected && reached === 1 && !hasRun)
+    .attr("aria-disabled", !selected && reached === 1 && !hasRun ? "true" : "false")
     .on("click", resetChoices);
   const dl = card.append("dl");
   TRIAL_ROWS.forEach((r, i) => {
@@ -1039,7 +1490,8 @@ function updateTrial() {
     savedTrials[viewing].state = captureState();
     savedTrials[viewing].values = liveValues();
   }
-  const focusedView = document.activeElement?.closest?.(".ne-trial.is-clickable")?.getAttribute("aria-labelledby");
+  const focusedView = document.activeElement?.closest?.(".ne-trial[tabindex]")?.getAttribute("aria-labelledby");
+  const onReset = document.activeElement?.dataset?.trialAction === "reset";
   elTrials.selectAll("*").remove();
   savedTrials.forEach((t, i) => trialCard(elTrials, t.n, t.values, false, { index: i, shown: viewing === i }));
   trialCard(elTrials, live, viewing === null ? liveValues() : liveStash.values, true, { shown: viewing === null });
@@ -1050,7 +1502,9 @@ function updateTrial() {
     .append("path").attr("d", "M12 5v14M5 12h14");
   btn.append("span").text(`Trial ${live + 1}`);
   // Re-rendering replaced the card that had focus; put focus back on it.
-  if (focusedView) elTrials.select(`[aria-labelledby="${focusedView}"]`).node()?.focus({ preventScroll: true });
+  // (Opening a saved trial makes its card the open one, which now takes focus too.)
+  if (onReset) elTrials.select('[data-trial-action="reset"]').node()?.focus({ preventScroll: true });
+  else if (focusedView) elTrials.select(`[aria-labelledby="${focusedView}"]`).node()?.focus({ preventScroll: true });
   // Keep the card that's on screen fully visible in the (scrollable) column.
   elTrials.select(".ne-trial.is-shown").node()?.scrollIntoView({ block: "nearest" });
 }
@@ -1061,6 +1515,56 @@ function startNewTrial() {
   resetLiveTrial();
   // Show the new live card (the column may have scrolled).
   elTrials.select(".ne-trial.is-live").node().scrollIntoView({ block: "nearest" });
+}
+
+/* ---- Canned outcomes (prototype only) -------------------------------------
+   One preset per outcome. Clicking loads it into a trial and goes to the
+   run step, ready to press Run (it doesn't run by itself). If the live
+   trial already has choices, it's saved and a new trial starts, like
+   "+ Trial N"; an untouched trial is just filled in.
+   Each preset is checked against the rules on load; one that no longer
+   gives its outcome is disabled (and logged), so a button can't lie. */
+const CANNED = [   // same order as the info modal's All outcomes table
+  { label: "No storm",                        jet: "A", lon: -80, cont: 35, ocean: 45 },
+  { label: "Storm out to sea: snow over the ocean, none on land", jet: "B", lon: -65, cont: 15, ocean: 65 },
+  { label: "Storm out to sea: rain over the ocean, none on land", jet: "B", lon: -65, cont: 35, ocean: 70 },
+  { label: "Inland storm: snow",              jet: "B", lon: -95, cont: 15, ocean: 65 },
+  { label: "Nor’easter: snow",                jet: "A", lon: -75, cont: 10, ocean: 45 },
+  { label: "Strong nor’easter: blizzard",     jet: "B", lon: -80, cont: 10, ocean: 65 },
+  { label: "Nor’easter: rain",                jet: "B", lon: -80, cont: 40, ocean: 60 },
+  { label: "Inland storm: rain",              jet: "B", lon: -95, cont: 35, ocean: 70 },
+  { label: "Strong nor’easter: rain & wind",  jet: "C", lon: -80, cont: 10, ocean: 65 },
+];
+function loadCanned(c) {
+  if (viewing !== null) returnToLive();
+  if (selected || reached > 1 || hasRun) startNewTrial();
+  select(c.jet);
+  goToStep(2);
+  setTroughLon(c.lon);
+  goToStep(3);
+  setTemp(AIRS[0], c.cont);
+  setTemp(AIRS[1], c.ocean);
+  goToStep(4);
+  elRunBtn.focus();
+}
+const elCannedToggle = document.getElementById("canned-toggle");
+elCannedToggle.addEventListener("change", () => {
+  document.getElementById("canned-panel").hidden = !elCannedToggle.checked;
+});
+// Return toggles it too (Space is the native key; Mike asked for both).
+elCannedToggle.addEventListener("keydown", ev => {
+  if (ev.key === "Enter") { ev.preventDefault(); elCannedToggle.click(); }
+});
+function buildCanned() {   // called at start-up, once the rules exist
+  const ul = d3.select("#canned-list");
+  CANNED.forEach(c => {
+    const ok = outcomeFor(c.jet, -c.lon, c.cont, c.ocean).label === c.label;
+    if (!ok) console.warn("Canned outcome no longer matches the rules:", c);
+    ul.append("li").append("button").attr("type", "button").text(c.label)
+      .attr("title", `Jet ${c.jet} · ${fmtLon(c.lon)} · ${c.cont}°F / ${c.ocean}°F`)
+      .attr("aria-disabled", ok ? "false" : "true")
+      .on("click", () => loadCanned(c));
+  });
 }
 
 /* Start the live trial over: every choice back to its starting state. */
@@ -1079,8 +1583,8 @@ function resetChoices() {
   runComplete = false;
   svg.classed("has-selection", false);
   gJets.selectAll(".ne-jet-opt").classed("is-on", false);
-  elOptions.selectAll("input").property("checked", false);
-  elNext1.disabled = true;
+  syncJetButtons(null);
+  setOff(elNext1, true);
   goToStep(1);
 }
 
@@ -1113,9 +1617,13 @@ function goToStep(n) {
   });
   if (n === 1) {
     draw();
-    (elOptions.select("input:checked").node() || elOptions.select("input").node()).focus();
+    (elOptions.node().querySelector('[aria-pressed="true"]') || jetButtons()[0]).focus();
   } else if (n === 2) {
-    setTroughLon(troughLon());
+    // The jet keeps exactly the shape it had on Step 1: an unmoved trough is
+    // left as drawn (no snapping to a whole degree), and the controls just
+    // show where it is. A moved trough is restored to its saved position.
+    if (troughShift === 0) { syncLonUI(troughLon()); draw(); updateTrial(); }
+    else setTroughLon(troughLon());
     elLon.focus();
   } else if (n === 3) {
     AIRS.forEach(m => setTemp(m, m.temp));
@@ -1142,6 +1650,11 @@ document.querySelectorAll("[data-back]").forEach(b =>
 const RUN_HOURS = 72, RUN_MS = 9000;
 const elRunBtn = document.getElementById("run-btn");
 const elRunTime = document.getElementById("run-time");
+/* Custom track: yellow up to the thumb (the native fill is gone with appearance:none). */
+const syncFill = el => el.style.setProperty("--fill",
+  `${(100 * (el.value - el.min) / (el.max - el.min)).toFixed(2)}%`);
+const elTimeBack = document.getElementById("time-back");
+const elTimeFwd = document.getElementById("time-fwd");
 const elRunOut = document.getElementById("run-time-out");
 const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>';
 const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/></svg>';
@@ -1150,33 +1663,76 @@ let hasRun = false; // once true, this trial's setup is locked (no Back)
 let runComplete = false; // the run has reached the end: outcome is revealed
 
 /* ---- Outcome rules (DRAFT — for content design to confirm) ---------------
-   From the nor'easter research (2026-10-26):
-   1. STRENGTH = trough depth + temperature contrast (ocean − continental).
-        depth points:     A 0 · B 1 · C 2 · D 3
+   From the nor'easter research, revised for the traced jets (2026-10-26).
+   The traced A–D differ mainly in HOW FAR SOUTH the eastern trough reaches
+   (bottoms ~40 / 32 / 24 / 14°N), not in how deep the dip is, so position
+   now scores, not depth:
+   1. STRENGTH = trough position + temperature contrast (ocean − continental).
+        position points:  A 1 · B 2 · C 2 · D 1
+          B, C: the trough reaches the Southeast / Gulf, where cold air meets
+                Gulf and Gulf Stream moisture — the classic nor'easter setup.
+          A:    the trough stays too far north (~40°N) to tap Gulf moisture.
+          D:    the trough is deep in the subtropics (~14°N), past the zone
+                where the polar jet's cold air and the coast's warm air meet.
         contrast points:  < 30°F → 0 · 30–49°F → 1 · ≥ 50°F → 2
-        total 0–1 no storm · 2–3 storm · 4–5 strong storm ("bomb")
+        total 0–1 no storm · 2–3 storm · 4 strong storm ("bomb")
+        (so only B and C can make a strong storm, and only with a big contrast)
    2. TRACK = trough longitude (the low forms just downstream of the trough):
         west of 85°W → inland (Ohio Valley / Great Lakes; rain on the coast)
         85–74°W     → up the coast: a nor'easter
         east of 74°W → out to sea
-   3. SNOW or RAIN = continental air: below 32°F → snow, otherwise rain.
+   2b. WHERE IT FORMS (GENESIS): a storm forms only on the line where the
+      continental (blue) and ocean (red) air meet — the jet between them, on
+      the trough's east side — and only if that line is in the right place
+      for the track: over land (inland), crossing the coast between the Gulf
+      and Cape Cod, 25–41°N (nor'easter), or over open ocean (out to sea).
+      North of 28°N only: south of that is the tropics. Otherwise: no storm.
+   3. SNOW or RAIN: snow only if the continental air is below 32°F AND the
+      trough bottoms out north of 28°N. A trough reaching further south (C, D)
+      pulls tropical air into the storm, so it rains.
    No storm wins over track; track wins over snow/rain. */
-const DEPTH_POINTS = { A: 0, B: 1, C: 2, D: 3 };
+const POSITION_POINTS = { A: 1, B: 2, C: 2, D: 1 };
+const TROPICAL_BELOW = 28;             // °N: trough bottom south of this → rain
+/* Visual depth order for the side view's jet dip (further south = deeper). */
+const DIP_INDEX = { A: 0, B: 1, C: 2, D: 3 };
 const CONTRAST_STEPS = [30, 50];       // °F: crossing each adds a point
 const STORM_AT = 2, STRONG_AT = 4;     // strength totals
 const COAST_WEST = 85, COAST_EAST = 74; // °W window for a coastal track
 const SNOW_BELOW = 32;                 // °F continental air
+/* Where the storm forms, for each jet and trough longitude (index 0 = 95°W …
+   30 = 65°W), or 0 for no storm. MEASURED from the drawn shapes, not tuned:
+   the blue/red meeting line = jet points with both air masses within 2.5°;
+   it is "over land" if ≥ half of it is, "crossing the coast" if it crosses
+   between 25 and 41°N, and "tropics" if it never gets north of 28°N (land =
+   world-atlas 50m). The start is the line's point nearest the trough bottom
+   (east side, ≥ 28°N) of the needed kind, or the sea side of the coast
+   crossing. Regenerate if the jets or air-mass shapes change. */
+const GENESIS = {
+  A: [[-95,40.3],[-94,40.3],[-93,40.3],[-92,40.3],[-91,40.3],[-90,40.3],[-89,40.3],[-88,40.3],[-87,40.3],[-86,40.3],0,0,0,0,0,0,0,0,0,[-73.5,40.5],[-73.3,40.4],[-73.2,40.3],0,0,0,[-70,40.3],[-69,40.3],[-68,40.3],[-67,40.3],[-66,40.3],[-65,40.3]],
+  B: [[-95,32.4],0,0,0,0,0,0,0,0,0,[-77.4,34.4],[-79,33.4],[-78.8,33.1],[-79.5,32.7],[-80.2,32.5],[-80,32.4],[-79.8,32.4],[-79.6,32.5],0,0,0,0,[-73,32.4],[-72,32.4],[-71,32.4],[-70,32.4],[-69,32.4],[-68,32.4],[-67,32.4],[-66,32.4],[-65,32.4]],
+  C: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,[-62.4,28.1],[-61.5,28.1],[-60.6,28.1],[-59.6,28.1],[-58.7,28.1],[-57.8,28.1],[-56.9,28.1],[-55.9,28.1],[-55,28.1]],
+  D: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+};
+const genesisAt = (jet, west) => GENESIS[jet][Math.round(95 - west)] || null;
 
+/* Same snow test the outcome uses (side-view precipitation shares it). */
+const outcomeSnow = () => AIRS[0].temp < SNOW_BELOW && JET_BOTTOM_LAT[selected] >= TROPICAL_BELOW;
 function outcome() {
-  const contrast = AIRS[1].temp - AIRS[0].temp;
-  const strength = DEPTH_POINTS[selected] + CONTRAST_STEPS.filter(c => contrast >= c).length;
-  const west = -troughLon();           // degrees West
-  const snow = AIRS[0].temp < SNOW_BELOW;
-  if (strength < STORM_AT) return { key: "none", label: "No storm", strength: 0 };
+  return outcomeFor(selected, -troughLon(), AIRS[0].temp, AIRS[1].temp);
+}
+/* The rules as a pure function (also used to build the info modal's table
+   of every outcome, so the two can't disagree). west = degrees West. */
+function outcomeFor(jet, west, cont, ocean) {
+  const contrast = ocean - cont;
+  const strength = POSITION_POINTS[jet] + CONTRAST_STEPS.filter(c => contrast >= c).length;
+  const snow = cont < SNOW_BELOW && JET_BOTTOM_LAT[jet] >= TROPICAL_BELOW;
+  if (strength < STORM_AT || !genesisAt(jet, west)) return { key: "none", label: "No storm", strength: 0 };
   const strong = strength >= STRONG_AT;
   const level = strong ? 2 : 1;
-  if (west > COAST_WEST) return { key: "inland", label: "Inland storm", strength: level };
-  if (west < COAST_EAST) return { key: "sea", label: "Storm out to sea", strength: level };
+  // Every storm label names its precipitation, and where it falls: a storm out
+  // to sea drops its snow or rain over the ocean, not on land.
+  if (west > COAST_WEST) return { key: "inland", label: snow ? "Inland storm: snow" : "Inland storm: rain", strength: level };
+  if (west < COAST_EAST) return { key: "sea", label: snow ? "Storm out to sea: snow over the ocean, none on land" : "Storm out to sea: rain over the ocean, none on land", strength: level };
   return strong
     ? { key: "strong", label: snow ? "Strong nor’easter: blizzard" : "Strong nor’easter: rain & wind", strength: 2 }
     : { key: "noreaster", label: snow ? "Nor’easter: snow" : "Nor’easter: rain", strength: 1 };
@@ -1194,7 +1750,8 @@ function setHour(h) {
   runHour = Math.max(0, Math.min(RUN_HOURS, h));
   const whole = Math.round(runHour);
   elRunTime.value = whole;
-  elRunOut.textContent = `${whole} h`;
+  syncFill(elRunTime);
+  elRunOut.textContent = `${whole} ${whole === 1 ? "hour" : "hours"}`;
   elRunTime.setAttribute("aria-valuetext", `Hour ${whole} of ${RUN_HOURS}`);
   syncRunBtn();
   if (hasRun && !runComplete && runHour >= RUN_HOURS) {
@@ -1202,7 +1759,25 @@ function setHour(h) {
     document.getElementById("outcome-live").textContent = `Outcome: ${outcome().label}`;
     updateTrial();
   }
+  syncScrubber(whole);
   draw();
+}
+/* The time slider and ‹ › stay disabled until the trial has been run all the
+   way through once: students watch the storm form before they can scrub (and
+   can't drag to the end to read the outcome without running). The slider
+   still moves during that first run, as a progress bar. */
+const SCRUB_HINT = "Available after the first run";
+function syncScrubber(whole) {
+  const locked = !runComplete;
+  elRunTime.disabled = false;                       // focusable even when off (Mike)
+  elRunTime.setAttribute("aria-disabled", locked ? "true" : "false");
+  setOff(elTimeBack, locked || whole <= 0);
+  setOff(elTimeFwd, locked || whole >= RUN_HOURS);
+  [elRunTime, elTimeBack, elTimeFwd].forEach(el => {
+    el.title = locked ? SCRUB_HINT : "";
+    if (locked) el.setAttribute("aria-description", SCRUB_HINT);
+    else el.removeAttribute("aria-description");
+  });
 }
 /* Only rewrite the button when its mode changes. Rewriting it every frame
    (setHour runs per frame while playing) swapped out the node under the
@@ -1256,30 +1831,134 @@ function pauseRun() {
   syncRunBtn();
 }
 elRunBtn.addEventListener("click", () => (running ? pauseRun() : playRun()));
-elRunTime.addEventListener("input", () => {
+function scrubTo(h) {
   pauseRun();
   if (!hasRun) lockSetup(true); // scrubbing is running the model too
-  setHour(+elRunTime.value);
+  setHour(h);
+}
+elRunTime.addEventListener("input", () => {
+  if (isOff(elRunTime)) { elRunTime.value = Math.round(runHour); syncFill(elRunTime); return; }   // belt and braces
+  scrubTo(+elRunTime.value);
 });
+/* Off: keys and pointer don't move it (Tab still moves past it). */
+elRunTime.addEventListener("keydown", ev => {
+  if (isOff(elRunTime) && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown"].includes(ev.key)) ev.preventDefault();
+});
+elRunTime.addEventListener("pointerdown", ev => { if (isOff(elRunTime)) ev.preventDefault(); });
+/* ‹ › step the run 1 hour, like the slider's own step. */
+elTimeBack.addEventListener("click", () => scrubTo(Math.round(runHour) - 1));
+elTimeFwd.addEventListener("click", () => scrubTo(Math.round(runHour) + 1));
 
-/* STORM TRACKS — one per outcome, so the Low always ends up where its
-   outcome says. (Riding the jet's east flank, as before, sent deep-trough
-   inland storms offshore, kept shallow-trough nor'easters on land, and let
-   storms "out to sea" clip Newfoundland — found by the land/sea check.)
-   - Nor'easter: COAST_TRACK, just offshore up the East Coast past the
-     40°N 70°W benchmark to south of Nova Scotia. Deeper jets start it
-     further south (COAST_START): D off Florida … A near Cape Hatteras.
-   - Inland: from north-east of the trough bottom, over land to the Great
-     Lakes, then up the St. Lawrence (lakes count as land in the map).
-   - Out to sea: from south-east of the trough bottom, east-north-east into
-     the open Atlantic, south of Newfoundland.
-   Waypoints are [lon, lat]; densified so the L moves evenly. */
-const COAST_TRACK = [[-80, 30.5], [-78.8, 32], [-77.2, 33.6], [-75, 35], [-73.5, 37],
-                     [-71.5, 39], [-70, 40], [-68, 41.5], [-65.6, 42.9], [-63.2, 43.7]];
-const COAST_START = { D: 0, C: 1, B: 2, A: 3 };
-const INLAND_FROM = [4, 4], GREAT_LAKES = [-80.5, 43.3], ST_LAWRENCE = [[-77, 45.5], [-73.5, 47.5]];
-const SEA_FROM = [3, -1], SEA_LEGS = [[6, 2.5], [13, 4.5], [20, 6]];
-const TRACK_STEPS = 12; // points per waypoint leg
+/* STORM TRACKS — every storm RIDES THE JET. Research: a low moves with the
+   500 mb flow (parallel to the jet, at about half its speed), and crosses from
+   the jet's warm side to its cold side as it matures. So from where it forms
+   (GENESIS, on the blue/red meeting line) the track follows the jet downstream,
+   eased RIDE_DRIFT° to the left of the flow (the cold side) by the end of the
+   run. It leaves the jet, carrying on east-north-east (OFF_JET heading), only
+   where staying on would break its outcome label (allowedAt):
+   - Out to sea: never over land ("none on land").
+   - Nor'easter: over land only along the New England coast, the Maritimes and
+     Newfoundland (NE_LAND, from Long Island north) — real nor'easters track
+     past Long Island and Cape Cod and cross Nova Scotia and Newfoundland —
+     never the US south of that, Labrador or Greenland.
+   - Inland: over land for the first INLAND_LAND_FOR of the run; after that it
+     may exit to sea (as storms crossing Labrador do).
+   - Any storm: no further north than TRACK_MAX_LAT (they end over the Labrador
+     Sea / south of Greenland, not in the Arctic).
+   The test runs on the finished, evenly spaced track. At the first point that
+   breaks it, the storm leaves the jet on the smallest turn away from the jet's
+   direction that lets the whole track pass, as late as that turn allows.
+   (Earlier versions used fixed routes; measured against the jet they ran
+   45–60° off its direction in their second half and ended on its WARM side.) */
+const RIDE_DRIFT = 2, INLAND_LAND_FOR = 2 / 3, TRACK_MAX_LAT = 60;
+const OFF_JET = [0, 10, -10, 20, -20, 30, -30, 40, -40, 50, -50, 60, -60, 75, -75, 90, -90]; // ° off the jet's heading, nearest first
+const NE_LAND = { w: -74, e: -52, s: 40.5, n: 52 };   // °: Long Island → New England coast → Maritimes → Newfoundland
+/* A 0.1° raster of the land (50m map), drawn once when it loads: geoContains on
+   the 50m map took seconds per track. Covers 120–20°W, 15–75°N. */
+let landMask = null;
+const MASK = { w: -120, n: 75, res: 10, W: 1000, H: 600 };
+function buildLandMask(L) {
+  const cv = document.createElement("canvas"); cv.width = MASK.W; cv.height = MASK.H;
+  const ctx = cv.getContext("2d");
+  const proj = d3.geoEquirectangular().scale(MASK.res * 180 / Math.PI).translate([-MASK.w * MASK.res, MASK.n * MASK.res]);
+  ctx.beginPath(); d3.geoPath(proj, ctx)(L); ctx.fill();
+  landMask = ctx.getImageData(0, 0, MASK.W, MASK.H).data;
+}
+function isLand(p) {
+  const x = Math.round((p[0] - MASK.w) * MASK.res), y = Math.round((MASK.n - p[1]) * MASK.res);
+  if (landMask && x >= 0 && x < MASK.W && y >= 0 && y < MASK.H) return landMask[(y * MASK.W + x) * 4 + 3] > 127;
+  const L = land || landCoarse;
+  return L ? d3.geoContains(L, p) : false;
+}
+/* COAST_GAP° of margin, so a storm at sea clears the coast and one inland is
+   clearly over land (the raster and the drawn map differ by ~10 km at coasts). */
+const COAST_GAP = 0.2, FORM_ZONE = 0.04;   // ° margin; share of the run (~150 km) a nor'easter may hug the coast where it forms
+const around = p => [p, [p[0] + COAST_GAP, p[1]], [p[0] - COAST_GAP, p[1]], [p[0], p[1] + COAST_GAP], [p[0], p[1] - COAST_GAP]];
+const landNear = p => around(p).some(isLand), landSure = p => around(p).every(isLand);
+function allowedAt(key, p, frac) {
+  if (p[1] > TRACK_MAX_LAT) return false;
+  if (!land && !landCoarse) return true;  // map not loaded yet: ride the jet
+  if (key === "inland") return frac > INLAND_LAND_FOR || landSure(p);
+  if (key !== "sea" && frac < FORM_ZONE) return true;   // a nor'easter forms right on the coast
+  if (!landNear(p)) return true;
+  return key !== "sea" && p[0] >= NE_LAND.w && p[0] <= NE_LAND.e && p[1] >= NE_LAND.s && p[1] <= NE_LAND.n;
+}
+function rideJet(start, key) {
+  const c = JET_LINES[selected].coordinates, len = TRACK_KM / 6371 * 180 / Math.PI;
+  let i = c.reduce((m, p, k) => (d3.geoDistance(p, start) < d3.geoDistance(c[m], start) ? k : m), 0);
+  const way = [start];
+  for (let acc = 0; acc < len && i < c.length - 1; i++) {
+    const [a, b] = [c[i], c[i + 1]], cos = Math.cos(b[1] * Math.PI / 180);
+    acc += d3.geoDistance(a, b) * 180 / Math.PI;
+    const dx = (b[0] - a[0]) * cos, dy = b[1] - a[1], n = Math.hypot(dx, dy) || 1;
+    const f = Math.min(1, acc / len) * RIDE_DRIFT;
+    way.push([b[0] - dy / n * f / cos, b[1] + dx / n * f]);
+  }
+  return way;
+}
+const firstBreak = (tr, key) => tr.findIndex((p, k) => !allowedAt(key, p, k / (tr.length - 1)));
+function buildTrack(start, key) {
+  const ride = fitTrack(rideJet(start, key), TRACK_KM);
+  const b = firstBreak(ride, key);
+  if (b < 0) return ride;
+  for (const off of OFF_JET) {                            // the smallest turn away from the jet wins…
+    for (let cut = b - 1; cut >= 1; cut -= 2) {           // …leaving it as late as that turn allows
+      const e = ride[cut], a = ride[cut - 1], cos = Math.cos(e[1] * Math.PI / 180);
+      const h = Math.atan2(e[1] - a[1], (e[0] - a[0]) * cos) + off * Math.PI / 180;
+      const far = [e[0] + 25 * Math.cos(h) / cos, e[1] + 25 * Math.sin(h)];
+      const tr = fitTrack([...ride.slice(0, cut + 1), far], TRACK_KM);
+      if (firstBreak(tr, key) < 0) return tr;
+    }
+  }
+  return ride;                                            // nothing passes: ride the jet (flagged by QA)
+}
+/* Every storm travels TRACK_KM in the RUN_HOURS run: East Coast winter storms
+   average 13.8 m/s, ~50 km/h (Bernhardt & DeGaetano 2011), × 72 h ≈ 3,600 km.
+   The route is cut (or carried on along its last heading) to that length and
+   resampled to TRACK_PTS evenly spaced points, so the L's speed is steady apart
+   from the ease-out. */
+const TRACK_KM = 3600, TRACK_PTS = 120;
+const TRACK_EASE = 1.2;  // ease-out power for the Low's travel (1 = constant speed; was 1.6)
+const kmBetween = (a, b) => d3.geoDistance(a, b) * 6371;
+function fitTrack(way, km) {
+  way = way.filter((p, i) => i === 0 || kmBetween(way[i - 1], p) > 1e-3);
+  let total = d3.sum(way.slice(1), (p, i) => kmBetween(way[i], p));
+  if (total < km) {                       // carry on along the last leg's heading
+    const a = way.at(-2) || way[0], b = way.at(-1), leg = kmBetween(a, b) || 1;
+    const k = (km - total) / leg;
+    way = [...way, [b[0] + (b[0] - a[0]) * k, b[1] + (b[1] - a[1]) * k]];
+    total = km;                           // close enough: the extra leg is short and straight-ish
+  }
+  const cum = [0]; for (let i = 1; i < way.length; i++) cum.push(cum[i - 1] + kmBetween(way[i - 1], way[i]));
+  const pts = [];
+  for (let n = 0, i = 1; n <= TRACK_PTS; n++) {
+    const d = Math.min(km, cum.at(-1)) * n / TRACK_PTS;
+    while (i < way.length - 1 && cum[i] < d) i++;
+    const f = (d - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1);
+    pts.push(d3.geoInterpolate(way[i - 1], way[i])(Math.max(0, Math.min(1, f))));
+  }
+  return pts;
+}
 const gStorm = d3.select("#storm");
 const elStormTrack = gStorm.append("path").attr("class", "ne-storm-track")
   .attr("filter", "url(#ne-outline)");
@@ -1301,14 +1980,27 @@ const SYM_GAP = 26; // px along the front; symbols start just outside the L
    Positions are in screen px around the projected Low, scaled with the
    globe's zoom so the shield keeps its geographic size. Drawn under the
    track, fronts and the L. */
-const CLOUD_N = 320, CLOUD_ARMS = 3, CLOUD_WIND = 2.6;   // rad of trailing per arm
+/* ONE arm (Mike: "it still has 3 arms"): all puffs on a single band that
+   winds ~1¼ turns from the rim into the centre, same soft puffs as before. */
+const CLOUD_N = 320, CLOUD_ARMS = 1, CLOUD_WIND = 2 * Math.PI * 1.25;   // rad of trailing
 const CLOUD_SPIN = 0.5;                                    // rad/s, counterclockwise
 const DRY_SLOT = 5 * Math.PI / 4;                          // south-west, in screen-math angle
 const gCloudLayer = d3.select("#clouds"), gStormTop = d3.select("#storm-top");
 const gClouds = gCloudLayer.append("g").attr("class", "ne-clouds")
   .attr("filter", "url(#ne-cloud-blur)");                  // soften puffs into one shield
 const rand = d3.randomLcg(7);                              // seeded: same shield every load
-const puffs = d3.range(CLOUD_N).map(i => ({
+/* CORE: extra puffs packed round the Low, where the three arms meet, so the
+   centre reads as one solid mass (Mike: "add more clouds to the center").
+   They turn with the shield; nor'easters only (hidden in the ragged mode). */
+const CORE_N = 160, CORE_R = 0.45;                         // count; radius × R (filled in more, evenly)
+/* FILL: puffs between the core and the arms' outer reach (to FILL_R), thinning
+   outward so the arms stay distinct, and faded in the dry slot like the arms
+   so the comma shape survives (Mike: "more between the center and almost to
+   the arm's outer"). Nor'easters only. */
+const FILL_N = 80, FILL_R = 0.97;                          // a light haze, not solid cloud
+const puffs = d3.range(CLOUD_N + CORE_N + FILL_N).map(i => ({
+  core: i >= CLOUD_N && i < CLOUD_N + CORE_N,
+  fill: i >= CLOUD_N + CORE_N,
   arm: i % CLOUD_ARMS,
   s: Math.pow(rand(), 0.8),                                // a little denser outward
   jitter: (rand() - 0.5) * 0.7,
@@ -1327,6 +2019,18 @@ const elPuffs = puffs.map(() => gClouds.append("circle").attr("class", "ne-cloud
 const cloud = { x: 0, y: 0, R: 0, on: false, mode: "comma" }; // set by drawStorm
 let cloudRaf = 0, cloudSpin = 0, cloudLast = 0;
 
+/* LOPSIDED: a real nor'easter's cloud is heaviest on its north / north-west
+   side (where the heavy snow falls) and thinner to the south and east. Each
+   nor'easter puff is weighted by its direction from the Low: h = cos(angle −
+   north-west), +1 NW … −1 SE. Opacity, size and reach all lean that way. */
+const HEAVY_DIR = 3 * Math.PI / 4;                         // north-west, screen-math angle
+const LEAN_OP = 0.45, LEAN_SIZE = 0.2, LEAN_REACH = 0.12;
+const lean = a => Math.cos(a - HEAVY_DIR);
+/* The arm's outer tail (s → 1) uses smaller puffs, tapering to TAIL_MIN of
+   full size from TAIL_FROM out (Mike: "make the tail of the arm smaller"). */
+const TAIL_FROM = 0.6, TAIL_MIN = 0.4;
+const tailTaper = sv => { const t = Math.max(0, Math.min(1, (sv - TAIL_FROM) / (1 - TAIL_FROM)));
+  return 1 - (1 - TAIL_MIN) * t * t * (3 - 2 * t); };
 function drawClouds() {
   gClouds.attr("display", cloud.on && cloud.R > 4 ? null : "none");
   if (!cloud.on || cloud.R <= 4) return;
@@ -1334,12 +2038,44 @@ function drawClouds() {
   const comma = cloud.mode === "comma";
   puffs.forEach((p, i) => {
     let r, a, op;
+    if (p.fill) {
+      if (!comma) { elPuffs[i].attr("fill-opacity", 0); return; }
+      // Uniform over the ring CORE_R…FILL_R (by area).
+      const f = Math.sqrt(CORE_R ** 2 + (FILL_R ** 2 - CORE_R ** 2) * p.rs ** 2);
+      a = cloudSpin + p.ra;
+      const h = lean(a);
+      r = cloud.R * f;                                     // no reach lean: keeps the inner part round
+      const out = (f - CORE_R) / (FILL_R - CORE_R);       // 0 at the core … 1 at FILL_R
+      const dry = Math.max(0, Math.cos(a - DRY_SLOT)) * out;
+      op = (0.16 - 0.09 * out) * (1 - 0.85 * dry) * (1 + LEAN_OP * h * out);
+      elPuffs[i]
+        .attr("cx", cloud.x + r * Math.cos(a)).attr("cy", cloud.y - r * Math.sin(a))
+        .attr("r", ((0.08 - 0.03 * out) * cloud.R + 3 * k) * p.size * (1 + LEAN_SIZE * h * out)).attr("fill-opacity", op);
+      return;
+    }
+    if (p.core) {
+      if (!comma) { elPuffs[i].attr("fill-opacity", 0); return; }
+      r = cloud.R * CORE_R * p.rs;                         // even over the whole core disc (rs = √rand → uniform by area)
+      a = cloudSpin + p.ra;
+      op = 0.32 + 0.12 * (1 - p.rs);                       // even all round; a filled, circular middle
+      elPuffs[i]
+        .attr("cx", cloud.x + r * Math.cos(a)).attr("cy", cloud.y - r * Math.sin(a))
+        .attr("r", (0.09 * cloud.R + 3 * k) * p.size).attr("fill-opacity", op);
+      return;
+    }
     if (comma) {
-      r = cloud.R * (0.12 + 0.88 * p.s);
+      r = cloud.R * (0.2 + 0.8 * p.s);                     // arm starts a little further out
       a = cloudSpin + p.arm * 2 * Math.PI / CLOUD_ARMS - CLOUD_WIND * p.s + p.jitter;
-      const dry = Math.max(0, Math.cos(a - DRY_SLOT));     // 1 = deep in the dry slot
-      op = p.alpha * (1 - 0.85 * dry);
+      // The dry slot and the NW lean act on the TAIL only (w: 0 inner … 1 tip),
+      // so the inner coil stays evenly round.
+      const w = (1 - tailTaper(p.s)) / (1 - TAIL_MIN);
+      const dry = Math.max(0, Math.cos(a - DRY_SLOT)) * w;  // 1 = deep in the dry slot
+      const h = lean(a) * w;
+      r *= 1 + LEAN_REACH * h;
+      op = p.alpha * (1 - 0.85 * dry) * (1 + LEAN_OP * h);
+      p._lean = h;
     } else {
+      p._lean = 0;
       r = cloud.R * p.rs;
       a = cloudSpin * RAGGED_SPIN + p.ra;
       op = p.alpha * RAGGED_ALPHA;
@@ -1347,7 +2083,8 @@ function drawClouds() {
     elPuffs[i]
       .attr("cx", cloud.x + r * Math.cos(a))
       .attr("cy", cloud.y - r * Math.sin(a))                // screen y is down
-      .attr("r", ((0.05 + 0.07 * (comma ? p.s : p.rs)) * cloud.R + 3 * k) * p.size) // puffs scale with the shield
+      .attr("r", ((0.05 + 0.07 * (comma ? p.s : p.rs)) * cloud.R + 3 * k) * p.size * (1 + LEAN_SIZE * p._lean)
+                 * (comma ? tailTaper(p.s) : 1)) // puffs scale with the shield; the arm's tail tapers
       .attr("fill-opacity", op);
   });
 }
@@ -1379,42 +2116,33 @@ elStormMark.append("circle");
 elStormMark.append("text").text("L");
 const stormLine = d3.line().curve(d3.curveCatmullRom.alpha(0.5));
 
+const trackCache = new Map();   // allowedAt tests the map, so build each track once
 function stormTrack() {
   const key = outcome().key;
-  const [bLon, bLat] = troughBottom();
-  let way;
-  if (key === "inland") {
-    const start = [bLon + INLAND_FROM[0], bLat + INLAND_FROM[1]];
-    const mid = [(start[0] + GREAT_LAKES[0]) / 2, (start[1] + GREAT_LAKES[1]) / 2];
-    way = [start, mid, GREAT_LAKES, ...ST_LAWRENCE];
-  } else if (key === "sea") {
-    const start = [bLon + SEA_FROM[0], bLat + SEA_FROM[1]];
-    way = [start, ...SEA_LEGS.map(([dx, dy]) => [start[0] + dx, start[1] + dy])];
-  } else {
-    way = COAST_TRACK.slice(COAST_START[selected]);
-  }
-  const pts = [];
-  for (let i = 0; i < way.length - 1; i++) {
-    const [a, b] = [way[i], way[i + 1]];
-    for (let k = 0; k < TRACK_STEPS; k++) {
-      const f = k / TRACK_STEPS;
-      pts.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
-    }
-  }
-  pts.push(way[way.length - 1]);
-  return pts;
+  const start = genesisAt(selected, -troughLon());
+  if (!start) return [troughBottom()];   // no storm: drawStorm hides the L anyway
+  const id = `${selected}|${troughShift}|${key}|${land ? 2 : landCoarse ? 1 : 0}`;
+  if (!trackCache.has(id)) trackCache.set(id, buildTrack(start, key));
+  return trackCache.get(id);
 }
 /* ---- Side view inset -----------------------------------------------------
    An oblique box, after Mike's sketch: the surface plane at the bottom, the
    jet stream 10 km up on the top plane. P(u, v, h) maps box coordinates to
    the svg: u = west→east (0…1), v = south→north (front→back), h = height.
-   The trough axis sits at u = TROUGH_U. West of it the jet converges and air
-   sinks to the surface High; east of it the jet diverges and air rises from
-   the surface Low — which only forms, and grows, as the run plays.
-   Everything that changes is driven by outcome() and the run hour. */
+   A cross-section of the AIR, not a map (no coast — Mike: where the storm
+   goes is the globe's job). The cold/warm boundary — the jet between the two
+   air masses, where the storm forms — is fixed at u = sideB, the trough axis
+   just west of it. West of the trough the jet converges and air sinks to the surface High;
+   east of it the jet diverges and air rises from the surface Low — which only
+   forms, and grows, as the run plays, and MOVES like the globe's: north as it
+   travels (v), and across the boundary as far as the globe's L drifts off the
+   jet (into the cold air on the jet's cold side, as research has it).
+   Everything that changes is driven by outcome(), the globe and the run hour. */
 // dy is deep enough that the jet's dip toward the front (south) reads clearly.
 const SIDE = { x0: 96, y0: 262, w: 214, dx: 60, dy: 90, h: 120 };
-const TROUGH_U = 0.5;
+const SIDE_LAT_K = 0.02, SIDE_OFF_K = 0.03;  // v per degree north (≤ SIDE_V_MAX); u per degree off the jet
+const SIDE_V_MAX = 0.7;                     // keeps the Low on the surface plane, clear of the back edge
+const sideB = 0.6, sideTrough = 0.5;        // boundary and trough axis (u): the original sketch
 const P = (u, v, h = 0) => [SIDE.x0 + u * SIDE.w + v * SIDE.dx, SIDE.y0 - v * SIDE.dy - h * SIDE.h];
 const sideSvg = d3.select("#side");
 const sideLine = d3.line().curve(d3.curveCatmullRom.alpha(0.5));
@@ -1436,24 +2164,56 @@ const sidePoly = pts => "M" + pts.map(p => P(...p).join(",")).join("L") + "Z";
 })();
 
 // Surface air masses (footprints on the surface plane).
-const sideCold = sideSvg.append("path").attr("class", "ne-side-cold")
-  .attr("d", sidePoly([[0.04,0.18],[0.48,0.1],[0.6,0.42],[0.54,0.88],[0.12,0.92]]));
-const sideWarm = sideSvg.append("path").attr("class", "ne-side-warm")
-  .attr("d", sidePoly([[0.6,0.06],[0.98,0.06],[0.98,0.94],[0.64,0.9],[0.68,0.44]]));
-const massLabel = (u, v, t) => { const [x, y] = P(u, v, 0);
-  return sideSvg.append("text").attr("class", "ne-side-mass").attr("x", x).attr("y", y + 5).text(t); };
-massLabel(0.22, 0.26, "Cold air");
-massLabel(0.86, 0.74, "Warm air"); // back of the warm area, clear of the Low and its fronts
+// Shaped around the boundary b (u); at b = 0.6 they are the original sketch.
+const sideCold = sideSvg.append("path").attr("class", "ne-side-cold");
+const sideWarm = sideSvg.append("path").attr("class", "ne-side-warm");
+const massLabel = t => sideSvg.append("text").attr("class", "ne-side-mass").text(t);
+const sideColdLabel = massLabel("Cold air");
+const sideWarmLabel = massLabel("Warm air"); // back of the warm area, clear of the Low and its fronts
+/* Of the candidate spots, the one whose box (half-width hw, half-height hh,
+   px) overlaps least of what it must avoid over the whole run — weighted, so
+   covering the L, the H or another label (weight 10) is far worse than
+   grazing a front or the snow (1) — then, on a tie, the one farthest from it
+   all. Avoid entries are [u, v, hw, hh, weight]. */
+function clearest(cands, avoid, hw, hh) {
+  let best = cands[0], bestP = Infinity, bestD = -Infinity;
+  for (const c of cands) {
+    const [x, y] = P(c[0], c[1], 0);
+    let pen = 0, dmin = Infinity;
+    for (const [u, v, w = 20, h = 20, wt = 1, ht = 0] of avoid) {
+      const [px, py] = P(u, v, ht), ox = hw + w - Math.abs(px - x), oy = hh + h - Math.abs(py - y);
+      if (ox > 0 && oy > 0) pen += wt * Math.min(ox, oy);
+      dmin = Math.min(dmin, Math.hypot(Math.max(0, -ox), Math.max(0, -oy)));
+    }
+    if (pen < bestP - 1e-9 || (Math.abs(pen - bestP) < 1e-9 && dmin > bestD)) { best = c; bestP = pen; bestD = dmin; }
+  }
+  return best;
+}
+const LABEL_V = [0.24];   // both labels always on the front row (Mike); they only slide sideways
+function placeAirMasses(b, avoid = null) {
+  sideCold.attr("d", sidePoly([[0.04,0.18],[b - 0.12,0.1],[b,0.42],[b - 0.06,0.88],[0.12,0.92]]));
+  sideWarm.attr("d", sidePoly([[b,0.06],[0.98,0.06],[0.98,0.94],[b + 0.04,0.9],[b + 0.08,0.44]]));
+  // Anywhere inside its own air mass, on a grid.
+  const grid = (u0, u1, vs) => d3.range(u0, u1 + 1e-6, Math.max(0.02, (u1 - u0) / 6)).flatMap(u => vs.map(v => [u, v]));
+  const cold = avoid ? clearest(grid(0.16, Math.max(0.16, b - 0.18), LABEL_V), avoid, 34, 9) : [0.22, LABEL_V[0]];
+  const [cx, cy] = P(cold[0], cold[1], 0);
+  sideColdLabel.attr("x", cx).attr("y", cy + 5);
+  const warm = avoid ? clearest(grid(Math.min(0.9, b + 0.12), 0.9, LABEL_V), [...avoid, [cold[0], cold[1], 34, 9, 10]], 36, 9) : [0.84, LABEL_V[0]];
+  const [wx, wy] = P(warm[0], warm[1], 0);
+  sideWarmLabel.attr("x", wx).attr("y", wy + 5);
+}
+placeAirMasses(sideB);
+/* Signed distance (°) of p from the jet: + = left of the flow (cold side). */
+function jetOffset(p) {
+  const c = JET_LINES[selected].coordinates;
+  let bi = 0, bd = Infinity;
+  c.forEach((q, k) => { const d = d3.geoDistance(p, q); if (d < bd) { bd = d; bi = k; } });
+  const a = c[Math.max(0, bi - 1)], b = c[Math.min(c.length - 1, bi + 1)], cos = Math.cos(p[1] * Math.PI / 180);
+  const cross = (b[0] - a[0]) * cos * (p[1] - c[bi][1]) - (b[1] - a[1]) * (p[0] - c[bi][0]) * cos;
+  return Math.sign(cross) * bd * 180 / Math.PI;
+}
 
-// The coast: land (west) | ocean (east). Where the Low forms relative to it
-// shows the track — inland, on the coast (nor'easter), or out to sea.
-const COAST = [[0.6, 0], [0.63, 0.5], [0.66, 1]];
-sideSvg.append("path").attr("class", "ne-side-coast").attr("d", sideLine(COAST.map(p => P(p[0], p[1], 0))));
-{ const [x, y] = P(0.66, 1, 0);
-  sideSvg.append("text").attr("class", "ne-side-label ne-side-coastlabel").attr("x", x + 6).attr("y", y - 6).text("Coast"); }
 
-// Where the Low forms, by outcome track (u, v on the surface).
-const L_BY_TRACK = { inland: [0.4, 0.42], coast: [0.64, 0.42], sea: [0.9, 0.28] }; // sea sits forward, clear of the "Warm air" label
 // Everything that hangs off the Low is an offset from it.
 const CF_OFF = [[0, 0], [-0.04, -0.12], [-0.12, -0.26], [-0.24, -0.36]];
 const WF_OFF = [[0, 0], [0.1, 0.02], [0.2, -0.06], [0.28, -0.2]];
@@ -1475,19 +2235,25 @@ const precip = { on: false, at: [0, 0], snow: true, count: 0 };  // set by drawS
 let precipPhase = 0;
 const clampU = u => Math.max(0.01, Math.min(0.99, u));
 const frontPath = (at, off) => sideLine(off.map(([du, dv]) => P(clampU(at[0] + du), at[1] + dv, 0)));
-const sideCF = sideSvg.append("path").attr("class", "ne-side-cfront").attr("pathLength", 1).attr("stroke-dasharray", "1 1").attr("filter", "url(#ne-side-outline)");
-const sideWF = sideSvg.append("path").attr("class", "ne-side-wfront").attr("pathLength", 1).attr("stroke-dasharray", "1 1").attr("filter", "url(#ne-side-outline)");
+// Each front — its line AND its symbols — is one group with ONE outline, as on
+// the globe (Mike): outlining the line and the symbols separately drew an edge
+// where every triangle / half-circle meets its line.
+const sideCFg = sideSvg.append("g").attr("filter", "url(#ne-side-outline)");
+const sideWFg = sideSvg.append("g").attr("filter", "url(#ne-side-outline)");
+const sideCF = sideCFg.append("path").attr("class", "ne-side-cfront").attr("pathLength", 1).attr("stroke-dasharray", "1 1");
+const sideWF = sideWFg.append("path").attr("class", "ne-side-wfront").attr("pathLength", 1).attr("stroke-dasharray", "1 1");
 // Their symbols (same shapes as on the globe, smaller), redrawn as they grow.
-const sideCFsym = sideSvg.append("g").attr("class", "ne-front-cold").attr("filter", "url(#ne-side-outline)");
-const sideWFsym = sideSvg.append("g").attr("class", "ne-front-warm").attr("filter", "url(#ne-side-outline)");
+const sideCFsym = sideCFg.append("g").attr("class", "ne-front-cold");
+const sideWFsym = sideWFg.append("g").attr("class", "ne-front-warm");
 
 // High: always there, over the cold air. Sinking air streams down onto it:
 // SINK_N arrows travel from just under the jet (SINK_TOP) to just above the
 // H (SINK_BOTTOM) at a speed set by sinkMs(), fading in and out at the ends. Animated in
 // the cloud loop; still and evenly spaced under reduced motion.
-const H_AT = [0.2, 0.66];
-const [hx, hy] = P(H_AT[0], H_AT[1], 0);
-sideSvg.append("text").attr("class", "ne-side-H").attr("x", hx).attr("y", hy).text("H");
+const H_AT = [0.2, 0.66];                    // u follows the trough (drawSide)
+const sideH = sideSvg.append("text").attr("class", "ne-side-H").text("H");
+const placeH = () => { const [hx, hy] = P(H_AT[0], H_AT[1], 0); sideH.attr("x", hx).attr("y", hy); };
+placeH();
 const SINK_N = 3, SINK_TOP = 0.92, SINK_BOTTOM = 0.16, SINK_LEN = 0.14;
 /* Clear space between arrows in a column. The arrowhead tip sticks out past
    the line end (marker 5×stroke 2.5 → 12.5 units for a 10-unit marker whose
@@ -1545,14 +2311,14 @@ const SIDE_PUFFS = d3.range(12).map(() => d3.range(5).map(() => ({
 // Labels paint above the cloud tower (it can rise in front of them), but
 // below the Low, its rising air and the precipitation, which come next.
 { const gLabels = sideSvg.append("g");
-  sideSvg.selectAll(".ne-side-mass, .ne-side-H, .ne-side-coastlabel")
+  sideSvg.selectAll(".ne-side-mass, .ne-side-H")
     .each(function () { gLabels.node().appendChild(this); }); }
 // Rising air: three arrows streaming UP under the east side of the trough.
 // Before the run they are faint and identical for every setup (gentle lift
 // under the jet's divergence — no hint of the outcome). As the run plays
 // they slide to the Low's spot and strengthen with the storm, or fade away
 // if no storm forms. Animated in the cloud loop (drawRising).
-const RISE_PRE = [0.64, 0.42];                       // before the run: east of the trough, at the coast
+const RISE_PRE = [0.64, 0.42];                       // before the run: on the boundary, east of the trough (drawSide)
 const RISE_N = 3, RISE_TOP = 0.92, RISE_BOTTOM = 0.1;
 const sideRise = d3.range(RISE_N).map(() => sideSvg.append("line").attr("class", "ne-side-rise").attr("filter", "url(#ne-side-outline)"));
 const rise = { u: RISE_PRE[0], v: RISE_PRE[1], level: 0.35 };   // set by drawSide
@@ -1608,8 +2374,33 @@ function drawSide() {
   const t = runHour / RUN_HOURS;
   const grow = out.strength ? t * t * (3 - 2 * t) : 0;          // 0 … 1, eased
   const power = out.strength === 2 ? 1 : out.strength === 1 ? 0.6 : 0;
-  const track = out.key === "inland" ? "inland" : out.key === "sea" ? "sea" : "coast";
-  const at = L_BY_TRACK[track];
+  const g0 = genesisAt(selected, -troughLon());   // where (and whether) the storm forms
+  RISE_PRE[0] = sideB + 0.03; RISE_PRE[1] = 0.32;
+  // The Low: starts on the boundary, then moves with the globe's L — north,
+  // and across the boundary by its drift off the jet (cold side = west here).
+  const storming = g0 && out.strength;
+  const sideAt = h => { const here = stormAt(h);
+    return [Math.max(0.04, Math.min(0.96, sideB - SIDE_OFF_K * jetOffset(here))),
+            Math.max(0.08, Math.min(SIDE_V_MAX, 0.3 + SIDE_LAT_K * (here[1] - g0[1])))]; };
+  const at = storming ? sideAt(runHour) : [sideB, 0.3];
+  // Labels and the H keep clear of the Low's whole path (and its snow/rain,
+  // which falls on its cold side).
+  // Everything the storm draws over the run: the L, both fronts, the snow/rain
+  // patch on its cold side.
+  const footprint = ([u, v]) => [[u, v, 20, 20, 10],
+    ...CF_OFF.map(([du, dv]) => [u + du, v + dv, 4, 4]), ...WF_OFF.map(([du, dv]) => [u + du, v + dv, 4, 4]),
+    ...[[-0.27, -0.2], [-0.02, -0.2], [-0.27, 0.12], [-0.02, 0.12], [-0.15, -0.04]].map(([du, dv]) => [u + du, v + dv, 4, 4])];
+  // (No storm: only the faint rising air, just east of the boundary.)
+  const avoid = storming ? [0, 12, 24, 36, 48, 60, 72].map(sideAt).flatMap(footprint) : [[sideB + 0.03, 0.32, 12, 20, 10]];
+  // Labels first (front row, sliding sideways clear of the storm), then the H
+  // behind them, clear of the labels, the storm and its own sinking column.
+  placeAirMasses(sideB, storming ? avoid : null);   // no storm: fixed spots on the front row
+  const hu = Math.max(0.1, sideTrough - 0.28);
+  const labelBoxes = [sideColdLabel, sideWarmLabel].map(l => { const b = l.node().getBBox();
+    const v = (SIDE.y0 - (b.y + b.height / 2)) / SIDE.dy, u = (b.x + b.width / 2 - SIDE.x0 - v * SIDE.dx) / SIDE.w;
+    return [u, v, b.width / 2, b.height / 2, 10]; });
+  [H_AT[0], H_AT[1]] = storming ? clearest([0.66, 0.8, 0.53].map(v => [hu, v]), [...avoid, ...labelBoxes], 9, 11) : [hu, 0.66];
+  placeH();
 
   // Air-mass shading matches the globe; the gauge shows the gap between them.
   sideCold.style("--air-alpha", AIRS[0].g.style("--air-alpha"));
@@ -1621,9 +2412,9 @@ function drawSide() {
   elGaugeBar.setAttribute("aria-valuetext", `${contrast} degrees Fahrenheit`);
 
   // Jet: deeper dip for deeper jet streams (A → D).
-  const depth = 0.22 + 0.12 * DEPTH_POINTS[selected];
+  const depth = 0.22 + 0.12 * DIP_INDEX[selected];
   const jet = d3.range(0, 1.0001, 0.02).map(u =>
-    P(u, 0.85 - depth * Math.exp(-(((u - TROUGH_U) / 0.14) ** 2)), 1));
+    P(u, 0.85 - depth * Math.exp(-(((u - sideTrough) / 0.14) ** 2)), 1));
   sideJet.attr("d", sideLine(jet));
   sideJetFlow.attr("d", sideLine(jet)).style("animation-duration", `${JET_FLOW_S[selected]}s`);
 
@@ -1631,8 +2422,14 @@ function drawSide() {
   // spot for this track, all scaled by the storm.
   const show = grow > 0.02 ? null : "none";
   const [lx, ly] = P(at[0], at[1], 0);
+  const lr = 12 + 8 * power * grow;
   sideL.attr("display", show).attr("transform", `translate(${lx},${ly})`)
-    .select("circle").attr("r", 12 + 8 * power * grow);
+    .select("circle").attr("r", lr);
+  sideSvg.selectAll(".ne-side-mass, .ne-side-H").each(function () {
+    const b = this.getBBox(), m = lr + 3;
+    d3.select(this).classed("ne-side-under-L", !show &&
+      lx > b.x - m && lx < b.x + b.width + m && ly > b.y - m && ly < b.y + b.height + m);
+  });
   // Hidden at zero length: a round cap would otherwise paint a dot.
   sideCF.attr("d", frontPath(at, CF_OFF)).attr("stroke-dashoffset", 1 - grow).attr("display", show);
   sideWF.attr("d", frontPath(at, WF_OFF)).attr("stroke-dashoffset", 1 - grow).attr("display", show);
@@ -1665,19 +2462,28 @@ function drawSide() {
 
   Object.assign(precip, {
     on: out.strength > 0 && t > 0.35, at,
-    snow: AIRS[0].temp < SNOW_BELOW,
+    snow: outcomeSnow(),
     count: Math.round(6 + 12 * power * grow),
   });
   drawPrecip();
 }
 
+/* Where the Low is at hour h. Position along the track eases OUT: the Low
+   moves steadily, then slows and settles into its final spot instead of
+   stopping dead at 72 h. (Growth still uses the plain run time.) */
+function stormAt(h) {
+  const track = stormTrack();
+  const tp = 1 - Math.pow(1 - h / RUN_HOURS, TRACK_EASE);
+  const k = tp * (track.length - 1), i = Math.floor(k), f = k - i;
+  const a = track[i], b = track[Math.min(i + 1, track.length - 1)];
+  return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+}
 function drawStorm() {
   if (step !== 4 || !selected) return;
   const track = stormTrack();
   const t = runHour / RUN_HOURS;
-  const k = t * (track.length - 1), i = Math.floor(k), f = k - i;
-  const a = track[i], b = track[Math.min(i + 1, track.length - 1)];
-  const here = [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+  const here = stormAt(runHour);
+  const i = Math.floor((1 - Math.pow(1 - t, TRACK_EASE)) * (track.length - 1));   // last track point passed
   const centre = projection.invert(projection.translate());
   const visible = d3.geoDistance(here, centre) < Math.PI / 2;
   const out = outcome();
@@ -1764,19 +2570,90 @@ const elInfo = document.getElementById("info-modal");
   const hr = t.append("thead").append("tr");
   hr.append("th").attr("scope", "col").text("Jet stream");
   bands.forEach(b => hr.append("th").attr("scope", "col").text(`Difference ${b}`));
+  hr.append("th").attr("scope", "col").text("Air masses meet at the coast");
   const tb = t.append("tbody");
-  Object.entries(DEPTH_POINTS).forEach(([jet, d]) => {
+  Object.entries(POSITION_POINTS).forEach(([jet, d]) => {
+    // Trough longitudes in the coast window where this jet's air masses meet at the coast (GENESIS).
+    const at = d3.range(COAST_EAST, COAST_WEST + 1).filter(w => genesisAt(jet, w));
     const tr = tb.append("tr");
     tr.append("th").attr("scope", "row").text(jet);
-    [0, 1, 2].forEach(c => { const [txt, cls] = cell(d + c); tr.append("td").attr("class", cls).text(txt); });
+    [0, 1, 2].forEach(c => {
+      const [txt, cls] = at.length ? cell(d + c) : ["No storm", "is-none"];
+      tr.append("td").attr("class", cls).text(txt);
+    });
+    tr.append("td").text(at.length ? `${d3.max(at)}–${d3.min(at)}°W only` : "Never");
   });
   document.querySelector('[data-rule="coast"]').textContent = `${COAST_WEST}°W and ${COAST_EAST}°W`;
   document.querySelector('[data-rule="snow"]').textContent = `${SNOW_BELOW}°F`;
+  document.querySelector('[data-rule="tropical"]').textContent = `${TROPICAL_BELOW}°N`;
+  document.querySelector('[data-rule="tropical-2"]').textContent = `${TROPICAL_BELOW}°N`;
+
+  // Every outcome: run the rules over every setting the controls allow.
+  const elLonR = document.getElementById("trough-lon");
+  const count = {}, jets = {};
+  let n = 0;
+  for (const jet of Object.keys(POSITION_POINTS))
+    for (let lon = +elLonR.min; lon <= +elLonR.max; lon++)
+      for (let tc = AIRS[0].min; tc <= AIRS[0].max; tc += AIRS[0].step)
+        for (let to = AIRS[1].min; to <= AIRS[1].max; to += AIRS[1].step) {
+          const { label } = outcomeFor(jet, -lon, tc, to);
+          count[label] = (count[label] || 0) + 1;
+          (jets[label] = jets[label] || new Set()).add(jet);
+          n++;
+        }
+  const all = Object.keys(POSITION_POINTS);
+  const ot = d3.select("#outcomes-table");
+  const oh = ot.append("thead").append("tr");
+  [["Outcome", "is-left"], ["How often, across all settings", ""], ["Which jets can produce it", "is-left"]]
+    .forEach(([h, c]) => oh.append("th").attr("scope", "col").attr("class", c).text(h));
+  // Written the way a person would say it: "all", "A and B", "B only",
+  // and for No storm, which jets never allow it.
+  const and = js => js.length < 3 ? js.join(" and ") : `${js.slice(0, -1).join(", ")} and ${js.at(-1)}`;
+  const pct = f => (f < 5 ? f.toFixed(1) : Math.round(f)) + "%";
+  const ob = ot.append("tbody");
+  Object.entries(count).sort((a, b) => b[1] - a[1]).forEach(([label, c]) => {
+    const tr = ob.append("tr");
+    tr.append("th").attr("scope", "row").attr("class", "is-left is-plain").text(label);
+    tr.append("td").attr("class", "is-num").text(pct(100 * c / n));
+    const js = all.filter(j => jets[label].has(j));
+    const never = all.filter(j => !jets[label].has(j));
+    const who = js.length === all.length ? "all"
+      : label === "No storm" ? `${and(js)} only (${and(never)} always make a storm)`
+      : js.length === 1 ? `${js[0]} only` : and(js);
+    tr.append("td").attr("class", "is-left").text(who);
+  });
+  // Outcomes the rules can't currently produce: listed anyway, with the reason.
+  const NEVER_WHY = {
+    "Strong nor’easter: rain & wind": `None under the current rules. A strong storm needs jet B or C and a difference of ${c2}°F or more. Jet C’s air masses never meet at the coast. On jet B, rain needs continental air of ${SNOW_BELOW}°F or warmer, so the ocean air would have to reach ${Math.ceil((SNOW_BELOW + c2) / AIRS[1].step) * AIRS[1].step}°F, but the scale stops at ${AIRS[1].max}°F. To fix: base rain versus snow on the coast’s temperature, lower the difference a strong storm needs, or add a season input.`,
+  };
+  Object.entries(NEVER_WHY).filter(([label]) => !count[label]).forEach(([label, why]) => {
+    const tr = ob.append("tr");
+    tr.append("th").attr("scope", "row").attr("class", "is-left is-plain").text(label);
+    tr.append("td").attr("class", "is-num").text("0%");
+    tr.append("td").attr("class", "is-left").text(why);
+  });
+  document.querySelector('[data-rule="combos"]').textContent = n.toLocaleString();
 })();
 document.getElementById("info-btn").addEventListener("click", () => elInfo.showModal());
 document.getElementById("info-close").addEventListener("click", () => elInfo.close());
 elInfo.addEventListener("click", ev => { if (ev.target === elInfo) elInfo.close(); }); // backdrop click
 elInfo.addEventListener("close", () => document.getElementById("info-btn").focus());
+/* Explicit focus trap (Mike, 2026-10-27): showModal() alone let Tab leave the
+   dialog. Tab / Shift+Tab cycle through the dialog's own focusables (Close and
+   the scrollable body, made focusable so the keyboard can scroll it in every
+   browser), and focus that lands anywhere else while it's open comes back. */
+const modalFocusables = () => [...elInfo.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+  .filter(el => !el.hidden && el.offsetParent !== null);
+elInfo.addEventListener("keydown", ev => {
+  if (ev.key !== "Tab") return;
+  const f = modalFocusables(); if (!f.length) return;
+  const i = f.indexOf(document.activeElement);
+  ev.preventDefault();
+  f[(i + (ev.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+});
+document.addEventListener("focusin", ev => {
+  if (elInfo.open && !elInfo.contains(ev.target)) document.getElementById("info-close").focus();
+});
 
 /* ---- Step 3 toolbar: one − value + stepper per air mass ------------------ */
 const elSteppers = d3.select("#air-steppers");
@@ -1801,10 +2678,10 @@ function setTemp(m, t) {
   const label = `${m.temp}°F`;
   m.out.textContent = label;
   m.label.text(label);
-  m.btnDown.disabled = m.temp <= m.min;
-  m.btnUp.disabled = m.temp >= m.max;
-  m.down.classed("is-disabled", m.btnDown.disabled);  // the globe's −/+ follow
-  m.up.classed("is-disabled", m.btnUp.disabled);
+  setOff(m.btnDown, m.temp <= m.min);
+  setOff(m.btnUp, m.temp >= m.max);
+  m.down.classed("is-disabled", isOff(m.btnDown));  // the globe's −/+ follow
+  m.up.classed("is-disabled", isOff(m.btnUp));
   const f = (m.temp - m.min) / (m.max - m.min);           // 0 at min … 1 at max
   const depth = m.deep === "min" ? 1 - f : f;              // 1 = most extreme
   m.g.style("--air-alpha", (0.15 + 0.6 * depth).toFixed(2));
@@ -1819,13 +2696,25 @@ function setTroughLon(lon) {
   lon = Math.max(+elLon.min, Math.min(+elLon.max, Math.round(lon)));
   troughShift = lon - TROUGH_BOTTOM_LON[selected];
   buildJet(JET_PATHS.find(p => p.id === selected), troughShift);
-  elLon.value = lon;
-  elLonOut.textContent = fmtLon(lon);
-  elLon.setAttribute("aria-valuetext", `${Math.abs(lon)} degrees ${lon < 0 ? "West" : "East"}`);
+  syncLonUI(lon);
   draw();
   updateTrial();
 }
+/* Slider, readout, ‹ › state for a trough longitude — no change to the jet. */
+function syncLonUI(lon) {
+  elLon.value = lon;
+  syncFill(elLon);
+  elLonOut.textContent = fmtLon(lon);
+  elLon.setAttribute("aria-valuetext", `${Math.abs(lon)} degrees ${lon < 0 ? "West" : "East"}`);
+  setOff(elLonWest, lon <= +elLon.min);
+  setOff(elLonEast, lon >= +elLon.max);
+}
 elLon.addEventListener("input", () => setTroughLon(+elLon.value));
+/* ‹ › nudge the trough 1° (west is left on the map, so ‹ = west). */
+const elLonWest = document.getElementById("lon-west");
+const elLonEast = document.getElementById("lon-east");
+elLonWest.addEventListener("click", () => setTroughLon(+elLon.value - 1));
+elLonEast.addEventListener("click", () => setTroughLon(+elLon.value + 1));
 
 /* Step 2, on the globe: grab the chosen jet and drag sideways. The trough
    follows the change in longitude under the pointer, so it does not jump to
@@ -1843,15 +2732,19 @@ function pointerLon(ev) {
 }
 
 svg.classed("is-step-1", true);
+buildCanned();
 updateTrial();
 layout();
 syncZoomButtons();
 window.addEventListener("resize", layout);
+// The toolbar's height varies by step (Step 2's slider has a label under it),
+// which changes the stage height; re-fit the globe whenever the stage resizes.
+new ResizeObserver(() => requestAnimationFrame(layout)).observe(svg.node());
 const ATLAS = "https://cdn.jsdelivr.net/npm/world-atlas@2/";
 fetch(ATLAS + "land-110m.json").then(r => r.json())
-  .then(w => { landCoarse = topojson.feature(w, w.objects.land); if (!land) draw(); });
+  .then(w => { landCoarse = topojson.feature(w, w.objects.land); if (!land) { buildLandMask(landCoarse); draw(); } });
 fetch(ATLAS + "land-50m.json").then(r => r.json())
-  .then(w => { land = topojson.feature(w, w.objects.land); draw(); });
+  .then(w => { land = topojson.feature(w, w.objects.land); buildLandMask(land); draw(); });
 
 window.NE = {
   get jetStream() { return selected; },
