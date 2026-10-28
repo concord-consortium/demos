@@ -226,6 +226,30 @@
     height: 80px;
     background: #c4c4c4;
   }
+  /* Each mark links out to its owner. The anchor becomes the flex item, so it has to
+     be a block and size to the image rather than to a line box -- an inline <a> adds
+     the font's descender under the mark and knocks the row's centring out by ~4px.
+     No padding: both marks already clear 44px in both directions (80x255 and 58x340),
+     so the image IS the target.
+     Height is pinned to the Concord mark's 80 and the image centred inside it, so
+     the two focus rings are the same height. Left to shrinkwrap, DESE's ring would
+     be its own 58 and the pair would read as two different-sized controls. The
+     DESE mark does not move: centred in 80 is exactly where align-items already
+     put it, 41 to 99 inside the row's 30 to 110. */
+  .demo-logo-link {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    height: 80px;
+    /* Square, as every other control on this page is -- .demo-share-btn and
+       #demo-sim-btns .toggle-btn both set 0. The radius only ever showed on the
+       focus ring, and a rounded ring around two square marks was the odd one out. */
+    border-radius: 0;
+  }
+  .demo-logo-link:focus { outline: none; }
+  .demo-logo-link:focus:not(:focus-visible) { outline: none; }
+  /* the Demo page's ring, as .demo-share-btn sets it */
+  .demo-logo-link:focus-visible { outline: 2px solid #005FCC; outline-offset: 4px; }
   .demo-page-title {
     /* concord.org's own H1, measured off /licensing/: museo 900 at 40/46. Their H1
        is 72/80 and their H2 40/46 -- 72 is right by role but enormous for a title
@@ -4907,7 +4931,7 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.31</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.32</div>
       <div style="font-weight: 400;">Updated: 10/28/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
@@ -16073,10 +16097,24 @@ function buildLogoLockup() {
   const row = document.createElement("div");
   row.className = "demo-logos";
 
+  // Each mark links to its owner. New tab, because the Demo page is the thing the
+  // visitor came for and a sim they have already set up is behind it. The alt text
+  // IS the link's accessible name, so the "opens in a new tab" goes there rather
+  // than into a title attribute, which a screen reader may never reach.
+  function linkMark(href, img) {
+    const a = document.createElement("a");
+    a.className = "demo-logo-link";
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.appendChild(img);
+    return a;
+  }
+
   const cc = document.createElement("img");
   cc.className = "demo-logo-cc";
   cc.src = "ICONS/CC Logo.svg";
-  cc.alt = "The Concord Consortium";
+  cc.alt = "The Concord Consortium (opens in a new tab)";
 
   // The rule is an element, not a border on the next image: a border could only ever
   // be that image's height, and this one has to stand taller than the mark it sits
@@ -16090,11 +16128,13 @@ function buildLogoLockup() {
   const dese = document.createElement("img");
   dese.className = "demo-logo-dese";
   dese.src = "ICONS/DESE Mass Logo.svg";
-  dese.alt = "Massachusetts Department of Elementary and Secondary Education";
+  dese.alt = "Massachusetts Department of Elementary and Secondary Education"
+    + " (opens in a new tab)";
 
-  row.appendChild(cc);
+  row.appendChild(linkMark("https://concord.org/", cc));
   row.appendChild(rule);
-  row.appendChild(dese);
+  row.appendChild(linkMark(
+    "https://www.doe.mass.edu/stem/ste/classroom-tasks.html", dese));
   return row;
 }
 
