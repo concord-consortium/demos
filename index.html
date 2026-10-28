@@ -6,7 +6,16 @@
 <title>MassSims</title>
 <style>
 /* Self-hosted fonts */
+<!-- Museo + Museo Sans, from Concord's own Adobe Fonts kit (juj7nhw) -- the two
+     families concord.org itself uses. NOTE: this is the one external dependency in
+     the file; everything else is inlined or served from fonts/. Offline, or from a
+     domain the kit does not allow, the header falls back to the stack below it. -->
+</style>
+<link rel="stylesheet" href="https://use.typekit.net/juj7nhw.css">
+<style>
 /* Barlow 400 */ @font-face { font-family: 'Barlow'; font-style: normal; font-weight: 400; src: url('fonts/17ef8a066a33.woff2') format('woff2'); }
+/* Barlow 500 */ @font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; src: url('fonts/barlow-500.woff2') format('woff2'); }
+/* Barlow 700 */ @font-face { font-family: 'Barlow'; font-style: normal; font-weight: 700; src: url('fonts/barlow-700.woff2') format('woff2'); }
 /* Barlow Condensed 400 */ @font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 400; src: url('fonts/343e6c738440.woff2') format('woff2'); }
 /* Barlow Condensed 600 */ @font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; src: url('fonts/07c3c732a90e.woff2') format('woff2'); }
 /* Lato 400 */ @font-face { font-family: 'Lato'; font-style: normal; font-weight: 400; src: url('fonts/d5b18a30a456.woff2') format('woff2'); }
@@ -139,6 +148,416 @@
     align-self: stretch;
     min-height: calc(100vh - 40px);
     position: relative;
+  }
+
+  /* The divider between the prototype chrome and the sim, drawn on the Demo page.
+     Everywhere else this is .viewport-wrapper's own border-left, which lands at
+     20 (body padding) + 150 (.btn-column) + 24 (.main-layout gap) = 194, measured.
+     On the Demo page the column is pulled out of flow, so the wrapper spans the
+     whole window and that same border would paint at x=0 -- against the window
+     edge, nowhere near the buttons. So the line is drawn here instead, at the
+     position buildDemoView reads off the live column, and the border stays off.
+     .viewport-wrapper is already position:relative, so top/bottom give this exactly
+     the stretched height the border had, including when content runs past the fold. */
+  /* Nor'easter's "Test:" preset bar is a development aid, kept in the Prototypes
+     view and hidden on the Demo page -- which is the page people are sent to, and
+     where it would land on the title and the DESE logo anyway (it is absolutely
+     positioned in .viewport-wrapper at top:50).
+     !important because the bar sets display:flex inline when it is built. */
+  .viewport-wrapper.demo-page #temp-combo-bar,
+  .viewport-wrapper.demo-page #temp-combo-note { display: none !important; }
+
+  /* ---- Demo page furniture ------------------------------------------------- */
+  /* concord.org's page STRUCTURE on /licensing/ -- left-aligned column, logo at its
+     left edge, 75 to the heading, 40 under it, 30 under the body -- but at OUR width,
+     not their 1110. Our page starts at the vertical line and its content column is
+     the 20px gutter in from there, the same edge the sim and the rule already use. */
+  .demo-head {
+    /* The header is one of the column's rows, not a full-bleed band: it takes the
+       same width the sim row does (--demo-col-w, set in JS from the measured button
+       column + the sim) and centres with it, the way concord.org centres its own
+       1110 container. Its own contents stay left-aligned against that column's
+       left edge, so the Concord mark lines up with the sim buttons below it.
+       No padding-left any more -- the old 5px pushed the logos off that edge. */
+    align-self: center;
+    width: var(--demo-col-w, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* no margin of its own: the separator below the intro carries the gap. Measured
+       on concord.org's StoryQ page, a body paragraph to the next section is
+       30 + the separator + 20 -- see .demo-rule. (75 here briefly, borrowed from the
+       logo-to-heading step, which is a different relationship and 20 too wide.) */
+    margin-bottom: 0;
+  }
+  /* Logos sit at the LEFT of the header band, as in the mock, while the title and
+     intro below them are centred -- so this row is full width with its own alignment
+     rather than inheriting the column's centring. */
+  .demo-logos {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    /* applied on BOTH sides of the hairline, since that is a flex item too */
+    gap: 20px;
+    /* 75, measured on /licensing/: their logo's bottom sits 75px above the H1. The
+       40 below is the heading-to-heading step; the logo gets its own, larger one. */
+    margin-bottom: 75px;
+    /* Logo top sits 30 from the top of the page. Body padding already provides 16,
+       so this adds the remaining 14. (The 156.5 here before was concord.org's own
+       logo top, which only made sense on a page with their nav bar above it.) */
+    margin-top: 14px;
+  }
+  /* Concord 66, DESE 48 -- 9px of air above and below DESE. Each mark's ink fills its box exactly (measured), so the
+     box heights ARE the ink heights and these two numbers are the real proportion
+     between the marks -- not an artefact of padding inside the artwork. */
+  /* Addressed by name, not by sibling order: the rule now sits between the two, so
+     an `img + img` selector no longer reaches the DESE mark and it silently fell
+     back to its native 44. */
+  .demo-logos img { width: auto; display: block; }
+  /* 80, matching concord.org's own logo block (255x80, measured on /licensing/).
+     DESE scales with it to keep the 66:48 relationship settled earlier --
+     80 x 48/66 = 58. */
+  .demo-logo-cc { height: 80px; }
+  .demo-logo-dese { height: 58px; }
+  /* the hairline between the two marks: 1px wide, as tall as the Concord mark */
+  .demo-logo-rule {
+    flex: 0 0 auto;
+    width: 1px;
+    height: 80px;
+    background: #c4c4c4;
+  }
+  .demo-page-title {
+    /* concord.org's own H1, measured off /licensing/: museo 900 at 40/46. Their H1
+       is 72/80 and their H2 40/46 -- 72 is right by role but enormous for a title
+       this long, so this takes the H2 size at the H1's weight. Falls back to Lato. */
+    font-family: 'museo', 'Lato', sans-serif;
+    /* concord.org's H3, measured on the StoryQ project page: museo 54/900 at lh 60,
+       with 30 beneath it. (The 61 here before was interpolated between their H2 and
+       H1; 54/60 is a real step they actually use.) */
+    font-size: 54px;
+    font-weight: 900;
+    line-height: 60px;
+    /* concord.org's colour, tracking and spacing, measured off /licensing/ --
+       near-black rather than #333, no tracking, 40px under the heading. Centred
+       though, not left like theirs: this page is a header over a sim, not a column
+       of running text. */
+    color: rgb(8, 13, 9);
+    letter-spacing: normal;
+    /* left in the 1110 column, as concord.org sets its own headings */
+    text-align: left;
+    max-width: 100%;
+    /* 30, their H3's margin-bottom -- the gap to the body text measures 30 on their
+       page too, since the paragraph has no margin-top. */
+    margin: 0 0 30px;
+  }
+  /* concord.org's own section separator, measured on the StoryQ project page:
+     hr.hr-thick is a 5px band of #f5f5f5 -- a tonal shelf, not a line -- with 30
+     above it (the paragraph's margin, which collapses with the rule's own 20) and 20
+     below. This page's flex column does not collapse margins, so the 30 stays on
+     .demo-intro and only the 20 lands here.
+     It replaces the 1px #c4c4c4 hairline that used to sit here: that was a hard line
+     24px above the sim's own 2px-bordered panel and read as a doubled edge. At
+     #f5f5f5 on white this one is a tonal shift and does not compete with it. */
+  .demo-rule {
+    width: 100%;
+    border: 0;
+    border-top: 5px solid #f5f5f5;
+    margin: 0 0 20px;
+  }
+
+  .demo-intro {
+    /* concord.org's body paragraph, measured off /licensing/: museo-sans 300 at
+       18/32.4 in near-black. Falls back to Barlow. */
+    font-family: 'museo-sans', 'Barlow', sans-serif;
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 32.4px;
+    letter-spacing: normal;
+    /* half the 0.32px the body passes down. Narrows the line slightly, so the two
+       line breaks below were re-checked after. */
+    letter-spacing: 0.16px;
+    color: rgb(8, 13, 9);
+    text-align: left;
+    max-width: 100%;
+    margin: 0 0 30px;
+  }
+  /* The three share actions, under the sim */
+  .demo-share {
+    display: flex;
+    /* Wrap rather than squeeze. Below about 1310 the row is wider than the sim it
+       sits under, and the buttons hold their size (flex-shrink: 0), so without this
+       the row would push past the page's right gutter. */
+    flex-wrap: wrap;
+    /* centre, so the sim name sits on the buttons' middle rather than stretching to
+       their full height and resting at the top of it */
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    /* 18, not 16: dropped 2px off the sim. The whole row moves, name included, so
+       the name stays centred on the buttons -- moving the buttons alone would undo
+       that. */
+    margin-top: 18px;
+  }
+  .demo-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    /* Never squeezed. These carry a frozen inline width so the label can swap to
+       "Copied" without the button resizing under the pointer, and a flex item
+       shrinks below an explicit width by default -- which it did once the column
+       was pinned to the sim: at 1280 the three measured 210/150/225 against their
+       frozen 238/162/240. The row wraps instead (see .demo-share). */
+    flex-shrink: 0;
+    /* museo-sans 700 at 15, matching the Register button on
+       learn.concord.org/collections -- the closest thing Concord has to these: an
+       outline button, white fill, 2px coloured border, square, museo-sans.
+       700 is a real face in the Typekit kit, which carries 100/300/500/700/900 and
+       notably NOT 400. Without a real face this would be a synthesised bold.
+       16, not their 15: 15 is below this project's font-size floor
+       (WCAG-adjacent house rule), and it is also why their own Register button fails
+       1.4.3 -- #ea6d2f on white is 3.12:1 and 15/700 is under the large-text
+       threshold. Ours clears it on colour alone (8.61-12.24:1 depending on the sim),
+       but the floor still applies. */
+    font-family: 'museo-sans', 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    /* no tracking, which is 0 and is also what concord.org sets on every piece of
+       museo-sans type it has. Was 0.8px, carried over from the Barlow Condensed
+       these used before. */
+    letter-spacing: normal;
+    /* The same three states the sim buttons use, from the same theme variables, so
+       these follow whichever sim is selected. applySimTheme puts the vars on the
+       content column; the fallbacks are the old neutral greys, for any context where
+       no sim theme is in scope. */
+    color: var(--sim-title-text, #333);
+    background: var(--sim-surface, #fff);
+    border: 2px solid var(--sim-btn-border, #858585);
+    /* Square, matching the sim buttons beside them and concord.org's own buttons,
+       whose .button declares no radius at all. Was 6, the Prototypes house radius.
+       The 2px border stays: these sit on white with a near-white themed fill, so the
+       border is the only thing that makes them identifiable as controls (WCAG
+       1.4.11) -- see the note on #demo-sim-btns .toggle-btn. */
+    border-radius: 0;
+    /* 8 vertical, not 10: the tallest thing inside is the 24px icon, so the box is
+       24 + 2x8 + 2x2 of border = 44 exactly. 44 is also the touch-target minimum,
+       so this sits ON the floor -- do not trim the padding further. */
+    padding: 8px 16px;
+    min-height: 44px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  /* focus gets the hover look as well as a ring, so keyboard and pointer agree */
+  .demo-share-btn:hover,
+  .demo-share-btn:focus-visible { background: var(--sim-btn-hover, #f0f0f0); }
+  .demo-share-btn:active { background: var(--sim-btn-active, #d9d9d9); }
+  /* The sim's name, ahead of the buttons. Same type as the button labels so the row
+     reads as one line, in the sim's own title colour. */
+  .demo-share-name {
+    flex: 0 0 auto;
+    /* the "Grades 3-5" band labels exactly -- see .demo-band-label for where the
+       values come from (concord.org's own "Featured Projects:" label, which is the
+       same kind of object as this one: a trailing-colon label before a row of
+       items). Fixed, NOT var(--sim-title-text) -- it reads as a label for the row
+       rather than as part of the themed buttons, so it stays the same whichever sim
+       is selected. */
+    font-family: 'museo-sans', 'Barlow', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 32.4px;
+    text-transform: uppercase;
+    letter-spacing: normal;
+    color: rgb(8, 13, 9);
+    /* No nudge: the name is centred on the BUTTONS, not aligned to their baseline.
+       It is all caps with no descenders, so its ink band is its cap band, and at
+       museo-sans 20 in a 32.4 line box that band already sits 0.06px off the
+       buttons' vertical centre with nothing applied -- measured from painted pixels
+       at 8x.
+       It was -3 while the two were baseline-aligned; the name is a larger face than
+       the labels (20 against 16), so the two readings differ and this is the one
+       Mike picked. */
+    /* 12 to the first button, where the row's own gap is 16. Negative margin
+       rather than a smaller row gap, so the 16px rhythm BETWEEN the buttons is
+       untouched -- the label is a different kind of thing from the actions it
+       introduces. */
+    margin-right: -4px;
+    /* Right-aligned inside the width reserved for the longest name, so every sim's
+       label ends at the same point and sits the same distance from the first
+       button. The slack falls on the left instead. */
+    text-align: right;
+  }
+
+  /* Takes the space left beside the icon and centres in it, so the shorter "Copied"
+     sits in the middle of the width the real label reserved rather than hugging the
+     icon. */
+  .demo-share-label {
+    flex: 1 1 auto;
+    text-align: center;
+    /* Up 1px. align-items:center centres the label's LINE BOX, not its glyphs, so
+       the visible text lands low. Measured from painted pixels at 8x at museo-sans
+       16/700: ink centre sat +0.94 under the button's centre with no nudge, -0.06 at
+       1px, -1.06 at 2px. A whole pixel keeps the text crisp; a fractional nudge
+       would smear it. (It was 2px at Barlow 18 and again at museo-sans 20 -- the
+       smaller face needs less.) */
+    position: relative;
+    top: -1px;
+  }
+  /* 24x24 icon slot. The SVG inside is currentColor, so it takes the button's text
+     colour and follows the selected sim. */
+  .demo-share-icon {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+  .demo-share-icon svg { width: 24px; height: 24px; display: block; }
+  .demo-share-btn:focus { outline: none; }
+  .demo-share-btn:focus-visible { outline: 2px solid #005FCC; outline-offset: 2px; }
+
+  /* Footer -- learn.concord.org/collections, measured: a #f5f5f5 band padded 20 at
+     the top, holding one block of museo-sans 16/300 at lh 24 in #313131. Their
+     block runs copyright, then a line of links, then a 16px gap, then the version
+     line. Ours carries the same three things in the same order.
+     No rule, no second size, no second weight -- that was the concord.org marketing
+     footer, which is a much bigger piece of furniture than this page needs. */
+  .demo-foot {
+    /* 48 under the share row. learn.concord.org/ways-to-give measures 36 there --
+       their last link's box bottom to the band's top edge -- but their last line is
+       running text, where ours is a row of 44px buttons that needs more air.
+       flex-grow, not margin-top:auto: on their page the band follows the content and
+       then fills everything left over to the bottom of the window. auto pinned it to
+       the bottom and left a white gap above it instead. */
+    margin-top: 48px;
+    flex: 1 0 auto;
+    /* the band is the page's full width, so it escapes #demo-wrap's 20px gutter.
+       align-self, because demo-wrap centres its children and this one must stretch. */
+    align-self: stretch;
+    margin-left: -20px;
+    margin-right: -20px;
+    background: #f5f5f5;
+    /* their grey box: #f5f5f5, square corners, no shadow, NO top border. The 2px
+       dotted rule on /ways-to-give is a mistake on that page, not part of the
+       pattern -- /collections has no border either. */
+    /* their 50px 0 0, so the first line of text sits 50 below the band's top edge.
+       The 20 on the sides puts back what the negative margins took; the 50 at the
+       bottom is ours, for the case where the page is tall enough that the band stops
+       stretching and sizes to its content. */
+    padding: 50px 20px 50px;
+    font-family: 'museo-sans', 'Barlow', sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 24px;
+    letter-spacing: normal;
+    color: #313131;
+  }
+  /* the band is full width; its CONTENT sits in the same column the header and the
+     sim row use, so all three share one left edge */
+  .demo-foot-inner {
+    width: var(--demo-col-w, 100%);
+    margin: 0 auto;
+  }
+  /* One centred row with pipe separators -- the layout this footer already had.
+     Only the band, the type and the link colour come from learn.concord.org; the
+     arrangement of the six items is unchanged. */
+  .demo-foot-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  /* #707070 is the lightest grey that clears 4.5:1 against the #f5f5f5 band
+     (4.54:1). Note it is NOT the familiar #767676 -- that one is the threshold
+     against WHITE, and on this band it only reaches 4.17.
+     These pipes are aria-hidden decoration, so they are not strictly held to 1.4.3,
+     but at the #9A9A9A they had they measured 2.58:1 -- faint enough that the
+     separation they exist to provide was being lost. Still visibly lighter than the
+     11.93:1 text they sit between. */
+  .demo-foot-sep { color: #707070; }
+  /* NOT #ea6d2f, which is what they use. Concord orange on the #f5f5f5 band is
+     2.86:1 and fails 1.4.3 at 16/300. This is their own orange scaled to 0.76 --
+     the first step that passes, at 4.64:1. Underline on hover/focus only, as theirs
+     has none at rest. */
+  /* Underlined at rest, which learn.concord.org's footer links are NOT. They sit
+     inline in a row beside plain text -- the version and the copyright -- and
+     #B25324 against that #313131 is only 2.57:1, where WCAG 1.4.1 (technique G183)
+     wants 3:1 before colour alone may mark a link. There is no room to fix it with
+     colour: moving the orange away from the near-black text moves it towards the
+     #f5f5f5 band, and it has 0.13 of headroom there already (4.63:1 against 4.5).
+     So the underline carries it. */
+  .demo-foot-row a { color: #B25324; text-decoration: underline; }
+  .demo-foot-row a:hover,
+  .demo-foot-row a:focus-visible { color: #8C4019; }
+  .demo-foot a:focus { outline: none; }
+  .demo-foot a:focus-visible { outline: 2px solid #005FCC; outline-offset: 2px; }
+
+  /* Grade band headings on the Demo page, set like the sidebar's group labels so the
+     two readings of "a column of buttons" match. The first has no top margin: the
+     column already sits under the rule. */
+  .demo-band-label {
+    /* concord.org's own group-label idiom, measured on their Research Projects index
+       (.featured-projects__label, "Featured Projects:") and the StoryQ page
+       (.project-tags__header): museo-sans, uppercase, bold, NO tracking, near-black
+       -- the same near-black the body text uses, not a grey.
+       Their size is 12px; this runs at 20, well clear of this project's 16px floor.
+       Line-height is NOT their 1.7 ratio, which is sensible leading for a 12px label
+       and scales badly -- at 20 it would be 34. 32.4 is held fixed across size
+       changes on purpose: the box stays 32.41 tall, so resizing the label moves
+       nothing else in the column. Only the glyphs change. */
+    font-family: 'museo-sans', 'Barlow', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 32.4px;
+    text-transform: uppercase;
+    letter-spacing: normal;
+    color: rgb(8, 13, 9);
+    /* 10 to the first button of its band. The 18/2 this used to carry was
+       compensating for the column's 8px flex gap; that gap now sits BETWEEN bands
+       (see #demo-sim-btns), so the spacing inside one is stated plainly here. */
+    margin: 0 0 10px;
+  }
+  /* Each grade band is a real group, so the banding is not purely visual: without
+     it the tree is a flat run of StaticText and four ungrouped buttons, and nobody
+     using a screen reader learns that Mystery Lumps is the 3-5 one (WCAG 1.3.1).
+     role="group" + aria-labelledby pointing at the band's own visible label -- the
+     label keeps its place and its styling, the group just encloses it.
+     Spacing: 26 between bands on the column, 10 under a label, 16 between buttons
+     inside a band. Those are the three numbers the flat version measured. */
+  .demo-sim-group { display: flex; flex-direction: column; }
+
+  /* Demo page only: square corners, which is concord.org's own button shape --
+     their .button declares no border-radius at all (theme concord2017/style.css),
+     so it renders square; the only explicit `border-radius: 0` in that file is on
+     #cookie-notice .button. Either way their buttons are square. The
+     Prototypes sidebar keeps the 6px it has always had, so this is scoped to the
+     demo column rather than put on .toggle-btn.
+     The 2px border STAYS, and is not negotiable: each sim's unselected fill is
+     1.02-1.12:1 against the white page, so the border (3.57-7.50:1) is the only
+     thing that makes an unselected button identifiable as a control at all
+     (WCAG 1.4.11). concord.org can go borderless because their buttons are always
+     filled orange; ours are not. The width itself is written by applyDemoBtnStyle
+     as an inline style, which is what actually wins -- it is restated here so the
+     shape reads in one place. */
+  #demo-sim-btns .toggle-btn {
+    border-radius: 0;
+    border-width: 2px;
+  }
+  /* 16 between buttons that sit together in a band. `+` reaches only a button that
+     directly follows another button, so the first button of a band -- which follows
+     its label -- is untouched and keeps the label's 10. The groups are built in one
+     pass from simGroups and nothing is ever inserted between siblings; if that
+     changes, this selector stops matching silently, the way `img + img` did in the
+     logo lockup. */
+  #demo-sim-btns .toggle-btn + .toggle-btn { margin-top: 16px; }
+
+  .viewport-wrapper.demo-divider::before {
+    content: "";
+    position: absolute;
+    left: var(--demo-divider-x, 194px);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #858585;
+    pointer-events: none;
   }
 
   .viewport-info {
@@ -4488,13 +4907,13 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.30</div>
-      <div style="font-weight: 400;">Updated: 10/23/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.31</div>
+      <div style="font-weight: 400;">Updated: 10/28/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
       <button class="toggle-btn" data-sim="bananas" aria-pressed="false">Bananas</button>
-      <button class="toggle-btn active" data-sim="collapse" aria-pressed="true">Collapse!</button>
+      <button class="toggle-btn" data-sim="collapse" aria-pressed="false">Collapse!</button>
       <button class="toggle-btn" data-sim="noreaster" aria-pressed="false">Nor&rsquo;easter</button>
       <button class="toggle-btn" data-sim="lumps" aria-pressed="false">Mystery Lumps</button>
     </div>
@@ -4749,7 +5168,23 @@ const SIMS = {
   }
 };
 
+// The four sim keys, in the order the Demo page lists them within their grade bands.
+// Declared before the reader below, which would otherwise hit the temporal dead zone.
+const SIMS_KEYS = ["lumps", "bananas", "collapse", "noreaster"];
+
+// Collapse! is the sim currently being worked on, so the app opens on it.
+// (It was "lumps" while the Demo page was the landing view -- Mystery Lumps is the
+// Grades 3-5 entry and the first in the list.) ?sim= still overrides it.
 let activeSim = "collapse";
+// ?sim=<key> picks the sim at load. Added for the Demo page's Copy URL / Open in a
+// new tab buttons: without it every sim hands out the same link, which looks broken.
+// Unknown or missing values fall through to the default above.
+(function () {
+  try {
+    const want = new URLSearchParams(location.search).get("sim");
+    if (want && SIMS_KEYS.indexOf(want) !== -1) activeSim = want;
+  } catch (e) {}
+})();
 // The browser tab said a flat "MassSims" whichever sim was open, so several
 // prototypes side by side were indistinguishable in the tab strip. The sim's name
 // is read off its own toggle button rather than kept in a fifth hard-coded list --
@@ -4763,6 +5198,15 @@ function syncDocTitle() {
 let activeDevice = "none";
 let activeLayout = "standalone";
 let sidebarExpanded = true;
+// Opens on the Prototypes page, which is where the work happens. The Demo Site page
+// is one click away on the button in the corner.
+// (This was true while the Demo page was the landing view: the prototype chrome --
+// sim picker, device picker, layout picker -- is scaffolding for us, not for the
+// people we send the demo to. Flip it back when the demo is what matters again.)
+// Either value works from a cold start: buildViewport() dispatches on this flag, the
+// defaults above match what entering demo sets (device "none", layout "standalone"),
+// and exitDemoView falls back to _savedDevice || "none" / _savedLayout ||
+// "standalone", which IS that same default.
 let demoMode = false;
 let _savedDevice = null;
 let _savedLayout = null;
@@ -4773,12 +5217,45 @@ let _simTitleBar = null;
 let _simContent = null;
 let _currentSim = null; // tracks which sim the cached elements belong to
 
+// The sim's own headings are H1 (its wordmark) and H2 (Trials / Simulation / Data).
+// That is right in the Prototypes view, where the sim IS the page. On the Demo page
+// the sim sits inside a page that already has an H1, so two top-level headings
+// appear and the sim reads as a peer of the page rather than as part of it
+// (WCAG 1.3.1).
+//
+// aria-level, not different tags: the title bar and the sim content are built once
+// and cached, then reused across BOTH views, so the level cannot be decided at build
+// time -- and swapping an <h1> for an <h2> would mean rebuilding elements that carry
+// live listeners. aria-level overrides a heading element's implicit level, so the
+// same cached nodes read H1/H2 in one view and H2/H3 in the other.
+// Called from the two getters below, which every append site goes through.
+function syncSimHeadingLevels() {
+  // Every heading in the sim drops one level, derived from its own TAG rather than
+  // from a list of classes. Nor'easter's "Weather Outcome" and Collapse!'s "Compare
+  // Trials" are both plain h2s that no class-based rule reached, and the next sim to
+  // add a heading would have been missed the same way.
+  // Reading the tag also makes this idempotent: it never compounds across calls the
+  // way reading the current aria-level would.
+  const apply = function (root) {
+    if (!root) return;
+    const all = root.querySelectorAll("h1, h2, h3, h4, h5");
+    const heads = /^H[1-5]$/.test(root.tagName) ? [root].concat([].slice.call(all)) : all;
+    [].forEach.call(heads, function (el) {
+      if (demoMode) el.setAttribute("aria-level", String(Number(el.tagName[1]) + 1));
+      else el.removeAttribute("aria-level");
+    });
+  };
+  apply(_simTitleBar);
+  apply(_simContent);
+}
+
 function getSimTitleBar() {
   if (!_simTitleBar || _currentSim !== activeSim) {
     _simTitleBar = buildSimTitleBar();
     _simContent = buildSimContent();
     _currentSim = activeSim;
   }
+  syncSimHeadingLevels();
   return _simTitleBar;
 }
 
@@ -4788,6 +5265,7 @@ function getSimContent() {
     _simContent = buildSimContent();
     _currentSim = activeSim;
   }
+  syncSimHeadingLevels();
   return _simContent;
 }
 
@@ -8271,6 +8749,10 @@ function buildSimContent() {
           if (existing) existing.remove();
           var existingNote = document.getElementById("temp-combo-note");
           if (existingNote) existingNote.remove();
+          // NOTE: still built on the Demo page, just hidden there by CSS -- see
+          // .viewport-wrapper.demo-page #temp-combo-bar. Skipping creation instead
+          // did not work: switching views reuses the cached sim content, so the
+          // block never re-runs and the bar stayed missing in Prototypes too.
           var bar = document.createElement("div");
           bar.id = "temp-combo-bar";
           bar.style.cssText = "position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:999999;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;padding:6px 12px 6px 36px;background:#D3E8FD;border:1px solid #4680B8;border-radius:6px;font-family:'Roboto Condensed',sans-serif;font-size:13px;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.15);box-sizing:border-box;min-width:772px;";
@@ -15562,6 +16044,279 @@ function buildSimContent() {
   return null;
 }
 
+// Where the Demo page's divider sits: the same place the Prototypes view puts it,
+// just right of the button column -- body padding 20 + .btn-column 150 + the
+// .main-layout gap 24 = 194. In normal mode that is .viewport-wrapper's own left
+// edge, so its border-left lands there; on this page the column is out of flow and
+// the wrapper starts at 0, so the position is taken off the live column instead of
+// written down, and it follows if the column is ever resized.
+// Where the Demo page starts: the divider line is its left edge, and everything to
+// the right of it is treated as the page. Both the line and the content inset come
+// from here so they cannot drift apart.
+function demoPageLeft() {
+  const col = document.querySelector(".btn-column");
+  if (!col) return 194;
+  const gap = parseFloat(getComputedStyle(document.querySelector(".main-layout")).gap) || 24;
+  const c = col.getBoundingClientRect();
+  return c.left + c.width + gap;
+}
+
+// The Concord + DESE lockup: two marks with a hairline between them. Self-contained
+// so it can be dropped anywhere that needs the pair -- it owns its own markup, its
+// classes carry the sizes, and nothing outside it has to know the order.
+//
+// Sizes live in CSS (.demo-logo-cc 80, .demo-logo-dese 58, .demo-logo-rule 1x80).
+// They are addressed by class rather than by sibling order, because the rule sits
+// between the two images and an `img + img` selector silently stops reaching the
+// second one -- which is exactly how the DESE mark once dropped back to native 44.
+function buildLogoLockup() {
+  const row = document.createElement("div");
+  row.className = "demo-logos";
+
+  const cc = document.createElement("img");
+  cc.className = "demo-logo-cc";
+  cc.src = "ICONS/CC Logo.svg";
+  cc.alt = "The Concord Consortium";
+
+  // The rule is an element, not a border on the next image: a border could only ever
+  // be that image's height, and this one has to stand taller than the mark it sits
+  // beside. As a flex item it takes the row's gap on both sides.
+  const rule = document.createElement("span");
+  rule.className = "demo-logo-rule";
+  rule.setAttribute("aria-hidden", "true");
+
+  // The full DESE lockup (258x44), not the bare "dese" wordmark the sim's own title
+  // bar uses -- that one is just the glyphs, this one carries the department name.
+  const dese = document.createElement("img");
+  dese.className = "demo-logo-dese";
+  dese.src = "ICONS/DESE Mass Logo.svg";
+  dese.alt = "Massachusetts Department of Elementary and Secondary Education";
+
+  row.appendChild(cc);
+  row.appendChild(rule);
+  row.appendChild(dese);
+  return row;
+}
+
+// Icons for the Demo page's three share buttons, inlined from ICONS/ so they can
+// take the sim's colour. The files ship with fill="#000000"; inlined here as
+// currentColor instead, so each icon inherits the button's own
+// var(--sim-title-text) and changes with the selected sim -- an <img> could not be
+// recoloured. aria-hidden: the button's label already names the action.
+const OPEN_NEW_TAB_ICON = '<svg aria-hidden="true" width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">  <g id="Open-In-New-Tab-ICON" stroke="none" fill="none"> <rect id="Path" x="0" y="0" width="24" height="24"></rect> <path d="M5,21 C4.45,21 3.97916667,20.8041667 3.5875,20.4125 C3.19583333,20.0208333 3,19.55 3,19 L3,5 C3,4.45 3.19583333,3.97916667 3.5875,3.5875 C3.97916667,3.19583333 4.45,3 5,3 L11,3 L11,5 L5,5 L5,19 L19,19 L19,13 L21,13 L21,19 C21,19.55 20.8041667,20.0208333 20.4125,20.4125 C20.0208333,20.8041667 19.55,21 19,21 L5,21 Z M9.7,15.7 L8.3,14.3 L17.6,5 L14,5 L14,3 L21,3 L21,10 L19,10 L19,6.4 L9.7,15.7 Z" id="Shape" fill="currentColor" fill-rule="nonzero"></path> </g> </svg>';
+const COPY_URL_ICON = '<svg aria-hidden="true" width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">  <g id="Copy-URL" stroke="none" fill="none"> <rect id="Path" x="0" y="0" width="24" height="24"></rect> <path d="M7.95,21 C6.58333333,21 5.41666667,20.5166667 4.45,19.55 C3.48333333,18.5833333 3,17.4166667 3,16.05 C3,15.3833333 3.125,14.75 3.375,14.15 C3.625,13.55 3.98333333,13.0166667 4.45,12.55 L7.8,9.225 L9.2,10.625 L5.85,13.975 C5.56666667,14.2583333 5.35416667,14.5791667 5.2125,14.9375 C5.07083333,15.2958333 5,15.6666667 5,16.05 C5,16.8666667 5.2875,17.5625 5.8625,18.1375 C6.4375,18.7125 7.13333333,19 7.95,19 C8.33333333,19 8.70833333,18.9291667 9.075,18.7875 C9.44166667,18.6458333 9.76666667,18.4333333 10.05,18.15 L13.375,14.8 L14.8,16.225 L11.45,19.55 C10.9833333,20.0166667 10.45,20.375 9.85,20.625 C9.25,20.875 8.61666667,21 7.95,21 Z M9.925,15.5 L8.5,14.075 L14.075,8.5 L15.5,9.925 L9.925,15.5 Z M16.2,14.8 L14.8,13.375 L18.15,10.05 C18.4333333,9.76666667 18.6416667,9.45 18.775,9.1 C18.9083333,8.75 18.975,8.38333333 18.975,8 C18.975,7.16666667 18.6916667,6.45833333 18.125,5.875 C17.5583333,5.29166667 16.8583333,5 16.025,5 C15.6416667,5 15.2708333,5.07083333 14.9125,5.2125 C14.5541667,5.35416667 14.2333333,5.56666667 13.95,5.85 L10.625,9.2 L9.2,7.8 L12.55,4.45 C13.0166667,3.98333333 13.55,3.625 14.15,3.375 C14.75,3.125 15.3833333,3 16.05,3 C17.4166667,3 18.5791667,3.48333333 19.5375,4.45 C20.4958333,5.41666667 20.975,6.59166667 20.975,7.975 C20.975,8.625 20.8541667,9.25 20.6125,9.85 C20.3708333,10.45 20.0166667,10.9833333 19.55,11.45 L16.2,14.8 Z" id="Shape" fill="currentColor" fill-rule="nonzero"></path> </g> </svg>';
+const COPY_EMBED_ICON = '<svg aria-hidden="true" width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">  <g id="Copy-Embed-Code-ICON" stroke="none" fill="none"> <rect id="Path" x="0" y="0" width="24" height="24"></rect> <path d="M6,17 L1,12 L6,7 L7.4,8.4 L3.825,12 L7.4,15.6 L6,17 Z M10.45,20.3 L8.55,19.7 L13.55,3.7 L15.45,4.3 L10.45,20.3 Z M18,17 L16.6,15.6 L20.175,12 L16.6,8.4 L18,7 L23,12 L18,17 Z" id="Shape" fill="currentColor" fill-rule="nonzero"></path> </g> </svg>';
+
+// Where each sim really lives. These are the deployed sims, NOT this prototype -- the
+// share buttons hand out links to the real thing, so they keep working when the
+// prototype moves or goes away.
+// Note the path for Mystery Lumps is "mystery-lumps" while its key here is "lumps";
+// the other three match their keys.
+const SIM_URLS = {
+  bananas:   "https://madese-sims.concord.org/branch/main/bananas/index.html",
+  collapse:  "https://madese-sims.concord.org/branch/main/collapse/index.html",
+  noreaster: "https://madese-sims.concord.org/branch/main/noreaster/index.html",
+  lumps:     "https://madese-sims.concord.org/branch/main/mystery-lumps/index.html"
+};
+function demoSimURL() {
+  return SIM_URLS[activeSim] || SIM_URLS.collapse;
+}
+
+// Open in a new tab / Copy URL / Copy Embed Code. Copy falls back to a hidden
+// textarea because navigator.clipboard is unavailable on file:// in some browsers,
+// which is exactly how this prototype is usually opened.
+// The sim's name, ahead of the share buttons. Read off the sidebar's own [data-sim]
+// button -- the same single source syncDocTitle uses -- rather than kept in a second
+// list that could drift. The share row survives a sim change, so this is re-run from
+// rebuildDemoContent as well as at build time.
+// Takes the element when the caller already has it: at build time the row is not in
+// the document yet, so a querySelector here found nothing and the name came up empty
+// for whichever sim the page opened on.
+// The selected sim's display name, read off the sidebar button so there is one
+// source for it. Used for the share row's label and for the sim panel's landmark.
+function demoSimName() {
+  const btn = document.querySelector('[data-sim="' + activeSim + '"]');
+  return btn ? btn.textContent.trim() : "Simulation";
+}
+
+// On the Demo page the sim panel is NOT the page's main content -- the page already
+// has one, on .viewport-wrapper -- so a role="main" here nests a main inside a main
+// and makes "skip to main content" ambiguous (WCAG 1.3.1 / 4.1.2; axe flags it as
+// landmark-no-duplicate-main, landmark-main-is-top-level and landmark-unique).
+// It stays a navigable landmark, and gains the name it never had. The Prototypes
+// view is untouched: there the sim really is the page.
+// Purely semantic -- no rule in this file selects on [role="main"].
+function markSimLandmark(content) {
+  content.setAttribute("role", "region");
+  content.setAttribute("aria-label", demoSimName() + " simulation");
+}
+
+function syncShareSimName(el) {
+  el = el || document.querySelector(".demo-share-name");
+  if (!el) return;
+  el.textContent = demoSimName() + ":";
+}
+
+// Hold the name at the width of the LONGEST sim name, so the three buttons sit in
+// the same place whichever sim is selected. The row is centred, so without this a
+// shorter name drags the whole row left -- measured, the first button moved 25px
+// between "Mystery Lumps:" and "Bananas:".
+//
+// Measured by cycling the real text through the real element rather than with a
+// canvas: that way the 0.8px tracking and the actual face are both in play, and a
+// canvas cannot be trusted to letter-space identically. Runs after
+// document.fonts.ready for the usual reason -- fallback metrics would freeze the
+// wrong width.
+function freezeShareNameWidth(el) {
+  el = el || document.querySelector(".demo-share-name");
+  if (!el) return;
+  const keep = el.textContent;
+  el.style.width = "";
+  let max = 0;
+  SIMS_KEYS.forEach(function (k) {
+    const btn = document.querySelector('[data-sim="' + k + '"]');
+    if (!btn) return;
+    el.textContent = btn.textContent.trim() + ":";
+    const w = el.getBoundingClientRect().width;
+    if (w > max) max = w;
+  });
+  el.textContent = keep;
+  el.style.width = Math.ceil(max) + "px";
+}
+
+function buildDemoShareRow() {
+  const row = document.createElement("div");
+  row.className = "demo-share";
+  const name = document.createElement("span");
+  name.className = "demo-share-name";
+  // id so each button can borrow this text for its accessible name -- see below
+  name.id = "demo-share-name";
+  row.appendChild(name);
+
+  // The row's own status region (WCAG 4.1.3). Copying only ever changed the button's
+  // label to "Copied" for 1400ms, which is purely visual.
+  // It cannot borrow SIM.announce: that region belongs to the sim's content, which is
+  // torn down and rebuilt on every sim switch, while this row survives them.
+  // Same shape as the sims' own: .sr-only, polite, atomic.
+  const liveAnnounce = document.createElement("div");
+  liveAnnounce.className = "sr-only";
+  liveAnnounce.setAttribute("aria-live", "polite");
+  liveAnnounce.setAttribute("aria-atomic", "true");
+  row.appendChild(liveAnnounce);
+  // Cleared first, then set on the next frame: copying the same thing twice writes
+  // identical text, and a live region whose content has not changed is announced by
+  // almost nothing. Lifted from SIM.announce, which solves it the same way.
+  function announce(msg) {
+    liveAnnounce.textContent = "";
+    requestAnimationFrame(function () { liveAnnounce.textContent = msg; });
+  }
+  function legacy(txt) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = txt;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:-1000px;opacity:0;";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (e) {}
+    return Promise.resolve();
+  }
+  function copyText(txt) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(txt).catch(function () { return legacy(txt); });
+    }
+    return legacy(txt);
+  }
+  // Writes to the LABEL, not the button: setting btn.textContent would wipe the icon
+  // slot along with it and it would never come back.
+  function flash(btn, word) {
+    const lbl = btn.querySelector(".demo-share-label");
+    if (!lbl) return;
+    lbl.textContent = word;
+    clearTimeout(btn._flash);
+    btn._flash = setTimeout(function () { lbl.textContent = btn.dataset.label; }, 1400);
+  }
+  [
+    { label: "Open in a new tab", icon: OPEN_NEW_TAB_ICON,
+      act: function () { window.open(demoSimURL(), "_blank", "noopener"); } },
+    { label: "Copy URL", icon: COPY_URL_ICON,
+      act: function (b) { copyText(demoSimURL()).then(function () {
+        flash(b, "Copied");
+        // named, so it matches what the button itself announces as its name
+        announce(demoSimName() + " URL copied");
+      }); } },
+    { label: "Copy embed code", icon: COPY_EMBED_ICON,
+      act: function (b) {
+        copyText('<iframe src="' + demoSimURL() + '" width="1024" height="562" '
+          + 'frameborder="0" allowfullscreen title="MassSims"></iframe>')
+          .then(function () {
+            flash(b, "Copied");
+            announce(demoSimName() + " embed code copied");
+          });
+      } }
+  ].forEach(function (spec, i) {
+    const btn = document.createElement("button");
+    btn.className = "demo-share-btn";
+    btn.type = "button";
+    // "Open in a new tab" on its own does not say WHAT opens, and all three read the
+    // same on all four sims -- so by keyboard there is nothing to tell them apart
+    // (WCAG 1.3.1). aria-labelledby points at the visible "Mystery Lumps:" label and
+    // then at the button itself, so each one computes as "Mystery Lumps: Open in a
+    // new tab".
+    // Pointing at the VISIBLE text rather than writing an aria-label: the two can
+    // never drift apart, syncShareSimName already keeps it current on a sim switch,
+    // and when flash() swaps the label to "Copied" the announcement follows for free.
+    btn.id = "demo-share-btn-" + i;
+    btn.setAttribute("aria-labelledby", name.id + " " + btn.id);
+    const slot = document.createElement("span");
+    slot.className = "demo-share-icon";
+    slot.setAttribute("aria-hidden", "true");
+    if (spec.icon) slot.appendChild(createSVGIcon(spec.icon));
+    btn.appendChild(slot);
+    const lbl = document.createElement("span");
+    lbl.className = "demo-share-label";
+    lbl.textContent = spec.label;
+    btn.appendChild(lbl);
+    btn.dataset.label = spec.label;
+    btn.addEventListener("click", function () { spec.act(btn); });
+    row.appendChild(btn);
+  });
+
+  // Freeze each button at its natural width. "Copied" is shorter than every label it
+  // replaces, so without this the button shrinks mid-click and the row reflows under
+  // the pointer. The label centres inside the frozen width (see .demo-share-label).
+  //
+  // Measured after document.fonts.ready, not at build time: these labels are Barlow
+  // Condensed, and until that face lands the browser measures FALLBACK metrics and
+  // would freeze a width that is wrong for the type actually shown.
+  const freeze = function () {
+    freezeShareNameWidth(name);
+    row.querySelectorAll(".demo-share-btn").forEach(function (b) {
+      b.style.width = "";
+      // ceil, not round: a width half a pixel short clips the label it was measured from
+      b.style.width = Math.ceil(b.getBoundingClientRect().width) + "px";
+    });
+  };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(freeze);
+  else requestAnimationFrame(freeze);
+  syncShareSimName(name);
+  return row;
+}
+
+function syncDemoDivider() {
+  const wrapper = document.querySelector(".viewport-wrapper");
+  if (!wrapper) return;
+  const x = demoPageLeft() - wrapper.getBoundingClientRect().left;
+  wrapper.style.setProperty("--demo-divider-x", x + "px");
+  // ...and hold the page itself off the line by the same amount, so the row centres
+  // in the space to its RIGHT rather than on the whole window. Padding does not move
+  // the ::before: an absolutely positioned child is placed against the padding box,
+  // which still starts at the wrapper's left edge.
+  wrapper.style.paddingLeft = x + "px";
+}
+
 function buildDemoView() {
   const wrapper = document.querySelector(".viewport-wrapper");
   const container = document.getElementById("viewportContainer");
@@ -15577,6 +16332,10 @@ function buildDemoView() {
   const btnColumn = document.querySelector(".btn-column");
   btnColumn.style.position = "absolute";
   btnColumn.style.left = "20px";
+  // 20, matching where the Prototypes view's body padding puts this column. It was
+  // 16 to sit level with the page's logo, but that made the version badge and the
+  // Prototypes button jump 4px every time you crossed between the two views.
+  // Not shifting matters more than being level with the logo.
   btnColumn.style.top = "20px";
   btnColumn.style.zIndex = "10";
   btnColumn.style.pointerEvents = "none";
@@ -15606,11 +16365,29 @@ function buildDemoView() {
   wrapper.style.borderColor = "";
 
   // Hide viewport chrome
+  // The wrapper's own border would paint at the window edge now that the column is
+  // out of flow, so it stays off and .demo-divider draws the line instead. Where it
+  // goes is set by syncDemoDivider() once the row exists -- see there.
   wrapper.style.borderLeft = "none";
+  // .viewport-wrapper's min-height is calc(100vh - 40px), the 40 being body's 20+20
+  // padding in the Prototypes view. The Demo page runs body at "16px 0 0", so that
+  // 40 leaves the page 24px short of the window -- which showed as a white strip
+  // under the footer band, since the band is the last thing in the column.
+  wrapper.style.minHeight = "calc(100vh - 16px)";
+  wrapper.classList.add("demo-divider");
+  wrapper.classList.add("demo-page");
   if (bwLabel) bwLabel.style.display = "none";
   info.style.display = "none";
-  document.body.style.background = "#ededed";
-  document.body.style.padding = "20px 0";
+  // White on the Demo page only -- this is the page people are sent to, and it reads
+  // as a document rather than as the grey tool surface the prototype chrome sits on.
+  // exitDemoView clears this back to "", which falls through to body's own #ededed.
+  document.body.style.background = "#fff";
+  // 16 from the top of the window. The logo used to start at 24 -- 20 of body padding
+  // plus 4 of .demo-head padding-top -- and both were pulled in to land on 16.
+  // Nothing at the bottom: the footer band runs to the very edge of the window, the
+  // way concord.org's does, and any body padding there would show as a white strip
+  // under it. exitDemoView clears this back to "".
+  document.body.style.padding = "16px 0 0";
   wrapper.style.alignItems = "stretch";
   container.style.paddingTop = "";
   container.style.alignSelf = "";
@@ -15621,22 +16398,79 @@ function buildDemoView() {
   // Center area: title above, sim buttons + sim content side by side below
   const demoWrap = document.createElement("div");
   demoWrap.id = "demo-wrap";
-  demoWrap.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;width:100%;padding:0 20px;";
+  // flex-start, not center: with a header, a rule and a footer the column reads from
+  // the top. The footer is pushed down with margin-top:auto instead.
+  demoWrap.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:flex-start;flex:1;width:100%;padding:0 20px;";
+
+  // ---- page header: the two logos, the title, the intro, the rule ----------------
+  const demoHead = document.createElement("div");
+  demoHead.className = "demo-head";
+
+  demoHead.appendChild(buildLogoLockup());
+
+  // Two lines, broken where the mock breaks it, with an explicit <br> so the break
+  // is ours rather than wherever the box happens to run out.
+  const pageTitle = document.createElement("h1");
+  pageTitle.className = "demo-page-title";
+  pageTitle.innerHTML = "Interactive Simulations<br>"
+    + "for Local-Level Classroom STE Performance Assessment Tasks";
+  demoHead.appendChild(pageTitle);
+
+  const intro = document.createElement("p");
+  intro.className = "demo-intro";
+  intro.textContent = "These interactive simulations accompany the local-level STE "
+    + "performance assessment tasks for grades 3-8 from the Massachusetts Department "
+    + "of Elementary and Secondary Education (DESE). They were developed by the "
+    + "Concord Consortium in partnership with MA DESE.";
+  demoHead.appendChild(intro);
+
+  const headRule = document.createElement("hr");
+  headRule.className = "demo-rule";
+  demoHead.appendChild(headRule);
+  demoWrap.appendChild(demoHead);
 
   const demoRow = document.createElement("div");
   demoRow.setAttribute("data-demo-row", "");
-  demoRow.style.cssText = "display:flex;align-items:center;justify-content:center;gap:24px;width:100%;";
+  // flex-start, not center: the sim button column starts level with the top of the
+  // simulation rather than floating centred against it.
+  // width from --demo-col-w, the same variable the header takes: the row is no longer
+  // the full page width with its contents centred inside it, it IS the column.
+  demoRow.style.cssText = "display:flex;align-items:flex-start;justify-content:center;gap:24px;width:var(--demo-col-w,100%);";
 
   // Sim buttons column
   const simBtns = document.createElement("div");
   simBtns.id = "demo-sim-btns";
-  simBtns.style.cssText = "display:flex;flex-direction:column;gap:8px;flex-shrink:0;";
-  const sims = [
-    { key: "bananas", label: "Bananas" },
-    { key: "collapse", label: "Collapse!" },
-    { key: "noreaster", label: "Nor’easter" },
-    { key: "lumps", label: "Mystery Lumps" }
+  // gap 26 separates the two grade bands -- it used to be 8 and sit between every
+  // child, with the band label's own margins making up the difference. Now that a
+  // band is one element, the one number does the one job.
+  simBtns.style.cssText = "display:flex;flex-direction:column;gap:26px;flex-shrink:0;";
+  // Grouped by grade band, which is how the assessment tasks themselves are organised.
+  const simGroups = [
+    { band: "Grades 3-5", sims: [
+      { key: "lumps", label: "Mystery Lumps" }
+    ] },
+    { band: "Grades 6-8", sims: [
+      { key: "bananas", label: "Bananas" },
+      { key: "collapse", label: "Collapse!" },
+      { key: "noreaster", label: "Nor’easter" }
+    ] }
   ];
+  // One element per band, each a labelled group. The per-button body below is
+  // unchanged -- it just appends into the current band rather than into the column.
+  const demoItems = [];
+  simGroups.forEach(function (g, gi) {
+    const group = document.createElement("div");
+    group.className = "demo-sim-group";
+    group.setAttribute("role", "group");
+    const bandLabel = document.createElement("div");
+    bandLabel.className = "demo-band-label";
+    bandLabel.id = "demo-band-" + gi;
+    bandLabel.textContent = g.band;
+    group.setAttribute("aria-labelledby", bandLabel.id);
+    group.appendChild(bandLabel);
+    simBtns.appendChild(group);
+    g.sims.forEach(function (x) { demoItems.push({ key: x.key, label: x.label, group: group }); });
+  });
   function applyDemoBtnStyle(btn, simKey, isActive) {
     const simData = SIMS[simKey];
     const theme = simData && simData.theme;
@@ -15670,7 +16504,7 @@ function buildDemoView() {
     }
   }
 
-  sims.forEach(s => {
+  demoItems.forEach(s => {
     const btn = document.createElement("button");
     btn.className = "toggle-btn" + (activeSim === s.key ? " active" : "");
     btn.setAttribute("aria-pressed", activeSim === s.key ? "true" : "false");
@@ -15732,13 +16566,72 @@ function buildDemoView() {
       });
       rebuildDemoContent(demoWrap, simBtns);
     });
-    simBtns.appendChild(btn);
+    s.group.appendChild(btn);
   });
   demoWrap.appendChild(simBtns);
 
   // Append buttons first so we can measure
   demoRow.appendChild(simBtns);
   demoWrap.appendChild(demoRow);
+
+  // ---- page footer ---------------------------------------------------------------
+  // The version is read off the badge in the corner rather than written again, so the
+  // two can never disagree; the year comes from the clock, like the timeline's own
+  // "now" marker.
+  // LINK CHECK: /licensing/ was verified against other Concord projects in this
+  // workspace; /privacy-policy/ was given by Mike. STILL UNCONFIRMED: /terms-of-use/
+  // and /contact/ -- conventional guesses, check before this goes anywhere public.
+  // concord.org's footer shape: the links first, then a hairline, then the fine
+  // print. Same words as before -- the pipe separators are gone, because the two
+  // groups are now separated by the rule and by spacing the way theirs are, and a
+  // row of four links needs no dividers.
+  const demoFoot = document.createElement("div");
+  demoFoot.className = "demo-foot";
+  const footInner = document.createElement("div");
+  footInner.className = "demo-foot-inner";
+
+  // The six items in one centred row with pipe separators, as before. Order is
+  // version, copyright, then the four links. The version is read off the badge in
+  // the corner rather than written again, so the two can never disagree; the year
+  // comes from the clock.
+  const footRow = document.createElement("div");
+  footRow.className = "demo-foot-row";
+
+  const bits = [];
+  const badge = document.getElementById("masssims-title");
+  const ver = badge ? ((badge.textContent.match(/v\d+(?:\.\d+)*/) || [""])[0]) : "";
+  const verSpan = document.createElement("span");
+  verSpan.textContent = "MassSims " + ver;
+  bits.push(verSpan);
+  const copy = document.createElement("span");
+  copy.innerHTML = "&copy; " + new Date().getFullYear() + " The Concord Consortium";
+  bits.push(copy);
+  [["Terms of Use", "https://concord.org/terms-of-use/"],
+   ["Licensing", "https://concord.org/licensing/"],
+   ["Privacy Policy", "https://concord.org/privacy-policy/"],
+   ["Contact Us", "https://concord.org/contact/"]].forEach(function (pair) {
+    const a = document.createElement("a");
+    a.textContent = pair[0];
+    a.href = pair[1];
+    a.target = "_blank";
+    a.rel = "noopener";
+    bits.push(a);
+  });
+  bits.forEach(function (el, i) {
+    if (i) {
+      const sep = document.createElement("span");
+      sep.className = "demo-foot-sep";
+      sep.setAttribute("aria-hidden", "true");
+      sep.textContent = "|";
+      footRow.appendChild(sep);
+    }
+    footRow.appendChild(el);
+  });
+  footInner.appendChild(footRow);
+
+  demoFoot.appendChild(footInner);
+  demoWrap.appendChild(demoFoot);
+
   container.appendChild(demoWrap);
 
   // Equalize button widths to the widest
@@ -15763,21 +16656,37 @@ function buildDemoView() {
   const standaloneBorder = 4;
   const demoPad = 40;
   const simBtnsActualW = maxW + 24; // measured buttons + gap
-  const availW = window.innerWidth - simBtnsActualW - demoPad - standaloneBorder;
+  // minus demoPageLeft(): the page is the space right of the divider, not the window
+  const availW = window.innerWidth - demoPageLeft()
+    - simBtnsActualW - demoPad - standaloneBorder;
   const demoContentW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, availW)));
+  // The page column: the button column, the gap, and the sim with its border. The
+  // header takes the same width (--demo-col-w), so header and sim share one left
+  // edge and the whole page floats centred in the space right of the divider once
+  // the sim reaches its 1024 cap. Below that the column already fills the space and
+  // centring changes nothing.
+  demoWrap.style.setProperty("--demo-col-w",
+    (simBtnsActualW + demoContentW + standaloneBorder) + "px");
 
   const contentCol = document.createElement("div");
   contentCol.setAttribute("data-content-col", "");
+  // Width pinned to the sim below, NOT left to the content. This column holds the
+  // sim and the share row, and a flex column is as wide as its widest child -- so
+  // once the share row grew past the sim (which happens whenever the sim is squeezed
+  // towards its 768 minimum) the row started sizing this column, and the sim, being
+  // centred in it, drifted right. The flex gap to the button column stayed 24
+  // throughout; what moved was the sim inside its own column, which reads as the gap
+  // changing. Measured at 1280: sim 774 against a share row of 803, so the sim sat
+  // 38.5 off the buttons instead of 24.
+  // Pinning the width also keeps --demo-col-w honest -- it is computed from the sim,
+  // so a column driven by anything else makes the header and the sim row disagree
+  // about where the page's left edge is.
   contentCol.style.cssText = "display:flex;flex-direction:column;align-items:center;";
-
-  const demoTitle = document.createElement("h1");
-  demoTitle.style.cssText = "font-family:'Lato',sans-serif;font-size:28px;font-weight:700;color:#333;margin:0 0 24px;text-align:center;";
-  demoTitle.textContent = "Mass DESE Science Performance Assessments";
-  contentCol.appendChild(demoTitle);
+  contentCol.style.width = (demoContentW + standaloneBorder) + "px";
 
   const content = document.createElement("div");
   content.className = "content-area standalone";
-  content.setAttribute("role", "main");
+  markSimLandmark(content);
   content.style.width = demoContentW + "px";
   content.style.height = "562px";
   applySimTheme(content);
@@ -15786,7 +16695,12 @@ function buildDemoView() {
   if (sc) content.appendChild(sc);
 
   contentCol.appendChild(content);
+  // the theme vars go on the COLUMN as well, so the share row below the sim inherits
+  // them and its buttons can follow the selected sim's colours in pure CSS
+  applySimTheme(contentCol);
+  contentCol.appendChild(buildDemoShareRow());
   demoRow.appendChild(contentCol);
+  syncDemoDivider();
 
   // Measure again once the wordmark faces have landed. Each button is set in its
   // sim's own display font, and a @font-face is not "pending" until something uses
@@ -15801,9 +16715,14 @@ function buildDemoView() {
       const m = equaliseDemoSimBtns();
       if (m === maxW) return;
       maxW = m;
-      const avail = window.innerWidth - (m + 24) - demoPad - standaloneBorder;
-      content.style.width =
-        Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, avail))) + "px";
+      const avail = window.innerWidth - demoPageLeft() - (m + 24) - demoPad - standaloneBorder;
+      const w = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, avail)));
+      content.style.width = w + "px";
+      contentCol.style.width = (w + standaloneBorder) + "px";
+      // the column is measured off the buttons too, so it moves with them
+      demoWrap.style.setProperty("--demo-col-w", ((m + 24) + w + standaloneBorder) + "px");
+      // the buttons just changed width, so the gutter moved and the line with it
+      syncDemoDivider();
     });
   }
 
@@ -15814,12 +16733,20 @@ function buildDemoView() {
 }
 
 function rebuildDemoContent(demoWrap, simBtns) {
+  // Hold the page where it is. Swapping the sim tears the old panel out before the
+  // new one goes in, and anything inside the rebuild that focuses or scrolls an
+  // element can take the page with it. Captured here and put back after the DOM
+  // work, then again on the next frame for anything that settles late.
+  const keepY = window.scrollY;
+  const restore = function () { if (window.scrollY !== keepY) window.scrollTo(0, keepY); };
   if (_simTitleBar && _simTitleBar.parentNode) _simTitleBar.remove();
   if (_simContent && _simContent.parentNode) _simContent.remove();
   const demoRow = demoWrap.querySelector("[data-demo-row]");
   const contentCol = demoRow.querySelector("[data-content-col]");
   const oldContent = contentCol.querySelector(".content-area.standalone");
   if (oldContent) oldContent.remove();
+  // the share row stays put across a sim change; the new sim goes in ABOVE it
+  const shareRow = contentCol.querySelector(".demo-share");
 
   const standaloneMax = 1024;
   const standaloneMin = 768;
@@ -15827,12 +16754,17 @@ function rebuildDemoContent(demoWrap, simBtns) {
   const demoPad = 40;
   const measuredBtnW = simBtns.querySelector(".toggle-btn").offsetWidth;
   const simBtnsActualW = measuredBtnW + 24;
-  const availW = window.innerWidth - simBtnsActualW - demoPad - standaloneBorder;
+  // minus demoPageLeft(): the page is the space right of the divider, not the window
+  const availW = window.innerWidth - demoPageLeft()
+    - simBtnsActualW - demoPad - standaloneBorder;
   const demoContentW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, availW)));
+  // keep the header's column in step with the sim it sits above
+  demoWrap.style.setProperty("--demo-col-w",
+    (simBtnsActualW + demoContentW + standaloneBorder) + "px");
 
   const content = document.createElement("div");
   content.className = "content-area standalone";
-  content.setAttribute("role", "main");
+  markSimLandmark(content);
   content.style.width = demoContentW + "px";
   content.style.height = "562px";
   applySimTheme(content);
@@ -15840,7 +16772,18 @@ function rebuildDemoContent(demoWrap, simBtns) {
   const sc = getSimContent();
   if (sc) content.appendChild(sc);
 
-  contentCol.appendChild(content);
+  // the sim sets the column's width -- see buildDemoView for why it is pinned
+  contentCol.style.width = (demoContentW + standaloneBorder) + "px";
+
+  // the share row stays put across a sim change; the new sim goes in ABOVE it
+  if (shareRow) contentCol.insertBefore(content, shareRow);
+  else contentCol.appendChild(content);
+  // the column survives the swap, so its theme vars have to be refreshed by hand or
+  // the share buttons would keep the previous sim's colours
+  applySimTheme(contentCol);
+  syncShareSimName();
+  restore();
+  requestAnimationFrame(restore);
   if (SIM.updateDataPanel) SIM.updateDataPanel();
   if (SIM.updateNorDropdownSize) SIM.updateNorDropdownSize();
   requestAnimationFrame(checkFungusStack);
@@ -15877,6 +16820,11 @@ function exitDemoView() {
 
   // Restore viewport chrome
   wrapper.style.borderLeft = "";
+  wrapper.style.minHeight = "";
+  wrapper.classList.remove("demo-divider");
+  wrapper.classList.remove("demo-page");
+  wrapper.style.removeProperty("--demo-divider-x");
+  wrapper.style.paddingLeft = "";
   if (bwLabel) bwLabel.style.display = "";
   info.style.display = "";
   document.body.style.padding = "";
@@ -16437,6 +17385,19 @@ wireToggleGroup("[data-device]", btn => { activeDevice = btn.dataset.device; });
 
 // ...and once at startup, so the tab is named before anyone switches anything.
 syncDocTitle();
+
+// The sidebar's selected sim is DERIVED, not written into the markup. It used to be
+// hard-coded `active` + aria-pressed="true" on Collapse!, which quietly became a lie
+// the moment the default sim changed -- the sidebar highlighted one sim while the app
+// ran another, and reported the wrong pressed state to a screen reader with it.
+function syncSimButtons() {
+  document.querySelectorAll("[data-sim]").forEach(function (b) {
+    const on = b.dataset.sim === activeSim;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+syncSimButtons();
 
 document.getElementById("demo-site-btn").addEventListener("click", () => {
   if (demoMode) {
