@@ -184,10 +184,12 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    /* no margin of its own: the separator below the intro carries the gap. Measured
-       on concord.org's StoryQ page, a body paragraph to the next section is
-       30 + the separator + 20 -- see .demo-rule. (75 here briefly, borrowed from the
-       logo-to-heading step, which is a different relationship and 20 too wide.) */
+    /* no margin of its own: .demo-intro's own 40px bottom margin carries the gap to
+       the sim row. That used to be 30 + a 5px separator + 20; the separator is gone
+       (see the retired .demo-rule) and 40 is what concord.org actually steps from the
+       end of a page's lead to the first module below it, measured on StoryQ.
+       (75 here briefly, borrowed from the logo-to-heading step, which is a different
+       relationship and 20 too wide.) */
     margin-bottom: 0;
   }
   /* Logos sit at the LEFT of the header band, as in the mock, while the title and
@@ -274,6 +276,24 @@
        page too, since the paragraph has no margin-top. */
     margin: 0 0 30px;
   }
+  /* concord.org's homepage signature: ONE headline carrying TWO weights. Measured on
+     their lead heading -- "Innovating and inspiring" at museo 100 above "STEM inquiry"
+     at museo 900, both 54/60, the heavy run in their teal. They run the same device
+     again at 42/48 further down the page ("A Few of our" / "Featured Projects"), so
+     it is a system and not a one-off.
+     The size is unchanged: their H1 is 54/60, which is what this already was.
+     The split is the qualifier light and the thing itself heavy, which is exactly how
+     our title divides -- and the weight change lands on the line break the text
+     already had, so the two runs stack rather than straddling a line.
+     The kit carries 100/300/500/700/900 and NOT 400 (400 and 500 both fall back to
+     the generic sans -- measured). 100 and 900 render our two runs at 898.19 and
+     1256.88, so they are genuinely different faces, not one face synthesised twice. */
+  .demo-page-title-lead { font-weight: 100; }
+  /* their teal, rgb(0,124,139), sampled from the homepage H1's second run. 4.93:1 on
+     white: clears AA for normal text, never mind the 3:1 this size actually needs.
+     Fixed, NOT var(--sim-title-text) -- this is the page's title, so it holds still
+     when a sim is chosen, the same reason .demo-share-name is not themed either. */
+  .demo-page-title-key { font-weight: 900; color: rgb(0, 124, 139); }
   /* concord.org's own section separator, measured on the StoryQ project page:
      hr.hr-thick is a 5px band of #f5f5f5 -- a tonal shelf, not a line -- with 30
      above it (the paragraph's margin, which collapses with the rule's own 20) and 20
@@ -282,12 +302,25 @@
      It replaces the 1px #c4c4c4 hairline that used to sit here: that was a hard line
      24px above the sim's own 2px-bordered panel and read as a doubled edge. At
      #f5f5f5 on white this one is a tonal shift and does not compete with it. */
+  /* RETIRED -- kept because the values are right and only the PLACE was wrong.
+     hr.hr-thick is real: 5px solid #f5f5f5, margin 20/20, measured on concord.org's
+     project pages, and this matched it exactly. But every instance of it there sits
+     deep in the body dividing peer sections, and every one introduces an <h3>:
+       above P / UL / div   gap 20-30      below H3   gap 20
+     Not one of their pages puts a rule under the lead -- the homepage, /licensing/
+     and the projects index carry no <hr> at all, and on the project pages the lead
+     heading and intro run straight into the first module on whitespace alone.
+     This page had one in exactly the spot they leave empty, so the gap is now
+     .demo-intro's own 40px margin. Restore by re-adding the element in buildDemoView
+     and uncommenting this rule, but only for a real section break with a heading
+     under it -- that is the job this thing is for.
   .demo-rule {
     width: 100%;
     border: 0;
     border-top: 5px solid #f5f5f5;
     margin: 0 0 20px;
   }
+  */
 
   .demo-intro {
     /* concord.org's body paragraph, measured off /licensing/: museo-sans 300 at
@@ -303,7 +336,22 @@
     color: rgb(8, 13, 9);
     text-align: left;
     max-width: 100%;
-    margin: 0 0 30px;
+    /* 56. This is a SECTION break -- the page's lead ends and the tool begins -- not
+       a step between paragraphs, so it takes concord.org's section step rather than
+       their 30. Measured in StoryQ's body column:
+         H3 -> paragraph            30
+         paragraph -> paragraph     30 (40 in one place)
+         last element -> hr.hr-thick  20-30
+         hr.hr-thick -> next H3     20
+       so a section step there totals 46-56 including the 6px band.
+       56 is also exactly what this page already had (30 + the 5px rule + 20), so
+       pulling the rule out keeps the distance it was holding rather than shortening
+       it. 40 was tried first, taken from StoryQ's lead-text-to-image step -- but
+       that is a gap WITHIN the lead, not out of it, and it read short. Whitespace
+       alone also has to do the work the band used to help with.
+       Still under the 75 above the title, which keeps the logo lockup reading as the
+       outermost zone. */
+    margin: 0 0 56px;
   }
   /* The three share actions, under the sim */
   .demo-share {
@@ -4931,8 +4979,8 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.32</div>
-      <div style="font-weight: 400;">Updated: 10/28/26</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.33</div>
+      <div style="font-weight: 400;">Updated: 10/29/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
       <div class="btn-column-label" id="sims-label">Sims</div>
@@ -16448,25 +16496,57 @@ function buildDemoView() {
 
   demoHead.appendChild(buildLogoLockup());
 
-  // Two lines, broken where the mock breaks it, with an explicit <br> so the break
-  // is ours rather than wherever the box happens to run out.
+  // Spelled out rather than "STE Performance Simulations": the abbreviation is
+  // DESE's own shorthand and reads as jargon to anyone arriving cold. The rest of
+  // the description -- local-level, classroom, assessment tasks, grades, who made
+  // it -- stays in the intro below, where it was already said once.
   const pageTitle = document.createElement("h1");
   pageTitle.className = "demo-page-title";
-  pageTitle.innerHTML = "Interactive Simulations<br>"
-    + "for Local-Level Classroom STE Performance Assessment Tasks";
+  // Two runs, light then heavy, as concord.org's own lead heading is set -- see
+  // .demo-page-title-lead / -key for where the weights and the teal come from.
+  // The <br> is explicit so the break is ours rather than wherever the box happens
+  // to run out, the same reason the previous two-line title carried one. It falls
+  // where the text was already breaking on its own from 1280 up -- the light run
+  // measures 1003.31px against a 1046px column at the narrowest supported window --
+  // so this pins a break that was happening anyway rather than forcing a new one.
+  // The space before the <br> is deliberate: it collapses visually at the end of the
+  // line, but it keeps textContent reading "Engineering Performance" rather than
+  // running the two words together, which is what the old title did.
+  pageTitle.innerHTML =
+    '<span class="demo-page-title-lead">Science and Technology/Engineering</span> '
+    + '<br><span class="demo-page-title-key">Performance Simulations</span>';
   demoHead.appendChild(pageTitle);
 
   const intro = document.createElement("p");
   intro.className = "demo-intro";
-  intro.textContent = "These interactive simulations accompany the local-level STE "
-    + "performance assessment tasks for grades 3-8 from the Massachusetts Department "
-    + "of Elementary and Secondary Education (DESE). They were developed by the "
-    + "Concord Consortium in partnership with MA DESE.";
+  // One sentence, and the order is load-bearing. Both organisations are expanded on
+  // first use and abbreviated after; "Developed by..." is a leading participial
+  // phrase, so it attaches to "these simulations" -- the subject right after the
+  // comma -- rather than to whatever noun happens to sit next to it. That matters:
+  // Concord built the SIMULATIONS, DESE wrote the TASKS, and every shorter rewrite
+  // that put the credit at the end read as though Concord had written the tasks.
+  // DESE's own wording, from their nav markup: "Science and Technology/Engineering"
+  // -- slash unspaced, lowercase "and".
+  //
+  // The ending is chosen for wrapping, not only for sense. The paragraph used to
+  // close on "MA DESE.", a tail short enough to orphan: at 1512 it left those two
+  // words alone on a third line, 80.59px in a 1278px column. Measured across
+  // 1280/1340/1400/1460/1512 in museo-sans 300 at 18/32.4: this runs to two lines
+  // from 1400 up, and its worst tail anywhere in that range is "for grades 3-8."
+  // at 128.06px. Every alternative tried dropped to a one- or two-word last line
+  // at some width in between. Re-measure before rewording -- the cheap-looking
+  // cuts are the ones that orphan.
+  intro.textContent = "Developed by the Concord Consortium in partnership with the "
+    + "Massachusetts Department of Elementary and Secondary Education (DESE), these "
+    + "simulations accompany DESE\u2019s local-level Science and "
+    + "Technology/Engineering (STE) performance assessment tasks for "
+    + "grades 3\u20138.";
   demoHead.appendChild(intro);
 
-  const headRule = document.createElement("hr");
-  headRule.className = "demo-rule";
-  demoHead.appendChild(headRule);
+  // No rule here. concord.org separates a page's lead from the content below it with
+  // whitespace -- .demo-intro's 40px margin now carries that gap. Their hr.hr-thick
+  // exists, but it divides peer sections in the body and always introduces an <h3>;
+  // see the retired .demo-rule block for the measurements.
   demoWrap.appendChild(demoHead);
 
   const demoRow = document.createElement("div");
