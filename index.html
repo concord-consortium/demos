@@ -293,6 +293,9 @@
   .ne-side-rise { stroke: #ff8a80; stroke-width: 2.5; marker-end: url(#ne-head-warm); }
   .ne-side-cfront { fill: none; stroke: var(--cold); stroke-width: 4; stroke-linecap: round; }
   .ne-side-wfront { fill: none; stroke: var(--warm); stroke-width: 4; stroke-linecap: round; }
+  /* Side view: the straight line where the cold and warm air meet. */
+  .ne-side-boundary { fill: none; stroke: #c9d0dc; stroke-width: 3; stroke-linecap: round; }
+  .ne-side-front-line { stroke-width: 3.5; }
   .ne-side-jet { fill: none; stroke: var(--jet); stroke-width: 4; stroke-linecap: round; }
   .ne-side .ne-jet-flow { stroke-width: 2; }
   .ne-side-snow { fill: #fff; }
@@ -330,6 +333,7 @@
     font: inherit; font-size: 16px; line-height: 1.25; cursor: pointer;
   }
   .ne-canned button:hover:not(:disabled):not([aria-disabled="true"]), .ne-canned button:focus-visible:not(:disabled):not([aria-disabled="true"]) { background: #1b2130; }
+  .ne-noreaster { color: var(--jet); }   /* "nor'easter" in yellow (Mike): canned list + info modal tables; 15:1 on --panel */
   .ne-canned button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--panel); }
   .ne-canned button:is(:disabled, [aria-disabled="true"]) { cursor: default; color: var(--ink-off); border-color: var(--edge-off); }
   /* A scroll container clips what's drawn outside it, and a focus ring reaches
@@ -459,10 +463,15 @@
   .ne-air { display: none; }
   .ne-globe.is-step-3 .ne-air, .ne-globe.is-step-4 .ne-air { display: inline; }
   .ne-globe.is-step-4 .ne-air-btn { display: none; } /* read-only after step 3 */
+  .ne-globe.is-run .ne-air { display: none; }         /* once time moves past 0 the air masses go (Amy); at time 0 they show with the fronts (Mike) */
 
   /* Step 4 (run): PLACEHOLDER storm — an "L" that forms near the trough and
      tracks up the coast. Not a model; see drawStorm(). */
   .ne-storm { display: none; pointer-events: none; }
+  /* Before the storm (Amy): the stationary front where the air masses meet. */
+  .ne-stationary { display: none; pointer-events: none; }
+  .ne-boundary-line { fill: none; stroke: #c9d0dc; stroke-width: 3; stroke-linecap: round; }
+  .ne-globe.is-step-4 .ne-stationary { display: inline; }
   /* Only the clouds are see-through (80%); the L, fronts, winds and track stay
      at full strength. Set on the cloud LAYER, so overlapping puffs composite
      first and then fade together — no darker seams. */
@@ -510,8 +519,8 @@
 <body>
   <header class="ne-top">
     <div class="app-tag">
-      <h1 class="app-name">Nor’easter Explorer &bull; v0.3</h1>
-      <div class="app-updated">Updated: 10/27/26</div>
+      <h1 class="app-name">Nor’easter Explorer &bull; v0.4</h1>
+      <div class="app-updated">Updated: 10/29/26</div>
     </div>
     <!-- Placeholder copy — content design to supply. -->
     <p class="ne-prompt" id="ne-prompt" aria-live="polite"><span class="ne-step-num">Setup: Step 1 of 3<span class="sr-only">:</span></span><span id="ne-prompt-text">Choose the position of the jet stream.</span></p>
@@ -536,22 +545,22 @@
       </button>
     </div>
     <div class="ne-modal-body" tabindex="0" role="region" aria-labelledby="info-title">
-      <p>A nor’easter forms when all four of these line up:</p>
+      <p>A nor’easter forms when all three of these line up:</p>
       <ol>
-        <li><strong>The trough sits over the East Coast</strong>: between <span data-rule="coast"></span>.
-            Further west, the storm goes inland. Further east, it goes out to sea.</li>
-        <li><strong>The cold and warm air meet in the right place.</strong> A storm forms only where
-            the continental air and the ocean air meet, along the jet on the trough’s east side.
-            For a nor’easter, that line has to cross the coast between the Gulf and Cape Cod;
-            for an inland storm, it has to lie over land; for a storm out to sea, over open ocean.
-            If it doesn’t, or it never gets north of <span data-rule="tropical-2"></span> (the tropics),
-            no storm forms. The last column below shows where each jet’s air masses meet at the coast.</li>
+        <li><strong>The storm forms at the coast.</strong> A storm forms where the continental air
+            and the ocean air meet, along the jet, about <span data-rule="genesis-km"></span> downstream
+            (east) of the trough’s lowest point, where the air high above spreads out and lifts the
+            air below. If that spot is on the coast between the Gulf and Cape Cod, the storm is a
+            nor’easter; over land, an inland storm; over open ocean, a storm out to sea. If the air
+            masses only meet south of <span data-rule="tropical-2"></span> (the tropics), no storm
+            forms. The last column below shows the trough longitudes that put each jet’s storm on
+            the coast.</li>
         <li><strong>The storm is strong enough.</strong> A trough that reaches the Southeast and
             Gulf (B, C) and a bigger temperature difference (ocean air minus continental air)
             make a stronger storm:</li>
       </ol>
       <table class="ne-modal-table" id="info-table"></table>
-      <ol start="4">
+      <ol start="3">
         <li><strong>Snow or rain:</strong> snow (a blizzard if strong) needs continental air below
             <span data-rule="snow"></span> and a trough that stays north of <span data-rule="tropical"></span>.
             A trough reaching further south (C, D) pulls in tropical air, so it rains.</li>
@@ -637,6 +646,7 @@
          accessible control) → the L (on top for readability, as in the side
          view) → the air-mass −/+ controls. -->
     <g id="air" class="ne-air" aria-hidden="true"></g>
+    <g id="stationary" class="ne-stationary" aria-hidden="true"></g>
     <g id="storm" class="ne-storm" aria-hidden="true"></g>
     <g id="clouds" class="ne-storm" aria-hidden="true"></g>
     <!-- Step 2: how far the trough can move (mirrors the bottom slider). -->
@@ -1251,6 +1261,7 @@ function draw(fast = false) {
   });
   drawAir();
   drawTroughRange();
+  drawStationary();
   drawStorm();
   drawSide();
 }
@@ -1524,16 +1535,16 @@ function startNewTrial() {
    "+ Trial N"; an untouched trial is just filled in.
    Each preset is checked against the rules on load; one that no longer
    gives its outcome is disabled (and logged), so a button can't lie. */
-const CANNED = [   // same order as the info modal's All outcomes table
+const CANNED = [   // listed in the info modal's order at start-up (buildCanned sorts them)
   { label: "No storm",                        jet: "A", lon: -80, cont: 35, ocean: 45 },
   { label: "Storm out to sea: snow over the ocean, none on land", jet: "B", lon: -65, cont: 15, ocean: 65 },
   { label: "Storm out to sea: rain over the ocean, none on land", jet: "B", lon: -65, cont: 35, ocean: 70 },
   { label: "Inland storm: snow",              jet: "B", lon: -95, cont: 15, ocean: 65 },
-  { label: "Nor’easter: snow",                jet: "A", lon: -75, cont: 10, ocean: 45 },
-  { label: "Strong nor’easter: blizzard",     jet: "B", lon: -80, cont: 10, ocean: 65 },
-  { label: "Nor’easter: rain",                jet: "B", lon: -80, cont: 40, ocean: 60 },
+  { label: "Nor’easter: snow",                jet: "B", lon: -90, cont: 10, ocean: 45 },
+  { label: "Strong nor’easter: blizzard",     jet: "B", lon: -90, cont: 10, ocean: 65 },
+  { label: "Nor’easter: rain",                jet: "B", lon: -90, cont: 40, ocean: 60 },
   { label: "Inland storm: rain",              jet: "B", lon: -95, cont: 35, ocean: 70 },
-  { label: "Strong nor’easter: rain & wind",  jet: "C", lon: -80, cont: 10, ocean: 65 },
+  { label: "Strong nor’easter: rain & wind",  jet: "C", lon: -90, cont: 10, ocean: 65 },   // a Gulf nor'easter
 ];
 function loadCanned(c) {
   if (viewing !== null) returnToLive();
@@ -1555,12 +1566,26 @@ elCannedToggle.addEventListener("change", () => {
 elCannedToggle.addEventListener("keydown", ev => {
   if (ev.key === "Enter") { ev.preventDefault(); elCannedToggle.click(); }
 });
-function buildCanned() {   // called at start-up, once the rules exist
+/* Write `text` into a d3 selection with every "nor'easter" in yellow (Mike) —
+   the text itself is unchanged, so screen readers read it as before. Used by
+   the canned list and the info modal's tables. */
+function textWithNoreaster(sel, text) {
+  text.split(/(nor’easter)/i).forEach(part => {
+    if (/^nor’easter$/i.test(part)) sel.append("span").attr("class", "ne-noreaster").text(part);
+    else if (part) sel.node().append(part);
+  });
+  return sel;
+}
+function buildCanned() {   // called at start-up, once the rules exist (and after the info modal's table)
   const ul = d3.select("#canned-list");
-  CANNED.forEach(c => {
+  // Same order as the info modal's "All outcomes" table, read from the table
+  // itself so the two can't drift apart when the rules change.
+  const order = [...document.querySelectorAll("#outcomes-table tbody th")].map(th => th.textContent);
+  const rank = c => { const i = order.indexOf(c.label); return i < 0 ? order.length : i; };
+  [...CANNED].sort((a, b) => rank(a) - rank(b)).forEach(c => {
     const ok = outcomeFor(c.jet, -c.lon, c.cont, c.ocean).label === c.label;
     if (!ok) console.warn("Canned outcome no longer matches the rules:", c);
-    ul.append("li").append("button").attr("type", "button").text(c.label)
+    ul.append("li").append("button").attr("type", "button").call(sel => textWithNoreaster(sel, c.label))
       .attr("title", `Jet ${c.jet} · ${fmtLon(c.lon)} · ${c.cont}°F / ${c.ocean}°F`)
       .attr("aria-disabled", ok ? "false" : "true")
       .on("click", () => loadCanned(c));
@@ -1677,16 +1702,13 @@ let runComplete = false; // the run has reached the end: outcome is revealed
         contrast points:  < 30°F → 0 · 30–49°F → 1 · ≥ 50°F → 2
         total 0–1 no storm · 2–3 storm · 4 strong storm ("bomb")
         (so only B and C can make a strong storm, and only with a big contrast)
-   2. TRACK = trough longitude (the low forms just downstream of the trough):
-        west of 85°W → inland (Ohio Valley / Great Lakes; rain on the coast)
-        85–74°W     → up the coast: a nor'easter
-        east of 74°W → out to sea
-   2b. WHERE IT FORMS (GENESIS): a storm forms only on the line where the
-      continental (blue) and ocean (red) air meet — the jet between them, on
-      the trough's east side — and only if that line is in the right place
-      for the track: over land (inland), crossing the coast between the Gulf
-      and Cape Cod, 25–41°N (nor'easter), or over open ocean (out to sea).
-      North of 28°N only: south of that is the tropics. Otherwise: no storm.
+   2. WHERE IT FORMS decides WHAT IT IS (GENESIS, below): on the line where
+      the continental (blue) and ocean (red) air meet, GENESIS_KM downstream
+      of the trough bottom. At the coast (Gulf → Cape Cod) → a nor'easter;
+      over land → an inland storm; over open ocean → out to sea; only in the
+      tropics (south of 28°N) → no storm. (Until 2026-10-29 the type came
+      from fixed trough longitudes, 85°W / 74°W, and storms started at the
+      trough bottom — research puts them downstream.)
    3. SNOW or RAIN: snow only if the continental air is below 32°F AND the
       trough bottoms out north of 28°N. A trough reaching further south (C, D)
       pulls tropical air into the storm, so it rains.
@@ -1697,23 +1719,33 @@ const TROPICAL_BELOW = 28;             // °N: trough bottom south of this → r
 const DIP_INDEX = { A: 0, B: 1, C: 2, D: 3 };
 const CONTRAST_STEPS = [30, 50];       // °F: crossing each adds a point
 const STORM_AT = 2, STRONG_AT = 4;     // strength totals
-const COAST_WEST = 85, COAST_EAST = 74; // °W window for a coastal track
 const SNOW_BELOW = 32;                 // °F continental air
-/* Where the storm forms, for each jet and trough longitude (index 0 = 95°W …
-   30 = 65°W), or 0 for no storm. MEASURED from the drawn shapes, not tuned:
-   the blue/red meeting line = jet points with both air masses within 2.5°;
-   it is "over land" if ≥ half of it is, "crossing the coast" if it crosses
-   between 25 and 41°N, and "tropics" if it never gets north of 28°N (land =
-   world-atlas 50m). The start is the line's point nearest the trough bottom
-   (east side, ≥ 28°N) of the needed kind, or the sea side of the coast
-   crossing. Regenerate if the jets or air-mass shapes change. */
+/* WHERE (AND WHETHER) THE STORM FORMS, and so what kind it is — for each jet
+   and trough longitude (index 0 = 95°W … 30 = 65°W): [lon, lat, type] or 0
+   for no storm; type L = inland (forms over land), C = nor'easter (forms
+   where the line crosses the coast), S = out to sea (forms over open ocean).
+   Research (checked 2026-10-29): a surface low forms DOWNSTREAM (east /
+   north-east) of the upper trough, where the air aloft spreads out — not at
+   the trough's bottom — and on the boundary between the cold and warm air;
+   nor'easters form at the coast (Carolinas–Virginia, or the Gulf). No source
+   gives an exact distance, so GENESIS_KM is our estimate (flagged for the
+   scientists). MEASURED from the drawn shapes, not tuned: the meeting line =
+   jet points with both air masses within 2.5°, followed from the trough
+   bottom downstream; only its part ≥ GENESIS_KM along the jet counts. It
+   "crosses the coast" if it crosses between 25 and 42.5°N (the Gulf to Cape Cod and Massachusetts Bay) (start = the sea side
+   of the first crossing), else it is "over land" if ≥ half of it is, else
+   "at sea" (start = its first point of that kind, ≥ 28°N); no storm if the
+   line never gets north of 28°N (the tropics). Land = the 0.1° land raster.
+   Regenerate (scratchpad qa/gen_type.js) if the jets or air masses change. */
+const GENESIS_KM = 500;
 const GENESIS = {
-  A: [[-95,40.3],[-94,40.3],[-93,40.3],[-92,40.3],[-91,40.3],[-90,40.3],[-89,40.3],[-88,40.3],[-87,40.3],[-86,40.3],0,0,0,0,0,0,0,0,0,[-73.5,40.5],[-73.3,40.4],[-73.2,40.3],0,0,0,[-70,40.3],[-69,40.3],[-68,40.3],[-67,40.3],[-66,40.3],[-65,40.3]],
-  B: [[-95,32.4],0,0,0,0,0,0,0,0,0,[-77.4,34.4],[-79,33.4],[-78.8,33.1],[-79.5,32.7],[-80.2,32.5],[-80,32.4],[-79.8,32.4],[-79.6,32.5],0,0,0,0,[-73,32.4],[-72,32.4],[-71,32.4],[-70,32.4],[-69,32.4],[-68,32.4],[-67,32.4],[-66,32.4],[-65,32.4]],
-  C: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,[-62.4,28.1],[-61.5,28.1],[-60.6,28.1],[-59.6,28.1],[-58.7,28.1],[-57.8,28.1],[-56.9,28.1],[-55.9,28.1],[-55,28.1]],
+  A: [[-88.9,41.9,"L"],[-87.9,41.9,"L"],[-86.9,41.9,"L"],[-86,41.9,"L"],[-85,41.9,"L"],[-84,41.9,"L"],[-83,41.9,"L"],[-82,41.9,"L"],[-81.1,41.9,"L"],[-80.1,41.9,"L"],[-79.1,41.9,"L"],[-78.1,41.9,"L"],[-77.1,41.9,"L"],[-76.2,41.9,"L"],[-75.2,41.9,"L"],[-74.2,41.9,"L"],[-73.2,41.9,"L"],[-72.2,41.9,"L"],[-70.5,42.3,"C"],[-70.3,41.9,"S"],[-69.3,41.9,"S"],[-68.3,41.9,"S"],[-67.3,41.9,"S"],[-66.4,41.9,"S"],[-65.4,41.9,"S"],[-64.4,41.9,"S"],[-63.4,41.9,"S"],[-62.4,41.9,"S"],[-61.5,41.9,"S"],[-60.5,41.9,"S"],[-59.5,41.9,"S"]],
+  B: [[-89.8,33.4,"L"],[-76.3,39.3,"C"],[-76.3,38.8,"C"],[-76.3,38.3,"C"],[-76.2,37.8,"C"],[-76.2,37.3,"C"],[-75.3,37.3,"C"],[-75.2,36.8,"C"],[-76,36,"C"],[-76.7,35.1,"C"],[-77.4,34.4,"C"],[-78.1,33.7,"S"],[-77.1,33.7,"S"],[-76.2,33.7,"S"],[-75.2,33.7,"S"],[-74.2,33.7,"S"],[-73.2,33.7,"S"],[-72.2,33.7,"S"],[-71.3,33.7,"S"],[-70.3,33.7,"S"],[-69.3,33.7,"S"],[-68.3,33.7,"S"],[-67.3,33.7,"S"],[-66.4,33.7,"S"],[-65.4,33.7,"S"],[-64.4,33.7,"S"],[-63.4,33.7,"S"],[-62.4,33.7,"S"],[-61.5,33.7,"S"],[-60.5,33.7,"S"],[-59.5,33.7,"S"]],
+  C: [[-83.7,27.7,"C"],[-82.7,27.7,"C"],[-82.6,27.3,"C"],[-82.5,26.9,"C"],[-82.4,26.6,"C"],[-82.2,26.2,"C"],[-82,25.8,"C"],[-81.8,25.5,"C"],[-81.6,25.2,"C"],[-74.5,28.1,"S"],[-73.5,28.1,"S"],[-72.6,28.1,"S"],[-71.7,28.1,"S"],[-70.8,28.1,"S"],[-69.8,28.1,"S"],[-68.9,28.1,"S"],[-68,28.1,"S"],[-67.1,28.1,"S"],[-66.1,28.1,"S"],[-65.2,28.1,"S"],[-64.3,28.1,"S"],[-63.3,28.1,"S"],[-62.4,28.1,"S"],[-61.5,28.1,"S"],[-60.6,28.1,"S"],[-59.6,28.1,"S"],[-58.7,28.1,"S"],[-57.8,28.1,"S"],[-56.9,28.1,"S"],[-55.9,28.1,"S"],[-55,28.1,"S"]],
   D: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 };
-const genesisAt = (jet, west) => GENESIS[jet][Math.round(95 - west)] || null;
+const genesisAt = (jet, west) => { const g = GENESIS[jet][Math.round(95 - west)]; return g ? [g[0], g[1]] : null; };
+const genesisType = (jet, west) => { const g = GENESIS[jet][Math.round(95 - west)]; return g ? { L: "inland", C: "coast", S: "sea" }[g[2]] : null; };
 
 /* Same snow test the outcome uses (side-view precipitation shares it). */
 const outcomeSnow = () => AIRS[0].temp < SNOW_BELOW && JET_BOTTOM_LAT[selected] >= TROPICAL_BELOW;
@@ -1731,8 +1763,9 @@ function outcomeFor(jet, west, cont, ocean) {
   const level = strong ? 2 : 1;
   // Every storm label names its precipitation, and where it falls: a storm out
   // to sea drops its snow or rain over the ocean, not on land.
-  if (west > COAST_WEST) return { key: "inland", label: snow ? "Inland storm: snow" : "Inland storm: rain", strength: level };
-  if (west < COAST_EAST) return { key: "sea", label: snow ? "Storm out to sea: snow over the ocean, none on land" : "Storm out to sea: rain over the ocean, none on land", strength: level };
+  const type = genesisType(jet, west);   // where it forms decides what it is
+  if (type === "inland") return { key: "inland", label: snow ? "Inland storm: snow" : "Inland storm: rain", strength: level };
+  if (type === "sea") return { key: "sea", label: snow ? "Storm out to sea: snow over the ocean, none on land" : "Storm out to sea: rain over the ocean, none on land", strength: level };
   return strong
     ? { key: "strong", label: snow ? "Strong nor’easter: blizzard" : "Strong nor’easter: rain & wind", strength: 2 }
     : { key: "noreaster", label: snow ? "Nor’easter: snow" : "Nor’easter: rain", strength: 1 };
@@ -1870,7 +1903,7 @@ elTimeFwd.addEventListener("click", () => scrubTo(Math.round(runHour) + 1));
    direction that lets the whole track pass, as late as that turn allows.
    (Earlier versions used fixed routes; measured against the jet they ran
    45–60° off its direction in their second half and ended on its WARM side.) */
-const RIDE_DRIFT = 2, INLAND_LAND_FOR = 2 / 3, TRACK_MAX_LAT = 60;
+const RIDE_DRIFT = 2, INLAND_LAND_FOR = 1 / 4, TRACK_MAX_LAT = 60;   // inland: over land for the first quarter (it may then exit over water, e.g. the Gulf of St. Lawrence)
 const OFF_JET = [0, 10, -10, 20, -20, 30, -30, 40, -40, 50, -50, 60, -60, 75, -75, 90, -90]; // ° off the jet's heading, nearest first
 const NE_LAND = { w: -74, e: -52, s: 40.5, n: 52 };   // °: Long Island → New England coast → Maritimes → Newfoundland
 /* A 0.1° raster of the land (50m map), drawn once when it loads: geoContains on
@@ -1892,16 +1925,19 @@ function isLand(p) {
 }
 /* COAST_GAP° of margin, so a storm at sea clears the coast and one inland is
    clearly over land (the raster and the drawn map differ by ~10 km at coasts). */
-const COAST_GAP = 0.2, FORM_ZONE = 0.04;   // ° margin; share of the run (~150 km) a nor'easter may hug the coast where it forms
+const COAST_GAP = 0.2, FORM_ZONE = 0.04;   // ° margin; share of the run (~150 km) a storm may hug the coast where it forms
+const COAST_STRIP = 1.5;                   // °: a nor'easter may cross land this close to the sea (Gulf lows cross Florida/Georgia — "Miller A")
+const nearSea = p => [[COAST_STRIP, 0], [-COAST_STRIP, 0], [0, COAST_STRIP], [0, -COAST_STRIP]].some(([dx, dy]) => !isLand([p[0] + dx, p[1] + dy]));
 const around = p => [p, [p[0] + COAST_GAP, p[1]], [p[0] - COAST_GAP, p[1]], [p[0], p[1] + COAST_GAP], [p[0], p[1] - COAST_GAP]];
 const landNear = p => around(p).some(isLand), landSure = p => around(p).every(isLand);
 function allowedAt(key, p, frac) {
   if (p[1] > TRACK_MAX_LAT) return false;
   if (!land && !landCoarse) return true;  // map not loaded yet: ride the jet
-  if (key === "inland") return frac > INLAND_LAND_FOR || landSure(p);
-  if (key !== "sea" && frac < FORM_ZONE) return true;   // a nor'easter forms right on the coast
+  if (key === "inland") return frac > INLAND_LAND_FOR || isLand(p);   // centre on land (a river or lake shore doesn't count against it)
+  if (frac < FORM_ZONE) return true;                    // it forms on (or right off) the coast
   if (!landNear(p)) return true;
-  return key !== "sea" && p[0] >= NE_LAND.w && p[0] <= NE_LAND.e && p[1] >= NE_LAND.s && p[1] <= NE_LAND.n;
+  if (key === "sea") return false;
+  return nearSea(p) || (p[0] >= NE_LAND.w && p[0] <= NE_LAND.e && p[1] >= NE_LAND.s && p[1] <= NE_LAND.n);   // nor'easter: the coastal strip, or New England / the Maritimes
 }
 function rideJet(start, key) {
   const c = JET_LINES[selected].coordinates, len = TRACK_KM / 6371 * 180 / Math.PI;
@@ -1962,15 +1998,77 @@ function fitTrack(way, km) {
 const gStorm = d3.select("#storm");
 const elStormTrack = gStorm.append("path").attr("class", "ne-storm-track")
   .attr("filter", "url(#ne-outline)");
-/* Fronts + winds, in lon/lat offsets from the Low (scaled by `reach`, so they
-   grow with the storm). After Mike's Google Earth sketch: the cold front
-   trails south-west, the warm front runs east; warm air flows north into the
-   warm sector, cold air pushes south-east behind the cold front. */
-const COLD_FRONT = [[0, 0], [-2.5, -4.5], [-7, -10], [-13, -14]];
-const WARM_FRONT = [[0, 0], [4.5, -1], [10, -3], [15, -6.5]];
-const WARM_WINDS = [[[2, -12], [4.5, -6]], [[7, -12.5], [9.5, -7]], [[12, -13], [14.5, -8.5]]];
-const COLD_WINDS = [[[-12, -2], [-9, -6.5]], [[-16, -7], [-13, -11.5]]];
+/* Fronts + winds, in lon/lat offsets from the Low (scaled by `reach`: a strong
+   storm's are longer; full length from the moment the storm appears). Laid
+   out like the content designer's nor'easter diagram (2026-10-29): the cold
+   front runs due SOUTH from the Low (triangles east), the warm front runs EAST
+   (half-circles north), and the warm air sits in the south-east quarter
+   between them — a ~90° wedge. Warm air flows north toward the warm front;
+   cold air behind the cold front flows south. Fixed compass orientation, as
+   nor'easter maps show it; only the cold front swings (occlusion). */
+const COLD_FRONT = [[0, 0], [0.3, -4], [0.2, -9], [-0.6, -14]];
+const WARM_FRONT = [[0, 0], [5, -0.3], [10, -1.3], [15, -3.5]];
+/* Both fronts are FRONT_KM long, for every storm and at every latitude (Mike:
+   they came up short — normal storms were drawn at 70%, and the warm front,
+   in degrees of longitude, shrank as the storm went north). Their shapes are
+   in km-true degrees (1° = 111 km east or north) and scaled to FRONT_KM.
+   Winds (Mike): each arrow sits BEHIND its front — on the side its air comes
+   from — and points AT the front: cold-air arrows behind the cold front,
+   warm-air arrows in the warm air behind the warm front. Placed from the
+   drawn fronts, so they stay right however the fronts turn. */
+const FRONT_KM = 1600;
+/* Arrows along each front (Mike): a full-length front has 3, evenly spread; a
+   short one (a cold front still lengthening as the wave opens) shows 2 — two
+   of the three sit on top of each other — and as it grows from WIND_SPLIT[0]
+   to [1] km they ease apart: one arrow SPLITS into two, with subtle motion.
+   Shares of the front's length, at 2 → at 3 arrows. */
+const WIND_AT = [[0.35, 0.3], [0.7, 0.55], [0.7, 0.8]], WIND_SPLIT = [1000, 1400];
+const WIND_BACK = 38, WIND_GAP = 9;                               // px: tail behind the front; head stops this short of it
 const SYM_GAP = 26; // px along the front; symbols start just outside the L
+/* THE FRONTS' LIFE CYCLE — NOAA's textbook (Norwegian) model, checked
+   2026-10-29 (noaa.gov/jetstream/synoptic/norwegian-cyclone-model):
+   1. The storm forms on the boundary between the air masses; the boundary
+      "kinks" at the Low into a cold front (back along it) and a warm front
+      (forward along it) — so at the start both lie ON the boundary.
+   2. The wave opens: the cold front swings to point south, the warm front to
+      point east — the content designer's diagram, reached at T_OPEN of the
+      run.
+   3. Amy: the cold front then "gains" on the warm front (it moves faster and
+      catches up — occlusion), by up to OCCLUDE_MAX by the end of the run.
+   COLD_FRONT / WARM_FRONT are drawn for stage 2; frontSwing() gives each
+   one's extra counter-clockwise turn (radians) at hour h, from `start` (the
+   turns that lay them along the boundary). */
+const T_OPEN = 0.35;                       // share of the run to open into the diagram's shape (~25 h)
+const OCCLUDE_MAX = 40 * Math.PI / 180;    // then the wedge narrows from ~90° to ~30° — closing, not closed
+const ease01 = x => { const t = Math.max(0, Math.min(1, x)); return t * t * (3 - 2 * t); };
+const occlusion = h => OCCLUDE_MAX * ease01((h / RUN_HOURS - T_OPEN) / (1 - T_OPEN));
+function frontSwing(h, start) {
+  const open = ease01(h / RUN_HOURS / T_OPEN);
+  return { cold: start.cold * (1 - open) + occlusion(h), warm: start.warm * (1 - open) };
+}
+const wrapPi = a => Math.atan2(Math.sin(a), Math.cos(a));
+/* The turns that lay the fronts along the boundary where the storm formed:
+   the jet's direction there (local east/north frame) — the warm front forward
+   along it, the cold front back along it. */
+/* The direction (radians ccw from east, local km-true frame) the air-mass
+   edge runs at the spot where the storm forms — or, with no storm, half-way
+   up the edge. The side view turns its boundary to match (Mike: measured). */
+function edgeDirection() {
+  const c = JET_LINES[selected].coordinates, [bLon, bLat] = troughBottom();
+  let g = genesisAt(selected, -troughLon());
+  if (!g) { const bi = c.reduce((m, p, k) => (Math.abs(p[0] - bLon) < Math.abs(c[m][0] - bLon) ? k : m), 0);
+    let k = bi; while (k < c.length - 1 && c[k][1] < bLat + OCEAN_RISE / 2) k++; g = c[k]; }
+  const i = c.reduce((m, p, k) => (d3.geoDistance(p, g) < d3.geoDistance(c[m], g) ? k : m), 0);
+  const a = c[Math.max(0, i - 2)], b = c[Math.min(c.length - 1, i + 2)], cos = Math.cos(g[1] * Math.PI / 180);
+  return Math.atan2(b[1] - a[1], (b[0] - a[0]) * cos);
+}
+/* Front shapes' own directions (km-true: drawFronts treats offsets that way). */
+const shapeDir = o => Math.atan2(o.at(-1)[1], o.at(-1)[0]);
+function boundaryStart() {
+  if (!genesisAt(selected, -troughLon())) return { cold: 0, warm: 0 };
+  const fwd = edgeDirection();
+  return { cold: wrapPi(fwd + Math.PI - shapeDir(COLD_FRONT)), warm: wrapPi(fwd - shapeDir(WARM_FRONT)) };
+}
 /* ---- Cloud shield: particles spinning around the Low --------------------
    CLOUD_N puffs on three spiral arms. Each puff sits at a fraction s along
    its arm: radius grows with s, and the angle trails back as s grows, so the
@@ -2129,20 +2227,26 @@ function stormTrack() {
    An oblique box, after Mike's sketch: the surface plane at the bottom, the
    jet stream 10 km up on the top plane. P(u, v, h) maps box coordinates to
    the svg: u = west→east (0…1), v = south→north (front→back), h = height.
-   A cross-section of the AIR, not a map (no coast — Mike: where the storm
-   goes is the globe's job). The cold/warm boundary — the jet between the two
-   air masses, where the storm forms — is fixed at u = sideB, the trough axis
-   just west of it. West of the trough the jet converges and air sinks to the surface High;
-   east of it the jet diverges and air rises from the surface Low — which only
-   forms, and grows, as the run plays, and MOVES like the globe's: north as it
-   travels (v), and across the boundary as far as the globe's L drifts off the
-   jet (into the cold air on the jet's cold side, as research has it).
-   Everything that changes is driven by outcome(), the globe and the run hour. */
+   It tells the VERTICAL story (Mike: stripped back, 2026-10-29): the jet dip
+   on top; sinking air down to the H on the cold side; rising air up from the
+   L on the warm side, with the cloud tower and snow/rain growing as the storm
+   does. The floor is split cleanly into cold and warm air along one straight
+   boundary; once Run is clicked the shading goes (Amy) and the line, labels
+   and arrows stay. The L forms in one spot and stays. Fronts — and how they
+   move and close up — live on the globe.
+   Everything that changes is driven by outcome() and the run hour. */
 // dy is deep enough that the jet's dip toward the front (south) reads clearly.
 const SIDE = { x0: 96, y0: 262, w: 214, dx: 60, dy: 90, h: 120 };
-const SIDE_LAT_K = 0.02, SIDE_OFF_K = 0.03;  // v per degree north (≤ SIDE_V_MAX); u per degree off the jet
-const SIDE_V_MAX = 0.7;                     // keeps the Low on the surface plane, clear of the back edge
 const sideB = 0.6, sideTrough = 0.5;        // boundary and trough axis (u): the original sketch
+const SIDE_L = [sideB, 0.7];     // mid-depth: room for the warm front to point north (back) at time 0 and the cold front south (Mike: measured, it was squashed against the back edge)         // where the Low forms and stays: on the boundary, set back so its fronts clear the front-row labels
+/* The storm's fronts from the L, on the floor, drawn like the globe's (same
+   symbols, one outline per front), laid out like the globe's: cold front due
+   south (toward the viewer), warm front east. Offsets in (u, v); short enough to
+   stay on the floor and clear of the labels and the H. */
+const SIDE_CF = [[0, 0], [0.01, -0.14], [0, -0.28], [-0.02, -0.4]];   // due south (toward the viewer): foreshortened in this box, so drawn longer   // swings toward the viewer as it closes; the L sits far enough back that it stays clear of the front-row labels
+const SIDE_WF = [[0, 0], [0.1, -0.005], [0.2, -0.02], [0.28, -0.045]];   // east
+const SIDE_FRONT_FLOOR = 48;    // px of floor: both fronts the same length (as on the globe, where both are FRONT_KM)
+const SIDE_V_PX = Math.hypot(SIDE.dx, SIDE.dy);   // screen length of one unit of v, to turn (u, v) offsets without skewing them
 const P = (u, v, h = 0) => [SIDE.x0 + u * SIDE.w + v * SIDE.dx, SIDE.y0 - v * SIDE.dy - h * SIDE.h];
 const sideSvg = d3.select("#side");
 const sideLine = d3.line().curve(d3.curveCatmullRom.alpha(0.5));
@@ -2170,53 +2274,62 @@ const sideWarm = sideSvg.append("path").attr("class", "ne-side-warm");
 const massLabel = t => sideSvg.append("text").attr("class", "ne-side-mass").text(t);
 const sideColdLabel = massLabel("Cold air");
 const sideWarmLabel = massLabel("Warm air"); // back of the warm area, clear of the Low and its fronts
-/* Of the candidate spots, the one whose box (half-width hw, half-height hh,
-   px) overlaps least of what it must avoid over the whole run — weighted, so
-   covering the L, the H or another label (weight 10) is far worse than
-   grazing a front or the snow (1) — then, on a tie, the one farthest from it
-   all. Avoid entries are [u, v, hw, hh, weight]. */
-function clearest(cands, avoid, hw, hh) {
-  let best = cands[0], bestP = Infinity, bestD = -Infinity;
-  for (const c of cands) {
-    const [x, y] = P(c[0], c[1], 0);
-    let pen = 0, dmin = Infinity;
-    for (const [u, v, w = 20, h = 20, wt = 1, ht = 0] of avoid) {
-      const [px, py] = P(u, v, ht), ox = hw + w - Math.abs(px - x), oy = hh + h - Math.abs(py - y);
-      if (ox > 0 && oy > 0) pen += wt * Math.min(ox, oy);
-      dmin = Math.min(dmin, Math.hypot(Math.max(0, -ox), Math.max(0, -oy)));
-    }
-    if (pen < bestP - 1e-9 || (Math.abs(pen - bestP) < 1e-9 && dmin > bestD)) { best = c; bestP = pen; bestD = dmin; }
+/* The floor splits cleanly: cold air west of the boundary, warm air east,
+   meeting along one straight line (Mike: the old hand-drawn outlines left a
+   jagged gap). Labels sit front-left and front-right. */
+const SIDE_INSET = 0.03;
+const sideBoundary = sideSvg.append("path").attr("class", "ne-side-boundary").attr("display", "none");   // the stationary front is drawn along this line
+const sideSTg = sideSvg.append("g").attr("filter", "url(#ne-side-outline)");
+const sideCFg = sideSvg.append("g").attr("class", "ne-front-cold").attr("filter", "url(#ne-side-outline)");
+const sideWFg = sideSvg.append("g").attr("class", "ne-front-warm").attr("filter", "url(#ne-side-outline)");
+/* The boundary runs through (b, SIDE_L v) at `ang` (radians ccw from east on
+   the floor, in floor px so angles are true) — the same direction as the real
+   air-mass edge — and splits the floor: cold air on its left (north-west),
+   warm air on its right. */
+function placeAirMasses(b, ang = Math.PI / 2) {
+  const V = SIDE_V_PX, W = SIDE.w, i0 = SIDE_INSET, i1 = 1 - SIDE_INSET;
+  const rect = [[i0 * W, i0 * V], [i1 * W, i0 * V], [i1 * W, i1 * V], [i0 * W, i1 * V]];
+  const o = [b * W, SIDE_L[1] * V], d = [Math.cos(ang), Math.sin(ang)];
+  const sideOf = p => d[0] * (p[1] - o[1]) - d[1] * (p[0] - o[0]);   // > 0: left of the line
+  const clip = keepLeft => { const out = [];
+    rect.forEach((p, k) => { const q = rect[(k + 1) % rect.length], sp = sideOf(p), sq = sideOf(q), inP = keepLeft ? sp >= 0 : sp <= 0, inQ = keepLeft ? sq >= 0 : sq <= 0;
+      if (inP) out.push(p);
+      if (inP !== inQ) { const t = sp / (sp - sq); out.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); } });
+    return out.map(([x, y]) => [x / W, y / V]); };
+  sideCold.attr("d", sidePoly(clip(true)));
+  sideWarm.attr("d", sidePoly(clip(false)));
+  const cross = []; rect.forEach((p, k) => { const q = rect[(k + 1) % rect.length], sp = sideOf(p), sq = sideOf(q);
+    if ((sp < 0) !== (sq < 0)) { const t = sp / (sp - sq); cross.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); } });
+  if (cross.length === 2) { cross.sort((a, c) => (a[0] - c[0]) * d[0] + (a[1] - c[1]) * d[1]);   // tail → head along the direction
+    sideBoundary.attr("d", "M" + cross.map(([x, y]) => P(x / W, y / V, 0)).join("L"));
+    // The stationary front is drawn along it, stopping short of the floor's edges.
+    const [a, c] = cross, t = 0.06, inner = [[a[0] + (c[0] - a[0]) * t, a[1] + (c[1] - a[1]) * t], [c[0] + (a[0] - c[0]) * t, c[1] + (a[1] - c[1]) * t]];
+    sideBoundary.attr("data-inner", "M" + inner.map(([x, y]) => P(x / W, y / V, 0)).join("L")); }
+  // Labels near the front of the floor, each inside its own air: Warm air at
+  // the front-right; Cold air at the left, as far forward as the cold air
+  // reaches there (the edge often runs east-north-east, leaving only a thin
+  // wedge of cold air along the front) — so the boundary never crosses them.
+  const bv = u => (o[1] + (u * W - o[0]) * (d[1] / (d[0] || 1e-9))) / V;   // the boundary's v at column u
+  const cu = 0.18, wu = 0.84, LV = 0.1, LH = 0.24;                        // LH: room for the label + its gap, in v
+  const LU = 0.17;                                                        // the label's half-width, in u
+  const cv = Math.max(LV, Math.min(0.8, Math.max(bv(cu - LU), bv(cu + LU)) + LH / 2 + 0.1));   // 0.1: clear of the stationary front's symbols too
+  const wv = Math.max(LV, Math.min(0.8, Math.min(LV, Math.min(bv(wu - LU), bv(wu + LU)) - LH / 2 - 0.04)));
+  const [cx, cy] = P(cu, cv, 0), [wx, wy] = P(wu, wv, 0);
+  // The H: inside the cold air (clear of the boundary), as far as it can get
+  // from the Cold air label (on screen), west of the L.
+  let best = null, bestD = -1;
+  for (const hu of [0.1, 0.16, 0.22, 0.28, 0.34]) for (const hv of [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
+    if (sideOf([hu * W, hv * V]) < 18) continue;                    // ≥ 18 floor px into the cold air
+    const [hx, hy] = P(hu, hv, 0), dd = Math.hypot((hx - cx) / 40, (hy - cy) / 18);   // label is ~80 × 36 px around its centre
+    if (dd > bestD) { bestD = dd; best = [hu, hv]; }
   }
+  sideColdLabel.attr("x", cx).attr("y", cy + 5);
+  sideWarmLabel.attr("x", wx).attr("y", wy + 5);
   return best;
 }
-const LABEL_V = [0.24];   // both labels always on the front row (Mike); they only slide sideways
-function placeAirMasses(b, avoid = null) {
-  sideCold.attr("d", sidePoly([[0.04,0.18],[b - 0.12,0.1],[b,0.42],[b - 0.06,0.88],[0.12,0.92]]));
-  sideWarm.attr("d", sidePoly([[b,0.06],[0.98,0.06],[0.98,0.94],[b + 0.04,0.9],[b + 0.08,0.44]]));
-  // Anywhere inside its own air mass, on a grid.
-  const grid = (u0, u1, vs) => d3.range(u0, u1 + 1e-6, Math.max(0.02, (u1 - u0) / 6)).flatMap(u => vs.map(v => [u, v]));
-  const cold = avoid ? clearest(grid(0.16, Math.max(0.16, b - 0.18), LABEL_V), avoid, 34, 9) : [0.22, LABEL_V[0]];
-  const [cx, cy] = P(cold[0], cold[1], 0);
-  sideColdLabel.attr("x", cx).attr("y", cy + 5);
-  const warm = avoid ? clearest(grid(Math.min(0.9, b + 0.12), 0.9, LABEL_V), [...avoid, [cold[0], cold[1], 34, 9, 10]], 36, 9) : [0.84, LABEL_V[0]];
-  const [wx, wy] = P(warm[0], warm[1], 0);
-  sideWarmLabel.attr("x", wx).attr("y", wy + 5);
-}
 placeAirMasses(sideB);
-/* Signed distance (°) of p from the jet: + = left of the flow (cold side). */
-function jetOffset(p) {
-  const c = JET_LINES[selected].coordinates;
-  let bi = 0, bd = Infinity;
-  c.forEach((q, k) => { const d = d3.geoDistance(p, q); if (d < bd) { bd = d; bi = k; } });
-  const a = c[Math.max(0, bi - 1)], b = c[Math.min(c.length - 1, bi + 1)], cos = Math.cos(p[1] * Math.PI / 180);
-  const cross = (b[0] - a[0]) * cos * (p[1] - c[bi][1]) - (b[1] - a[1]) * (p[0] - c[bi][0]) * cos;
-  return Math.sign(cross) * bd * 180 / Math.PI;
-}
 
 
-// Everything that hangs off the Low is an offset from it.
-const CF_OFF = [[0, 0], [-0.04, -0.12], [-0.12, -0.26], [-0.24, -0.36]];
-const WF_OFF = [[0, 0], [0.1, 0.02], [0.2, -0.06], [0.28, -0.2]];
 // Snow/rain falls on the cold (west) side of the Low, below the cloud base, so
 // it isn't lost inside the white cloud tower.
 /* Falling precipitation: PRECIP_N seeded particles under the cloud base on
@@ -2234,17 +2347,6 @@ const PRECIP = d3.range(PRECIP_N).map(() => ({
 const precip = { on: false, at: [0, 0], snow: true, count: 0 };  // set by drawSide
 let precipPhase = 0;
 const clampU = u => Math.max(0.01, Math.min(0.99, u));
-const frontPath = (at, off) => sideLine(off.map(([du, dv]) => P(clampU(at[0] + du), at[1] + dv, 0)));
-// Each front — its line AND its symbols — is one group with ONE outline, as on
-// the globe (Mike): outlining the line and the symbols separately drew an edge
-// where every triangle / half-circle meets its line.
-const sideCFg = sideSvg.append("g").attr("filter", "url(#ne-side-outline)");
-const sideWFg = sideSvg.append("g").attr("filter", "url(#ne-side-outline)");
-const sideCF = sideCFg.append("path").attr("class", "ne-side-cfront").attr("pathLength", 1).attr("stroke-dasharray", "1 1");
-const sideWF = sideWFg.append("path").attr("class", "ne-side-wfront").attr("pathLength", 1).attr("stroke-dasharray", "1 1");
-// Their symbols (same shapes as on the globe, smaller), redrawn as they grow.
-const sideCFsym = sideCFg.append("g").attr("class", "ne-front-cold");
-const sideWFsym = sideWFg.append("g").attr("class", "ne-front-warm");
 
 // High: always there, over the cold air. Sinking air streams down onto it:
 // SINK_N arrows travel from just under the jet (SINK_TOP) to just above the
@@ -2374,32 +2476,14 @@ function drawSide() {
   const t = runHour / RUN_HOURS;
   const grow = out.strength ? t * t * (3 - 2 * t) : 0;          // 0 … 1, eased
   const power = out.strength === 2 ? 1 : out.strength === 1 ? 0.6 : 0;
-  const g0 = genesisAt(selected, -troughLon());   // where (and whether) the storm forms
-  RISE_PRE[0] = sideB + 0.03; RISE_PRE[1] = 0.32;
-  // The Low: starts on the boundary, then moves with the globe's L — north,
-  // and across the boundary by its drift off the jet (cold side = west here).
-  const storming = g0 && out.strength;
-  const sideAt = h => { const here = stormAt(h);
-    return [Math.max(0.04, Math.min(0.96, sideB - SIDE_OFF_K * jetOffset(here))),
-            Math.max(0.08, Math.min(SIDE_V_MAX, 0.3 + SIDE_LAT_K * (here[1] - g0[1])))]; };
-  const at = storming ? sideAt(runHour) : [sideB, 0.3];
-  // Labels and the H keep clear of the Low's whole path (and its snow/rain,
-  // which falls on its cold side).
-  // Everything the storm draws over the run: the L, both fronts, the snow/rain
-  // patch on its cold side.
-  const footprint = ([u, v]) => [[u, v, 20, 20, 10],
-    ...CF_OFF.map(([du, dv]) => [u + du, v + dv, 4, 4]), ...WF_OFF.map(([du, dv]) => [u + du, v + dv, 4, 4]),
-    ...[[-0.27, -0.2], [-0.02, -0.2], [-0.27, 0.12], [-0.02, 0.12], [-0.15, -0.04]].map(([du, dv]) => [u + du, v + dv, 4, 4])];
-  // (No storm: only the faint rising air, just east of the boundary.)
-  const avoid = storming ? [0, 12, 24, 36, 48, 60, 72].map(sideAt).flatMap(footprint) : [[sideB + 0.03, 0.32, 12, 20, 10]];
-  // Labels first (front row, sliding sideways clear of the storm), then the H
-  // behind them, clear of the labels, the storm and its own sinking column.
-  placeAirMasses(sideB, storming ? avoid : null);   // no storm: fixed spots on the front row
-  const hu = Math.max(0.1, sideTrough - 0.28);
-  const labelBoxes = [sideColdLabel, sideWarmLabel].map(l => { const b = l.node().getBBox();
-    const v = (SIDE.y0 - (b.y + b.height / 2)) / SIDE.dy, u = (b.x + b.width / 2 - SIDE.x0 - v * SIDE.dx) / SIDE.w;
-    return [u, v, b.width / 2, b.height / 2, 10]; });
-  [H_AT[0], H_AT[1]] = storming ? clearest([0.66, 0.8, 0.53].map(v => [hu, v]), [...avoid, ...labelBoxes], 9, 11) : [hu, 0.66];
+  // The Low forms in one spot — on the warm side of the boundary, set back from
+  // the front edge so it clears the Warm air label — and stays there; the
+  // rising air is already there before the run, so nothing slides across.
+  const at = SIDE_L;
+  const storming = out.strength > 0;              // this setup makes a storm
+  RISE_PRE[0] = at[0] + 0.03; RISE_PRE[1] = at[1] + 0.02;
+  const hSpot = placeAirMasses(sideB);   // straight front-to-back boundary (Mike: the diagonal looked wrong)
+  if (hSpot) [H_AT[0], H_AT[1]] = hSpot;
   placeH();
 
   // Air-mass shading matches the globe; the gauge shows the gap between them.
@@ -2420,7 +2504,8 @@ function drawSide() {
 
   // Low, fronts, cloud tower, rising air and precipitation — all at the Low's
   // spot for this track, all scaled by the storm.
-  const show = grow > 0.02 ? null : "none";
+  // Same moment as the globe: the storm (L + fronts) appears as soon as the run starts.
+  const show = runHour > 0 && out.strength > 0 ? null : "none";
   const [lx, ly] = P(at[0], at[1], 0);
   const lr = 12 + 8 * power * grow;
   sideL.attr("display", show).attr("transform", `translate(${lx},${ly})`)
@@ -2430,17 +2515,56 @@ function drawSide() {
     d3.select(this).classed("ne-side-under-L", !show &&
       lx > b.x - m && lx < b.x + b.width + m && ly > b.y - m && ly < b.y + b.height + m);
   });
-  // Hidden at zero length: a round cap would otherwise paint a dot.
-  sideCF.attr("d", frontPath(at, CF_OFF)).attr("stroke-dashoffset", 1 - grow).attr("display", show);
-  sideWF.attr("d", frontPath(at, WF_OFF)).attr("stroke-dashoffset", 1 - grow).attr("display", show);
-  // Symbols only along the part of each front drawn so far (getTotalLength is
-  // the real length; pathLength=1 only rescales the dash maths).
-  sideCFsym.selectAll("*").remove();
-  sideWFsym.selectAll("*").remove();
-  if (!show) {
-    const opts = n => ({ from: 14 + 8 * power * grow, gap: 17, size: 5, to: n.getTotalLength() * grow });
-    frontSymbols(sideCFsym, sideCF.node(), "tri", [1, 0], opts(sideCF.node()));   // cold: faces east
-    frontSymbols(sideWFsym, sideWF.node(), "semi", [0, -1], opts(sideWF.node())); // warm: faces north
+  // Amy: once Run is clicked, the air-mass shading goes; the boundary line,
+  // the arrows and the Cold air / Warm air labels stay. (Fronts live on the
+  // globe; the side view tells the vertical story.)
+  sideCold.attr("display", runHour > 0 ? "none" : null);   // still there at time 0 (Mike)
+  sideWarm.attr("display", runHour > 0 ? "none" : null);
+  // Fronts: the boundary until a storm appears (and all run with none); then
+  // the storm's cold + warm fronts, full length from the start (Amy), with the
+  // cold front closing on the warm one over the run, as on the globe.
+  sideCFg.selectAll("*").remove(); sideWFg.selectAll("*").remove();
+  // A storm's own fronts from time 0; with no storm, a stationary front along
+  // the boundary that stays and weakens.
+  const stormOn = out.strength > 0;
+  sideSTg.selectAll("*").remove();
+  if (!stormOn) stationaryFront(sideSTg, sideBoundary.attr("data-inner"), { gap: 17, size: 5, lineClass: "ne-front-line ne-side-front-line",
+    weak: out.strength > 0 ? 0 : frontolysis(runHour) });
+  if (stormOn) {
+    const floorLen = o => d3.sum(o.slice(1), (p, i) => Math.hypot((p[0] - o[i][0]) * SIDE.w, (p[1] - o[i][1]) * SIDE_V_PX));
+    // Both fronts SIDE_FRONT_FLOOR px of floor long — shortened only if that
+    // would carry it (and its symbols) off the floor, never bent to fit.
+    const FU = [0.05, 0.95], FV = [0.26, 0.92];   // FV[0]: behind the front-row labels
+    const turn = (o, a) => {
+      const kk = SIDE_FRONT_FLOOR / floorLen(o), c = Math.cos(a), sn = Math.sin(a);
+      const off = o.map(([du, dv]) => { const x = du * SIDE.w * kk, y = dv * SIDE_V_PX * kk; return [(x * c - y * sn) / SIDE.w, (x * sn + y * c) / SIDE_V_PX]; });
+      let fit = 1;
+      off.forEach(([du, dv]) => {
+        if (du > 0) fit = Math.min(fit, (FU[1] - at[0]) / du); if (du < 0) fit = Math.min(fit, (FU[0] - at[0]) / du);
+        if (dv > 0) fit = Math.min(fit, (FV[1] - at[1]) / dv); if (dv < 0) fit = Math.min(fit, (FV[0] - at[1]) / dv); });
+      return off.map(([du, dv]) => P(at[0] + du * fit, at[1] + dv * fit, 0)); };
+    const front = (g, pts, sym) => {
+      const line = g.append("path").attr("class", "ne-front-line ne-side-front-line").attr("d", sideLine(pts));
+      frontSymbols(g, line.node(), sym, "left", { from: 12 + 8 * power * grow + 6, gap: 18, size: 5.5 });
+    };
+    // Half the globe's swing: in this tilted box a south-pointing front is
+    // drawn straight down the screen, onto the front-row labels; half still
+    // shows it closing on the warm front and keeps it a clear diagonal.
+    // The side view's boundary runs front-to-back (south → north): the cold
+    // front (south) already lies along it; the warm front starts pointing
+    // north along it, then swings out east as the wave opens (a quarter turn).
+    // Same directions as the globe's fronts at this hour (Mike: measured them
+    // apart by up to 70°): each side front turns so it points where the
+    // globe's does — along the edge at first, then open, then closing.
+    // The side view's boundary runs straight front-to-back (south → north), so
+    // its fronts start ALONG it — cold toward the front, warm toward the back —
+    // then open out exactly as the globe's do, and close up the same way
+    // (identical to the globe's directions once the wave has opened, ~25 h).
+    const floorDir = o => Math.atan2(o.at(-1)[1] * SIDE_V_PX, o.at(-1)[0] * SIDE.w);
+    const sw = frontSwing(runHour, { cold: wrapPi(-Math.PI / 2 - shapeDir(COLD_FRONT)), warm: wrapPi(Math.PI / 2 - shapeDir(WARM_FRONT)) });
+    const coldA = shapeDir(COLD_FRONT) + sw.cold, warmA = shapeDir(WARM_FRONT) + sw.warm;
+    front(sideCFg, turn(SIDE_CF, coldA - floorDir(SIDE_CF)), "tri");   // triangles toward the warm air
+    front(sideWFg, turn(SIDE_WF, warmA - floorDir(SIDE_WF)), "semi");  // half-circles toward the cold air
   }
 
   sideCloud.selectAll("*").remove();
@@ -2455,9 +2579,14 @@ function drawSide() {
 
   // Rising air: from the generic pre-run spot to the Low's, faint → storm-sized.
   const e = t * t * (3 - 2 * t);
-  rise.u = clampU(RISE_PRE[0] + (at[0] + 0.03 - RISE_PRE[0]) * e);
-  rise.v = RISE_PRE[1] + (at[1] + 0.02 - RISE_PRE[1]) * e;
-  rise.level = 0.35 * (1 - e) + power * e;   // no storm → fades to 0
+  // With a storm they slide to the Low; with none they stay put (and fade).
+  const riseTo = storming ? [at[0] + 0.03, at[1] + 0.02] : RISE_PRE;
+  rise.u = clampU(RISE_PRE[0] + (riseTo[0] - RISE_PRE[0]) * e);
+  rise.v = RISE_PRE[1] + (riseTo[1] - RISE_PRE[1]) * e;
+  // No storm: the lift east of the trough is too weak to start a storm, not
+  // absent — the rising air stays as the faint, slow rise it shows before the
+  // run (Mike), matching the globe's front, which fades but stays.
+  rise.level = power ? 0.35 * (1 - e) + power * e : 0.35;
   drawRising();
 
   Object.assign(precip, {
@@ -2490,8 +2619,13 @@ function drawStorm() {
   // Inline style, not the display attribute: `.is-step-4 .ne-storm {display:inline}`
   // outranks a presentation attribute, so attr("display","none") never hid it
   // and No storm still showed a storm.
-  const stormOn = visible && runHour > 0 && out.strength > 0;
-  [gStorm, gCloudLayer, gStormTop].forEach(g => g.style("display", stormOn ? null : "none"));
+  // Time 0 (Mike): the air masses are still there and the storm's fronts are
+  // already drawn on their boundary, kinked where it will form — but no L,
+  // clouds or winds yet. The air masses go once time moves on.
+  const atZero = runHour === 0, storming = out.strength > 0;
+  svg.classed("is-run", runHour > 0);
+  gStorm.style("display", visible && storming ? null : "none");   // a storm's fronts show from time 0 (no L, clouds or winds yet)
+  [gCloudLayer, gStormTop].forEach(g => g.style("display", visible && storming && !atZero ? null : "none"));
   cloud.on = false;
   if (!visible) return;
   elStormTrack.attr("d", stormLine(track.slice(0, i + 1).concat([here]).map(p => projection(p))));
@@ -2500,7 +2634,10 @@ function drawStorm() {
   // Grows as it forms; a strong storm ends much bigger than an ordinary one.
   const r = 12 + (out.strength === 2 ? 20 : 8) * ease;
   elStormMark.attr("transform", `translate(${x},${y})`).select("circle").attr("r", r);
-  drawFronts(here, ease * (out.strength === 2 ? 1 : 0.7), r + 10);
+  const edge = airEdge();
+  if (edge) edge.w = 1 - ease01(runHour / RUN_HOURS / T_OPEN);   // all edge at time 0, all diagram once the wave has opened
+  drawFronts(here, 1, r + 10, frontSwing(runHour, boundaryStart()), edge);
+  if (atZero) gWinds.selectAll("*").remove();   // winds come with the storm   // full length from the start (Amy): the air-mass edge, then open, then close
   // Cloud shield: grows with the storm; a strong storm's is much bigger.
   const zoomK = projection.scale() / 560;
   const nor = out.key === "noreaster" || out.key === "strong";
@@ -2509,17 +2646,82 @@ function drawStorm() {
   drawClouds();
 }
 
+/* THE BOUNDARY before the run (Amy: show the fronts before the run; Mike: the
+   stationary-front symbol read as two fronts stacked, so a plain line). Where
+   the cold and warm air meet — along the jet's east wall from the trough
+   bottom for OCEAN_RISE° — just to its warm side on screen (a surface front
+   lies on the warm side of the jet above it), clear of the yellow line at any
+   zoom. Shown on the Run screen until a storm appears (then its cold + warm
+   fronts take over); with no storm it stays. */
+const STAT_PX = 13;        // = EDGE_PX, like the fronts: half-circles on the cold side stay clear of the yellow jet line
+const gStationary = d3.select("#stationary").attr("filter", "url(#ne-outline)");
+/* Screen points: the jet's east wall from the trough bottom, each pushed
+   STAT_PX to the right of the flow (the warm side). Front-of-globe only. */
+function stationaryPoints() {
+  const c = JET_LINES[selected].coordinates, [bLon, bLat] = troughBottom();
+  const centre = projection.invert(projection.translate());
+  let i = c.reduce((m, p, k) => (Math.abs(p[0] - bLon) < Math.abs(c[m][0] - bLon) ? k : m), 0);
+  const out = [];
+  for (; i < c.length - 1 && c[i][1] <= bLat + OCEAN_RISE; i++) {
+    if (d3.geoDistance(c[i], centre) > Math.PI / 2 - 0.05) continue;
+    const [ax, ay] = projection(c[i]), [bx, by] = projection(c[i + 1]);
+    const tx = bx - ax, ty = by - ay, n = Math.hypot(tx, ty) || 1;
+    out.push([ax - ty / n * STAT_PX, ay + tx / n * STAT_PX]);   // right of travel (screen y is down)
+  }
+  return out;
+}
+/* A STATIONARY FRONT along a screen path (globe and side view): segments of
+   `gap` px alternate blue and red; a triangle on each blue one points to the
+   warm side (right of the path's direction), a half-circle on each red one to
+   the cold side. `weak` 0→1 draws it weakening (frontolysis, research): the
+   segments separate into a dashed line — the forecasters' symbol for a
+   dissipating front — and it fades. */
+function stationaryFront(g, d, { gap, size, lineClass, weak = 0 }) {
+  const probe = g.append("path").attr("d", d).attr("fill", "none").attr("stroke", "none");
+  const node = probe.node(), L = node.getTotalLength();
+  const space = gap * 0.8 * weak, period = gap + space;
+  g.style("opacity", 1 - 0.55 * weak);
+  const groups = { cold: g.append("g").attr("class", "ne-front-cold"), warm: g.append("g").attr("class", "ne-front-warm") };
+  for (let a = 0, k = 0; a < L; a += period, k++) {
+    const b = Math.min(L, a + gap), cls = k % 2 ? "warm" : "cold";
+    const seg = d3.range(a, b + 0.01, 2).map(x => { const p = node.getPointAtLength(Math.min(x, L)); return [p.x, p.y]; });
+    if (seg.length < 2) continue;
+    const segPath = groups[cls].append("path").attr("class", lineClass).attr("d", "M" + seg.join("L"));
+    const mid = (a + b) / 2;
+    if (b - a > size * 1.6) frontSymbols(groups[cls], node, cls === "cold" ? "tri" : "semi", cls === "cold" ? "right" : "left",
+      { from: mid, gap: 1e9, size });
+  }
+  probe.remove();
+}
+/* How far a front that never becomes a storm has weakened at hour h. */
+const frontolysis = h => ease01(h / RUN_HOURS / 0.6);
+/* The globe's stationary front: only when no storm forms (Mike: the
+   interlocking symbol looked wrong for storms) — there all run long, staying
+   put and weakening. A storm shows its own cold + warm fronts from time 0,
+   along the air-mass edge, split where it will form. */
+function drawStationary() {
+  gStationary.selectAll("*").remove();
+  if (step !== 4 || !selected) return;
+  const storming = outcome().strength > 0;
+  if (storming) return;
+  const pts = stationaryPoints();
+  if (pts.length < 2) return;
+  stationaryFront(gStationary, stormLine(pts), { gap: SYM_GAP, size: 7, lineClass: "ne-front-line", weak: storming ? 0 : frontolysis(runHour) });
+}
+
 /* Weather-map front symbols along an svg path: "tri" (cold front) or "semi"
    (warm front), `size` px half-width, every `gap` px from `from` up to `to`
    (default: the whole path). `side` is a screen direction the symbols should
-   face. Shared by the globe and the side view so the two always match. */
+   face, or "right" / "left" of the path's own direction (the stationary
+   front, whose sides are the warm and the cold air). Shared by the globe and
+   the side view so the two always match. */
 function frontSymbols(g, node, sym, side, { from, gap, size, to = Infinity }) {
   const len = Math.min(node.getTotalLength(), to);
   for (let d = from; d < len - size * 0.8; d += gap) {
     const p = node.getPointAtLength(d), q = node.getPointAtLength(d + 1);
     let tx = q.x - p.x, ty = q.y - p.y; const n = Math.hypot(tx, ty) || 1; tx /= n; ty /= n;
-    let nx = -ty, ny = tx;                                      // a normal…
-    if (nx * side[0] + ny * side[1] < 0) { nx = -nx; ny = -ny; } // …on the wanted side
+    let nx = -ty, ny = tx;                                      // right of the path (screen y is down)…
+    if (side === "left" || (Array.isArray(side) && nx * side[0] + ny * side[1] < 0)) { nx = -nx; ny = -ny; } // …or the wanted side
     const pts = sym === "tri"
       ? [[p.x - tx * size, p.y - ty * size], [p.x + nx * size * 1.4, p.y + ny * size * 1.4], [p.x + tx * size, p.y + ty * size]]
       : d3.range(0, 9).map(i => { const a = Math.PI * i / 8;
@@ -2532,26 +2734,96 @@ function frontSymbols(g, node, sym, side, { from, gap, size, to = Infinity }) {
    front line, so they stay evenly spaced at any zoom. `side` picks which
    side of the line they sit on: cold-front triangles face east (the way it
    moves), warm-front half-circles face north. */
-function drawFronts(here, reach, symFirst) {
+/* AT TIME 0 THE FRONTS ARE THE AIR-MASS EDGE (Mike): the line where the blue
+   and red meet — the jet's east side, from the trough bottom up as far as the
+   two air masses face each other (OCEAN_RISE°) — split where the storm forms:
+   the cold front is the edge from there back down to the trough bottom, the
+   warm front the edge from there forward. Drawn EDGE_PX to the edge's warm
+   side on screen (clear of the yellow jet line, like the boundary line). As
+   the wave opens (frontSwing's `open`) each front reshapes from that curve
+   into the diagram's shape, riding with the Low. */
+const EDGE_PX = 13;
+function airEdge() {
+  const g = genesisAt(selected, -troughLon());
+  if (!g) return null;
+  const c = JET_LINES[selected].coordinates, [bLon, bLat] = troughBottom();
+  const bi = c.reduce((m, p, k) => (Math.abs(p[0] - bLon) < Math.abs(c[m][0] - bLon) ? k : m), 0);
+  let gi = bi; for (let k = bi; k < c.length; k++) if (d3.geoDistance(c[k], g) < d3.geoDistance(c[gi], g)) gi = k;
+  let ei = bi; while (ei < c.length - 1 && c[ei][1] <= bLat + OCEAN_RISE) ei++;
+  return { g, seg: c.slice(bi, Math.max(ei, gi + 3) + 1), gi: gi - bi };
+}
+/* n points evenly spaced along a screen polyline. */
+function resample(pts, n) {
+  const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const L = cum.at(-1) || 1, out = [];
+  for (let k = 0, i = 1; k < n; k++) {
+    const d = L * k / (n - 1);
+    while (i < pts.length - 1 && cum[i] < d) i++;
+    const f = (d - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1);
+    out.push([pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * f, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * f]);
+  }
+  return out;
+}
+function drawFronts(here, reach, symFirst, swing = { cold: 0, warm: 0 }, edge = null) {
   gFronts.selectAll("*").remove();
   gWinds.selectAll("*").remove();
   if (reach < 0.05) return;
-  const at = ([du, dv], k = reach) => projection([here[0] + du * k, here[1] + dv * k]);
-  const front = (pts, cls, sym, side) => {
+  // Offsets are lon/lat degrees; each front turns by its own swing (see
+  // frontSwing) in a local east/north frame.
+  const cosL = Math.cos(here[1] * Math.PI / 180);
+  const shapeLen = pts => d3.sum(pts.slice(1), (p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]));
+  let k = 1;                                                    // set per front: shape → FRONT_KM
+  const at = ([du, dv], extra = 0) => { const a = extra, c = Math.cos(a), sn = Math.sin(a), x = du * k, y = dv * k;
+    return projection([here[0] + (x * c - y * sn) / cosL, here[1] + x * sn + y * c]); };
+  // The air-mass edge on screen, offset to its warm side and carried with the
+  // Low (so the fronts stay attached to it as it moves).
+  let edgeCold = null, edgeWarm = null;
+  if (edge && edge.w > 0.001) {
+    const sp = edge.seg.map(p => projection(p));
+    const off = sp.map((p, i) => { const a = sp[Math.max(0, i - 1)], b = sp[Math.min(sp.length - 1, i + 1)];
+      const tx = b[0] - a[0], ty = b[1] - a[1], n = Math.hypot(tx, ty) || 1;
+      return [p[0] - ty / n * EDGE_PX, p[1] + tx / n * EDGE_PX]; });     // right of the flow = warm side (screen y is down)
+    const [lx, ly] = projection(here), dx = lx - off[edge.gi][0], dy = ly - off[edge.gi][1];
+    const moved = off.map(([x, y]) => [x + dx, y + dy]);
+    edgeCold = moved.slice(0, edge.gi + 1).reverse();
+    edgeWarm = moved.slice(edge.gi);
+  }
+  const N = 40;
+  const fronts = {};
+  const front = (pts, cls, sym, side, extra = 0, edgePts = null) => {
+    k = FRONT_KM / 111 / shapeLen(pts);
+    let screen = pts.map(p => at(p, extra));
+    if (edgePts && edgePts.length > 1) {            // reshape from the air-mass edge into this front
+      const a = resample(edgePts, N), b = resample(screen, N), w = edge.w;
+      screen = a.map((p, i) => [p[0] * w + b[i][0] * (1 - w), p[1] * w + b[i][1] * (1 - w)]);
+    }
     const g = gFronts.append("g").attr("class", `ne-front-${cls}`);
-    const line = g.append("path").attr("class", "ne-front-line")
-      .attr("d", stormLine(pts.map(p => at(p))));
+    const line = g.append("path").attr("class", "ne-front-line").attr("d", stormLine(screen));
     frontSymbols(g, line.node(), sym, side, { from: symFirst, gap: SYM_GAP, size: 7 });
+    fronts[cls] = line.node();
   };
-  front(COLD_FRONT, "cold", "tri", [1, 0]);   // triangles point east (screen +x)
-  front(WARM_FRONT, "warm", "semi", [0, -1]); // half-circles point north (screen −y)
-  const wind = (pair, cls) => {
-    const [a, b] = pair.map(p => at(p));
-    gWinds.append("line").attr("class", `ne-wind ne-wind-${cls}`)
-      .attr("x1", a[0]).attr("y1", a[1]).attr("x2", b[0]).attr("y2", b[1]);
-  };
-  WARM_WINDS.forEach(w => wind(w, "warm"));
-  COLD_WINDS.forEach(w => wind(w, "cold"));
+  // Symbols sit on the LEFT of each line's direction (from the Low outward):
+  // cold-front triangles toward the warm sector, warm-front half-circles north
+  // — relative to the line, so they stay right however the pattern turns.
+  front(COLD_FRONT, "cold", "tri", "left", swing.cold, edgeCold);
+  front(WARM_FRONT, "warm", "semi", "left", swing.warm, edgeWarm);
+  // Winds: behind each front (the right of its direction from the Low, since
+  // its symbols sit on the left), pointing at it.
+  for (const cls of ["cold", "warm"]) {
+    const node = fronts[cls]; if (!node) continue;
+    const L = node.getTotalLength();
+    let km = 0; for (let j = 1, prev = projection.invert([node.getPointAtLength(0).x, node.getPointAtLength(0).y]); j <= 20; j++) {
+      const p = node.getPointAtLength(L * j / 20), g = projection.invert([p.x, p.y]); km += d3.geoDistance(prev, g) * 6371; prev = g; }
+    const sp = ease01((km - WIND_SPLIT[0]) / (WIND_SPLIT[1] - WIND_SPLIT[0]));
+    WIND_AT.map(([a, b]) => a + (b - a) * sp).forEach(f => {
+      const d = L * f, p = node.getPointAtLength(d), q = node.getPointAtLength(Math.min(L, d + 2));
+      let tx = q.x - p.x, ty = q.y - p.y; const n = Math.hypot(tx, ty) || 1; tx /= n; ty /= n;
+      const bx = -ty, by = tx;                                  // right of the line = behind it
+      gWinds.append("line").attr("class", `ne-wind ne-wind-${cls}`)
+        .attr("x1", p.x + bx * WIND_BACK).attr("y1", p.y + by * WIND_BACK)
+        .attr("x2", p.x + bx * WIND_GAP).attr("y2", p.y + by * WIND_GAP);
+    });
+  }
 }
 
 /* ---- Info modal ----------------------------------------------------------
@@ -2566,24 +2838,24 @@ const elInfo = document.getElementById("info-modal");
                     : pts < STRONG_AT ? ["Nor’easter", ""] : ["Strong nor’easter", "is-strong"];
   const t = d3.select("#info-table");
   t.append("caption").attr("class", "sr-only")
-    .text("Outcome by jet stream and temperature difference, when the trough is over the East Coast");
+    .text("Outcome by jet stream and temperature difference, when the storm forms at the coast");
   const hr = t.append("thead").append("tr");
   hr.append("th").attr("scope", "col").text("Jet stream");
   bands.forEach(b => hr.append("th").attr("scope", "col").text(`Difference ${b}`));
-  hr.append("th").attr("scope", "col").text("Air masses meet at the coast");
+  hr.append("th").attr("scope", "col").text("Storm forms at the coast when the trough is at");
   const tb = t.append("tbody");
   Object.entries(POSITION_POINTS).forEach(([jet, d]) => {
-    // Trough longitudes in the coast window where this jet's air masses meet at the coast (GENESIS).
-    const at = d3.range(COAST_EAST, COAST_WEST + 1).filter(w => genesisAt(jet, w));
+    // Trough longitudes where this jet's storm forms at the coast (GENESIS).
+    const at = d3.range(65, 96).filter(w => genesisType(jet, w) === "coast");
     const tr = tb.append("tr");
     tr.append("th").attr("scope", "row").text(jet);
     [0, 1, 2].forEach(c => {
       const [txt, cls] = at.length ? cell(d + c) : ["No storm", "is-none"];
-      tr.append("td").attr("class", cls).text(txt);
+      textWithNoreaster(tr.append("td").attr("class", cls), txt);
     });
-    tr.append("td").text(at.length ? `${d3.max(at)}–${d3.min(at)}°W only` : "Never");
+    tr.append("td").text(!at.length ? "Never" : d3.max(at) === d3.min(at) ? `${at[0]}°W only` : `${d3.max(at)}–${d3.min(at)}°W only`);
   });
-  document.querySelector('[data-rule="coast"]').textContent = `${COAST_WEST}°W and ${COAST_EAST}°W`;
+  document.querySelector('[data-rule="genesis-km"]').textContent = `${GENESIS_KM} km`;
   document.querySelector('[data-rule="snow"]').textContent = `${SNOW_BELOW}°F`;
   document.querySelector('[data-rule="tropical"]').textContent = `${TROPICAL_BELOW}°N`;
   document.querySelector('[data-rule="tropical-2"]').textContent = `${TROPICAL_BELOW}°N`;
@@ -2613,7 +2885,7 @@ const elInfo = document.getElementById("info-modal");
   const ob = ot.append("tbody");
   Object.entries(count).sort((a, b) => b[1] - a[1]).forEach(([label, c]) => {
     const tr = ob.append("tr");
-    tr.append("th").attr("scope", "row").attr("class", "is-left is-plain").text(label);
+    textWithNoreaster(tr.append("th").attr("scope", "row").attr("class", "is-left is-plain"), label);
     tr.append("td").attr("class", "is-num").text(pct(100 * c / n));
     const js = all.filter(j => jets[label].has(j));
     const never = all.filter(j => !jets[label].has(j));
@@ -2628,7 +2900,7 @@ const elInfo = document.getElementById("info-modal");
   };
   Object.entries(NEVER_WHY).filter(([label]) => !count[label]).forEach(([label, why]) => {
     const tr = ob.append("tr");
-    tr.append("th").attr("scope", "row").attr("class", "is-left is-plain").text(label);
+    textWithNoreaster(tr.append("th").attr("scope", "row").attr("class", "is-left is-plain"), label);
     tr.append("td").attr("class", "is-num").text("0%");
     tr.append("td").attr("class", "is-left").text(why);
   });
