@@ -5021,7 +5021,7 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.34</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.35</div>
       <div style="font-weight: 400;">Updated: 11/1/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
@@ -5324,6 +5324,15 @@ let sidebarExpanded = true;
 let demoMode = false;
 let _savedDevice = null;
 let _savedLayout = null;
+// The Demo page always opens on Mystery Lumps -- the Grades 3-5 entry and the first
+// sim in the list, so the page reads top-down from its own first card rather than
+// from whichever sim happened to be under the knife in the Prototypes view.
+// Saved and restored exactly like _savedDevice / _savedLayout above it: the demo is
+// a place you visit, and coming back should put you where you left off. Without the
+// restore, ducking into the demo for a look would land you on Mystery Lumps in the
+// working view too, which is the opposite of what `activeSim` is defaulted for.
+const DEMO_SIM = "lumps";
+let _savedSim = null;
 
 // Cached sim DOM elements — persist across layout switches
 const SIM = {};
@@ -17057,7 +17066,14 @@ function exitDemoView() {
   container.style.flex = "";
   container.style.display = "";
 
-  // Restore saved device/layout
+  // Restore saved sim/device/layout
+  if (_savedSim && activeSim !== _savedSim) {
+    activeSim = _savedSim;
+    invalidateSimCache();
+    syncDocTitle();
+    syncSimButtons();
+  }
+  _savedSim = null;
   activeDevice = _savedDevice || "none";
   activeLayout = _savedLayout || "standalone";
   if (activeLayout === "ap-2col") sidebarExpanded = true;
@@ -17629,8 +17645,15 @@ document.getElementById("demo-site-btn").addEventListener("click", () => {
     exitDemoView();
   } else {
     demoMode = true;
+    _savedSim = activeSim;
     _savedDevice = activeDevice;
     _savedLayout = activeLayout;
+    if (activeSim !== DEMO_SIM) {
+      activeSim = DEMO_SIM;
+      invalidateSimCache();
+      syncDocTitle();
+      syncSimButtons();
+    }
     activeDevice = "none";
     activeLayout = "standalone";
     buildDemoView();
