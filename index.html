@@ -3621,15 +3621,42 @@
      caption starts at 25.
      The insets are gutters, not an anchor: they keep the text off both edges.
      6, not the 10 they were: the Cross Section panel gave up 12px of width when it
-     was separated from the table, and at the narrowest the widest caption
+     was separated from the table, and at the narrowest the widest caption then
      ("200,000 yr before collapse", 177.6px) no longer fitted the 170.9 that 10px
-     gutters left it, so it broke to two lines. 6 leaves 182.9 -- 5.3px of room.
-     nowrap states the intent: this line is not allowed to break. */
+     gutters left it. 6 left it 5.3px of room.
+
+     THAT MARGIN IS GONE and the line is now allowed to wrap. When the window went to
+     1,000,000 the longest caption gained two digits -- "1,000,000 yr before collapse"
+     is 185.36px against a box that is 179.48 at 1280 and 178.91 once the layout
+     freezes below 1200, so it was being CLIPPED by up to 6.45px with the host at
+     overflow:hidden. It starts clipping at about 1300 and is clean from 1320 up.
+
+     So: white-space is normal, not nowrap. No breakpoint and no media query -- the
+     wrap is self-regulating, because every caption that fits stays on one line and
+     only the one that does not fit breaks. At the frozen floor that is EXACTLY ONE of
+     the seventeen stops: 1,000,000 at 185.36. The next longest, "500,000 /
+     200,000 / 100,000 yr before collapse" at 173.47, still clears 178.91 by 5.44.
+     Re-measure that 5.44 before adding a longer stop or narrowing this column again.
+
+     WHERE it breaks is forced, not left to the browser. "1,000,000 yr before" is
+     126.75 and fits, so natural wrapping would break after "before" and orphan
+     "collapse" on its own line. The text is built with a NO-BREAK SPACE between
+     "before" and "collapse" (see the caption assignment in the row handler), which
+     leaves the space after "yr" as the only legal break:
+         1,000,000 yr     80.77
+         before collapse 100.75
+     Both well inside the box, and the pair reads as the two things it is -- the time,
+     then what the time is measured to.
+
+     The 0.01em tracking below stays. It is no longer load-bearing for THIS caption,
+     but it is what keeps the other sixteen on one line at the floor. */
   .collapse-pic-caption {
     position: absolute;
     left: 6px;
     right: 6px;
-    white-space: nowrap;
+    /* normal, so the one caption too long for the narrowest box wraps instead of
+       being clipped. The no-break space in the text decides where. */
+    white-space: normal;
     top: 25px;
     text-align: center;
     /* .collapse-tl-yr, the timeline's "~20,000 yr" — same face, size, weight and
@@ -5021,7 +5048,7 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.36</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.37</div>
       <div style="font-weight: 400;">Updated: 11/1/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
@@ -12870,6 +12897,38 @@ function buildSimContent() {
           // Its position never moves; only the text changes.
           { years: null,   at: 1,      yr: String(new Date().getFullYear()), event: [],   icon: false, end: true }
         ];
+
+        // What the slider SAYS at each era anchor.
+        //
+        // .collapse-tl-row is aria-hidden -- the whole band of dots, years and era
+        // labels is one decorative strip and the slider carries the value. That is the
+        // right call for the dots, but it meant the era anchors never reached a screen
+        // reader at all: the valuetext was "1,000,000 years before collapse" and nothing
+        // else, at every stop. The historical framing IS the point of this timeline, and
+        // it was sighted-only. (WCAG 1.3.1.)
+        //
+        // Built from TL_STOPS so the spoken era is EXACTLY the two visible lines joined
+        // by a space -- parity with what a sighted user reads, never a second
+        // differently-worded copy of it. If you edit a label, the speech follows; do not
+        // hand-write the strings here.
+        //
+        // Only the six anchors have an era. The other eleven TL_VALUES are snap points
+        // with no label on the rail, so they speak the number alone -- which is again
+        // exactly what the rail shows at those positions.
+        //
+        // NOT settled, deliberately left alone: the rail writes a tilde on the four
+        // reconstructed dates and not on the three records, and the spoken number has no
+        // equivalent -- it says "1,000,000" where the screen says "~1,000,000 yr". Adding
+        // "about" would be a second change to every stop, including the eleven unlabelled
+        // ones, so it is a separate decision.
+        const TL_ERA = (function () {
+          const m = {};
+          TL_STOPS.forEach(function (s) {
+            if (s.years !== null && s.event && s.event.length) m[s.years] = s.event.join(" ");
+          });
+          return m;
+        })();
+
         // Seventeen stops. 1,000,000 and 200,000 joined and 300,000 left when the window
         // went to a million: 300,000 was the only value in the list with a mantissa of 3,
         // and it was there for spacing on the old 500,000 rail (it landed at exactly t=0.5
@@ -13172,7 +13231,9 @@ function buildSimContent() {
           const w = flag.offsetWidth || 158;
           flag.style.left = Math.max(0, Math.min(tl.clientWidth - w, centre - w / 2)) + "px";
           flag.setAttribute("aria-valuenow", String(v));
-          flag.setAttribute("aria-valuetext", tlFormat(v) + " years before collapse");
+          const era = TL_ERA[v];
+          flag.setAttribute("aria-valuetext",
+            tlFormat(v) + " years before collapse" + (era ? ", " + era : ""));
         }
 
         function tlSetIndex(i) {
@@ -14156,7 +14217,12 @@ function buildSimContent() {
             if (sv) sv.setAttribute("preserveAspectRatio", "xMidYMid slice");
             const cap = document.createElement("div");
             cap.className = "collapse-pic-caption";
-            cap.textContent = row.years.toLocaleString("en-US") + " yr before collapse";
+            // NO-BREAK SPACE between "before" and "collapse": the caption is
+            // allowed to wrap at the narrowest window (see .collapse-pic-caption),
+            // and without this the browser would break after "before" and leave
+            // "collapse" alone on line two. This makes the space after "yr" the
+            // only legal break. It is a space to a screen reader either way.
+            cap.textContent = row.years.toLocaleString("en-US") + " yr before\u00A0collapse";
             fig.appendChild(cap);
             body.appendChild(fig);
             // The "rock above cave" reading, laid along the measuring stick. Found by
