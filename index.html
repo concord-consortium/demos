@@ -98,6 +98,11 @@
     text-align: left;
     white-space: nowrap;
   }
+  /* The interactive buttons carry each screen's full name — the same string its
+     header and its About use — and those do not fit a 150px column on one line.
+     Only these wrap: the Device and Layout names are short and read better held to
+     one line each. */
+  .toggle-btn[data-sim] { white-space: normal; }
 
   .toggle-btn:hover,
   .toggle-btn:focus-visible {
@@ -160,10 +165,50 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-left: 1px solid #858585;
+    /* Kept, but transparent: the visible rule is the ::before below, and leaving the
+       border in place keeps the wrapper's box model exactly as it was. */
+    border-left: 1px solid transparent;
     align-self: stretch;
     min-height: calc(100vh - 40px);
     position: relative;
+  }
+
+  /* The screen's name, over the frame it belongs to. Its WIDTH is set from the
+     frame's (see sizeProtoTitle) rather than stretched across the wrapper: the
+     wrapper centres its children, so an untouched full-width title would start at
+     the wrapper's left edge and float away from the box as the frame narrows.
+     Padded in to the box's own left edge instead of being given the box's width:
+     the Teacher Desktop / Standalone path sets a marginLeft on its content that is
+     a centring one only while there is slack, so same-width-and-centred would line
+     up at one window size and not another. The right pad keeps a long title from
+     running past the box's far edge. */
+  .proto-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #333;
+    margin: 0 0 8px;
+    text-align: left;
+    box-sizing: border-box;
+  }
+
+  /* The rule beside the button column. Drawn rather than bordered so its HEIGHT can
+     follow the column: with Device and Layout hidden the column is about 650px and a
+     full-height rule ran 160px past the last button, pointing at nothing. --rule-h is
+     written from the column's measured height (see syncRuleHeight); the fallback
+     keeps a sane line if that never runs. left:-1px puts it exactly where the border
+     it replaces used to paint. --rule-c exists because two of the prototype views
+     recolour this line. */
+  .viewport-wrapper::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 1px;
+    height: var(--rule-h, 100%);
+    background: var(--rule-c, #858585);
+    pointer-events: none;
   }
 
   .viewport-info {
@@ -1440,7 +1485,7 @@
     letter-spacing: 0;
   }
 
-  /* --- alien conversation --- */
+  /* --- alien message --- */
   .nnm-alien {
     font-family: var(--nnm-mono);
     font-size: 14px;
@@ -1607,7 +1652,7 @@
   /* --- left: three readings in one card, per the sketch --- */
   /* 470 tipped the flow into its stacked fallback at AP Full Width: the flow needs
      ~556px and the row only has ~1014 to share. 440 leaves the flow enough. */
-  /* Two columns, each a toolbar over a card: find over the conversation,
+  /* Two columns, each a toolbar over a card: find over the message,
      the steps over the pathways. Both toolbars are the same height so the
      two panels start on the same line. */
   .nnm-rightcol {
@@ -1619,7 +1664,7 @@
     min-height: 0;
   }
   /* No card behind these — just the buttons. The 36px height stays so the panel
-     below still starts level with the conversation panel. */
+     below still starts level with the message panel. */
   .nnm-steprow {
     position: relative;
     display: flex;
@@ -1842,14 +1887,14 @@
   .d1a-toolbar .d3-filter { flex: 0 1 447px; }
   .d1a-toolbar .nnm-about-btn { margin-left: auto; }
   .d1a-panel { flex: 1; min-height: 0; }
-  /* The conversation is the smaller half: the network is the thing being read.
+  /* The message is the smaller half: the network is the thing being read.
      Scoped under .nnm to outrank .d3b-col's `flex: 1 1 0`, which is declared
      further down and otherwise splits the row in half. 447px is the filter's
      width above it, so the card and the filter share one left edge and one right. */
   .nnm .d1a-leftcol { flex: 0 0 447px; }
   .d1a-casebody { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
   /* The marks under the notes. Wraps, because the number of them varies with the
-     conversation and the panel is 447px wide. */
+     message and the panel is 447px wide. */
   /* Nine marks at 34 with 9 between them measure 378. The box that holds them is
      390 inside its own padding — not the 414 of the panel — so 12px of gap wrapped
      the row onto two lines. 9 still clears the badge, which overhangs its mark by
@@ -1925,13 +1970,13 @@
 
   .d1a-panel .nnm-nav { margin-left: 8px; }
   /* Both heads to the taller one's height, so the two panel bodies start on the
-     same line. The Conversation head is 54 because it carries the 36px nav buttons
+     same line. The Message head is 54 because it carries the 36px nav buttons
      (36 + 9 + 8 of padding + 1 of border); The Network head holds only a title and
      the scale, so it was sitting at the 44px floor and its body began 10px higher. */
   /* Sized to hold a control plus the head's 9/8 padding and 1px rule, so it follows
      the control height rather than restating it. */
   /* The head's own padding is left alone — 9/8, which is not arbitrary: the LEFT
-     panel's head carries the 44px conversation nav, and 9 + 44 + 8 + 1 is exactly the
+     panel's head carries the 44px message nav, and 9 + 44 + 8 + 1 is exactly the
      62px floor. Any more padding and that head grows while this one sits on the floor,
      and the two stop matching. So the spacing is set by the KEY's height instead:
        content box 44, key 42, centred -> 10 above the label and 10 below the swatches,
@@ -1940,12 +1985,12 @@
 
   /* The column captions sit 10px under the header rule, so the body gives up
      most of its top padding and the SVG carries the rest. */
-  /* The drawing keeps the width it has when the conversation panel is beside it,
+  /* The drawing keeps the width it has when the message panel is beside it,
      and centres in whatever it is given. Without this the solo screen did not make
      the diagram bigger, it made it WIDER — the same neurons with the four columns
      pulled 457px further apart and the edges stretched to reach. Capping the body
      rather than the svg keeps the readout underneath on the same measure, so the
-     two stay one block. 565 is the PANEL's width beside the conversation card, not
+     two stay one block. 565 is the PANEL's width beside the message card, not
      the drawing's — the body carries 14px of padding each side, so capping at the
      drawing's own 537 came out 28 short. A no-op on Trace a Case, which is 565. */
   .d1a-netbody { display: flex; flex-direction: column; min-height: 0; padding-top: 2px; }
@@ -1960,7 +2005,7 @@
   /* `flex: 1 1 0`, not `auto`: the host's height has to come from the row it is in
      and NOT from the SVG inside it, or measuring the host to size the SVG would
      feed back into the host and never settle. */
-  /* The drawing keeps the width it has when the conversation panel is beside it,
+  /* The drawing keeps the width it has when the message panel is beside it,
      and centres in whatever it is given. Without this the solo screen did not make
      the diagram bigger, it made it WIDER — the same neurons with the four columns
      pulled 457px apart and the edges stretched to reach. The cap is on the drawing
@@ -1989,7 +2034,7 @@
     display: flex; align-items: center;
   }
   .d1a-tools-right .nnm-about-btn { position: absolute; right: 0; margin-left: 0; }
-  /* One word of the conversation. Inline so it wraps with the text, and it has to
+  /* One word of the message. Inline so it wraps with the text, and it has to
      be a box of its own so a flight can be aimed at where it actually sits. */
   .d1a-word { display: inline-block; }
   /* A word in flight is a copy — the original stays put, at full strength. Dimming
@@ -2166,11 +2211,11 @@
      part of every track — a frame is a container and things should not be inside it
      that are only passing by. */
   .d1a-loadring { fill: none; stroke: var(--nnm-ink); stroke-width: 2; }
-  /* One conversation's neuron, once the fourteen have become one. Same circle the
+  /* One message's neuron, once the fourteen have become one. Same circle the
      network draws, minus the gauge — there is no activation to show at this point,
-     only that a conversation went through and came out as one thing. */
-  .d1a-convnode { fill: #FFFFFF; stroke: var(--nnm-ink-2); stroke-width: 1.5; }
-  /* A neuron in a stacked conversation. Outline only — the white disc and the gauge
+     only that a message went through and came out as one thing. */
+  .d1a-msgnode { fill: #FFFFFF; stroke: var(--nnm-ink-2); stroke-width: 1.5; }
+  /* A neuron in a stacked message. Outline only — the white disc and the gauge
      are drawn under it, so the ring is the last thing over both. */
   .d1a-stacknode { fill: none; stroke: var(--nnm-ink-2); stroke-width: 1; }
   /* One name per column, full size — only ever one on screen at a time, so it does
@@ -2180,13 +2225,13 @@
     fill: var(--nnm-ink); pointer-events: none;
     transition: opacity 0.15s ease;
   }
-  .d1a-convrow { will-change: transform; }
+  .d1a-msgrow { will-change: transform; }
   /* The edge of the set, once all 800 are in. Hairline and unfilled: it is naming
      the collection, not adding another object to it. */
   .d1a-gridbox {
     fill: var(--nnm-surface); stroke: var(--nnm-ink-3); stroke-width: 1.5;
   }
-  .d1a-convnode { cursor: pointer; }
+  .d1a-msgnode { cursor: pointer; }
   .d1a-readlayer { pointer-events: none; }
   /* The count that replaces the ten names. */
   .d1a-colhead { font-size: 15px; fill: var(--nnm-ink); }
@@ -2278,7 +2323,7 @@
   /* Not yet reached by the animation. It still shows — the shape of the network is
      the point — but it does not answer: no pointer, no hover ring, no readout. */
   .d1a-node.off { cursor: default; }
-  /* Restoring a conversation must not animate into place. Every node is built white
+  /* Restoring a message must not animate into place. Every node is built white
      and then painted, so the fill transition turned each return into a visible blink:
      empty circles for a fifth of a second, then colour. Suppressed for the single
      frame the state is applied in, then handed straight back — the transition still
@@ -2316,7 +2361,7 @@
   /* What a click leaves behind. The point of the panel is that it can report the
      number and the wiring and still have nothing to say about the meaning. */
   /* Its height is set from a measurement (see sizeReadout) and does not move when
-     the message does. It used to grow with the text, which shortened the diagram,
+     the readout does. It used to grow with the text, which shortened the diagram,
      which the ResizeObserver answered by redrawing — so the network jumped every
      time you clicked a neuron. */
   .d1a-pin {
@@ -2334,7 +2379,7 @@
   .d1a-pin .v { font-family: var(--nnm-mono); color: var(--nnm-ink); }
   /* .nnm-navbtn's box and behaviour — 36x36 is the button size everywhere in this
      piece (nav, Reset, About, the steps). Centred in the readout rather than sitting
-     on the first line, since the box is a fixed height and the message is not
+     on the first line, since the box is a fixed height and the readout is not
      always one line. */
   .d1a-pinclear {
     margin-left: auto; flex-shrink: 0; align-self: center;
@@ -2351,12 +2396,12 @@
   }
   .d1a-pinclear:focus-visible { outline: 2px solid var(--nnm-neg); outline-offset: 1px; }
   /* Off-layout twin of the readout, at the same width and type, used to find the
-     tallest message this conversation can produce. */
+     tallest readout this message can produce. */
   .d1a-pinmeasure {
     position: absolute; visibility: hidden; pointer-events: none;
     left: -9999px; top: 0; height: auto;
     /* Capped to the drawing's width, not the panel's. The box reserves the height of
-       the tallest message this conversation could produce, and that height depends on
+       the tallest message this message could produce, and that height depends on
        how the text wraps — measured across the full 994 of the solo screen it came
        out 53px against Trace a Case's 71, so the same empty box was two lines shorter
        on one screen than the other. */
@@ -2374,7 +2419,7 @@
     pointer-events: none;
   }
   /* Names the lifted column, in .d1a-mergelabel's type — it is the same kind of
-     caption as "Conversation n" and reads as its pair. A marker class only, so the
+     caption as "Message n" and reads as its pair. A marker class only, so the
      two cannot drift apart: everything visual comes from .d1a-mergelabel.
      NOT .d1a-collabel, which is what it would otherwise have been: the diagram's
      captions are in X.fade and go when the diagram does, and this one outlives it. */
@@ -2551,23 +2596,23 @@
   /* Nothing else in this bar is elastic, so About takes the slack itself. In 2B
      the rule's auto margins do it and in 3A the view switch's flex does. */
   .d3b-bar .nnm-about-btn { margin-left: auto; }
-  /* Three columns: the two conversations being compared, then the one control set
-     that is not per conversation. The conversations are equal — two things being
+  /* Three columns: the two messages being compared, then the one control set
+     that is not per message. The messages are equal — two things being
      compared cannot be given different amounts of room — and commissioning takes
      what is left, which is enough for four one-line items and the results table.
      Stacking commissioning below instead leaves it about 67px once two full
-     conversation cards are placed, which is not a panel. */
+     message cards are placed, which is not a panel. */
   .d3b-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; flex: 1 1 0; }
   .d3b-buycol { flex: 0 0 314px; }
-  .d3b-conv, .d3b-panel { flex: 1; min-height: 0; }
-  /* Both heads in this screen stand the same height. The conversation cards reach 54
+  .d3b-msg, .d3b-panel { flex: 1; min-height: 0; }
+  /* Both heads in this screen stand the same height. The message cards reach 54
      on their own — 36px of nav buttons inside 9/8 padding — while Commission coding
      carries only a title and a count, so it fell back to .nnm-panel-head's 44 and sat
      10px short of the cards beside it. Stated for both, so the pair moves together if
      the nav buttons ever change size. Trace a Case pins its head the same way. */
-  .d3b-conv .nnm-panel-head,
+  .d3b-msg .nnm-panel-head,
   .d3b-panel .nnm-panel-head { min-height: calc(var(--nnm-ctl-h) + 18px); }
-  .d3b-convbody { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  .d3b-msgbody { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
   /* Nothing in this toolbar is elastic once the prompt is gone, so the query would
      stretch across the whole row and stop matching the one on Correlations. Held
      at the same basis, with the buttons taking the slack. */
@@ -2581,7 +2626,7 @@
      the notes below it keep their own. */
   .d3b-readtext { flex-shrink: 0; margin-bottom: 12px; }
   /* The reading collapses, and starts collapsed. The work on this screen is
-     comparing the NOTES across two conversations, and the legend plus the sentence
+     comparing the NOTES across two messages, and the legend plus the sentence
      pushed them down the card. "Pathway 3" stays behind as the trigger so a card
      still says what it is a reading OF.
      Height animates through grid-template-rows 0fr -> 1fr rather than max-height:
@@ -2645,20 +2690,20 @@
   }
   .d3b-disc[aria-expanded="true"] + .d3b-discwrap .nnm-readhead { transition-delay: 0.06s; }
   .d3b-disc[aria-expanded="true"] + .d3b-discwrap .d3b-readtext { transition-delay: 0.12s; }
-  .d3b-convbody .d3b-subhead { margin-top: 2px; }
+  .d3b-msgbody .d3b-subhead { margin-top: 2px; }
   /* Half the 28px .nnm-readhead carries by default. That value is for the
      Prediction Chain, where the key stands over a whole column of readings; here it
      sits directly on top of one sentence, and 28px read as a break between two
      things rather than as a key labelling the line beneath it. Scoped to this card
      so the Chain keeps its own spacing. */
-  .d3b-convbody .nnm-readhead { margin-bottom: 14px; }
+  .d3b-msgbody .nnm-readhead { margin-bottom: 14px; }
   /* Collapsed, the two rules become one. The disc already draws a border, so the
      Observation notes rule goes transparent and the 5px + 2px between them closes,
      lifting the heading to sit under the Pathway 3 rule. Its 10px of padding stays
      — that is the same air the heading has below the rule when the card is open.
      Both animate on the disclosure's curve and duration, so the heading travels
      with the closing height rather than snapping when it lands. */
-  .d3b-convbody .d3b-subhead {
+  .d3b-msgbody .d3b-subhead {
     transition: margin-top 0.26s cubic-bezier(.4,0,.2,1), border-top-color 0.26s ease;
   }
   .d3b-disc[aria-expanded="false"] { margin-bottom: 0; }
@@ -2675,13 +2720,13 @@
      chips down with it. The notes are the elastic part of this card by design, so
      nothing should stop them shrinking; they keep their own scrollbar, so a short
      notes block is still a readable one. */
-  .d3b-convbody .d3b-notes { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-  .d3b-convbody .d3b-known { flex-shrink: 0; padding-top: 8px; }
+  .d3b-msgbody .d3b-notes { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  .d3b-msgbody .d3b-known { flex-shrink: 0; padding-top: 8px; }
   .d3b-count {
     margin-left: auto; font-family: var(--nnm-mono); font-size: 11.5px;
     color: var(--nnm-ink-2); font-variant-numeric: tabular-nums;
   }
-  .d3b-conv .nnm-nav { margin-left: 8px; }
+  .d3b-msg .nnm-nav { margin-left: 8px; }
   .d3b-panel { flex: 1; min-height: 0; }
   /* The panel scrolls in its LIST, not as a whole, so the note at the top stays put
      while the codings scroll under it. (It also used to hold a findings block below
@@ -2707,7 +2752,7 @@
      this line they lost it altogether when the padding moved in here. */
   .d3b-notesinner { padding: 10px 12px; }
   .d1a-notes { padding: 10px 12px; }
-  /* 4 both ways. The pills are a set — what this conversation is already coded for
+  /* 4 both ways. The pills are a set — what this message is already coded for
      — so they should read as one block rather than as a scatter, and an equal gap is
      what makes a wrapped group read as a block. It changes no wrapping: the widest
      row is 300px of pills in a 315px column either way, and a third pill would need
@@ -2842,7 +2887,7 @@
     border-radius: 5px; cursor: pointer;
   }
   .d3b-buy:hover:not(:disabled) { background: var(--nnm-surface); }
-  /* The house press, the same one Step, Reset and the conversation arrows use. On
+  /* The house press, the same one Step, Reset and the message arrows use. On
      the ROW rather than after it: a button that only changes once its work is done
      leaves the press unacknowledged, and commissioning re-renders the whole list. */
   .d3b-buy:active:not(:disabled) {
@@ -3015,7 +3060,7 @@
   .d3-colhead { justify-content: flex-start; padding: 7px 6px; overflow: hidden; }
   /* Only as tall as the column NAME — the counts hang off it absolutely, so they
      never add to its height. Both views now show them: the split a column's
-     conversations fall into is worth having in front of you whichever half of the
+     messages fall into is worth having in front of you whichever half of the
      toggle you are on, and having it appear and disappear made the two views look
      like two different tables. Measures view used to drop the name to the middle of
      the band and fade the counts out (the old .nocounts state); it no longer does,
@@ -3223,7 +3268,7 @@
     background: #E4E8EE;
   }
   /* Three layers on one axis: the track is the whole -5..5, the "full" segment is
-     everything this pathway reaches over all 800 conversations, and the fill is
+     everything this pathway reaches over all 800 messages, and the fill is
      what the filter left. The caption's percentage is fill / full, so the ratio it
      names is a ratio you can see. */
   .d3-range-full {
@@ -3262,7 +3307,7 @@
      better against the matrix than floating in the middle of it. */
   .d3-rowname { text-align: left; }
   .d3-colhead, .d3-rowhead { flex-direction: column; align-items: stretch; gap: 4px; }
-  /* The row marginal: how the conversations divide between this row's values,
+  /* The row marginal: how the messages divide between this row's values,
      which is the thing that decides whether a correlation could exist at all.
      The bar is drawn BEHIND the text rather than beside it. Sitting alongside, it
      took up to 32px of a ~79px column and the labels were the thing that gave —
@@ -3554,12 +3599,12 @@
     transition: background-color 0.35s ease, color 0.35s ease, opacity 0.3s ease;
   }
   /* Importance stays grey: it is the one number that does not change
-     from conversation to conversation. */
+     from message to message. */
   /* Importance keeps the same bare-square grammar as the other three columns.
      What marks it as a property of the MODEL rather than a result of a step is
      that it is the only column already showing a real value at step 0, while the
      others still hold their empty stand-ins — and that it never changes as you
-     move between conversations. */
+     move between messages. */
   .nnm-cell.imp { color: var(--nnm-ink) !important; }
   /* The importance VALUE starts pale — as an unlit operator does, a shade darker
      (see .nnm-glyph), and for the same reason: nothing has taken it up yet. It
@@ -3642,7 +3687,7 @@
     -webkit-appearance: none; appearance: none;
     /* Negative vertical margins pull the LAYOUT height back to what an 18px
        thumb occupied, so a bigger thumb does not make this header taller than
-       the conversation header beside it. The thumb still draws at full size —
+       the message header beside it. The thumb still draws at full size —
        margins do not clip. */
     /* Height from the control token, and the padding below takes the content box
        back down to the 18px bar — so the thumb stays up on the track while the
@@ -4211,6 +4256,50 @@
   .nnm-step:disabled,
   .nnm-step[aria-disabled="true"] { opacity: 0.35; cursor: default; }
 
+  /* The prototype-controls note, last thing in every About. Set apart from the
+     prose above it by a rule and a smaller, quieter type: it is a note about the
+     tool, not part of what the screen is teaching. */
+  .info-modal-devnote {
+    margin: 14px 0 0; padding-top: 10px;
+    border-top: 1px solid rgba(30,36,44,0.14);
+    font-size: 12.5px; line-height: 1.45; color: var(--nnm-ink-3);
+  }
+  .info-modal-devnote b { color: var(--nnm-ink-2); font-weight: 700; }
+  /* Two rows, platform then keys. A grid rather than a list so the two chords start
+     at the same x whatever the labels beside them measure — the point of listing
+     both is that they can be compared at a glance. The label column is sized to the
+     wider of the two ("Windows / Chromebook"); auto would re-measure per row. */
+  .info-modal-devnote ul {
+    list-style: none; margin: 7px 0 0; padding: 0;
+    display: grid; grid-template-columns: max-content 1fr; gap: 4px 10px;
+  }
+  .info-modal-devnote li { display: contents; }
+  .info-modal-devnote li span { color: var(--nnm-ink-3); white-space: nowrap; }
+  .info-modal-devnote kbd {
+    font-family: var(--nnm-mono); font-size: 11.5px; color: var(--nnm-ink-2);
+    white-space: nowrap;
+  }
+
+  /* ---- prototype-only controls (2026-11-06) ----
+     Scaffolding the classroom does not need: the Device and Layout switchers. The
+     rule only applies while the body is NOT in prototype mode, so revealing them is
+     a matter of the rule ceasing to match — nothing has to restore a display value,
+     and each element keeps whatever display its own rule gives it. Hidden rather
+     than removed so both switchers still work the moment they are back.
+     Toggle: Ctrl/Control + Shift + Alt/Option + D. */
+  body:not(.nnm-proto) .nnm-dev-only { display: none; }
+  /* The device/layout readout above the frame goes too, but NOT with display:none.
+     It is carrying a layout job as well as its text: the resize code sets minWidth
+     on it so the wrapper keeps a scrollable width when a device frame is wider than
+     the window (see the iPad/Android branch at the end of the file). Taken out of
+     flow that stops working, and a frame revealed later would no longer scroll.
+     Collapsed instead — no height, no margin, nothing painted — so the space is
+     reclaimed and the element still does its width job. */
+  body:not(.nnm-proto) #viewportInfo {
+    visibility: hidden;
+    height: 0; min-height: 0; margin-bottom: 0; overflow: hidden;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -4228,46 +4317,46 @@
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="app-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px; text-align: center;">
       <div style="font-weight: 600;">Neural Net Maker</div>
-      <div style="font-weight: 600;">v1.0</div>
-      <div style="font-weight: 400;">Updated: 9/17/26</div>
+      <div style="font-weight: 600;">v1.1</div>
+      <div style="font-weight: 400;">Updated: 11/6/26</div>
     </div>
     <div role="group" aria-labelledby="interactives-label">
       <div class="btn-column-label" id="interactives-label">Interactives</div>
 
       <div role="group" aria-labelledby="day1-label">
         <div class="day-sublabel" id="day1-label">Day 1</div>
-        <button class="toggle-btn active" data-sim="d1a" aria-pressed="true">Trace a Case</button>
-        <button class="toggle-btn" data-sim="d1b" aria-pressed="false">Extract Pathways</button>
-        <button class="toggle-btn" data-sim="d1c" aria-pressed="false">Investigate P1-P3</button>
+        <button class="toggle-btn active" data-sim="d1a" aria-pressed="true">Looking Inside a Neural Network</button>
+        <button class="toggle-btn" data-sim="d1b" aria-pressed="false">Extract the Pathways</button>
+        <button class="toggle-btn" data-sim="d1c" aria-pressed="false">Investigate the Pathways</button>
       </div>
 
       <div role="group" aria-labelledby="day2-label">
         <div class="day-sublabel" id="day2-label">Day 2</div>
-        <button class="toggle-btn" data-sim="d2b" aria-pressed="false">Prediction Chain</button>
+        <button class="toggle-btn" data-sim="d2b" aria-pressed="false">Neural Pathway View of Model Reasoning</button>
       </div>
 
       <div role="group" aria-labelledby="day3-label">
         <div class="day-sublabel" id="day3-label">Day 3</div>
         <button class="toggle-btn" data-sim="d3a" aria-pressed="false">Correlations</button>
-        <button class="toggle-btn" data-sim="d3b" aria-pressed="false">Investigate P3</button>
-        <button class="toggle-btn" data-sim="d3c" aria-pressed="false">Correlations Part 2</button>
+        <button class="toggle-btn" data-sim="d3b" aria-pressed="false">Identify Contextual Factors</button>
+        <button class="toggle-btn" data-sim="d3c" aria-pressed="false">Correlations Part 2: Commissioned Codings</button>
       </div>
     </div>
 
-    <div role="group" aria-labelledby="device-label" style="margin-top: 16px;">
+    <div role="group" aria-labelledby="device-label" class="nnm-dev-only" style="margin-top: 16px;">
       <div class="btn-column-label" id="device-label">Device</div>
-      <button class="toggle-btn" data-device="none" aria-pressed="false">Teacher Desktop</button>
-      <button class="toggle-btn active" data-device="chromebook" aria-pressed="true">Chromebook</button>
+      <button class="toggle-btn active" data-device="none" aria-pressed="true">Teacher Desktop</button>
+      <button class="toggle-btn" data-device="chromebook" aria-pressed="false">Chromebook</button>
       <button class="toggle-btn" data-device="ipad" aria-pressed="false">iPad (&le; 9th gen)</button>
       <button class="toggle-btn" data-device="ipad10" aria-pressed="false">iPad (10th gen)</button>
       <button class="toggle-btn" data-device="android" aria-pressed="false">Android Tablet</button>
     </div>
 
     <div role="group" aria-labelledby="layout-label" style="margin-top: 16px;">
-      <div class="btn-column-label" id="layout-label">Layout</div>
-      <button class="toggle-btn" data-layout="standalone" aria-pressed="false">Standalone</button>
-      <button class="toggle-btn active" data-layout="ap-full" aria-pressed="true">AP Full Width</button>
-      <button class="toggle-btn" data-layout="ap-2col" aria-pressed="false" disabled>AP 2-Column</button>
+      <div class="btn-column-label nnm-dev-only" id="layout-label">Layout</div>
+      <button class="toggle-btn active nnm-dev-only" data-layout="standalone" aria-pressed="true">Standalone</button>
+      <button class="toggle-btn nnm-dev-only" data-layout="ap-full" aria-pressed="false">AP Full Width</button>
+      <button class="toggle-btn nnm-dev-only" data-layout="ap-2col" aria-pressed="false" disabled>AP 2-Column</button>
       <hr id="demo-site-divider" style="border: none; border-top: 1px solid #858585; margin: 16px 0 14px;">
       <button class="toggle-btn" id="demo-site-btn">
         Demo Site
@@ -4280,7 +4369,7 @@
 
   <!-- Center: Viewport -->
   <main class="viewport-wrapper">
-    <div id="browserWidthLabel" style="position: absolute; top: 0; left: 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; line-height: 1.3; color: #333; background: rgba(0,0,0,0.15); padding: 4px 8px; border-radius: 4px;">
+    <div id="browserWidthLabel" class="nnm-dev-only" style="position: absolute; top: 0; left: 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; line-height: 1.3; color: #333; background: rgba(0,0,0,0.15); padding: 4px 8px; border-radius: 4px;">
       <div style="font-weight: 600;">Browser Width: <span id="browserWidthValue" style="font-weight: 400;">0</span></div>
     </div>
     <div class="viewport-info" id="viewportInfo"></div>
@@ -4371,13 +4460,13 @@ const SIMS = {
     // markup and still says "Trace a Case", which is how this screen is referred to in
     // the plan and in the code (id "1A", activeSim "d1a").
     name: "Looking Inside a Neural Network",
-    description: "Follow one conversation through the network",
+    description: "Follow one message through the network",
     theme: PLACEHOLDER_THEME,
     about:
-      '<p>Placeholder. Students follow a single alien conversation through the model: text to embedding, through two hidden layers, out to a prediction.</p>' +
+      '<p>Placeholder. Students follow a single alien message through the model: text to embedding, through two hidden layers, out to a prediction.</p>' +
       '<h3>Reading a neuron</h3>' +
       '<p>Click any neuron and it will tell you what it is connected to, what it is ' +
-        'reacting to most strongly, and how the conversations it fires hardest on ' +
+        'reacting to most strongly, and how the messages it fires hardest on ' +
         'divide between Approach and Wait. Click a few: some neurons come out almost ' +
         'entirely on one side, others split down the middle.</p>' +
       '<h3>The point</h3>' +
@@ -4403,7 +4492,7 @@ const SIMS = {
     description: "Read what each pathway is made of",
     theme: PLACEHOLDER_THEME,
     about:
-      '<p>Placeholder. The extraction has happened: eight hundred conversations are ' +
+      '<p>Placeholder. The extraction has happened: eight hundred messages are ' +
         'stacked behind, one of them is out in front at full size, and the three ' +
         'pathways stand beside it.</p>' +
       '<h3>Reading a loading</h3>' +
@@ -4434,29 +4523,29 @@ const SIMS = {
       '<p>Placeholder. A matrix of pathways against known attributes, shown either as correlations or as the histograms behind them. Students choose pairs and run the correlation.</p>' +
       '<h3>Correlations</h3>' +
       '<p>Each square is the correlation between that pathway and that column, over the ' +
-        'conversations in the filter. Color tracks both direction and strength \u2014 orange ' +
+        'messages in the filter. Color tracks both direction and strength \u2014 orange ' +
         'positive, blue negative, deeper for stronger. Hover a cell for the exact value.</p>' +
       '<h3>Histograms</h3>' +
-      '<p>Each panel is a pair of histograms: the conversations are counted into bins along ' +
+      '<p>Each panel is a pair of histograms: the messages are counted into bins along ' +
         'the pathway\u2019s activation axis, and bar height is how many landed in that bin. The ' +
         'pair splits them by the column\u2019s value, and the column heading shows what that ' +
         'split looks like on its own. Two histograms with the same shape in the same place ' +
         'means the pathway does not tell those groups apart. A bar of a given height means the ' +
-        'same number of conversations anywhere in the matrix — in any cell, and in ' +
+        'same number of messages anywhere in the matrix — in any cell, and in ' +
         'the pathway’s own histogram under its name — so the panels can be read ' +
         'against each other. Clicking one opens it enlarged, and a bar there stands for ' +
-        'fewer conversations than a bar of the same height in the matrix.</p>' +
+        'fewer messages than a bar of the same height in the matrix.</p>' +
       '<h3>What the filter leaves standing</h3>' +
-      '<p>A filter can leave a column holding the same value on every conversation \u2014 ' +
-        'model_correct:0, the query this opens on, leaves every conversation wrong. A flat ' +
+      '<p>A filter can leave a column holding the same value on every message \u2014 ' +
+        'model_correct:0, the query this opens on, leaves every message wrong. A flat ' +
         'column cannot be correlated with anything, so it has nothing to show. It also ties ' +
-        'two columns together: with the model wrong on every conversation its prediction is ' +
+        'two columns together: with the model wrong on every message its prediction is ' +
         'always the opposite of the actual label, so those two columns come out exact mirrors ' +
         'of each other. That symmetry is arithmetic, not a finding.</p>' +
       '<p>The same thing happens by degrees to the pathways, and in the Histograms view ' +
         'the bar under each pathway’s own histogram is what says so: it shows how ' +
         'much of that pathway’s full range the filter left standing, and where in ' +
-        'that range it sits. “5% of the range” means these conversations cover ' +
+        'that range it sits. “5% of the range” means these messages cover ' +
         'about a twentieth of the spread the pathway has over all 800 — so there is ' +
         'barely anything left for a correlation to be computed from, and that whole row ' +
         'reads as noise however striking a number in it looks. A flat column is this same ' +
@@ -4484,7 +4573,7 @@ const SIMS = {
     about:
       '<p>Placeholder. The Correlations matrix again, run after Investigate Pathway 3 has ' +
         'commissioned new attribute codings \u2014 so the columns include facts about the ' +
-        'conversations that nobody had recorded the first time round.</p>' +
+        'messages that nobody had recorded the first time round.</p>' +
       '<h3>The point</h3>' +
       '<p>A pathway that lines up with nothing may only be telling you that nothing you ' +
         'have measured yet is the right thing to measure.</p>'
@@ -4505,7 +4594,7 @@ const NNM_COMMISSIONED = [];
 // ---- what each interactive remembers when you leave it ----
 // Switching sims tears the screen down and builds the next one from scratch, so
 // every closure the outgoing screen was holding its state in goes with it: which
-// conversation you were on, how far you had stepped it, what you had filtered to.
+// message you were on, how far you had stepped it, what you had filtered to.
 // Keyed by sim, written by whatever the outgoing screen parks on SIM.saveState,
 // and read back by that screen's builder.
 //
@@ -4528,8 +4617,8 @@ function reopenAbout() {
 }
 
 let activeSim = "d1a";
-let activeDevice = "chromebook";
-let activeLayout = "ap-full";
+let activeDevice = "none";
+let activeLayout = "standalone";
 let sidebarExpanded = true;
 let demoMode = false;
 let _savedDevice = null;
@@ -4762,7 +4851,7 @@ const ALIEN_A1 = {
 // Correlations columns use, which puts the five coded attributes first and the four
 // the observer noted but nobody has coded yet after them. FIXED, not the order the
 // prose happens to raise them in: a diary records things as they happen, a record
-// uses the same form every time. Position 4 is always water, so two conversations
+// uses the same form every time. Position 4 is always water, so two messages
 // can be compared at a glance instead of hunted through. The observer's own order is
 // already in the sentences directly above.
 //
@@ -4906,6 +4995,24 @@ function openAboutModal(triggerBtn, mountEl) {
   const body = document.createElement("div");
   body.className = "info-modal-body";
   body.innerHTML = SIMS[activeSim].about || "";
+  // Appended here rather than written into all seven about strings, so there is one
+  // copy of the chord and it cannot drift screen to screen.
+  //
+  // Both platforms are listed rather than the running one detected: a teacher reading
+  // this on their own Mac is often setting up a room of Chromebooks, and sniffing the
+  // platform would have shown them only the half that does not apply. They are the
+  // same four physical keys either way — Mac keyboards just label two of them
+  // Control and Option.
+  const devNote = document.createElement("div");
+  devNote.className = "info-modal-devnote";
+  devNote.innerHTML =
+    "<b>Prototype controls</b> \u2014 show or hide the Device and Layout switchers "
+    + "and the readouts above the frame:"
+    + "<ul>"
+    +   "<li><span>Mac</span><kbd>Control + Shift + Option + D</kbd></li>"
+    +   "<li><span>Windows / Chromebook</span><kbd>Ctrl + Shift + Alt + D</kbd></li>"
+    + "</ul>";
+  body.appendChild(devNote);
 
   body.setAttribute("tabindex", "0");
   const bodyWrap = document.createElement("div");
@@ -5102,7 +5209,7 @@ function makeFilter(D) {
       // set — unlike the "3 / 57" counter, which is a position within the results.
       n: i + 1,
       // The hex id the upstream Pathway Explorer uses in its &item= parameter, so
-      // a conversation can be named the same way in both places. Matches on a
+      // a message can be named the same way in both places. Matches on a
       // substring, so a leading fragment is enough.
       id: it.id,
       text: it.text.replace(/\n/g, " "),
@@ -5227,7 +5334,7 @@ function makeFilter(D) {
   // threshold first. The seven partition the set exactly; the counts below prove it.
   //
   // Seven, not five: the tails are split again at ±3 (content designer, 2026-09-17).
-  // They are thin — 3 to 7 conversations a side per pathway — but they are the most
+  // They are thin — 3 to 7 messages a side per pathway — but they are the most
   // extreme readings in the set, which is exactly what somebody hunting for a clear
   // case wants, and the count sits on the chip so nobody is surprised by how few.
   const ADV_BANDS = [
@@ -5360,7 +5467,7 @@ function makeFilter(D) {
     // Two of the five fold. Words and Observed are 581px of the panel's 1061 — more
     // than half — and they are the two a student is least likely to open first, so
     // collapsing just those puts everything else on screen at once. The other three
-    // stay open: Conversation is one row, Label is the most-used, and Pathway
+    // stay open: Message is one row, Label is the most-used, and Pathway
     // activation is the whole point of the thing.
     const folders = [];
     function section(title, foldable, summarise, startOpen) {
@@ -5454,8 +5561,8 @@ function makeFilter(D) {
       sec.appendChild(row);
     }
 
-    // ---- conversation number ----
-    const secN = section("Conversation", true, function () {
+    // ---- message number ----
+    const secN = section("Message", true, function () {
       return st.n ? "#" + st.n : "";
     }, true);
     const rowN = document.createElement("div");
@@ -5635,7 +5742,7 @@ function makeFilter(D) {
         const on = c.on();
         c.btn.classList.toggle("on", on);
         c.btn.setAttribute("aria-pressed", on ? "true" : "false");
-        // Nothing is disabled at zero — a count of none is an ANSWER ("no conversation
+        // Nothing is disabled at zero — a count of none is an ANSWER ("no message
         // has both of these"), and greying it out hides the finding behind a dead
         // control. It is styled quiet instead.
         c.btn.classList.toggle("none", n === 0);
@@ -5704,7 +5811,7 @@ function makeFilter(D) {
     // Labelled "Example:" (2026-09-17). On its own the query read as one that was
     // already running — grey text in a box that DOES hold a live query the rest of
     // the time — so a reader had to try clearing it to find out whether 800 or 64
-    // conversations were in play. Naming it settles that before it is asked.
+    // messages were in play. Naming it settles that before it is asked.
     input.placeholder = "Example: model_correct:0";
     input.setAttribute("autocomplete", "off");
     input.setAttribute("spellcheck", "false");
@@ -5750,11 +5857,11 @@ function makeFilter(D) {
       '<b>Fields</b><div class="nnm-fieldlist">' +
       FIELDS.map(function (f) { return '<code>' + f + '</code>'; }).join(" ") +
       '</div><b>Examples</b><ul>' +
-      '<li><code>n:127</code> — jump to conversation 127 of 800</li>' +
+      '<li><code>n:127</code> — jump to message 127 of 800</li>' +
       '<li><code>model_correct:0</code> — the ones the model got wrong</li>' +
       '<li><code>pathway_3:&gt;2</code> — a high score on Pathway 3</li>' +
       '<li><code>voices_raised:1 AND pathway_1:&lt;0</code></li>' +
-      '<li><code>yandor</code> — conversations containing that word</li>' +
+      '<li><code>yandor</code> — messages containing that word</li>' +
       '<li><code>NOT near_water:1</code></li>' +
       '</ul>';
 
@@ -5919,6 +6026,36 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "Tab") document.documentElement.classList.remove("nnm-pointer");
 }, true);
 
+// ---- the prototype-controls switch ----
+// Ctrl + Shift + Alt + D, the same four physical keys on every machine: Control, not
+// Cmd, so one instruction in About is true on a Mac, a Chromebook and Windows alike.
+// Cmd was deliberately not used — Cmd+Option+D hides the Dock on macOS, one dropped
+// Shift away. Nothing in Chrome, ChromeOS or macOS binds this chord, and four keys
+// is not something a student produces by leaning on the keyboard.
+//
+// Keyed on e.code, not e.key: Option+D types "∂" on a Mac and a dead key on some
+// layouts, and the physical D is what was asked for.
+//
+// Deliberately NOT remembered. A reload returns to the classroom state, so a machine
+// cannot be left unlocked for the next student by someone who forgot to toggle back.
+const PROTO_CLASS = "nnm-proto";
+document.addEventListener("keydown", function (e) {
+  if (!(e.ctrlKey && e.shiftKey && e.altKey) || e.metaKey) return;
+  if (e.code !== "KeyD") return;
+  // Never while something is being typed into — the filter box takes nearly every
+  // key, and a chord that fires mid-query would be a mystery to whoever hit it.
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+  e.preventDefault();
+  const on = document.body.classList.toggle(PROTO_CLASS);
+  syncRuleHeight();
+  // Said out loud as well as shown: the controls appear well away from the keyboard
+  // focus, and a screen-reader user gets no cue from the column changing height.
+  if (window.SIM && SIM.announce) {
+    SIM.announce(on ? "Prototype controls shown" : "Prototype controls hidden");
+  }
+}, true);
+
 const SVGNS = "http://www.w3.org/2000/svg";
 const FILL_NEG = ["#C8D6E9", "#A9BDD8", "#8DA6CA", "#7694BD", "#1F4E8F"];
 const FILL_POS = ["#EFD3C4", "#E0B6A4", "#D29A84", "#C6836C", "#A84A2C"];
@@ -5979,7 +6116,7 @@ function level(t) {
 
 
 // =====================================================================
-// The conversation panel — filter bar, the case card with its nav, and one
+// The message panel — filter bar, the case card with its nav, and one
 // reading per pathway under the shared word-contribution legend.
 //
 // Shared by 2B (where it feeds the prediction chain) and 3B (where it feeds
@@ -6081,18 +6218,18 @@ function buildCasePanel(opts) {
 
   const emptyMsg = document.createElement("div");
   emptyMsg.className = "nnm-empty";
-  emptyMsg.textContent = "No conversations match that search.";
+  emptyMsg.textContent = "No messages match that search.";
   emptyMsg.hidden = true;
 
   const casePanel = document.createElement("div");
   casePanel.className = "nnm-panel nnm-readings";
   casePanel.setAttribute("role", "region");
-  casePanel.setAttribute("aria-label", "Conversation");
+  casePanel.setAttribute("aria-label", "Message");
 
   const caseHead = document.createElement("div");
   caseHead.className = "nnm-panel-head";
   const caseIdEl = document.createElement("span");
-  caseIdEl.textContent = "Conversation";
+  caseIdEl.textContent = "Message";
   caseHead.appendChild(caseIdEl);
   const nav = document.createElement("div");
   nav.className = "nnm-nav";
@@ -6101,13 +6238,13 @@ function buildCasePanel(opts) {
   const prevBtn = document.createElement("button");
   prevBtn.className = "nnm-navbtn";
   prevBtn.innerHTML = navGlyph(-1);
-  prevBtn.setAttribute("aria-label", "Previous conversation");
-  prevBtn.title = "Previous conversation";
+  prevBtn.setAttribute("aria-label", "Previous message");
+  prevBtn.title = "Previous message";
   const nextBtn = document.createElement("button");
   nextBtn.className = "nnm-navbtn";
   nextBtn.innerHTML = navGlyph(1);
-  nextBtn.setAttribute("aria-label", "Next conversation");
-  nextBtn.title = "Next conversation";
+  nextBtn.setAttribute("aria-label", "Next message");
+  nextBtn.title = "Next message";
   nav.appendChild(countEl); nav.appendChild(prevBtn); nav.appendChild(nextBtn);
   caseHead.appendChild(nav);
   casePanel.appendChild(caseHead);
@@ -6152,7 +6289,7 @@ function buildCasePanel(opts) {
   leftCol.appendChild(casePanel);
   leftCol.appendChild(emptyMsg);
 
-  // Fills one reading with the conversation, each word this pathway scores
+  // Fills one reading with the message, each word this pathway scores
   // tinted on the shared scale. 2B does its own version so it can withhold the
   // colours until the Activate step; this is the plain always-on form.
   function paintReading(p, it) {
@@ -6189,8 +6326,8 @@ function buildCasePanel(opts) {
 function buildSimContent() {
 
   // ---------------------------------------------------------------
-  // 3B — Investigate Pathway 3.  The conversation panel from 2B on the
-  // left; on the right the observation notes for that conversation and a
+  // 3B — Investigate Pathway 3.  The message panel from 2B on the
+  // left; on the right the observation notes for that message and a
   // commissioning list. Pathway 3 lines up with none of the attributes we
   // were given, so students read what an observer wrote down and pay to
   // have a new attribute coded. Three of the four they can commission are
@@ -6219,7 +6356,7 @@ function buildSimContent() {
     // The content designer's own query. On the three-pathway fit her "pathway_3"
     // and this prototype's pathway_3 finally name the same column — the last one —
     // so no translation is needed any more. Measured on the three-pathway data:
-    // it leaves 8 of the 64 conversations the model got wrong, every one of them
+    // it leaves 8 of the 64 messages the model got wrong, every one of them
     // resource-stressed against a 30% baseline, which is the pattern the
     // commissioning step exists to find. >1 gives 23, also unanimous.
     const DEFAULT_QUERY = "model_correct:0 AND pathway_3:>2";
@@ -6268,10 +6405,10 @@ function buildSimContent() {
     root.className = "nnm";
     stack.appendChild(root);
 
-    // Two conversations, side by side, in identical cards. The finding this screen
+    // Two messages, side by side, in identical cards. The finding this screen
     // exists for is that the SAME words keep lighting up and the SAME thing keeps
-    // turning up in the notes — neither of which is visible one conversation at a
-    // time. Everything about one conversation stays inside its own card: splitting
+    // turning up in the notes — neither of which is visible one message at a
+    // time. Everything about one message stays inside its own card: splitting
     // the reading from its notes would break the very pairing being looked for.
     const panes = [0, 1].map(function (slot) {
       const col = document.createElement("div");
@@ -6279,13 +6416,13 @@ function buildSimContent() {
       root.appendChild(col);
 
       const panel = document.createElement("div");
-      panel.className = "nnm-panel d3b-conv";
+      panel.className = "nnm-panel d3b-msg";
       col.appendChild(panel);
 
       const head = document.createElement("div");
       head.className = "nnm-panel-head";
       const title = document.createElement("span");
-      title.textContent = "Conversation";
+      title.textContent = "Message";
       head.appendChild(title);
       const count = document.createElement("span");
       count.className = "d3b-count";
@@ -6295,22 +6432,22 @@ function buildSimContent() {
       const prev = document.createElement("button");
       prev.className = "nnm-navbtn";
       prev.innerHTML = "&#9664;";
-      prev.setAttribute("aria-label", "Previous conversation");
+      prev.setAttribute("aria-label", "Previous message");
       const next = document.createElement("button");
       next.className = "nnm-navbtn";
       next.innerHTML = "&#9654;";
-      next.setAttribute("aria-label", "Next conversation");
+      next.setAttribute("aria-label", "Next message");
       nav.appendChild(prev); nav.appendChild(next);
       head.appendChild(nav);
       panel.appendChild(head);
 
       const body = document.createElement("div");
-      body.className = "nnm-panel-body d3b-convbody";
+      body.className = "nnm-panel-body d3b-msgbody";
       panel.appendChild(body);
 
-      // The same key in both cards, built the way the conversation panel builds it
+      // The same key in both cards, built the way the message panel builds it
       // so it styles identically. It IS the same ramp either way — tokMax is taken
-      // over the whole vocabulary, not per conversation — so duplicating it costs
+      // over the whole vocabulary, not per message — so duplicating it costs
       // nothing and keeps each card readable on its own.
       const readHead = document.createElement("div");
       readHead.className = "nnm-readhead";
@@ -6396,12 +6533,12 @@ function buildSimContent() {
 
     const emptyMsg = document.createElement("div");
     emptyMsg.className = "nnm-empty";
-    emptyMsg.textContent = "No conversations match that search.";
+    emptyMsg.textContent = "No messages match that search.";
     emptyMsg.hidden = true;
     stack.appendChild(emptyMsg);
 
     // Third column: the one control set on this screen that is not per
-    // conversation, so it is not duplicated into either card.
+    // message, so it is not duplicated into either card.
     const buyCol = document.createElement("div");
     buyCol.className = "d3b-col d3b-buycol";
     root.appendChild(buyCol);
@@ -6567,7 +6704,7 @@ function buildSimContent() {
     // Only the focus pathway is lit. Every word in the vocabulary belongs to
     // exactly one pathway, so the four readings this screen used to show were
     // highlighting four disjoint sets of words in the same sentence — and a
-    // student comparing conversations had to subtract three of them by eye to see
+    // student comparing messages had to subtract three of them by eye to see
     // the one under investigation.
     function paintFocus(el, it) {
       el.innerHTML = "";
@@ -6635,7 +6772,7 @@ function buildSimContent() {
     // Any number of attributes can be held at once — the question this screen asks
     // is what several codings have in common, which cannot be seen one at a time.
     // Selection survives paging, too: the work is spotting the SAME thing recurring
-    // across conversations, so holding attributes while you move is the use of it.
+    // across messages, so holding attributes while you move is the use of it.
     function paintSel(pane) {
       const vis = visibleAttrKeys();
       pane.notes.querySelectorAll(".d3b-sent").forEach(function (sp) {
@@ -6667,7 +6804,7 @@ function buildSimContent() {
 
       panes.forEach(function (pane) {
         // Two panes over a set that can be one long: the second pane shows the
-        // same conversation rather than nothing, and its nav simply cannot move.
+        // same message rather than nothing, and its nav simply cannot move.
         if (pane.idx >= cases.length) pane.idx = cases.length - 1;
         const it = cases[pane.idx];
         pane.count.textContent = (pane.idx + 1) + " / " + cases.length;
@@ -6677,7 +6814,7 @@ function buildSimContent() {
         pane.notes.innerHTML = "";
         const sentences = noteSentences(it.obs);
         if (!sentences.length) {
-          pane.notes.textContent = "(no notes for this conversation)";
+          pane.notes.textContent = "(no notes for this message)";
         } else {
           sentences.forEach(function (sen, k) {
             const sp = document.createElement("span");
@@ -6757,7 +6894,7 @@ function buildSimContent() {
     filter.input.dispatchEvent(new Event("input", { bubbles: true }));
 
     // ---- leaving, and coming back ----
-    // Both panes: which conversation each is showing and which codings are ticked
+    // Both panes: which message each is showing and which codings are ticked
     // on it. The commissioned codings themselves already survive on their own —
     // NNM_COMMISSIONED is global for exactly that reason.
     SIM.saveState = function () {
@@ -6816,7 +6953,7 @@ function buildSimContent() {
     // Correlations are computed over the filtered set, the way the shipped
     // Pathway Explorer does it. That is not a convenience: over all 800 Pathway 3
     // lines up with nothing, and its association with the predicted label only
-    // appears once you narrow to the conversations the model got wrong. The
+    // appears once you narrow to the messages the model got wrong. The
     // filter is how the day's finding is reached.
     let items = ALL.slice();
 
@@ -6856,7 +6993,7 @@ function buildSimContent() {
       //
       // Over ALL 800, not over the filtered set. Taken from the filter, a value the
       // filter happened to exclude vanished from the column altogether: under
-      // pathway_1:>2 every one of the 17 conversations has voices raised, so that
+      // pathway_1:>2 every one of the 17 messages has voices raised, so that
       // column lost its "no" band and drew a single histogram in a double-height
       // lane, out of step with every neighbour. Actual label never did this — its
       // groups are written out — so the same situation was drawn two different ways
@@ -6921,7 +7058,7 @@ function buildSimContent() {
     // Rounded rather than extended, so it can clip: 2 of 3200 activations fall
     // outside (-5.10 and 5.29), and binCounts already clamps anything out of range
     // into the end bins. That moves them by at most 0.29 — under one bin's 0.37 —
-    // and no conversation is dropped from a count.
+    // and no message is dropped from a count.
     const ax = Math.max(1, Math.round(Math.max(
       Math.abs(Math.min.apply(null, D.scoreMin)),
       Math.abs(Math.max.apply(null, D.scoreMax)))));
@@ -7036,7 +7173,7 @@ function buildSimContent() {
     views.appendChild(viewSwitch);
     const viewBtns = [graphView, corrView];
     // One place that puts the control in step with `view`, called from both paths
-    // through render() — the early return for too-few conversations, and the draw.
+    // through render() — the early return for too-few messages, and the draw.
     function syncViews() {
       viewBtns.forEach(function (v) {
         v.el.classList.toggle("on", v.key === view);
@@ -7607,7 +7744,7 @@ function buildSimContent() {
     }
 
     // The panel behind a pathway. Deliberately NOT a bigger copy of the stub plot:
-    // it draws the pathway across all 800 conversations and the filtered set on the
+    // it draws the pathway across all 800 messages and the filtered set on the
     // same axis, which is the one thing the range bar asserts and nothing in the
     // interactive shows. For Pathway 1 under the error filter that is the finding —
     // a full spread above, a single spike below.
@@ -7628,7 +7765,7 @@ function buildSimContent() {
       card.className = "d3-detail";
       card.setAttribute("role", "dialog");
       card.setAttribute("aria-modal", "true");
-      card.setAttribute("aria-label", pa.label + " across all conversations");
+      card.setAttribute("aria-label", pa.label + " across all messages");
       scrim.appendChild(card);
 
       const head = document.createElement("div");
@@ -7675,15 +7812,15 @@ function buildSimContent() {
       //
       // One unit per band, which is the exception rather than the rule here.
       //
-      // The two bands are 64 conversations and 800 of the same thing, so the lower
+      // The two bands are 64 messages and 800 of the same thing, so the lower
       // is about twelve times deeper and a shared unit is set by it. That did not
-      // merely flatten the band above: at 0.67px per conversation every bin holding
+      // merely flatten the band above: at 0.67px per message every bin holding
       // one or two of them rounded away, so the tails vanished and the filtered set
       // arrived both flat AND narrower than it is. The stub read 82% full and its
       // own close-up read 8%, of a visibly different distribution.
       //
       // Nothing is lost by scaling them apart. Comparing the two bands' HEIGHTS was
-      // never a real reading — of course 800 conversations pile deeper than 64;
+      // never a real reading — of course 800 messages pile deeper than 64;
       // the labels say so. What this panel is for is where the two sit on the axis,
       // and that is horizontal. The top band is now the stub enlarged by exactly
       // the zoom, and the backdrop fills its own lane.
@@ -7697,11 +7834,11 @@ function buildSimContent() {
       // Both bands asked for the matrix's scale. The backdrop usually cannot take
       // it — it is the whole corpus against a filtered slice, and histPlot refits
       // any band the unit would overflow — but with no filter in force the two
-      // bands ARE the same 800 conversations, and asking for one unit is what makes
+      // bands ARE the same 800 messages, and asking for one unit is what makes
       // them draw identically instead of one filling its lane and the other not.
       body.appendChild(histPlot([
-        { label: "for these " + pa.vals.length + " conversations", vals: pa.vals },
-        { label: "for all " + ALL.length + " conversations", vals: full }
+        { label: "for these " + pa.vals.length + " messages", vals: pa.vals },
+        { label: "for all " + ALL.length + " messages", vals: full }
       ], pa.lo, pa.hi, pGeom.W, pGeom.H, { labW: PATH_LABW, padR: DETAIL_PADR, bandUnits: [pTop, pTop] }));
       card.style.width = (pGeom.W + 30) + "px";
       card.appendChild(body);
@@ -7719,7 +7856,7 @@ function buildSimContent() {
     function corrCell(r) {
       const el = document.createElement("div");
       el.className = "d3-cell corr";
-      // Undefined rather than zero: every conversation in the filter shares one
+      // Undefined rather than zero: every message in the filter shares one
       // value on this row, so there is nothing for the pathway to line up with.
       // Drawn as an em dash with no circle, because any circle at all — even the
       // smallest — would be read as a measured weak result.
@@ -7730,7 +7867,7 @@ function buildSimContent() {
         dash.textContent = "\u2014";
         el.appendChild(dash);
         el.title = "Not defined: every one of these " + items.length +
-          " conversations has the same value on this row, so there is nothing to correlate.";
+          " messages has the same value on this row, so there is nothing to correlate.";
         return el;
       }
       // A filled square with its value inside, on the same five-step ramp the
@@ -7798,8 +7935,8 @@ function buildSimContent() {
     // Lays one band of dots: values -> x, packed into columns a dot wide, stacked
     // upward from the baseline. Returns the radius that made the tallest stack fit.
     // The radius ladder, shared so the fitting pass and the drawing pass agree.
-    // Height given to ONE conversation inside a bar. This is the old dot-radius
-    // ladder doubled: a dot stood 2r tall, so a bar holding n conversations stands
+    // Height given to ONE message inside a bar. This is the old dot-radius
+    // ladder doubled: a dot stood 2r tall, so a bar holding n messages stands
     // n * 2r — which puts every fitted size, and every decision about what clips,
     // exactly where the dot plots had them.
 
@@ -7812,7 +7949,7 @@ function buildSimContent() {
     // width the plot has room for.
     const BINS = 27;
 
-    // The histogram itself: how many conversations land in each of the BINS
+    // The histogram itself: how many messages land in each of the BINS
     // columns of the axis. Everything else is a way of drawing this.
     function binCounts(vals, lo, hi) {
       const counts = new Array(BINS).fill(0);
@@ -7870,7 +8007,7 @@ function buildSimContent() {
       const bandH = plotH / bands.length;
 
       // One unit for every band in this plot, so a given height means the same
-      // number of conversations wherever it appears. Fitted per band, a panel
+      // number of messages wherever it appears. Fitted per band, a panel
       // showing 800 above 63 would draw the two at different scales — the same
       // bar meaning a different count in each half of one picture. Where a unit is
       // dictated (the matrix, which fits one across every cell) that wins;
@@ -7941,7 +8078,7 @@ function buildSimContent() {
         }
         // A bar per bin, standing on the band's baseline. Height is the count
         // times the unit. Normally that unit is shared by every band in the plot,
-        // so two bars of the same height hold the same number of conversations
+        // so two bars of the same height hold the same number of messages
         // wherever they are — bandUnits is the exception, for a plot whose bands
         // are of such different sizes that one scale erases the smaller one.
         const bu = bandUnits ? bandUnits[bi] : unit;
@@ -8010,7 +8147,7 @@ function buildSimContent() {
 
     // One unit for every bar on screen, cells and pathway stubs alike. Fitted per
     // band it would produce ten different scales across the matrix — the same bar
-    // height meaning three times as many conversations in one cell as in another.
+    // height meaning three times as many messages in one cell as in another.
     // Here the whole set is measured first and the largest unit every band can
     // live with is used everywhere.
     function fitPlots() {
@@ -8035,7 +8172,7 @@ function buildSimContent() {
       // which is a shape, and unfiltered that was happening to 54% of the bars on
       // screen. And once nothing may be clipped, one shared unit is set by the
       // single deepest band anywhere in the matrix — under model_correct:0 that is
-      // Pathway 1, which puts 43 of the 64 conversations in one bin because it has
+      // Pathway 1, which puts 43 of the 64 messages in one bin because it has
       // only 5% of its range left. Every other cell then drew at that unit and the
       // median band came out 18% full. Per plot it is 84%.
       //
@@ -8069,7 +8206,7 @@ function buildSimContent() {
         return isFinite(u) ? Math.max(0.01, u) : FLOOR;
       }
       // ONE unit for everything on screen — every cell and every pathway stub — so
-      // a bar of a given height means the same number of conversations wherever it
+      // a bar of a given height means the same number of messages wherever it
       // is, including down the stub column and between a stub and the cells in its
       // row. Letting the stubs fit themselves was tried: it kept the cells from
       // being squashed, but it left the three stubs disagreeing with EACH OTHER by
@@ -8142,8 +8279,8 @@ function buildSimContent() {
     // otherwise clip. One pair of values, used by both kinds of close-up.
     const DETAIL_LABW = 84;
     // The pathway close-up names its two bands in full — "for these 64
-    // conversations" — which needs more gutter than the cell close-up's short
-    // labels. The widest reading there can be is "for these 800 conversations",
+    // messages" — which needs more gutter than the cell close-up's short
+    // labels. The widest reading there can be is "for these 800 messages",
     // the unfiltered case where both bands say 800; rendered it measures 143, and
     // the label is inset 6 from the gutter's right edge, so 149 is the floor. 156
     // leaves a little air. (Canvas measureText under-reports this by ~6% against
@@ -8266,7 +8403,7 @@ function buildSimContent() {
       cap.textContent = Math.round(frac * 100) + "% of the range";
       el.appendChild(track);
       el.appendChild(cap);
-      el.title = "These " + pa.vals.length + " conversations span " +
+      el.title = "These " + pa.vals.length + " messages span " +
         vLo.toFixed(2) + " to " + vHi.toFixed(2) + ". Over all " + ALL.length +
         " this column spans " + fLo.toFixed(2) + " to " + fHi.toFixed(2) + ".";
       return el;
@@ -8320,20 +8457,20 @@ function buildSimContent() {
       return el;
     }
 
-    // Below this, r swings wildly on one or two conversations and reads as a
+    // Below this, r swings wildly on one or two messages and reads as a
     // finding when it is not. Every cell shares the same n, so the whole matrix
     // says so rather than marking cells individually.
     const MIN_N = 12;
 
     function render() {
       const n = items.length;
-      title.textContent = "Correlations over " + n + " of " + ALL.length + " conversations";
+      title.textContent = "Correlations over " + n + " of " + ALL.length + " messages";
       if (n < MIN_N) {
         scroll.innerHTML = "";
         scrollWrap.classList.remove("showkey");
         setNote(n === 0
           ? "Nothing matches that filter."
-          : "Only " + n + " conversations match. A correlation over so few is mostly "
+          : "Only " + n + " messages match. A correlation over so few is mostly "
             + "noise — widen the filter to at least " + MIN_N + " to read this matrix.");
         syncViews();
         // Nothing drawn, so there is nothing to open.
@@ -8433,7 +8570,7 @@ function buildSimContent() {
           nm.textContent = row.label;
         }
         inner.appendChild(nm);
-        // In BOTH views. How the conversations divide between a column's values is
+        // In BOTH views. How the messages divide between a column's values is
         // what decides whether a correlation could exist at all, so it belongs over
         // the correlations as much as over the plots — and drawing it either way is
         // what lets the two views share one set of headings.
@@ -8463,7 +8600,7 @@ function buildSimContent() {
         if (view === "hist") {
           lab.setAttribute("role", "button");
           lab.setAttribute("tabindex", "0");
-          lab.setAttribute("aria-label", pa.label + ", show across all conversations");
+          lab.setAttribute("aria-label", pa.label + ", show across all messages");
           lab.dataset.pathPi = pi;      // so a saved open plot can be found again
           lab.addEventListener("click", function () { openPathwayDetail(pa, pi, lab); });
           lab.addEventListener("keydown", function (e) {
@@ -8506,7 +8643,7 @@ function buildSimContent() {
 
       // Nothing is written under the matrix any more: what a square means, what a
       // dot means, and what a flat row does to the reading all moved into About on
-      // 2026-09-01. The element stays only because the too-few-conversations path
+      // 2026-09-01. The element stays only because the too-few-messages path
       // above still writes to it — cleared at the top of this draw.
       // Again, now the grid is populated. The call up at gridTemplateColumns sets
       // the row heights, but it runs before a single stub exists — and the stub is
@@ -8518,7 +8655,7 @@ function buildSimContent() {
       syncFade();
     }
 
-    // Opens on the conversations the model got wrong, which is where the day's
+    // Opens on the messages the model got wrong, which is where the day's
     // finding lives: over all 800 Pathway 3 lines up with nothing you can see,
     // and only in here does it become the strongest thing in the matrix.
     filter.input.value = "model_correct:0";
@@ -8724,7 +8861,7 @@ function buildSimContent() {
 
     const SUM_SCALE = 40;
     // Squares are sized against the largest value the whole dataset produces, so a
-    // square means the same thing on every conversation. The weighted values and
+    // square means the same thing on every message. The weighted values and
     // the sum share one scale because the sum IS those three added — sharing is
     // what makes that readable. Activation keeps its own: it spans +-4.8 against
     // the weighted +-74, and one scale across both would flatten it to nothing.
@@ -8787,7 +8924,7 @@ function buildSimContent() {
     root.className = "nnm";
     stack.appendChild(root);
 
-    // The find bar sits over the conversation list it filters, so it takes the
+    // The find bar sits over the message list it filters, so it takes the
     // left column's width and the flow panel runs the full height beside it.
     // The panel itself is shared with 3B — see buildCasePanel. 2B keeps its own
     // render(), because it has to withhold the word colours until Activate runs
@@ -8881,7 +9018,7 @@ function buildSimContent() {
       // Both flags mean the same thing and must be cleared the same way: false =
       // the line is drawn. playDecide raises decidePending itself when it is about
       // to animate, so raising it here only affected the paths that DON'T animate
-      // — restoring a conversation from memory — where it hid the fan line while
+      // — restoring a message from memory — where it hid the fan line while
       // the three convergence lines came back drawn.
       for (let i = 0; i < solidPending.length; i++) solidPending[i] = false;
       decidePending = false;
@@ -9185,7 +9322,7 @@ function buildSimContent() {
         const all = allWords[p];
         const cell = rows[p].querySelector(".act");
         const n = toks.length;
-        // Longer conversations send words faster, so a pathway takes roughly the
+        // Longer messages send words faster, so a pathway takes roughly the
         // same time to build whether it has four words or fourteen.
         const gap = Math.max(80, Math.min(170, 1100 / Math.max(1, n)));
         const start = t;
@@ -9220,7 +9357,7 @@ function buildSimContent() {
         //    than appearing on its own beforehand: it is 0.2-0.9% of each pathway's
         //    range, and the thing it was meant to stand for — the length of the
         //    text — is not in this data, since it is the same value for a 12-word
-        //    conversation and a 40-word one.
+        //    message and a 40-word one.
         let running = 0;
         const flyFrom = opened + TO_FLY;
         // They travel in order of value, not in the order they appear in the
@@ -9240,7 +9377,7 @@ function buildSimContent() {
             showRunning(cell, running);
           }, flyFrom + i * gap + FLY * FLY_LAND);
         });
-        // Ten of the 800 conversations leave some pathway with no words it knows.
+        // Ten of the 800 messages leave some pathway with no words it knows.
         // Nothing to fold the base into, so the cell lands on its answer directly.
         if (n === 0) {
           later(function () { showRunning(cell, it.act[p]); }, flyFrom);
@@ -9263,8 +9400,8 @@ function buildSimContent() {
     const WGT_MIN = 46;      // narrowest a weighted box gets, still fits its number
 
     // Weighted boxes are sized against the largest weighted value in THIS
-    // conversation, so the row shows how much of this decision each pathway is
-    // responsible for. On most conversations Pathway 1 fills its slot and the other two
+    // message, so the row shows how much of this decision each pathway is
+    // responsible for. On most messages Pathway 1 fills its slot and the other two
     // are slivers — which is the point, and is what the stacked bar used to say.
     function weightedWidth(w, maxAbs, full) {
       if (!maxAbs) return full;
@@ -9278,7 +9415,7 @@ function buildSimContent() {
     // sign, and a square that physically rotates and comes back the other colour
     // says that in a way "x -1.75" does not. In this data Pathway 3's importance
     // is the negative one, so it always flips and the other two never do; across
-    // conversations that gives all four sign combinations.
+    // messages that gives all four sign combinations.
     // The middle of the journey is two separate beats, not one. Resizing and
     // turning over at the same time made both hard to read — the square was
     // changing shape while it was edge-on. Now it settles at its new size, and
@@ -9373,7 +9510,7 @@ function buildSimContent() {
     // grow: arrows sit close in and push out. shrink: they start wide and close in.
     function resizeCue(box, scale, dur) {
       // Only skip a change too small to see. At 4% this also swallowed Pathway 3
-      // on 75 of the 800 conversations — its scale runs 1.01 to 1.17 — and a row
+      // on 75 of the 800 messages — its scale runs 1.01 to 1.17 — and a row
       // that flips but shows no arrows reads as broken.
       if (Math.abs(scale - 1) < 0.015) return;
       const grow = scale > 1;
@@ -9740,9 +9877,9 @@ function buildSimContent() {
     // The labels underneath wait for this.
     const DECIDE_SETTLED = 60 + DRAW - DRAW_LEAD + 420;
 
-    // Each conversation is its own problem and keeps its own place in the chain.
-    // Keyed by conversation id rather than position, so a filter that reorders or
-    // narrows the set doesn't hand one conversation another's progress.
+    // Each message is its own problem and keeps its own place in the chain.
+    // Keyed by message id rather than position, so a filter that reorders or
+    // narrows the set doesn't hand one message another's progress.
     const stepByCase = Object.create(null);
 
     function remember() {
@@ -9750,7 +9887,7 @@ function buildSimContent() {
       if (it) stepByCase[it.id] = step;
     }
 
-    // Arriving at a conversation restores where it was left — or the empty
+    // Arriving at a message restores where it was left — or the empty
     // skeleton the first time. It re-draws that state rather than replaying the
     // animation: you are returning to your work, not watching it happen again.
     function goToCase(n) {
@@ -9781,7 +9918,7 @@ function buildSimContent() {
       decideAnim = (doDecide && !motionOff());
       // Raised here, not in cancelAnim, because only here is it known whether an
       // animation is actually coming. In cancelAnim it also applied to the paths
-      // that never animate — restoring a conversation — and hid the line there.
+      // that never animate — restoring a message — and hid the line there.
       // Left false, render would paint it fully drawn for a frame before
       // playDecide hid it again, which is the flash the convergence lines had.
       decidePending = decideAnim;
@@ -9813,7 +9950,7 @@ function buildSimContent() {
     // One group of five. Reset is the same 36px pill as the four steps and reads
     // as one of them; what kept it apart was where it sat, not how it looked.
     stepGroup.appendChild(resetBtn);
-    // About moves out of the filter row above the conversations and into the slot
+    // About moves out of the filter row above the messages and into the slot
     // Reset has just left — appending moves the node, so there is nothing to
     // remove from the row it came from — with a rule between the two groups.
     if (casePane.filter && casePane.filter.about) {
@@ -10265,8 +10402,8 @@ function buildSimContent() {
 
       // The SVG carries a width but no height, so its height falls out of the
       // viewBox's aspect ratio — and the viewBox is built from its own measured
-      // height. That loop ratchets: a long conversation stretches it, and nothing
-      // shrinks it again, so it holds flowBody at the tallest conversation seen
+      // height. That loop ratchets: a long message stretches it, and nothing
+      // shrinks it again, so it holds flowBody at the tallest message seen
       // and the sum keeps centring on that rather than on the middle pathway.
       // The rows are the authority on how tall this column is. They carry explicit
       // heights from syncRows and never stretch, so their span is measured
@@ -10438,7 +10575,7 @@ function buildSimContent() {
         revealed(actC, step >= 1 && !wordAnim, prevStep >= 1 && !wordAnim, p * 90);
         // Importance is never revealed: it is not produced by the step before it.
         // It is a property of the model — the same three numbers on all 800
-        // conversations, unchanged by any step — so it is on screen from the
+        // messages, unchanged by any step — so it is on screen from the
         // start, and staying put while everything around it moves is the point.
         impC.classList.remove("empty");
         if (!weighAnim) wgtC.classList.remove("under");
@@ -10511,7 +10648,7 @@ function buildSimContent() {
       trackConnectors(motionOff() ? 0 : 520);
       prevStep = step;
 
-      SIM.announce("Conversation " + (idx + 1) + " of " + cases.length +
+      SIM.announce("Message " + (idx + 1) + " of " + cases.length +
         ". Weighted sum " + fmt(sum) + ". Pathways say " + (chosen ? "approach" : "wait") + ".");
     }
 
@@ -10541,7 +10678,7 @@ function buildSimContent() {
       NNM_VIEWSTATE[myKey] = {
         query: filter && filter.input ? filter.input.value : "",
         idx: idx,
-        // Where every conversation got to, not just this one — the same reason
+        // Where every message got to, not just this one — the same reason
         // stepByCase exists in the first place.
         stepByCase: JSON.parse(JSON.stringify(stepByCase)),
         animateOn: animBox ? animBox.checked : true,
@@ -10570,7 +10707,7 @@ function buildSimContent() {
       }
       if (typeof saved.idx === "number" && cases.length) {
         // goToCase reads stepByCase for the case it lands on, so the step comes back
-        // with the conversation rather than needing to be restored separately.
+        // with the message rather than needing to be restored separately.
         goToCase(Math.max(0, Math.min(cases.length - 1, saved.idx)));
       }
       if (saved.about) reopenAbout();
@@ -10592,7 +10729,7 @@ function buildSimContent() {
   //
   // What is real here and what is not, because the difference matters and the
   // About copy says so too:
-  //   REAL  — the conversation, its words, and which of the 30 vocabulary words
+  //   REAL  — the message, its words, and which of the 30 vocabulary words
   //           it contains; the label a human gave it; and the decision, which is
   //           computed by tallying each word's measured lean toward Approach or
   //           Wait over the whole set (that rule is right on 95.8% of the 800).
@@ -10628,7 +10765,7 @@ function buildSimContent() {
     // The first column of the diagram is the 12-unit EMBEDDING, which is what the
     // About panel has always promised: "text to embedding, through two hidden
     // layers, out to a prediction". It replaced a column of one node per word
-    // PRESENT in the conversation, which ranged from 5 to 26 and so redrew the
+    // PRESENT in the message, which ranged from 5 to 26 and so redrew the
     // picture at a different size for every case. An embedding unit is not a word
     // and has no name, which is why nothing is written beside it.
     //
@@ -10640,7 +10777,7 @@ function buildSimContent() {
     // flat colour as each other. Rounded to 4 decimals it reproduces
     // that model's `pred` on 800 of 800, so this diagram lands where the rest of the
     // sim says it lands, and it disagrees with the human coding on exactly the same
-    // 64 conversations. Fitted offline so the picture is identical every time and
+    // 64 messages. Fitted offline so the picture is identical every time and
     // opening the screen costs nothing.
     const EMB = 10, H1 = 8, H2 = 6;
     const NET = {
@@ -10714,12 +10851,12 @@ function buildSimContent() {
       return { inp: inp, emb: emb, h1: h1, h2: h2, out: out };
     }
 
-    // What each hidden neuron actually does, over all 800 conversations. Computed
+    // What each hidden neuron actually does, over all 800 messages. Computed
     // once at build: 22 neurons against 800 cases is nothing, and it is the only way
     // the readout can say something true rather than something atmospheric.
     //
     // Two facts per neuron. What drives it hardest — words for Hidden 1, other
-    // neurons for Hidden 2 — and how the conversations it fires hardest on split by
+    // neurons for Hidden 2 — and how the messages it fires hardest on split by
     // the human label. That split is the point: neuron 1 runs 91% Approach against a
     // 52% baseline while neurons 5, 11 and 13 sit at chance. A neuron can carry real
     // signal about the answer and still not stand for any one thing, which is the
@@ -10727,7 +10864,7 @@ function buildSimContent() {
     // The hidden layers are tanh, so they arrive on the ramp already: |v| <= 1. The
     // logits do not — they run past 3 — so they are divided by the largest |logit|
     // anywhere in the 800 before being coloured. One scale for the whole dataset,
-    // not per conversation, or the same number would be a different colour case to
+    // not per message, or the same number would be a different colour case to
     // case and the column could not be compared with itself.
     const LOGIT_SCALE = (function () {
       let m = 0;
@@ -10741,9 +10878,9 @@ function buildSimContent() {
     // activation times the weight. So both halves are magnitudes of a signal, and
     // they have to be banded on ONE scale or "thinner after the multiplier" is not
     // a comparison a reader can make. Pooled per drawn layer, over both halves of
-    // every edge in all 800 conversations, so a width means the same thing from
+    // every edge in all 800 messages, so a width means the same thing from
     // case to case and the bands are a property of the model rather than of
-    // whichever conversation happens to be open.
+    // whichever message happens to be open.
     const MAG_T = (function () {
       const Ws = [NET.W1, NET.W2, NET.W3];
       const pools = [[], [], []];
@@ -10829,7 +10966,7 @@ function buildSimContent() {
     filter.el.classList.add("d3-filter");
     // Built either way — it is what seeds `cases`, and it carries the About button —
     // but only shown where there is something to filter. Extract Pathways is about
-    // the network rather than about finding a conversation.
+    // the network rather than about finding a message.
     if (opts.filter !== false) toolbar.appendChild(filter.el);
 
     // Four steps, in the Prediction Chain's own .nnm-step, so the two days look like
@@ -10865,7 +11002,7 @@ function buildSimContent() {
     // closure. Null until Setup has run — nothing else in the row can be pressed
     // before it, because there is nothing for them to act on.
     let exSteps = null;
-    // The cube is driven by hand up to this many conversations and then handed over.
+    // The cube is driven by hand up to this many messages and then handed over.
     // Ten is enough to show that it is the same move every time, and few enough that
     // pressing the button does not become the activity. Three is when handing over
     // becomes available: by the third you have seen a first, a different one, and a
@@ -10971,7 +11108,7 @@ function buildSimContent() {
       }
       // Setup first: the fourteen hidden units are copied out into a column of their
       // own and the diagram comes back up behind them. What is on screen after it is
-      // an empty cube waiting for its first conversation.
+      // an empty cube waiting for its first message.
       exSetup = exButton("Setup", "", function () {
         if (exBusy) cancelRun();
         // Begins at nothing, so anything already on screen goes first.
@@ -10979,12 +11116,12 @@ function buildSimContent() {
         startExtract();
       });
       exSetup.disabled = false;
-      // Then one conversation at a time, by hand. The button is the claim: a column
-      // of the cube is one conversation, and it got there by being run.
+      // Then one message at a time, by hand. The button is the claim: a column
+      // of the cube is one message, and it got there by being run.
       // An interrupted run ALWAYS rebuilds. Stopping mid-flight leaves half a column
       // drawn and counters that have not caught up, and the only honest thing to do
       // with that is put it back to a state the next step can start from.
-      exOne = exButton("Collect a Conversation", "", function () {
+      exOne = exButton("Collect a Message", "", function () {
         const stopped = exBusy;
         if (stopped) cancelRun();
         // Begins at Setup done with room left to collect. Past that — the deck built,
@@ -10993,18 +11130,18 @@ function buildSimContent() {
         if (stopped || !exSteps || exCubeDone || at !== exCollected) exJump(at);
         exActive = exOne; exSteps.collect();
       });
-      exAll = exButton("Collect All Conversations", "", function () {
+      exAll = exButton("Collect All Messages", "", function () {
         const stopped = exBusy;
         if (stopped) cancelRun();
         // Begins wherever the hand collecting stopped — one column, two, or none at
         // all. It builds ON from that rather than starting the count over, so the
-        // conversation you watched arrive is still the one at the front of the deck.
+        // message you watched arrive is still the one at the front of the deck.
         const at = exCubeDone ? 0 : Math.min(exCollected, EX_BY_HAND);
         if (stopped || !exSteps || exCubeDone || at !== exCollected) exJump(at);
         exActive = exAll; exSteps.all();
       });
       // Begins at the finished deck — the pathways are extracted FROM eight hundred
-      // conversations, so the eight hundred have to be standing. Pressed before there
+      // messages, so the eight hundred have to be standing. Pressed before there
       // are any, they are simply there.
       exPath = exButton("Extract Pathways", "", function () {
         const stopped = exBusy;
@@ -11033,20 +11170,20 @@ function buildSimContent() {
     root.className = "nnm";
     stack.appendChild(root);
 
-    // ---- left: the conversation being traced ----
+    // ---- left: the message being traced ----
     const leftCol = document.createElement("div");
     leftCol.className = "d3b-col d1a-leftcol";
     // Created either way, so every reference below stays valid and render() can go
     // on filling it; attached only where it is wanted. Left off, the network column
     // is root's only child and takes the whole width.
-    if (opts.conversation !== false) root.appendChild(leftCol);
+    if (opts.message !== false) root.appendChild(leftCol);
     const casePanel = document.createElement("div");
     casePanel.className = "nnm-panel d1a-panel";
     leftCol.appendChild(casePanel);
     const cHead = document.createElement("div");
     cHead.className = "nnm-panel-head";
     const cTitle = document.createElement("span");
-    cTitle.textContent = "Conversation";
+    cTitle.textContent = "Message";
     cHead.appendChild(cTitle);
     const countEl = document.createElement("span");
     countEl.className = "d3b-count";
@@ -11055,10 +11192,10 @@ function buildSimContent() {
     nav.className = "nnm-nav";
     const prevBtn = document.createElement("button");
     prevBtn.className = "nnm-navbtn"; prevBtn.innerHTML = "&#9664;";
-    prevBtn.setAttribute("aria-label", "Previous conversation");
+    prevBtn.setAttribute("aria-label", "Previous message");
     const nextBtn = document.createElement("button");
     nextBtn.className = "nnm-navbtn"; nextBtn.innerHTML = "&#9654;";
-    nextBtn.setAttribute("aria-label", "Next conversation");
+    nextBtn.setAttribute("aria-label", "Next message");
     nav.appendChild(prevBtn); nav.appendChild(nextBtn);
     cHead.appendChild(nav);
     casePanel.appendChild(cHead);
@@ -11086,7 +11223,7 @@ function buildSimContent() {
     // redesigned, so it opts out rather than inheriting a row it did not ask for.
     // Inside the notes box, under the prose — the marks are a reading OF the note,
     // so they belong to it. The text is its own element now: setting textContent on
-    // the box itself would take the marks with it on every conversation.
+    // the box itself would take the marks with it on every message.
     const notesTextEl = document.createElement("div");
     notesTextEl.className = "d1a-notestext";
     notesEl.appendChild(notesTextEl);
@@ -11376,7 +11513,7 @@ function buildSimContent() {
     // length rather than a step on a ramp, and zero is an empty circle rather than
     // a white one. That distinction matters: on the ramp a unit at about zero
     // rendered the same white as a unit the signal had not reached, and 28% of
-    // conversations end with at least one of those.
+    // messages end with at least one of those.
     //
     // frac is how much of the value has arrived, 0 to 1, so the same call serves
     // the resting state and every frame of the reveal.
@@ -11413,15 +11550,15 @@ function buildSimContent() {
     const fanOut2 = [];   // Hidden 1 -> Hidden 2
     const fanOut3 = [];   // Hidden 2 -> Output
     // The pinned neuron, and the case it belongs to. Both OUTSIDE drawNet: pinning
-    // one changes the readout's text, a longer message is a taller readout, a taller
+    // one changes the readout's text, a longer line is a taller readout, a taller
     // readout is a shorter diagram — and the ResizeObserver answers that by
     // redrawing. With the pin local to drawNet the redraw wiped it, so a click
     // never stayed: it registered, then undid itself about a frame later. Kept out
     // here it survives the redraw. Only a change of CASE clears it, since the input
-    // column is a different set of words for every conversation.
+    // column is a different set of words for every message.
     let pinIdx = null, pinnedFor = -1;
 
-    // The columns have to land in the same place for every conversation. Centring
+    // The columns have to land in the same place for every message. Centring
     // the drawing on its own extent moved them, because the input words form the
     // left edge and they are a different width in every case. So the space held
     // for the labels is the widest they can EVER be, over the whole vocabulary,
@@ -11465,7 +11602,7 @@ function buildSimContent() {
       // buried the gauge underneath it.
       const discs = el("g", { class: "d1a-discs" });
       const bars = el("g", { class: "d1a-bars" });
-      // Every column is a fixed size, the same in all 800 conversations. The input
+      // Every column is a fixed size, the same in all 800 messages. The input
       // column used to be one node per word PRESENT, which ran from 5 to 26 and
       // redrew the whole picture at a different size case to case; it is the
       // 12-unit embedding now, so the diagram is one diagram.
@@ -11772,7 +11909,7 @@ function buildSimContent() {
         // lands: Step 1 the input layer, Step 2 Hidden Layer 1, Step 3 Hidden Layer 2.
         // The neuron is named in full — the column's own caption, the same words the
         // tooltip uses — then the one number clicking it exists to reveal, and the
-        // conversation it belongs to, so a reading copied out of here says what it is
+        // message it belongs to, so a reading copied out of here says what it is
         // a reading OF. The input row is included on the same terms: an embedding
         // unit is a trained tanh unit like any other, not a raw feature sitting there
         // (2026-09-04), and the prompt promises "click any neuron". The two OUTPUT
@@ -11780,7 +11917,7 @@ function buildSimContent() {
         // machinery, so they still explain themselves.
         if (li !== 3) {
           return "<b>" + cols[li].label + " Neuron " + (i + 1) + "</b>: Activation = "
-            + actNum(vals[li][i]) + " for Conversation " + convNo(it) + ".";
+            + actNum(vals[li][i]) + " for Message " + msgNo(it) + ".";
         }
         if (li === 3) {
           // Before Step 4 the two numbers are not both in yet, so there is nothing to
@@ -11795,21 +11932,21 @@ function buildSimContent() {
           // to "compare these" would therefore ask a student to compare two
           // identical words nine times out of ten. So the sentence stays flat when
           // they match and says so plainly when they do not — the 8% is where the
-          // comparison is worth making, and Day 3 is built on those conversations.
+          // comparison is worth making, and Day 3 is built on those messages.
           const agreed = chose === it.target;
           return "<b>" + LABELS[OUT_ORDER[i]] + "</b> \u2014 one of the two numbers the network "
             + "ends on. The larger one is the answer: here, <b>"
             + LABELS[chose] + "</b>. " + (agreed
-               ? "The human who coded this conversation said <b>" + LABELS[it.target]
+               ? "The human who coded this message said <b>" + LABELS[it.target]
                  + "</b>, too."
-               : "The human who coded this conversation said <b>" + LABELS[it.target]
+               : "The human who coded this message said <b>" + LABELS[it.target]
                  + "</b> — the network and the human disagree here.");
         }
         // ---------------------------------------------------------------------
         // Unreachable while the two hidden rows answer with their activation, which
         // is what they were asked to do. Kept, not deleted: this is the wiring copy
         // the content designer specified on 2026-09-04 — fan-in and fan-out, the
-        // three strongest inputs, and how the neuron leans across the conversations
+        // three strongest inputs, and how the neuron leans across the messages
         // it fires hardest on — and restoring it is a matter of narrowing the branch
         // above rather than writing it again.
         // ---------------------------------------------------------------------
@@ -11823,7 +11960,7 @@ function buildSimContent() {
         // name" did it for them, before they had looked at a second neuron.
         return "<b>" + cols[li].short + " neuron " + (i + 1) + "</b> \u2014 "
           + fanIn + " connections in, " + fanOut + " out. Its strongest inputs are "
-          + drivers + ". Of the " + LEAN_N + " conversations it fires hardest on, "
+          + drivers + ". Of the " + LEAN_N + " messages it fires hardest on, "
           + nf.app + " are <b>Approach</b> and " + (LEAN_N - nf.app) + " are <b>Wait</b>.";
       }
       function sizeReadout() {
@@ -11840,7 +11977,7 @@ function buildSimContent() {
         // Both idle strings, since which one shows depends on how far the steps
         // have got and the box is a fixed height for all of them.
         measureEl.classList.add("idle");
-        ["Run Step 1 to send the conversation into the network.",
+        ["Run Step 1 to send the message into the network.",
          "Click any neuron the data has reached to see how it works."].forEach(function (h) {
           measureEl.innerHTML = "<span>" + h + "</span>";
           tallest = Math.max(tallest, measureEl.getBoundingClientRect().height);
@@ -11868,7 +12005,7 @@ function buildSimContent() {
       svgHost.__vals = vals;
       // What the extraction needs to reach: the scene to add to, the two hidden
       // columns to keep, and everything else to take away.
-      // A redraw — a resize, or a different conversation — rebuilds the diagram in
+      // A redraw — a resize, or a different message — rebuilds the diagram in
       // state 1, so the button becomes available again.
       extractDone = false;
       syncExRow();
@@ -11923,7 +12060,7 @@ function buildSimContent() {
           pinEl.innerHTML = opts.hover
             ? "<span>" + (stepDone > 0
                 ? "Click any neuron the data has reached to see how it works."
-                : "Run Step 1 to send the conversation into the network.") + "</span>"
+                : "Run Step 1 to send the message into the network.") + "</span>"
             : "";
           return;
         }
@@ -11957,12 +12094,12 @@ function buildSimContent() {
           // ramp: orange positive, blue negative. The two output units are exact
           // mirrors — one is always +x and the other always −x — which rules out
           // both of the obvious fills. On the ramp they would read as one darkest
-          // orange and one darkest blue in all 800 conversations, identical every
+          // orange and one darkest blue in all 800 messages, identical every
           // time: a tautology dressed as a measurement. Coloured by outcome instead
           // (orange Approach, blue Wait) they contradict the ramp on the number
           // printed beside them — Approach at −0.99 came out orange one row below a
           // hidden neuron at −0.96 in blue, and because of the mirroring exactly one
-          // output node broke the rule in every conversation. So the output nodes sit
+          // output node broke the rule in every message. So the output nodes sit
           // off the scale altogether, in a neutral grey that is neither ramp colour
           // and is too dark to be misread as a near-zero activation. The pill carries
           // which answer it is; the number carries how strong.
@@ -11972,7 +12109,7 @@ function buildSimContent() {
           //
           // The output pair is on the ramp now, like every other column. It was held
           // off it while the two logits were exact mirrors, when depth would have
-          // been one darkest orange and one darkest blue in all 800 conversations —
+          // been one darkest orange and one darkest blue in all 800 messages —
           // a tautology. The refitted network emits independent logits that share a
           // sign on 451 of 800, so the colour finally carries something: two oranges
           // of different depth, and the deeper one is the answer.
@@ -12026,7 +12163,7 @@ function buildSimContent() {
           // would name its connections and its strongest inputs, which is exactly
           // what Steps 2 and 3 exist to draw. Keyed to the STEP, not to whether the
           // circle looks coloured — a unit sitting near zero renders white after a
-          // full run, and 28% of conversations end with at least one of those.
+          // full run, and 28% of messages end with at least one of those.
           function live() { return opts.hover && !node.classList.contains("off"); }
           function on() { if (!live()) return; setHoverNode(node); setHover(li, i); }
           function off() { if (!opts.hover) return; setHoverNode(null); setHover(-1, -1); }
@@ -12235,10 +12372,10 @@ function buildSimContent() {
       svg.addEventListener("click", function () {
         if (pinIdx) { pinIdx = null; applyHover(-1, -1); paintPin(); }
       });
-      // Reserve the height of the tallest message this conversation can produce, so
+      // Reserve the height of the tallest readout this message can produce, so
       // the box is the same size whether or not one is showing. Measured rather than
-      // assumed: the tallest message is 52px wide-open and 107px at AP 2-Column, and
-      // which node is longest depends on the words this conversation contains.
+      // assumed: the tallest readout is 52px wide-open and 107px at AP 2-Column, and
+      // which node is longest depends on the words this message contains.
       sizeReadout();
 
       // Restore what was pinned before this redraw — the ring AND the lit edges,
@@ -12281,19 +12418,19 @@ function buildSimContent() {
       chip.className = "d1a-label " + (it.target === 1 ? "app" : "wait");
       chip.textContent = LABELS[it.target];
       labelRow.appendChild(cap); labelRow.appendChild(chip);
-      notesTextEl.textContent = it.obs || "(no notes for this conversation)";
+      notesTextEl.textContent = it.obs || "(no notes for this message)";
       paintMarks(it);
 
-      // Once the deck is up, the network is EIGHT HUNDRED conversations and not the
+      // Once the deck is up, the network is EIGHT HUNDRED messages and not the
       // one on the left, so paging or filtering changes the panel and leaves the
-      // drawing alone. Redrawing rebuilt it around whichever conversation was
-      // selected, which put a different conversation 1 in the deck every time the
+      // drawing alone. Redrawing rebuilt it around whichever message was
+      // selected, which put a different message 1 in the deck every time the
       // arrow was pressed.
       // ...but only once there IS one. On the first render of a rebuilt screen —
       // coming back to Extract Pathways with its state restored — nothing has been
       // drawn yet, and returning here would leave an empty panel.
       // ...but a RESIZE still has to get through. This guard is about the
-      // CONVERSATION changing, and it was swallowing the one redraw that matters:
+      // MESSAGE changing, and it was swallowing the one redraw that matters:
       // a returned-to screen draws once off-document at a fallback size, sets
       // __extract on the way past, and every later render bounced off here — so it
       // stayed at 520 x 400 with the lifted column sitting in the middle of the
@@ -12302,24 +12439,24 @@ function buildSimContent() {
                    && Math.abs(svgHost.clientHeight - drawnH) < 1;
       if (extracted && svgHost.__extract && asDrawn) {
         if (typeof restoreSteps === "function") restoreSteps();
-        // The pathway view reads one conversation, and this is the path a change of
-        // conversation takes.
+        // The pathway view reads one message, and this is the path a change of
+        // message takes.
         if (svgHost.__pvFill) svgHost.__pvFill();
         return;
       }
       drawNet(f, it);
       // A redraw builds new white nodes and new lines, so anything still running is
-      // pointed at elements that no longer exist. What this conversation had already
+      // pointed at elements that no longer exist. What this message had already
       // finished is put back on the new ones.
       if (typeof restoreSteps === "function") restoreSteps();
       // Same argument one level up: a screen that has been extracted stays
-      // extracted through a resize or a change of conversation. Instantly, with no
+      // extracted through a resize or a change of message. Instantly, with no
       // fade or settle — the reveal is a thing you watch once, not every time the
       // window moves.
       if (extracted) runExtract(true);
     }
 
-    // A row of field marks for this conversation. Every mark carries a badge: a
+    // A row of field marks for this message. Every mark carries a badge: a
     // tick where the note recorded the thing, a cross where it recorded its absence,
     // and for group size the count, since that is not a yes or a no. One grammar for
     // all nine, and the mark itself always draws cleanly.
@@ -12371,7 +12508,7 @@ function buildSimContent() {
     }
 
     // ---- Step 1: the words fly into the Input Layer ----
-    // One word at a time, and every word to every unit: 10 units x the conversation
+    // One word at a time, and every word to every unit: 10 units x the message
     // is 120 separate flights. That repetition IS what fully connected means, so it
     // is shown rather than summarised — but it only works if it accelerates. The
     // first few are slow enough to follow one word across; by the twentieth the gap
@@ -12383,7 +12520,7 @@ function buildSimContent() {
     // than on a colour blended toward it.
     let stepRun = 0;                       // bumped to abandon a run in progress
     let flyLayer = null;
-    // A fly-over is one unit's pass: the whole conversation crossing to that unit,
+    // A fly-over is one unit's pass: the whole message crossing to that unit,
     // word by word. WITHIN a pass every word takes the same time — the pass has one
     // speed, so what you are watching is a steady delivery rather than a curve. It
     // is BETWEEN passes that things accelerate: the first is slow enough to follow a
@@ -12431,8 +12568,8 @@ function buildSimContent() {
     // completed steps, so button i is live only when i === stepDone and nothing is
     // running. Reset takes it back to the start.
     let stepDone = 0, running = false;
-    // How far each conversation got, keyed by its id rather than its index — the
-    // filter reorders the list, and progress belongs to the conversation, not to
+    // How far each message got, keyed by its id rather than its index — the
+    // filter reorders the list, and progress belongs to the message, not to
     // slot 4. Leaving one at Step 3 and coming back should find it at Step 3.
     const stepState = {};
     function hereId() { return cases.length ? cases[idx].id : null; }
@@ -12479,11 +12616,11 @@ function buildSimContent() {
     }
     function actLine(v) { return "Activation: " + actNum(v); }
 
-    // Which conversation this is, numbered the way the filter numbers them: its
+    // Which message this is, numbered the way the filter numbers them: its
     // position in the full 800, which does not move when a filter narrows the set —
     // unlike the "3 / 57" counter beside the arrows, which is a position within the
     // results. The stored id is the upstream explorer's hex, no use to a reader.
-    function convNo(it) {
+    function msgNo(it) {
       const at = items.indexOf(it);
       return at >= 0 ? at + 1 : it.id;
     }
@@ -12780,7 +12917,7 @@ function buildSimContent() {
     // The answer, held back until every connection is in. Both pills sit in the
     // same resting state until then; the winner is already on the element as __won,
     // so this is a class change rather than anything being worked out late.
-    // `pop` only when Step 4 has just RUN. Restoring a conversation, resizing, or
+    // `pop` only when Step 4 has just RUN. Restoring a message, resizing, or
     // arriving on a screen that opens finished all reveal the answer too, and none
     // of them should bounce it — you asked to come back to the answer, not to watch
     // it land again. The class is removed first so a second run replays it.
@@ -12812,7 +12949,7 @@ function buildSimContent() {
       });
     }
 
-    // The finished state of a fan, arrived at instantly. Restoring a conversation
+    // The finished state of a fan, arrived at instantly. Restoring a message
     // must not replay four animations — you asked to come back to Step 3, not to
     // watch it happen again.
     // Both leave the decision to paintEdge, which knows from stepDone whether this
@@ -12994,7 +13131,7 @@ function buildSimContent() {
       SIM._timeouts.push(unlock);
     }
 
-    // Called by every redraw — a new conversation, and also a resize, which used to
+    // Called by every redraw — a new message, and also a resize, which used to
     // throw the animation away along with the old svg.
     // ---- Extract Pathways, state 2 ----
     // Everything but the two hidden layers goes; the 14 units that are left gather
@@ -13008,7 +13145,7 @@ function buildSimContent() {
     // Hidden 2's six; columns are the three pathways.
     //
     // Measured, not invented: each value is the correlation between that unit's
-    // activation and that pathway's score across all 800 conversations. None of
+    // activation and that pathway's score across all 800 messages. None of
     // the 42 is zero (they run 0.006 to 0.585), so a picture that gave each unit
     // ONE pathway had to invent the other two answers. An earlier version of this
     // did exactly that, under 5/4/5 quotas, and the quotas pushed five of the
@@ -13071,30 +13208,30 @@ function buildSimContent() {
     const STEP_SPEED = 0.26, STEP_GAP = 110, FILL_GAP = 55;
     // A beat on the finished network before it is taken apart again.
     const STEPS_REST = 700;
-    // Between one conversation landing in the cube and the next one arriving in the
+    // Between one message landing in the cube and the next one arriving in the
     // diagram, and between that arriving and being taken.
     const NEXT_REST = 450, NEXT_HOLD = 550;
-    // How many conversations end up in the column, and how the arrivals accelerate.
-    const CONV_ROWS = 10, CONV_FIRST = 430, CONV_DECAY = 0.88, CONV_MIN = 230;
-    const CONV_NAMES_OUT = 280, CONV_HEAD_IN = 320;
-    // 80 columns of ten is 800 conversations. The pitch never changes — see colX.
+    // How many messages end up in the column, and how the arrivals accelerate.
+    const MSG_ROWS = 10, MSG_FIRST = 430, MSG_DECAY = 0.88, MSG_MIN = 230;
+    const MSG_NAMES_OUT = 280, MSG_HEAD_IN = 320;
+    // 80 columns of ten is 800 messages. The pitch never changes — see colX.
     // The columns sit at the same pitch as the rows — see P inside runExtract — so
-    // the grid is square and a conversation is as close to the one beside it as it
+    // the grid is square and a message is as close to the one beside it as it
     // is to the one above it.
     // GRID_PAD is how far the newest column sits from the drawing's left edge —
     // small, so the arrival happens at the edge and as much of what has already
     // landed stays in view as the width allows.
-    // A column ends up 20 deep, so 800 conversations is 40 columns. The first column
+    // A column ends up 20 deep, so 800 messages is 40 columns. The first column
     // grows from the 10 it was named with, shrinking as it goes so it keeps the same
     // height — which is what lets the heading above it stay put.
     const GRID_ROWS = 20, GRID_COLS = 800 / 20, GRID_PAD = 4;
-    const GRID_ONE = 90;                                  // one conversation at a time
+    const GRID_ONE = 90;                                  // one message at a time
     const GRID_FIRST = 230, GRID_DECAY = 0.955, GRID_MIN = 45;   // whole columns
     // extractDone is per DRAWING — reset by every drawNet so the new scene can be
     // extracted again. extracted is per SCREEN and STICKY: once the pathways are
-    // out, they stay out. A resize, a filter, or stepping to the next conversation
+    // out, they stay out. A resize, a filter, or stepping to the next message
     // all rebuild the diagram and put it straight back into state 2, with the new
-    // conversation's own activations in the pathway squares. Only Reset winds it
+    // message's own activations in the pathway squares. Only Reset winds it
     // back. Extracting is a claim about the NETWORK — these units group into these
     // pathways — and that does not stop being true because you turned the page;
     // what changes case to case is only how strongly each pathway fires.
@@ -13142,7 +13279,7 @@ function buildSimContent() {
     // Back to state 1: the readout returns, the diagram is rebuilt at the shorter
     // height, and the button is available again.
     // ---- the panels come back ----
-    // Filter and Conversation were taken off this screen so the network could have
+    // Filter and Message were taken off this screen so the network could have
     // the whole width. They return once the deck is built, and the network panel's
     // left edge steps right by 457 to make the room.
     //
@@ -13307,7 +13444,7 @@ function buildSimContent() {
       // The fourteen come TOGETHER rather than into a line: every one travels to
       // the same point at the centre of the drawing, and its colour drains on the
       // way, so what is left where they land is a single white neuron. The claim is
-      // that this conversation is one thing to the network, and the picture makes it
+      // that this message is one thing to the network, and the picture makes it
       // by arithmetic — fourteen circles at one position ARE one circle.
       // Measured here, not taken from X. X.H is whatever the drawing was when it was
       // last built, and the readout has been hidden since — the canvas is taller now.
@@ -13322,7 +13459,7 @@ function buildSimContent() {
 
       // The key STAYS. It was faded out with everything else back when the fourteen
       // merged into one white neuron and there was no colour left for it to explain —
-      // but the stack keeps every gauge lit, so 800 conversations' worth of orange and
+      // but the stack keeps every gauge lit, so 800 messages' worth of orange and
       // blue are on screen at the end and the key is the only thing that reads them.
       // ---- the cube's own geometry ----
       // Declared up here because stage 2 lands its column on these rows at this
@@ -13375,7 +13512,7 @@ function buildSimContent() {
         // inline style, which survives one — so by the second call "before" measures
         // the already-widened host and concludes nothing has to move. liftW0 came
         // back 0 and the scene never shifted, which is what put the lifted column in
-        // the middle of the diagram and "Conversation 1" off the left edge when the
+        // the middle of the diagram and "Message 1" off the left edge when the
         // screen was returned to.
         const box = svgHost.getBoundingClientRect();
         // A zero width means the screen is still being assembled off-document, which
@@ -13564,7 +13701,7 @@ function buildSimContent() {
         wrap.__rows = made;
         return wrap;
       }
-      // An empty circle: the first column is the population, not any conversation.
+      // An empty circle: the first column is the population, not any message.
       function makeEmpty(inner, k, cx, cy, r) {
         // The lifted column is the same fourteen units the diagram just collapsed, so
         // it answers to the same names on hover. On the row's group, not on either
@@ -13584,7 +13721,7 @@ function buildSimContent() {
       }
 
       // ---- stage 2: the cube's first column ----
-      // The same fourteen again, but carrying THIS conversation now — the steps have
+      // The same fourteen again, but carrying THIS message now — the steps have
       // run, so each one has a value and a sign. They fly LEFT, into the strip the
       // widening opened on that side, and that column is the first of the cube.
       // THE CUBE'S geometry, not the diagram's: STACK_R and the colRowY rows, which
@@ -13647,7 +13784,7 @@ function buildSimContent() {
                " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 0 " +
                cx.toFixed(2) + " " + (cy + r).toFixed(2) + " Z";
       }
-      // Conversation 20 of set 1 is the corner of the box — the last column of the
+      // Message 20 of set 1 is the corner of the box — the last column of the
       // right face AND the front of its own slab — so it carries two greys. The
       // dividing line is vertical through the centre: right of it belongs to the right
       // face, left of it to the front. Below the top row that is a plain half circle;
@@ -13681,9 +13818,9 @@ function buildSimContent() {
       let flyingCol = null;
 
       function makeFilled(inner, k, cx, cy, r) {
-        // A deck column is one conversation's reading of the same fourteen units, so
+        // A deck column is one message's reading of the same fourteen units, so
         // its rows answer to the same names. The ROW is what the name identifies —
-        // which conversation a column stands for is not something a column of the
+        // which message a column stands for is not something a column of the
         // deck claims, and the tooltip does not pretend otherwise.
         const cap = el("title", {});
         cap.textContent = (units[k] && units[k].__name) || ("Neuron " + (k + 1));
@@ -13728,7 +13865,7 @@ function buildSimContent() {
         return { cx: g.cx + c * STACK_DX, r: g.r,
                  y: function (k) { return g.y(k) + c * STACK_DY; } };
       }
-      // One group for the whole deck: from conversation 7 the cube has to move as a
+      // One group for the whole deck: from message 7 the cube has to move as a
       // unit, and moving it is one transform here rather than a transform on each
       // column. Created empty and at identity, so the six flights that land in it
       // are not thrown off by a parent transform they did not expect.
@@ -13737,7 +13874,7 @@ function buildSimContent() {
         if (!cubeG) {
           cubeG = el("g", { class: "d1a-cubeg" });
           X.scene.appendChild(cubeG);
-          cbSetG[0] = cubeG;    // conversations 1-20 ARE the deck's first set
+          cbSetG[0] = cubeG;    // messages 1-20 ARE the deck's first set
         }
         return cubeG;
       }
@@ -13757,12 +13894,12 @@ function buildSimContent() {
       const COL_SLIDE = 16, COL_IN_MS = 420;
       // The beat before a column lands. The first arrives at reading pace — it is
       // being NAMED, and a name needs time to be read — and every one after it is
-      // shorter than the one before, so twenty conversations read as a deck filling
+      // shorter than the one before, so twenty messages read as a deck filling
       // up rather than as twenty separate events.
       //
       // Keyed to how far through THIS RUN the column is, not to its number in the
       // deck. Collect All can be pressed with anywhere from three to ten
-      // conversations already in, and against absolute numbering that changed what
+      // messages already in, and against absolute numbering that changed what
       // the run did rather than just how long it took: from three it played seven
       // beats of flat reading pace and then eased, from ten it started already a
       // third of the way down the ramp and never had a slow stretch at all. Against
@@ -13873,7 +14010,7 @@ function buildSimContent() {
       // column is drawn at the SAME local coordinates and carried into place by its
       // own transform, and a clipPath resolves in the coordinate space of the
       // element referencing it — so a column's transform takes its clips with it.
-      // Cut per circle instead, eight hundred conversations would need eleven
+      // Cut per circle instead, eight hundred messages would need eleven
       // thousand clipPaths.
       // A FUNCTION, not a const. liftShift is set by widenForLift when the button is
       // pressed, which is after this body has run — captured as a const it was still
@@ -13896,7 +14033,7 @@ function buildSimContent() {
         return rowClips;
       }
 
-      // From conversation 7 there is no diagram to read a value off and nothing to
+      // From message 7 there is no diagram to read a value off and nothing to
       // fly from, so a column is built straight from the numbers and simply arrives.
       // depth is its position within its own twenty: every set is the same shape, so
       // a column's local place is the same whichever set it belongs to, and the set's
@@ -13943,7 +14080,7 @@ function buildSimContent() {
         });
         cbRegister(wrap, set || 0, depth);
         wrap.style.transform = home;
-        // Last in, so a later conversation stands in FRONT of the one behind it.
+        // Last in, so a later message stands in FRONT of the one behind it.
         (host || cubeHost()).appendChild(wrap);
         if (!ms) return wrap;
         // It comes in a little to the left and abuts, rather than appearing where it
@@ -14022,7 +14159,7 @@ function buildSimContent() {
       // One name at a time. The column tops sit on a 7.9px diagonal and a name is
       // some 110px wide, so twenty at once would be twenty names inside a 158px
       // band. The previous one leaves as the next arrives, which also makes it read
-      // as "this column is conversation 8" rather than as a list.
+      // as "this column is message 8" rather than as a list.
       let nameEl = null;
       // Far enough left to clear the columns landing behind this one, and no further.
       // Only the NEXT column can reach the name at all — every one after that has
@@ -14036,7 +14173,7 @@ function buildSimContent() {
                                x: (colBaseX() + STACK_DX * c - STACK_R - NAME_GAP).toFixed(1),
                                y: (colRowY(0) + STACK_DY * c + 4).toFixed(1) });
         t.setAttribute("text-anchor", "end");
-        t.textContent = "Conversation " + (n + 1);
+        t.textContent = "Message " + (n + 1);
         cubeHost().appendChild(t);
         if (nameEl) {
           const old = nameEl;
@@ -14053,7 +14190,7 @@ function buildSimContent() {
 
       // Everything that is the diagram: the parts that were only ever dimmed, the
       // two hidden layers that were kept, and the name over the top. Six
-      // conversations have been through it and the cube is now the thing being
+      // messages have been through it and the cube is now the thing being
       // built, so it has said what it can.
       //
       // The lifted column is NOT part of that. It is the fourteen units the whole
@@ -14065,7 +14202,7 @@ function buildSimContent() {
       function hideDiagram(ms) {
         netHidden = true;
         const els = X.fade.concat(X.layer(1), X.layer(2));
-        if (convLabelEl) els.push(convLabelEl);
+        if (msgLabelEl) els.push(msgLabelEl);
         els.forEach(function (e) {
           if (!e) return;
           e.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
@@ -14096,7 +14233,7 @@ function buildSimContent() {
           X.headEl = cubeHeadEl;        // the name the crop already looks for
           void cubeHeadEl.getBoundingClientRect();
         }
-        cubeHeadEl.textContent = n + " Conversations";
+        cubeHeadEl.textContent = n + " Messages";
         cubeHeadEl.style.transition = ms ? "opacity " + tms(ms) + "ms ease" : "none";
         cubeHeadEl.style.opacity = "1";
       }
@@ -14135,14 +14272,14 @@ function buildSimContent() {
         after0(gap, function () { buildRest(c + 1, a); });
       }
       // ---- the particles ----
-      // What flies is what is on the screen. Every particle is one conversation's
+      // What flies is what is on the screen. Every particle is one message's
       // reading on one unit, lifted straight off the FACE of the deck with the colour
       // of the circle it leaves — so the orange and blue crossing the panel is the
       // same orange and blue that was sitting in the cube. Only the two visible faces
       // emit, set 1 and the forty seams: the inside of the deck is not something
       // anyone has ever seen, and particles streaming out of it would be claiming
       // otherwise.
-      // Enough of them to cover the faces. The deck is eight hundred conversations
+      // Enough of them to cover the faces. The deck is eight hundred messages
       // and fourteen units each, so a handful of dots crossing the panel understates
       // it by three orders of magnitude; what should read is that the whole surface
       // lifts. They fade up where they SIT first and leave over a long stagger, so
@@ -14151,7 +14288,7 @@ function buildSimContent() {
       const PT_FLY = 1500, PT_STAGGER = 2600, PT_TAIL = 400;
       // The deck gives up seventy pixels so the boxes have somewhere to be. It is the
       // deck that moves rather than the boxes being squeezed: there are eight hundred
-      // conversations and three pathways, and the three are what is being read.
+      // messages and three pathways, and the three are what is being read.
       // The deck crossing, and the column answering it. The column sets off once the
       // deck is about 65% of the way across — measured in DISTANCE, not in time, which
       // is why the number is not 65% of the duration. MOVE_EASE covers 65% of the
@@ -14161,7 +14298,7 @@ function buildSimContent() {
       // deck's move, and the two overlap.
       const PT_SLIDE_MS = 1400, PT_COL_DELAY = 400, PT_COL_MS = 1100;
       // How much of the deck stays on the panel, and how far the column stands off
-      // what is left of it. By this point the deck is eight hundred conversations and
+      // what is left of it. By this point the deck is eight hundred messages and
       // the picture of it has been made; the screen is now about the three things
       // coming out, so the deck gives up half its width off the left edge and becomes
       // the thing they came FROM rather than the subject.
@@ -14617,7 +14754,7 @@ function buildSimContent() {
         });
         // The box starts forming as the FIRST bar gets there and is finished as the
         // last one does, so it is built by the arrivals rather than revealed after
-        // them. It lands the way the conversation label lands — the overshoot says
+        // them. It lands the way the message label lands — the overshoot says
         // something arrived, which is exactly the claim.
         const landed = PW_LIFT + PW_FLY + PW_LEAD;
         after0(landed + 80, function () {
@@ -14772,8 +14909,8 @@ function buildSimContent() {
           return;
         }
         if (!exCollected) return;
-        showConvLabel(0);
-        setConversation(exCollected - 1, false, true);
+        showMsgLabel(0);
+        setMessage(exCollected - 1, false, true);
         for (let c = 0; c < exCollected; c++) addColumn(c, c, 0, null, 0);
       }
 
@@ -14791,11 +14928,11 @@ function buildSimContent() {
         });
       }
 
-      // ---- conversations 21 to 800 ----
+      // ---- messages 21 to 800 ----
       // Twenty more at a time, and they do not sit BESIDE what is already there —
       // they tuck in BEHIND it. Side by side left a notch down the middle, because
       // one block restarts at the top while the other has dropped its full depth.
-      // Conversation 21's column butts against conversation 1's, so the pair reads
+      // Message 21's column butts against message 1's, so the pair reads
       // as one deck getting deeper rather than as two decks.
       const CB_NSETS = Math.max(2, Math.min(40, Math.floor(cases.length / CUBE_TOTAL)));
       const CB_SET_OFF = 2 * STACK_R;                    // one neuron's width per set
@@ -14853,7 +14990,7 @@ function buildSimContent() {
       }
       // Re-spaces every set for a deck of S. The count is not in any set and takes no
       // transform — only its text changes, and it changes when the arriving set has
-      // CLOSED, not when it starts moving. Set here, it read "40 Conversations" while
+      // CLOSED, not when it starts moving. Set here, it read "40 Messages" while
       // the second twenty was still crossing the gap towards the first.
       function cbLayout(S, ms) {
         // No settle on the sets either. A slab closing up against the one in front of
@@ -14874,13 +15011,13 @@ function buildSimContent() {
         }
         X.deckRight = cbSetLeft(S) + cbSetSpan(S);
         if (cubeHeadEl && S > 2) {
-          const txt = (S * CUBE_TOTAL) + " Conversations";
+          const txt = (S * CUBE_TOTAL) + " Messages";
           if (ms) after0(ms, function () { cubeHeadEl.textContent = txt; });
           else cubeHeadEl.textContent = txt;
         }
       }
 
-      // Conversations 21-40, one column at a time and NO names: at this pace a name
+      // Messages 21-40, one column at a time and NO names: at this pace a name
       // could not be read, and the point of the second block is the quantity, not the
       // case. It builds off to the left and is then pushed home — the first time the
       // deck re-centres, and the same move every later set makes.
@@ -14917,7 +15054,7 @@ function buildSimContent() {
         cubeHeadEl.style.transition = "opacity " + tms(300) + "ms ease";
         cubeHeadEl.style.opacity = "0";
         after0(320, function () {
-          cubeHeadEl.textContent = (2 * CUBE_TOTAL) + " Conversations";
+          cubeHeadEl.textContent = (2 * CUBE_TOTAL) + " Messages";
           cubeHeadEl.style.opacity = "1";
         });
       }
@@ -14957,10 +15094,10 @@ function buildSimContent() {
         after0(cbSetGap(k) + hold, function () { cbAddSet(k + 1); });
       }
 
-      // ---- the diagram takes the next conversation ----
+      // ---- the diagram takes the next message ----
       // Updated in place, not redrawn: a redraw would build a new scene and take the
       // cube with it. Every node keeps its element and is handed the new value, which
-      // is all that changes between one conversation and the next — the wiring is the
+      // is all that changes between one message and the next — the wiring is the
       // same network.
       let showing = idx;
       const REFILL_GAP = 16;                          // the shorthand sweep
@@ -14971,10 +15108,10 @@ function buildSimContent() {
       // is supposed to have caused them had arrived.
       const SWEEP_MS = 360, SWEEP_EASE = "cubic-bezier(.3,.05,.4,1)";
 
-      // A connection belongs to the conversation, not to the network: the grey wire
+      // A connection belongs to the message, not to the network: the grey wire
       // underneath is the network, and the coloured line on top is this
-      // conversation's signal travelling it. So when the diagram takes a different
-      // conversation the coloured lines have to go and come back, exactly as the
+      // message's signal travelling it. So when the diagram takes a different
+      // message the coloured lines have to go and come back, exactly as the
       // circles do — leaving them up would say the old signal is still running
       // while the new one is being computed.
       //
@@ -14999,7 +15136,7 @@ function buildSimContent() {
         eachFrom(li, function (e) {
           const line = e.el, far = e.far;
           cancelEdge(line);
-          paintSignal(line);                 // the colour is the NEW conversation's
+          paintSignal(line);                 // the colour is the NEW message's
           if (!ms) {
             line.style.strokeDashoffset = 0;
             if (far) far.style.strokeDashoffset = 0;
@@ -15024,22 +15161,22 @@ function buildSimContent() {
         });
       }
 
-      // Swapping one conversation for the next, at two speeds.
+      // Swapping one message for the next, at two speeds.
       //
       // Slow: the gauges drain, the diagram sits visibly BLANK for a beat, and then
-      // the new conversation is taken one layer at a time with the wiring
+      // the new message is taken one layer at a time with the wiring
       // recolouring behind it. That blank moment is the whole point — without it
       // one set of numbers simply becomes another and there is nothing to say a
-      // different conversation is being run.
+      // different message is being run.
       //
       // Fast: one quick sweep, no pause. By the third or fourth column the claim
-      // has stopped being "here is how a conversation goes through" and become
+      // has stopped being "here is how a message goes through" and become
       // "and again, eight hundred times", and a shorthand is the honest way to say
       // the second one.
       //
       // Returns how long it takes, so the caller does not have to keep a duplicate
       // copy of these numbers in order to schedule what comes next.
-      function setConversation(n, slow, now) {
+      function setMessage(n, slow, now) {
         showing = n;
         const it = cases[n] || cases[0];
         const f = forward(it);
@@ -15049,9 +15186,9 @@ function buildSimContent() {
           return Array.prototype.slice.call(
             svgHost.querySelectorAll('.d1a-node[data-layer="' + li + '"]'));
         });
-        // Which of the two answers wins is a property of the conversation, not of
+        // Which of the two answers wins is a property of the message, not of
         // the drawing, so it is recomputed rather than left on the pill from
-        // whichever conversation the diagram was built around.
+        // whichever message the diagram was built around.
         const chose = f.out[1] > f.out[0] ? 1 : 0;
         function claimAnswer() {
           svgHost.querySelectorAll(".d1a-outpill").forEach(function (pill, i) {
@@ -15059,7 +15196,7 @@ function buildSimContent() {
           });
         }
         // Handed over a layer at a time, because __vals is what the edges read: set
-        // all at once, the wiring would show the new conversation's colours while
+        // all at once, the wiring would show the new message's colours while
         // the circles were still empty, which gives the answer away before the
         // signal has got anywhere near it.
         function takeLayer(li) {
@@ -15075,12 +15212,12 @@ function buildSimContent() {
           SIM._timeouts.push(t);
         }
         function label() {
-          if (!convLabelEl) return;
-          convLabelEl.textContent = "Conversation " + (n + 1);
-          bounceIn(convLabelEl, slow ? CONV_BOUNCE : Math.round(CONV_BOUNCE * 0.7));
+          if (!msgLabelEl) return;
+          msgLabelEl.textContent = "Message " + (n + 1);
+          bounceIn(msgLabelEl, slow ? MSG_BOUNCE : Math.round(MSG_BOUNCE * 0.7));
         }
 
-        // Restoring, not running: the conversation is simply already in the diagram.
+        // Restoring, not running: the message is simply already in the diagram.
         // No drain, no sweep, no bounce — coming back to a screen is not a re-run of
         // what happened on it.
         if (now) {
@@ -15091,7 +15228,7 @@ function buildSimContent() {
           });
           claimAnswer();
           revealAnswer(true);
-          if (convLabelEl) convLabelEl.textContent = "Conversation " + (n + 1);
+          if (msgLabelEl) msgLabelEl.textContent = "Message " + (n + 1);
           return 0;
         }
         if (!slow) {
@@ -15126,7 +15263,7 @@ function buildSimContent() {
           after(at + 20, function () { clearFrom(li); });   // its lines go with it
           at += DRAIN_LAYER_GAP;
         });
-        // Blank is the moment the diagram takes a different conversation, so that is
+        // Blank is the moment the diagram takes a different message, so that is
         // where the label changes and where the old answer stops being claimed. What
         // is on screen here is the bare network: empty circles and grey wires, the
         // state the whole sequence opened in.
@@ -15147,21 +15284,21 @@ function buildSimContent() {
         return at + 60;
       }
 
-      // Building the cube, one conversation to a column. Conversation 1 is the one
+      // Building the cube, one message to a column. Message 1 is the one
       // the four steps ran on; 2 and 3 are taken slowly, and 4 onward in shorthand.
       const CUBE_DELIB = 3;
       function flightMs() {
         return Math.round(LIFT_MS * 1.17) + (units.length - 1) * LIFT_LAND_GAP
              + SETTLE_MS;
       }
-      // One press, one conversation, one column. The FIRST goes through the network
+      // One press, one message, one column. The FIRST goes through the network
       // in front of you — the four steps are what a column is, and every one after it
       // is that same run with different numbers, which is why the rest only swap
       // their values.
       function collectOne() {
         if (exBusy || exCubeDone || exCollected >= EX_BY_HAND) return;
         const c = exCollected;
-        // What a collection LEAVES is three things: the conversation showing on the
+        // What a collection LEAVES is three things: the message showing on the
         // diagram, its column in the deck, and the count moved on. Played at zero the
         // sequence still ran the recap, the dim, the lift and the flight — no one of
         // them visible for long enough to read, but all of them visible. Animate off
@@ -15169,8 +15306,8 @@ function buildSimContent() {
         // way a returned-to screen builds it, which is the same column standing still.
         if (motionOff()) {
           undim(0);
-          showConvLabel(0);
-          setConversation(c, false, true);
+          showMsgLabel(0);
+          setMessage(c, false, true);
           addColumn(c, c, 0, null, 0);
           exCollected = c + 1;
           syncExRow();
@@ -15179,7 +15316,7 @@ function buildSimContent() {
         exBusy = true;
         syncExRow();
         if (c === 0) {
-          showConvLabel(UNDIM_MS);
+          showMsgLabel(UNDIM_MS);
           after0(UNDIM_MS + 220, function () {
             // The recap is deliberately quicker than Trace a Case plays it — it is a
             // reminder, not the lesson — but that is a RATIO, not a fixed speed, so
@@ -15193,7 +15330,7 @@ function buildSimContent() {
         }
         undim(UNDIM_MS);
         after0(UNDIM_MS, function () {
-          const ms = setConversation(showing + 1, c < CUBE_DELIB);
+          const ms = setMessage(showing + 1, c < CUBE_DELIB);
           after0(ms + NEXT_HOLD, function () { flyColumn(c); });
         });
       }
@@ -15215,22 +15352,22 @@ function buildSimContent() {
       }
       // The rest of the eight hundred, without stopping. It carries on from wherever
       // the collecting stopped rather than starting over, and it does NOT keep
-      // feeding them through the diagram: past the third conversation the diagram has
+      // feeding them through the diagram: past the third message the diagram has
       // made its point, and the deck filling up is what there is left to watch.
       function collectAll() {
         if (exBusy || exCubeDone) return;
         // From exactly where the collecting stopped, INCLUDING nothing. The floor of
         // one was safe only while this step needed three columns before it could be
-        // pressed; now that it can run from an empty deck, it skipped conversation one
+        // pressed; now that it can run from an empty deck, it skipped message one
         // and built seven hundred and ninety-nine.
         if (motionOff()) { cubeFill(exCollected); return; }
         // The first three always arrive one at a time, however many are already in.
-        // A column of the deck is one conversation and it got there by being RUN;
+        // A column of the deck is one message and it got there by being RUN;
         // that claim is made by watching it happen, and three is enough to believe it
         // of the other seven hundred and ninety-seven. Pressed from nothing this
         // plays all three; pressed with one already collected it plays the two that
         // are missing and keeps the one. Past three the deck filling up is the
-        // subject and the individual conversation is not, so the fast build takes
+        // subject and the individual message is not, so the fast build takes
         // over from wherever the counting has got to.
         if (exCollected < EX_ALL_AT) {
           exActive = exAll;
@@ -15244,7 +15381,7 @@ function buildSimContent() {
       }
       // The finished deck with the build not played. It fills in FROM where the hand
       // collecting stopped rather than starting at zero: those columns are already on
-      // screen, and the one thing worse than eight hundred conversations is eight
+      // screen, and the one thing worse than eight hundred messages is eight
       // hundred and three. Everything else is what a returned-to screen rebuilds —
       // the rest of set one, the count, then all thirty-nine layers behind it.
       function cubeFill(from) {
@@ -15300,18 +15437,18 @@ function buildSimContent() {
         // ...except the "x weight" captions, whose resting state is NOT visible:
         // .d1a-wlabel is opacity 0 in the stylesheet and only syncWeightLabels turns
         // one on, when the step that travels its gap has run. Clearing the inline
-        // value handed them back to that 0, so from the second conversation on they
+        // value handed them back to that 0, so from the second message on they
         // simply never came back.
         syncWeightLabels();
       }
       // Above the diagram, centred on it — the diagram sits in the left part of the
       // widened canvas, so "centre" is its own span, not the canvas's.
-      let convLabelEl = null;
+      let msgLabelEl = null;
       // It lands rather than appearing. A number that fades from one value to the
       // next is a number being corrected; one that drops in and settles is a new
-      // thing arriving, which is what a different conversation is. The overshoot is
+      // thing arriving, which is what a different message is. The overshoot is
       // in the easing, so there is one transition and not a chain of them.
-      const CONV_BOUNCE = 520, BOUNCE_EASE = "cubic-bezier(.34,1.56,.64,1)";
+      const MSG_BOUNCE = 520, BOUNCE_EASE = "cubic-bezier(.34,1.56,.64,1)";
       function bounceIn(t, ms) {
         if (!t) return;
         if (!ms) { t.style.transform = ""; t.style.opacity = "1"; return; }
@@ -15329,15 +15466,15 @@ function buildSimContent() {
         t.style.transform = "";
         t.style.opacity = "1";
       }
-      function showConvLabel(ms) {
-        if (convLabelEl) return;
+      function showMsgLabel(ms) {
+        if (msgLabelEl) return;
         const t = el("text", { x: Math.round(liftW0 / 2), y: 22,
                                class: "d1a-mergelabel" });
         t.setAttribute("text-anchor", "middle");
-        t.textContent = "Conversation " + (idx + 1);
+        t.textContent = "Message " + (idx + 1);
         X.scene.appendChild(t);
-        convLabelEl = t;
-        bounceIn(t, ms ? CONV_BOUNCE : 0);
+        msgLabelEl = t;
+        bounceIn(t, ms ? MSG_BOUNCE : 0);
       }
       // One step at a time, each started only when the last has finished. The runners
       // report through `running`, so this watches that rather than guessing at
@@ -15454,7 +15591,7 @@ function buildSimContent() {
       // the label, and the room at the foot is what the columns stacked in front of
       // this one drop into. Each of those sits STACK_DY lower and STACK_DX to the
       // left, so the set recedes up and to the right.
-      // Ten conversations, each 20px lower and half a neuron to the left of the one
+      // Ten messages, each 20px lower and half a neuron to the left of the one
       // behind it. That drop costs 180px of the panel, and fourteen neurons at their
       // drawn size need 312 more — 492 in a 428px panel — so the neurons come down
       // with the stack rather than the stack being cut to fit them. STACK_R is the
@@ -15462,12 +15599,12 @@ function buildSimContent() {
       // The drop is half a neuron's height, and the left shift half its width — so
       // a column clears the one behind it by exactly the same amount in both
       // directions. Solving for the largest neuron that still fits: the column needs
-      // 13 pitches of at least 2r, the stack costs r per extra conversation, and the
+      // 13 pitches of at least 2r, the stack costs r per extra message, and the
       // ends cost r+2 each, which lands on r = (H - band - 4) / (N + 27).
-      // Twenty conversations, the first ten named one at a time and the rest simply
+      // Twenty messages, the first ten named one at a time and the rest simply
       // arriving. Sized for twenty from the start so nothing has to resize halfway:
       // at N = 20 the neuron comes out at 8.3 and the rows are exactly clear.
-      // Twenty conversations, every one named as it lands. Only at the end does the
+      // Twenty messages, every one named as it lands. Only at the end does the
       // count appear, taking the place of the twentieth name.
       //
       // The first two arrive at reading pace so the pattern is legible, then the beat
@@ -15483,8 +15620,8 @@ function buildSimContent() {
       const BLOCK_L = mx - STACK_N * STACK_R;     // the block's left edge
       // The second twenty do not sit BESIDE the first — side by side left a notch
       // down the middle, because one block restarts at the top while the other has
-      // dropped its full depth. They tuck in behind instead: conversation 21's column
-      // butts against conversation 1's, so the pair grows by one node's width and the
+      // dropped its full depth. They tuck in behind instead: message 21's column
+      // butts against message 1's, so the pair grows by one node's width and the
       // second set reads as a layer of the same deck rather than a second deck.
       const G2_BUILD = 6 - BLOCK_L;               // built pinned 6px off the left
       const STACK_STEP2 = 120;                    // the second twenty arrive quickly
@@ -15506,7 +15643,7 @@ function buildSimContent() {
                " A " + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " +
                (cx - k).toFixed(2) + " " + (cy + k).toFixed(2) + " Z";
       }
-      // Conversation 20 of set 1 is the corner of the box: it is the last column of
+      // Message 20 of set 1 is the corner of the box: it is the last column of
       // the right face AND the front of its own slab, so it carries two greys. The
       // dividing line is vertical through the centre — right of it belongs to the
       // right face, left of it to the front. Below the top row that is a plain
@@ -15556,7 +15693,7 @@ function buildSimContent() {
       // ---- and then all forty sets ----
       // Every further twenty is one more layer of the same deck, laid in behind the
       // last. NO COMPRESSING: the offset is one node's width for the first set and
-      // one node's width for the fortieth, so a conversation is the same size at 800
+      // one node's width for the fortieth, so a message is the same size at 800
       // as it was at 1. Forty sets are 812px wide in a 537px panel, which means most
       // of the deck ends up past the right-hand edge — and that is the point. What
       // stays on screen is the arrival and everything already there moving over.
@@ -15621,9 +15758,9 @@ function buildSimContent() {
         });
       };
 
-      // "Conversation 1", beside the merged neuron, once it has arrived. Held on to
+      // "Message 1", beside the merged neuron, once it has arrived. Held on to
       // because it has to travel with row 0 as the column grows — it is not inside a
-      // .d1a-convrow group like the other nine, so centreAll has to move it by hand.
+      // .d1a-msgrow group like the other nine, so centreAll has to move it by hand.
       let mergeLabel = null;
       const label = function () {
         // Beside the neuron, not under it: the neuron holds the centre of the drawing
@@ -15631,15 +15768,15 @@ function buildSimContent() {
         // output pills carry their word.
         const t = el("text", { x: mx + X.r + 12, y: my + 5,
                                class: "d1a-mergelabel" });
-        t.textContent = "Conversation " + (idx + 1);
+        t.textContent = "Message " + (idx + 1);
         X.scene.appendChild(t);
         mergeLabel = t;
         rowLabels.push(t);
         // The merged fourteen hand over to one circle here, so that every row from
         // now on is the same object — a circle and a name in a group. Twenty of them
         // then shrink together with one line of code instead of two mechanisms.
-        const g0 = el("g", { class: "d1a-convrow" });
-        g0.appendChild(el("circle", { cx: mx, cy: my, r: X.r, class: "d1a-convnode" }));
+        const g0 = el("g", { class: "d1a-msgrow" });
+        g0.appendChild(el("circle", { cx: mx, cy: my, r: X.r, class: "d1a-msgnode" }));
         X.scene.appendChild(g0);
         rows[0] = g0;
         units.forEach(function (u) {
@@ -15657,16 +15794,16 @@ function buildSimContent() {
       // line that draws them is untouched — see addPathwayBoxes and drawLoadings —
       // so this comes back by flipping one constant.
       // ---- and then the other nine ----
-      // One conversation at a time: a new neuron appears below the stack, and the
+      // One message at a time: a new neuron appears below the stack, and the
       // whole stack re-centres to take it in. Ten of them end up in a column, which
-      // is the point — the network does this to every conversation, not just to the
+      // is the point — the network does this to every message, not just to the
       // one that was on screen.
       //
       // The merged fourteen are row 0. They move as a unit, each still carrying the
       // absolute translate moveNode gives it, so they stay one circle throughout.
       const rows = [];              // rows[0] is the merge; 1..9 are drawn here
-      const rowLabels = [];         // every "Conversation n", so they can go together
-      const P = Math.min(32, (X.H - 2 * (X.r + 6)) / (CONV_ROWS - 1));
+      const rowLabels = [];         // every "Message n", so they can go together
+      const P = Math.min(32, (X.H - 2 * (X.r + 6)) / (MSG_ROWS - 1));
       // Room kept above the column for the heading that arrives once the names go.
       // 36, not 26: ten of those pixels are clear air between the heading and the
       // first row. They come out of the column's height rather than off the bottom,
@@ -15688,15 +15825,15 @@ function buildSimContent() {
         return COL_MID - spanFor(n) / 2 + i * pitchFor(n);
       }
 
-      // How much of the merge each later conversation still shows. The gesture is
+      // How much of the merge each later message still shows. The gesture is
       // worth watching once at full length; after that it is a reminder, and by the
       // seventh it has become a fact you already know — so it decays to nothing
       // rather than repeating ten times.
       function addRow(i) {
-        const g = el("g", { class: "d1a-convrow" });
-        g.appendChild(el("circle", { cx: mx, cy: my, r: X.r, class: "d1a-convnode" }));
+        const g = el("g", { class: "d1a-msgrow" });
+        g.appendChild(el("circle", { cx: mx, cy: my, r: X.r, class: "d1a-msgnode" }));
         const t = el("text", { x: mx + X.r + 12, y: my + 5, class: "d1a-mergelabel" });
-        t.textContent = "Conversation " + (i + 1);
+        t.textContent = "Message " + (i + 1);
         g.appendChild(t);
         rowLabels.push(t);
         X.scene.appendChild(g);
@@ -15704,13 +15841,13 @@ function buildSimContent() {
         return g;
       }
 
-      // No echo of the merge on the later conversations. It was tried and taken out:
+      // No echo of the merge on the later messages. It was tried and taken out:
       // the rows are 26px apart and a neuron is 24px across, so a ring of them at any
       // radius that fits between two rows overlaps into a solid annulus — eight
       // circles that read as a blob appearing and vanishing rather than as parts
       // coming together. The full merge works because those fourteen cross 100 to
       // 200px of empty panel; there is no room for the same gesture at a tenth the
-      // scale. Conversation 1 shows it properly and the rest arrive as themselves.
+      // scale. Message 1 shows it properly and the rest arrive as themselves.
 
       // Ten names become one count. Each row was worth naming while it was the thing
       // arriving; once all ten are up, what matters is that there are ten of them and
@@ -15732,7 +15869,7 @@ function buildSimContent() {
                                y: rowY(0, GRID_ROWS) - radiusFor(GRID_ROWS) - 22,
                                class: "d1a-mergelabel d1a-colhead" });
         t.setAttribute("text-anchor", "middle");
-        t.textContent = GRID_ROWS + " Conversations";
+        t.textContent = GRID_ROWS + " Messages";
         X.scene.appendChild(t);
         headEl = t;
         if (!ms) { t.style.opacity = "1"; return; }
@@ -15744,7 +15881,7 @@ function buildSimContent() {
 
       // ---- and then the other 790 ----
       // Columns of ten, arriving on the LEFT, pushing everything already there to the
-      // right. No compressing: the pitch never changes, so a conversation is the same
+      // right. No compressing: the pitch never changes, so a message is the same
       // size at 800 as it was at 1 — which means most of the grid ends up off the
       // right-hand edge, and that is the point. What stays on screen is the arrival.
       //
@@ -15756,7 +15893,7 @@ function buildSimContent() {
       // 288px height inside a 366px one for that reason.
       const COL_PITCH = pitchFor(GRID_ROWS);
 
-      const colGroups = [];               // in ADD order: [0] is Conversation 1-10
+      const colGroups = [];               // in ADD order: [0] is Message 1-10
       let gridG = null;
       // Where the grid is centred and measured from. Starts as the drawing's own
       // centre and moves when the canvas widens — see startGrid.
@@ -15795,11 +15932,11 @@ function buildSimContent() {
       }
       function makeCol(depth) {
         const n = depth || GRID_ROWS;
-        const g = el("g", { class: "d1a-convcol" });
-        const base = colGroups.length * GRID_ROWS;   // which conversations these are
+        const g = el("g", { class: "d1a-msgcol" });
+        const base = colGroups.length * GRID_ROWS;   // which messages these are
         for (let i = 0; i < n; i++) {
-          const c = el("circle", { cx: mx, cy: my, r: X.r, class: "d1a-convnode" });
-          c.__conv = base + i;
+          const c = el("circle", { cx: mx, cy: my, r: X.r, class: "d1a-msgnode" });
+          c.__msg = base + i;
           g.appendChild(c);
         }
         gridG.appendChild(g);
@@ -15807,7 +15944,7 @@ function buildSimContent() {
         sizeCol(g, n, 0);
         return g;
       }
-      // One outline around the whole set, once it is whole: 800 conversations stop
+      // One outline around the whole set, once it is whole: 800 messages stop
       // being an accumulation and become a thing with an edge — which is what the
       // pathways are then extracted FROM.
       let boxEl = null;
@@ -15854,7 +15991,7 @@ function buildSimContent() {
         // Both halves are pickable, like the loading matrix before it.
         gridG.addEventListener("click", function (ev) {
           const c = ev.target;
-          if (c && c.__conv !== undefined) pick("conv", c.__conv);
+          if (c && c.__msg !== undefined) pick("msg", c.__msg);
         });
         pathG.addEventListener("click", function (ev) {
           const b = ev.target.closest ? ev.target.closest(".d1a-pathbox") : null;
@@ -15884,7 +16021,7 @@ function buildSimContent() {
         const tipY = by + 16;
         const tip = el("text", { x: tipX, y: tipY, class: "d1a-loadtip" });
         ["Click a pathway to read",
-         "all 800 conversations,",
+         "all 800 messages,",
          "or one to read its three."].forEach(function (line, i) {
           const ln = el("tspan", { x: tipX, dy: i ? 16 : 0 });
           ln.textContent = line;
@@ -15901,8 +16038,8 @@ function buildSimContent() {
       // ---- reading the block against the pathways ----
       // The same two-way reading the loading matrix had, with the pair changed. A
       // loading related a hidden unit to a pathway; there are no units here, so the
-      // pair is a CONVERSATION and a pathway, and the number between them is the
-      // conversation's activation on it — real, signed, and the same figure the
+      // pair is a MESSAGE and a pathway, and the number between them is the
+      // message's activation on it — real, signed, and the same figure the
       // Prediction Chain multiplies on the next screen.
       //
       // The loadings' ramp — purple positive, the deck's darkened yellow negative —
@@ -15911,16 +16048,16 @@ function buildSimContent() {
       //
       // Recorded for Jie rather than argued here: upstream, a LOADING is per
       // (neuron, pathway) — that is what pathway_loadings.csv holds — and the number
-      // available per (conversation, pathway) is `act`, the pathway score. There are
+      // available per (message, pathway) is `act`, the pathway score. There are
       // no neurons on this screen, so what these marks carry is the score, read as a
       // loading.
       const LOAD_POS = "#673AB7", LOAD_NEG = "#A76905";
       function loadHue(v) { return v >= 0 ? LOAD_POS : LOAD_NEG; }
-      let selConv = -1, selPath = -1;
+      let selMsg = -1, selPath = -1;
       let readG = null;
       // One rule for a signed activation wherever it lands: the square root of its
       // size against the dataset's own scale, and its sign in the fill. A square in
-      // a pathway box, a radius on a conversation — same arithmetic, so the two
+      // a pathway box, a radius on a message — same arithmetic, so the two
       // readings of the same table cannot disagree about what they are showing.
       function actExtent(v, lo, hi) {
         return lo + (hi - lo) * Math.sqrt(Math.min(1, Math.abs(v) / ACT_SCALE));
@@ -15939,19 +16076,19 @@ function buildSimContent() {
         }
         return readG;
       }
-      function convCircle(n) {
+      function msgCircle(n) {
         let found = null;
         if (!gridG) return null;
         Array.prototype.forEach.call(gridG.querySelectorAll("circle"), function (c) {
-          if (c.__conv === n) found = c;
+          if (c.__msg === n) found = c;
         });
         return found;
       }
-      // One conversation, read across the three pathways.
-      function showConv(n) {
+      // One message, read across the three pathways.
+      function showMsg(n) {
         clearRead();
         const it = items[n];
-        const c = convCircle(n);
+        const c = msgCircle(n);
         if (!it || !c || !boxEl) return;
         const g = readLayer();
         const bx = +boxEl.getAttribute("x") - SET_SHIFT;
@@ -15980,7 +16117,7 @@ function buildSimContent() {
         const boxes = pathG.querySelectorAll(".d1a-pathbox");
         if (boxes[p]) boxes[p].classList.add("on");
         Array.prototype.forEach.call(gridG.querySelectorAll("circle"), function (c) {
-          const it = items[c.__conv];
+          const it = items[c.__msg];
           if (!it) return;
           const v = (it.act || [])[p] || 0;
           // Depth on the same two hues, so the 800 and the three agree about what a
@@ -15991,17 +16128,17 @@ function buildSimContent() {
         });
       }
       function pick(kind, i) {
-        if (kind === "conv") {
+        if (kind === "msg") {
           selPath = -1;
-          selConv = selConv === i ? -1 : i;
-          if (selConv < 0) clearRead(); else showConv(selConv);
+          selMsg = selMsg === i ? -1 : i;
+          if (selMsg < 0) clearRead(); else showMsg(selMsg);
         } else {
-          selConv = -1;
+          selMsg = -1;
           selPath = selPath === i ? -1 : i;
           if (selPath < 0) clearRead(); else showPath(selPath);
         }
       }
-      // The column each conversation sits in carries the horizontal offset, and the
+      // The column each message sits in carries the horizontal offset, and the
       // circles keep cx = mx, so a click has to add its column's translate back on.
       function colShift(c) {
         const g = c.parentNode;
@@ -16010,14 +16147,14 @@ function buildSimContent() {
       }
 
       function setCount(total) {
-        if (headEl) headEl.textContent = total + " Conversations";
+        if (headEl) headEl.textContent = total + " Messages";
       }
       // The first column is already on screen as fourteen merged neurons and nine
-      // rows. From here on every conversation is one circle in a column group, so
+      // rows. From here on every message is one circle in a column group, so
       // the built-up version hands over to a plain one and steps aside.
       function startGrid() {
         // The canvas is capped at 537 and centred so the NETWORK keeps the size it
-        // has beside the conversation panel — which leaves 244px of white either
+        // has beside the message panel — which leaves 244px of white either
         // side. The network is gone by now, and that white band is exactly where the
         // grid wants to arrive. So the cap comes off and the canvas takes the panel.
         //
@@ -16053,7 +16190,7 @@ function buildSimContent() {
       // Everything on screen slides to where it belongs in a column of `n`.
       // Every row moves to its place in a column of `n` AND takes the size that
       // depth implies. One pass, so the shrink and the shuffle are the same motion.
-      // The names shrink with the rows. Every conversation keeps its own name all
+      // The names shrink with the rows. Every message keeps its own name all
       // the way to twenty — a list of twenty is the point — which only works if the
       // type comes down with the pitch. 0.62 of the pitch leaves the line box inside
       // its row with room to spare; at ten rows it is over 14 and the cap holds it at
@@ -16099,7 +16236,7 @@ function buildSimContent() {
       // the eight hundred, the pathways off the block — and all of it was built on
       // the fourteen becoming ONE neuron. None of it follows from a column, so it is
       // switched off rather than deleted while the new one is worked out.
-      // One conversation's fourteen units, drawn as a column of its own. The clips
+      // One message's fourteen units, drawn as a column of its own. The clips
       // are cut once at the base column's row positions and shared by every column —
       // a clipPath resolves in the coordinate space of the element referencing it,
       // so a group's own transform carries its clips with it.
@@ -16113,8 +16250,8 @@ function buildSimContent() {
         stackG.appendChild(cp);
         rowClip.push(id);
       }
-      function convColumn(convIdx, depth, host) {
-        const it = cases[convIdx] || cases[0];
+      function msgColumn(msgIdx, depth, host) {
+        const it = cases[msgIdx] || cases[0];
         const f = it ? forward(it) : null;
         const vals = f ? f.h1.concat(f.h2) : [];
         const g = el("g", { class: "d1a-stackcol" });
@@ -16124,7 +16261,7 @@ function buildSimContent() {
         // the body of a column while its top row is treated differently.
         const topG = el("g", {}), bodyG = el("g", {});
         const isSeam = depth === STACK_N - 1;
-        const isCorner = isSeam && convIdx < STACK_N;   // set 1's conversation 20
+        const isCorner = isSeam && msgIdx < STACK_N;   // set 1's message 20
         g.__right = [];
         g.appendChild(topG);
         g.appendChild(bodyG);
@@ -16143,7 +16280,7 @@ function buildSimContent() {
           //
           // The top row loses the surface to the 45 degree chord — on set 1's columns
           // and on every set's seam column, the two things that carry an overlay.
-          if (i === 0 && (convIdx < STACK_N || isSeam)) {
+          if (i === 0 && (msgIdx < STACK_N || isSeam)) {
             const topD = isCorner ? bottomLeft : isSeam ? bottomHalf : halfPath;
             g.__half = el("path", { d: topD(mx, cy, STACK_R),
                                     fill: "#000000", "fill-opacity": "0" });
@@ -16165,9 +16302,9 @@ function buildSimContent() {
                                           class: "d1a-stacknode" }));
         }
         g.__body = bodyG;
-        if (depth === STACK_N - 1) seam[Math.floor(convIdx / STACK_N)] = g;
-        if (convIdx < STACK_N) firstCols.push(g);
-        // Last in, so a later conversation stands in FRONT of the one behind it.
+        if (depth === STACK_N - 1) seam[Math.floor(msgIdx / STACK_N)] = g;
+        if (msgIdx < STACK_N) firstCols.push(g);
+        // Last in, so a later message stands in FRONT of the one behind it.
         (host || stackG).appendChild(g);
         return g;
       }
@@ -16176,7 +16313,7 @@ function buildSimContent() {
         // A column and its name arrive together — the name is the point of the
         // column, so it should not turn up a beat later.
         const add = function (d) {
-          const g = convColumn(d, d);
+          const g = msgColumn(d, d);
           if (!quick) {
             g.style.opacity = "0";
             void g.getBoundingClientRect();
@@ -16193,7 +16330,7 @@ function buildSimContent() {
         // One name at a time, at full size. Ten of them at once would have to be
         // 10px to clear each other — the columns are only STACK_R apart — so instead
         // each name arrives with its column and hands over to the next. What is left
-        // at the end is the front conversation's name.
+        // at the end is the front message's name.
         //
         // Each hangs off the top-left of its own column, anchored at its end so it
         // runs away from the stack, and every column's top is on the same diagonal,
@@ -16209,7 +16346,7 @@ function buildSimContent() {
                                  x: (mx - STACK_R - 8 + d * STACK_DX).toFixed(1),
                                  y: (colTop + d * STACK_DY + 3).toFixed(1) });
           t.setAttribute("text-anchor", "end");
-          t.textContent = "Conversation " + (d + 1);
+          t.textContent = "Message " + (d + 1);
           stackG.appendChild(t);
           return t;
         }
@@ -16240,7 +16377,7 @@ function buildSimContent() {
             X.headEl = headEl2;
             void headEl2.getBoundingClientRect();
           }
-          headEl2.textContent = n + " Conversations";
+          headEl2.textContent = n + " Messages";
           headEl2.style.opacity = "1";
         }
 
@@ -16249,7 +16386,7 @@ function buildSimContent() {
         // stackG — they are the real network, moved into line by moveNode — so they
         // are stepped by adding the same offset to the line-up they already hold.
         const EASE = "cubic-bezier(.34,1.02,.5,1)";
-        // Behind EVERYTHING, not just behind stackG: conversation 1's column is the
+        // Behind EVERYTHING, not just behind stackG: message 1's column is the
         // real network, drawn into X.scene before the stack was, so the second set
         // has to go in at the front of the scene to sit under both.
         // setG[0] is the first twenty — stackG plus the real neurons, which are not
@@ -16283,7 +16420,7 @@ function buildSimContent() {
             (g.__body || g).style.filter = css;
             if (g.__half) g.__half.setAttribute("fill-opacity", op);
           });
-          // Conversation 1 is the real network rather than a drawn column — moved into
+          // Message 1 is the real network rather than a drawn column — moved into
           // line by moveNode — so the first set takes the overlay in two places. Its
           // top neuron is on the surface like every other column's, so it is left out
           // of the filter and given the same half circle, hung off the node itself so
@@ -16331,9 +16468,9 @@ function buildSimContent() {
           }
         }
         // ---- the pathway view ----
-        // The deck gives up the right half of the panel, conversation 1 is COPIED out
+        // The deck gives up the right half of the panel, message 1 is COPIED out
         // of it at full size, and the three pathway boxes assemble beside the copy.
-        // The original stays in the deck: the claim is that this conversation is one
+        // The original stays in the deck: the claim is that this message is one
         // of the eight hundred, which is only visible if it is still among them.
         //
         // Everything here lives in viewG, which carries the exact inverse of the
@@ -16418,7 +16555,7 @@ function buildSimContent() {
         const pvGap = (pvEnd - pvY0) / (units.length - 1);
         function pvAt(k) { return { x: PV_COLX, y: pvY0 + k * pvGap }; }
         // One clipPath per row, cut once and shared: the fourteen gauges are re-levelled
-        // on every conversation, and a clip per redraw would leak one each time.
+        // on every message, and a clip per redraw would leak one each time.
         let pvClip = null;
         function pvClipIds() {
           if (pvClip) return pvClip;
@@ -16435,9 +16572,9 @@ function buildSimContent() {
           }
           return pvClip;
         }
-        // What this conversation does to the network, in one column and three boxes.
+        // What this message does to the network, in one column and three boxes.
         // The LOADINGS between them do not change with it — a loading belongs to the
-        // unit, not to the conversation — and that contrast is the whole screen.
+        // unit, not to the message — and that contrast is the whole screen.
         function pvFill() {
           if (!pvRings) return;
           const it = cases[idx] || cases[0];
@@ -16455,7 +16592,7 @@ function buildSimContent() {
           }
         }
         // A copy, not the thing itself: built at the column's geometry and then put
-        // back onto conversation 1's place in the deck, so that letting it go is the
+        // back onto message 1's place in the deck, so that letting it go is the
         // move. Each node carries its own transform because the two columns do not
         // differ by one scale — the deck's rows are 16.75 apart at r 8.2 and the
         // column's are 30.8 apart at r 12.
@@ -16470,7 +16607,7 @@ function buildSimContent() {
           pvRings = [];
           const clip = pvClipIds();
           for (let k = 0; k < units.length; k++) {
-            // Each one carries this conversation's reading, and changes when the
+            // Each one carries this message's reading, and changes when the
             // arrows do — the same gauge the diagram draws, at the same radius. The
             // loadings drawn from them are the thing that does NOT change, which is
             // what makes the pair worth putting side by side.
@@ -16514,7 +16651,7 @@ function buildSimContent() {
             g.appendChild(ng);
             pvRings.push(ring);
             setNodeLevel(ring, 1);
-            // Where conversation 1 is sitting in the deck right now, in this group's
+            // Where message 1 is sitting in the deck right now, in this group's
             // coordinates — which is the deck's own less the crop it is carrying.
             const n = units[k];
             const sx = n.__cx + (n.__stkdx || 0) + (X.setT0 || 0) - sceneSlide;
@@ -16535,12 +16672,12 @@ function buildSimContent() {
           const host = pvHost();
           const PV = { scene: host, W: X.W, H: X.H, r: X.r, svg: X.svg };
           pvMade = addPathwayBoxes(PV, PV_COLX, pvY0, pvGap, units.length, now, PV_BX);
-          // Empty boxes too, for the same reason: the squares are this conversation's
-          // pathway activations, and nothing here is about this conversation yet.
+          // Empty boxes too, for the same reason: the squares are this message's
+          // pathway activations, and nothing here is about this message yet.
           drawLoadings(PV, pvRings, pvAt, pvMade, now, false);
           centrePathview();
           pvFill();
-          // Handed up so a change of conversation can reach it: render() short-circuits
+          // Handed up so a change of message can reach it: render() short-circuits
           // once the extraction is up, and that short-circuit is the path the arrows
           // take.
           svgHost.__pvFill = pvFill;
@@ -16554,11 +16691,11 @@ function buildSimContent() {
           X.scene.insertBefore(g2, X.scene.firstChild);
           setG[1] = g2;
         }
-        // Conversations 21-40, same shape, no names: at this pace a name could not
+        // Messages 21-40, same shape, no names: at this pace a name could not
         // be read, and the point of the second block is the quantity, not the case.
         const add2 = function (j) {
           ensureTwo();
-          const g = convColumn(STACK_N + j, j, g2);
+          const g = msgColumn(STACK_N + j, j, g2);
           reshade(2);
           if (quick) { g.style.opacity = "1"; return; }
           g.style.opacity = "0";
@@ -16578,7 +16715,7 @@ function buildSimContent() {
         // stopped being the unit, and the deck closing up is what there is to watch.
         function buildSet(k) {
           const g = el("g", { class: "d1a-stackset" });
-          for (let j = 0; j < STACK_N; j++) convColumn(k * STACK_N + j, j, g);
+          for (let j = 0; j < STACK_N; j++) msgColumn(k * STACK_N + j, j, g);
           g.style.transform =
             "translate(" + (setX(k, k + 1) - setEnter(k)).toFixed(1) + "px,0)";
           X.scene.insertBefore(g, X.scene.firstChild);
@@ -16604,7 +16741,7 @@ function buildSimContent() {
           X.deckRight = setLeft(S) + setSpan(S);
           const t0 = setX(0, S);
           X.setT0 = t0;                       // the first set's offset, for whoever
-                                              // needs to find conversation 1 again
+                                              // needs to find message 1 again
           stackG.style.transition = tr;
           stackG.style.transform = "translate(" + t0.toFixed(1) + "px,0)";
           units.forEach(function (n) {
@@ -16619,7 +16756,7 @@ function buildSimContent() {
           // second twenty was still crossing the gap towards the first.
           // Two sets is headPair's — it crossfades 20 into 40 rather than swapping.
           if (headEl2 && S > 2) {
-            const txt = (S * STACK_N) + " Conversations";
+            const txt = (S * STACK_N) + " Messages";
             if (ms) {
               const tt = setTimeout(function () { headEl2.textContent = txt; }, ms);
               SIM._timeouts.push(tt);
@@ -16654,7 +16791,7 @@ function buildSimContent() {
         // same time, and a figure sliding while it rewrites itself reads as a glitch.
         function headPair(now) {
           const place = function () {
-            headEl2.textContent = (2 * STACK_N) + " Conversations";
+            headEl2.textContent = (2 * STACK_N) + " Messages";
             headEl2.style.opacity = "1";
           };
           if (now) { place(); return; }
@@ -16666,7 +16803,7 @@ function buildSimContent() {
         // Pathway Loadings wants the RESULT, not the evidence: no deck, no count.
         // The fourteen units still line up — settle() is what puts them somewhere
         // sane — but they are then hidden, because the column on this screen is the
-        // copy, and two columns of the same thing would read as two conversations.
+        // copy, and two columns of the same thing would read as two messages.
         if (quick && opts.investigate) {
           settle();
           units.forEach(function (n) {
@@ -16704,7 +16841,7 @@ function buildSimContent() {
         } else {
           const t0 = setTimeout(settle, EX_FADE);
           SIM._timeouts.push(t0);
-          // The first column is named as it lands, then one conversation every
+          // The first column is named as it lands, then one message every
           // STACK_STEP. Even, not accelerating: each name is meant to be read as it
           // arrives, and a decay would hurry the later ones past that.
           let at = EX_FADE + EX_MOVE;
@@ -16728,7 +16865,7 @@ function buildSimContent() {
           }, at);
           SIM._timeouts.push(tf);
 
-          // A beat to read "20 Conversations", then the next twenty come in.
+          // A beat to read "20 Messages", then the next twenty come in.
           at += 900;
           for (let j = 0; j < STACK_N; j++) {
             const jj = j;
@@ -16753,7 +16890,7 @@ function buildSimContent() {
             SIM._timeouts.push(tk);
           }
           // A beat on the finished deck, then the panels come back in, the deck
-          // retreats to the left half, and conversation 1 comes out of it.
+          // retreats to the left half, and message 1 comes out of it.
           at += 900;
           const tpa = setTimeout(function () { openPanels(false); }, at);
           SIM._timeouts.push(tpa);
@@ -16785,13 +16922,13 @@ function buildSimContent() {
         const t0 = setTimeout(settle, EX_FADE);
         const t1 = setTimeout(label, EX_FADE + EX_MOVE);
         SIM._timeouts.push(t0, t1);
-        // Each conversation arrives a little faster than the last, so twenty of them
+        // Each message arrives a little faster than the last, so twenty of them
         // build rather than plod — the same decay the network's fans use. Every one
         // is named as it lands, and from the eleventh the whole column closes up to
         // take it: the same height holding more.
         let at = EX_FADE + EX_MOVE + EX_SHOW + 220;
         for (let i = 1; i < GRID_ROWS; i++) {
-          const step = Math.max(CONV_MIN, CONV_FIRST * Math.pow(CONV_DECAY, i - 1));
+          const step = Math.max(MSG_MIN, MSG_FIRST * Math.pow(MSG_DECAY, i - 1));
           const n = i + 1;
           const ta = setTimeout(function () {
             const g = addRow(i);
@@ -16807,17 +16944,17 @@ function buildSimContent() {
           SIM._timeouts.push(ta, tb);
           at += step;
         }
-        const tc = setTimeout(function () { dropNames(CONV_NAMES_OUT); }, at + 240);
-        const td = setTimeout(function () { heading(CONV_HEAD_IN); },
-                              at + 240 + Math.round(CONV_NAMES_OUT * 0.6));
+        const tc = setTimeout(function () { dropNames(MSG_NAMES_OUT); }, at + 240);
+        const td = setTimeout(function () { heading(MSG_HEAD_IN); },
+                              at + 240 + Math.round(MSG_NAMES_OUT * 0.6));
         SIM._timeouts.push(tc, td);
 
-        let t = at + 240 + CONV_NAMES_OUT + CONV_HEAD_IN + 260;
+        let t = at + 240 + MSG_NAMES_OUT + MSG_HEAD_IN + 260;
         const tg = setTimeout(startGrid, t);
         SIM._timeouts.push(tg);
         t += 200;
 
-        // Columns 2 and 3 fill a conversation at a time — the same beat the first
+        // Columns 2 and 3 fill a message at a time — the same beat the first
         // column had, so what a column IS carries over. After that a column arrives
         // whole, and faster each time: eighty of them one at a time would be a
         // different film.
@@ -16913,7 +17050,7 @@ function buildSimContent() {
     // Which side of the matrix is being read, and which row or column of it. Lives
     // out here with `extracted` and survives a redraw for the same reason: a loading
     // is a property of the NETWORK, so the answer on screen is still the answer after
-    // you turn to the next conversation. Only Reset clears it.
+    // you turn to the next message. Only Reset clears it.
     let loadSel = null;              // {kind: "path"|"unit", i} or null
 
     function drawLoadings(X, units, at, made, quick, noFill) {
@@ -17184,7 +17321,7 @@ function buildSimContent() {
                                  rx: 6, class: "d1a-pathbox" });
         g.appendChild(box);
         // What goes INSIDE the box is the pathway's activation for this
-        // conversation, drawn exactly as the Prediction Chain draws it: a square,
+        // message, drawn exactly as the Prediction Chain draws it: a square,
         // sized on the square root of the value over the same dataset-wide scale,
         // coloured by its sign. Not a fill gauge — a gauge would have needed a
         // scale of its own, and 76% of activations are under 1.0 against a maximum
@@ -17210,7 +17347,7 @@ function buildSimContent() {
     }
 
     function restoreSteps() {
-      // opened: every conversation arrives already run, on this screen and on every
+      // opened: every message arrives already run, on this screen and on every
       // redraw of it — a resize must not wind the network back to nothing.
       if (opts.opened) { applyStepState(4); return; }
       const id = hereId();
@@ -17280,8 +17417,8 @@ function buildSimContent() {
       NNM_VIEWSTATE[myKey] = {
         query: filter.input ? filter.input.value : "",
         idx: idx,
-        // The progress of every conversation stepped so far, not just this one:
-        // stepState is already keyed by conversation id for exactly this reason.
+        // The progress of every message stepped so far, not just this one:
+        // stepState is already keyed by message id for exactly this reason.
         stepState: JSON.parse(JSON.stringify(stepState)),
         animateOn: animBox ? animBox.checked : true,
         speed: speedIn ? speedIn.value : "1",
@@ -17390,18 +17527,18 @@ function buildSimContent() {
   // a single neuron is wired to.
   if (activeSim === "d1b") {
     return buildNetScreen({ steps: false, hover: false, extract: true, anim: true,
-                            filter: false, conversation: false, readout: false,
+                            filter: false, message: false, readout: false,
                             title: "The Network → Activated Pathways" });
   }
 
   // Investigate Pathways: where Extract Pathways finishes. The deck is built, the
-  // Filter and Conversation panels are back, conversation 1 is out of the deck at
+  // Filter and Message panels are back, message 1 is out of the deck at
   // full size and the three pathway boxes are beside it — and from here the work is
   // reading the loadings, which is what the clicking is for. No Extract button: the
   // extraction has happened, and there is nothing on this screen to undo.
   if (activeSim === "d1c") {
     return buildNetScreen({ steps: false, hover: false, opened: true, extract: true,
-                            investigate: true, filter: false, conversation: false,
+                            investigate: true, filter: false, message: false,
                             marks: true, advancedFilter: true,
                             title: "Activated Pathways" });
   }
@@ -17414,7 +17551,7 @@ function buildSimContent() {
   // and unreadable"; this is where the readable thing comes from.
   //
   // The extraction is NOT staged. The toy network below is run over all 800
-  // conversations to make a real 800 x 96 activation matrix, and the pathways
+  // messages to make a real 800 x 96 activation matrix, and the pathways
   // are pulled out of it by actual factor extraction — power iteration with
   // deflation on the covariance — so the loadings, the explained variance and
   // the pathway scores on screen are all computed here, from that matrix. Only
@@ -17484,7 +17621,7 @@ function buildSimContent() {
       MIX.push(row.map(function (v) { return v / norm; }));
     }
     const NOISE = 0.35;                   // private variance per neuron
-    // Every conversation's activations, once. This is the matrix the pathways
+    // Every message's activations, once. This is the matrix the pathways
     // are extracted FROM, and slide 17 names it exactly: "activation value for
     // all neurons for all cases".
     const ACT = items.map(function (it) {
@@ -17615,13 +17752,13 @@ function buildSimContent() {
     const playBtn = document.createElement("button");
     playBtn.className = "nnm-navbtn d1b-play";
     playBtn.innerHTML = "&#9654;";
-    playBtn.setAttribute("aria-label", "Play through the conversations");
+    playBtn.setAttribute("aria-label", "Play through the messages");
     const prevBtn = document.createElement("button");
     prevBtn.className = "nnm-navbtn"; prevBtn.innerHTML = "&#9664;";
-    prevBtn.setAttribute("aria-label", "Previous conversation");
+    prevBtn.setAttribute("aria-label", "Previous message");
     const nextBtn = document.createElement("button");
     nextBtn.className = "nnm-navbtn"; nextBtn.innerHTML = "&#9654;";
-    nextBtn.setAttribute("aria-label", "Next conversation");
+    nextBtn.setAttribute("aria-label", "Next message");
     nav.appendChild(playBtn); nav.appendChild(prevBtn); nav.appendChild(nextBtn);
     actCard.head.appendChild(nav);
     const actKey = document.createElement("div");
@@ -17936,9 +18073,11 @@ function buildDemoView() {
   const demoHr = document.querySelector(".btn-column hr");
   if (demoHr) demoHr.style.borderColor = "";
   wrapper.style.borderColor = "";
+  wrapper.style.removeProperty("--rule-c");
 
   // Hide viewport chrome
   wrapper.style.borderLeft = "none";
+  wrapper.style.setProperty("--rule-h", "0px");   // demo view has no column beside it
   if (bwLabel) bwLabel.style.display = "none";
   info.style.display = "none";
   document.body.style.background = "#ededed";
@@ -18154,6 +18293,7 @@ function exitDemoView() {
 
   // Restore viewport chrome
   wrapper.style.borderLeft = "";
+  wrapper.style.removeProperty("--rule-h");
   if (bwLabel) bwLabel.style.display = "";
   info.style.display = "";
   document.body.style.padding = "";
@@ -18197,7 +18337,8 @@ function buildViewport() {
   document.body.style.overflow = "";
   document.body.style.paddingRight = "0";
   const wrapperEl = document.querySelector(".viewport-wrapper");
-  if (wrapperEl) { wrapperEl.style.overflow = ""; wrapperEl.style.borderColor = ""; }
+  if (wrapperEl) { wrapperEl.style.overflow = ""; wrapperEl.style.borderColor = "";
+                   wrapperEl.style.removeProperty("--rule-c"); }
   const bwLabel = document.getElementById("browserWidthLabel");
   if (bwLabel) { bwLabel.style.color = ""; bwLabel.style.zIndex = ""; bwLabel.style.background = "rgba(0,0,0,0.15)"; }
   document.querySelectorAll(".btn-column-label").forEach(el => el.style.color = "");
@@ -18262,7 +18403,7 @@ function buildViewport() {
     const bwLabelAP = document.getElementById("browserWidthLabel");
     if (bwLabelAP) { bwLabelAP.style.zIndex = "10"; bwLabelAP.style.background = "rgba(255,255,255,0.5)"; }
     const wrapperAP = document.querySelector(".viewport-wrapper");
-    if (wrapperAP) wrapperAP.style.borderColor = "#fff";
+    if (wrapperAP) { wrapperAP.style.borderColor = "#fff"; wrapperAP.style.setProperty("--rule-c", "#fff"); }
     frame.classList.remove("no-limit");
     frame.style.width = AP_WIDTH + "px";
     frame.style.border = "none";
@@ -18554,9 +18695,11 @@ function buildViewport() {
     const standaloneW = Math.floor(Math.max(standaloneMin, Math.min(standaloneMax, fullW - (standaloneMargin * 2) - standaloneBorder)));
     const ml = standaloneW <= standaloneMin ? standaloneMargin : Math.floor((fullW - standaloneW - standaloneBorder) / 2);
 
-    const topOffset = container.getBoundingClientRect().top;
-    const verticalPad = Math.max(0, (window.innerHeight - topOffset - standaloneH) / 2);
-    container.style.paddingTop = verticalPad + "px";
+    // Top-anchored, not centred (2026-11-06). The box used to be centred in whatever
+    // height was left, which put ~100px of nothing above it; with the screen's name
+    // sitting over the box, that gap fell between the top of the page and the title
+    // and read as a mistake. The pair now starts where the container starts.
+    container.style.paddingTop = "0px";
 
     const content = document.createElement("div");
     content.className = "content-area standalone";
@@ -18578,6 +18721,8 @@ function buildViewport() {
     }
 
     container.appendChild(content);
+    sizeProtoTitle();
+    syncRuleHeight();
     if (SIM.onResize) SIM.onResize();
     return;
   } else {
@@ -18674,7 +18819,87 @@ function buildViewport() {
   }
 
   container.appendChild(frame);
+  sizeProtoTitle();
+  syncRuleHeight();
   if (SIM.onResize) SIM.onResize();
+}
+
+// The rule beside the buttons is as tall as the buttons. Run after anything that
+// changes the column's height: a build, a resize, and the prototype-controls toggle,
+// which adds or removes eight buttons and two labels.
+function syncRuleHeight() {
+  const col = document.querySelector(".btn-column");
+  const wrap = document.querySelector(".viewport-wrapper");
+  if (!col || !wrap) return;
+  // The LAST VISIBLE BUTTON's bottom, not the column's own height. With Device and
+  // Layout hidden the empty Layout group still contributes its 16px top margin, so
+  // the column measures 22px taller than anything drawn in it and the rule overhung
+  // the last button by that much.
+  const top = col.getBoundingClientRect().top;
+  let bottom = top;
+  col.querySelectorAll(".toggle-btn, .btn-column-label, #app-title").forEach(function (e) {
+    const r = e.getBoundingClientRect();
+    if (r.height > 0) bottom = Math.max(bottom, r.bottom);
+  });
+  wrap.style.setProperty("--rule-h", Math.max(0, Math.round(bottom - top)) + "px");
+}
+
+// Both of the above measure text that is still in a fallback face on the first
+// build: the nav buttons wrap to two, three or four lines in Barlow Condensed and to
+// different ones before it arrives, which left the rule 120px long on first paint and
+// correct only after something else forced a recalculation. A ResizeObserver on the
+// column would not have caught it either — the swap changes the text's height, not
+// the container's.
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(function () { syncRuleHeight(); sizeProtoTitle(); });
+}
+
+// The screen's name, directly above the box it belongs to.
+//
+// Built INSIDE #viewportContainer rather than as a sibling above it. The container
+// carries the padding that centres the box vertically — up to 104px of it — and a
+// sibling sat on the far side of that padding, nowhere near the box it was naming.
+//
+// Rebuilt each time rather than kept: buildViewport clears the container, so a
+// static element would be destroyed on the first build anyway. Called from every
+// exit of buildViewport and from the resize handler, hence the removal first.
+function sizeProtoTitle() {
+  const host = document.getElementById("viewportContainer");
+  if (!host) return;
+  const old = host.querySelector(":scope > .proto-title");
+  if (old) old.remove();
+  const box = host.firstElementChild;
+  if (!box) return;
+  const sim = (typeof SIMS !== "undefined") ? SIMS[activeSim] : null;
+  const name = (sim && sim.name) || "";
+  if (!name) return;
+  const el = document.createElement("h1");
+  el.id = "protoTitle";
+  el.className = "proto-title";
+  el.textContent = name;
+  host.insertBefore(el, box);
+  // Left edge: padded in to the box's own, not given the box's width. The Teacher
+  // Desktop / Standalone path sets a marginLeft on its content that is a centring
+  // one only while there is slack, so same-width-and-centred would line up at one
+  // window size and not another. The right pad keeps a long name inside the box.
+  const b = box.getBoundingClientRect(), h = host.getBoundingClientRect();
+  el.style.paddingLeft = Math.max(0, Math.round(b.left - h.left)) + "px";
+  el.style.paddingRight = Math.max(0, Math.round(h.right - b.right)) + "px";
+  // The title has just pushed the box down by its own height. It is pulled back up
+  // by exactly that, so it occupies the centring padding above the box and the box
+  // itself does not move.
+  //
+  // A negative margin here rather than trimming the container's padding: this runs
+  // on every resize as well as every build, and reading the padding, subtracting,
+  // and writing it back compounds — two resizes walked the box 39px up the screen
+  // each time. Nothing the calculation reads is changed by the calculation, so
+  // calling it twice gives the same answer as calling it once.
+  const pad = parseFloat(getComputedStyle(host).paddingTop) || 0;
+  const mb = parseFloat(getComputedStyle(el).marginBottom) || 0;
+  const outer = el.getBoundingClientRect().height + mb;
+  // Never further than there is padding to hide in: with none, the title keeps its
+  // space and the box moves down rather than the title being clipped off the top.
+  el.style.marginTop = "-" + Math.round(Math.min(pad, outer)) + "px";
 }
 
 // Button wiring
@@ -18858,6 +19083,8 @@ window.addEventListener("resize", () => {
       info.style.minWidth = isClipping ? device.screenW + "px" : "";
     }
   }
+  sizeProtoTitle();
+  syncRuleHeight();
   // Let the interactive re-measure at the new size
   if (SIM.onResize) SIM.onResize();
 });
