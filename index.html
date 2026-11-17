@@ -3754,6 +3754,21 @@
     visibility: hidden;
     transition: opacity 120ms ease, visibility 0s linear 120ms;
   }
+  /* ...AND NO TRANSITION AT ALL WHEN MOTION IS REDUCED, because the one above does
+     not come back. The global reduce block near the end of this stylesheet forces
+     `transition-duration: 0.01ms !important` and leaves transition-DELAY alone, which
+     strands the visibility transition: measured 2026-11-17, after a single replay
+     under prefers-reduced-motion the button stayed `visibility: hidden` for good --
+     still hidden 30 frames later and at the end of the run -- with `cs-playing`
+     already off the figure. So the button vanished permanently on first use, out of
+     the page and out of the tab order, for exactly the people most likely to be
+     navigating by keyboard. It was found while chasing why focus would not return to
+     it; the focus was only the symptom.
+     A flip with no transition is what reduced motion wants here anyway. */
+  @media (prefers-reduced-motion: reduce) {
+    .collapse-data-pic .collapse-pic-replay,
+    .collapse-data-pic.cs-playing .collapse-pic-replay { transition: none; }
+  }
   /* The number for the measuring stick in the artwork. The STICK is drawn by
      gen.py; the number is not, and is deliberately not going in there: baked into
      the SVG it would be scaled by the cover-crop along with the drawing and would
@@ -5149,7 +5164,7 @@
   <!-- Left: Sims + Layout + Device buttons -->
   <nav class="btn-column" aria-label="Simulation controls">
     <div id="masssims-title" style="font-family: 'Barlow Condensed', sans-serif; color: #333; font-size: 18px; line-height: 1.3; margin-bottom: 10px;">
-      <div style="font-weight: 600;">MassSims &bull; v1.45</div>
+      <div style="font-weight: 600;">MassSims &bull; v1.46</div>
       <div style="font-weight: 400;">Updated: 11/17/26</div>
     </div>
     <div role="group" aria-labelledby="sims-label">
@@ -16216,6 +16231,7 @@ function buildSimContent() {
               // screen pixels here -- the artwork is drawn at its natural 285x257 and
               // not scaled. Red was right as it stood and has no lift.
               lift: 2.5,
+              dustAtTip: true,                  // ...and the nose dust lands where it hits
               // AND IT DISTURBS WHAT IT LANDS IN, both times. Mike, 2026-11-17: "can
               // you disturb the debris/fallen stones under the blue -- first hit (nose)
               // then hinge back second -- the same way you disturb stuff under the red
@@ -17006,11 +17022,28 @@ function buildSimContent() {
                 // 2026-11-13: "measure this point so you can move it to where it hits."
                 // On the corner's own x, and on the surface at that x, which is the same
                 // point the hinge is planted on.
-                var nx = b.cx + b.x, ny = gy - lo * 0.4;
+                var nx = b.cx + b.x, ny = gy - lo * 0.4;   // where the rubble is shaken
+                var px = nx, py = ny;                      // ...and where the dust goes
                 if (b.noseAtTip) {
                   var tc = lowCorner(b); nx = tc[0]; ny = restSup(S, b, tc[0]).y;
+                  px = nx; py = ny;
+                } else if (b.dustAtTip) {
+                  // THE DUST ALONE MOVES TO THE CONTACT. Mike, 2026-11-17: "the really
+                  // big dust effect that happens when the blue car's nose hits should
+                  // be further right." Measured at that frame: the puff fired at x
+                  // 114.8, the car's middle, while the corner that struck was at x
+                  // 125.2, y 190.8 -- 10.4 units to its right and 5 below. Blue is
+                  // nose-down at +31.6 degrees there, so the end that lands is its +x
+                  // end, and the puff was behind the impact.
+                  //
+                  // NOT noseAtTip, which is red's and moves the SHAKE with it. The
+                  // shake's radius is 38 and rock00 sits 18.6 from the middle; from the
+                  // contact corner it would sit about 8, which is most of the way in,
+                  // and rock00's response is a thing Mike settled on this morning.
+                  // So the dust moves and the disturbance stays where it was tuned.
+                  var td = lowCorner(b); px = td[0]; py = restSup(S, b, td[0]).y;
                 }
-                if (hit > DUST_MIN) S.puff(nx, ny, hit, b.dust, b.mass,
+                if (hit > DUST_MIN) S.puff(px, py, hit, b.dust, b.mass,
                                            b.noseBig || DUST_NOSE,
                                            b.noseMore || DUST_NOSE_N);
                 // ...and the heap it lands in is not a painted backdrop
@@ -17641,12 +17674,89 @@ function buildSimContent() {
               const rep = document.createElement("button");
               rep.type = "button";
               rep.className = "sim-btn collapse-pic-replay";
-              rep.setAttribute("aria-label", "Replay the collapse");
+              // "Replay" IS A LIE UNDER REDUCED MOTION. Mike, 2026-11-17: "should the
+              // label be a before animation and after?" In the ordinary path it never
+              // is -- the collapse plays on arriving at the row and the button is
+              // hidden while it runs, so by the time anyone can press it they have seen
+              // it. Measured both paths: with prefers-reduced-motion the arrival does
+              // NOT animate, so that first press is a first viewing.
+              //
+              // Decided ONCE, at build, not swapped as the state changes. A control
+              // whose accessible name mutates is disorienting -- people map the
+              // controls by name -- so this reads the preference when the button is
+              // made and then holds still for the session.
+              var replayed = !CS_REDUCED.matches;
+              rep.setAttribute("aria-label",
+                replayed ? "Replay the collapse" : "Play the collapse");
               rep.appendChild(createSVGIcon(SIM._replayIcon));
               // The animation is not built yet. One hook, so it plugs in here when it
               // is rather than this having to be found again.
+              // AND FOCUS COMES BACK TO IT. Mike, 2026-11-17: "if I tab to the replay
+              // button ... should that focus return to this button once it re-appears?"
+              // It should, and it did not. Measured by driving the keyboard: focus is
+              // still on the button the instant it is pressed -- the hide is 120ms
+              // behind the class -- and by the time the collapse has finished it is on
+              // BODY, because `visibility: hidden` takes focus off whatever it hides.
+              // So a keyboard user presses Replay and is returned to the top of the
+              // document, four seconds later, with no indication it happened. That is
+              // WCAG 2.4.3 Focus Order.
+              //
+              // ONLY WHEN THE USER ASKED FOR IT, and only if focus has not moved on.
+              // The collapse also plays on ARRIVING at the row, which nobody pressed,
+              // and taking focus then would be the opposite bug. The flag is set by
+              // this click alone, and the restore is skipped unless focus is still
+              // sitting on body -- if the reader has tabbed somewhere during the four
+              // seconds, that is where they meant to be.
               rep.addEventListener("click", function () {
+                var back = document.activeElement === rep;
+                // THE RUN IS STARTED FIRST, and only then watched. play() puts
+                // `cs-playing` on synchronously, so from here the first time that class
+                // comes OFF is the end of the run and nothing else can be mistaken for
+                // it. Watching from before the call was wrong: any other class change
+                // on the figure in between looked like a finish, which ended the watch
+                // while the collapse was still running. It showed up only under
+                // prefers-reduced-motion -- measured, focus sat on BODY for the whole
+                // 1.4s and was never taken back -- and passed in the ordinary path,
+                // which is the kind of bug that ships.
                 if (SIM.onReplayCollapse) SIM.onReplayCollapse(row);
+                if (!fig.classList.contains("cs-playing")) return;   // nothing to wait on
+                var ob = new MutationObserver(function () {
+                  if (fig.classList.contains("cs-playing")) return;
+                  ob.disconnect();
+                  // WHEN IT IS OVER, not when it is asked for. Mike, 2026-11-17:
+                  // "should it announce?" Pressing it needs no confirmation -- the
+                  // button says what it does and they just pressed it. What a reader
+                  // cannot know is when the four seconds are up: focus comes back and
+                  // says "Replay the collapse, button", which reports that focus moved,
+                  // not that anything finished. Past tense, like every other
+                  // announcement here ("Trial B reset."), and the verb matches the
+                  // button's own so the pair cannot contradict each other.
+                  if (SIM.announce) {
+                    SIM.announce(replayed ? "The collapse replayed."
+                                          : "The collapse played.");
+                  }
+                  // ...ONCE IT IS ACTUALLY BACK. focus() on an element that is still
+                  // `visibility: hidden` does nothing at all, silently, and the button
+                  // is hidden for a moment after the class comes off -- the hide rule
+                  // carries `visibility 0s linear 120ms` and the reduced-motion reset
+                  // overrides transition-DURATION, not the delay. Measured at the
+                  // instant of restore: visibility was `visible` in the ordinary path
+                  // and `hidden` under prefers-reduced-motion, which is why this failed
+                  // for exactly one of them. So it waits for the button to be visible
+                  // instead of assuming it, and gives up after half a second rather
+                  // than holding a callback open.
+                  var tries = 30;
+                  (function focusBack() {
+                    if (!back || !rep.isConnected) return;
+                    if (document.activeElement !== document.body) return;  // moved on
+                    if (window.getComputedStyle(rep).visibility !== "visible") {
+                      if (tries-- > 0) requestAnimationFrame(focusBack);
+                      return;
+                    }
+                    rep.focus();
+                  })();
+                });
+                ob.observe(fig, { attributes: true, attributeFilter: ["class"] });
               });
               fig.appendChild(rep);
               // Mike, 2026-11-11: "if I click on time 0 wet row in the table of the
